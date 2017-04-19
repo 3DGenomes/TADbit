@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing TADbit on GNU/Linux &mdash; Tadbit 0.1 documentation</title>
+    <title>Installing TADbit on GNU/Linux &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorials" href="tutorial.html" />
     <link rel="prev" title="Welcome to TADbit’s documentation!" href="index.html" /> 
   </head>
@@ -42,7 +44,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to TADbit’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -59,38 +61,32 @@
 <li><a class="reference internal" href="#installing-tadbit-on-gnu-linux" id="id1">Installing TADbit on GNU/Linux</a><ul>
 <li><a class="reference internal" href="#dependencies" id="id2">Dependencies</a><ul>
 <li><a class="reference internal" href="#python-libraries" id="id3">Python libraries</a></li>
-<li><a class="reference internal" href="#imp-3d-modeling" id="id4">IMP - 3D modeling</a><ul>
-<li><a class="reference internal" href="#from-the-repositories" id="id5">From the repositories</a></li>
-<li><a class="reference internal" href="#from-source" id="id6">From source</a></li>
+<li><a class="reference internal" href="#imp-3d-modeling" id="id4">IMP - 3D modeling</a></li>
+<li><a class="reference internal" href="#gem-mapping" id="id5">GEM - mapping</a></li>
+<li><a class="reference internal" href="#mcl-clustering" id="id6">MCL - clustering</a></li>
+<li><a class="reference internal" href="#chimera-visualization" id="id7">Chimera - visualization</a></li>
+<li><a class="reference internal" href="#liftover" id="id8">LiftOver</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#mcl-clustering" id="id7">MCL - clustering</a></li>
-<li><a class="reference internal" href="#chimera-visualization" id="id8">Chimera - visualization</a></li>
-<li><a class="reference internal" href="#liftover" id="id9">LiftOver</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tadbit" id="id10">TADbit</a></li>
+<li><a class="reference internal" href="#tadbit" id="id9">TADbit</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*</p>
-</div>
-<p><strong>TADbit requires python2 &gt;= 2.6 as well as several dependencies that
-are listed below.</strong></p>
+<p><em>Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).</em></p>
+<p><strong>TADbit requires python &gt;= 2.6 as well as several dependencies that are
+listed below.</strong></p>
 <div class="section" id="dependencies">
 <h2><a class="toc-backref" href="#id2">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="python-libraries">
 <h3><a class="toc-backref" href="#id3">Python libraries</a><a class="headerlink" href="#python-libraries" title="Permalink to this headline">¶</a></h3>
 <p><strong>Required:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>apt-get install python-scipy
-apt-get install python-numpy
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">scipy</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span>
 </pre></div>
 </div>
 <p>Optional packages (but <strong>highly</strong> recommended):</p>
-<div class="highlight-python"><div class="highlight"><pre>apt-get install python-matplotlib
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">matplotlib</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -102,71 +98,48 @@ apt-get install python-numpy
 </div>
 <div class="section" id="imp-3d-modeling">
 <h3><a class="toc-backref" href="#id4">IMP - 3D modeling</a><a class="headerlink" href="#imp-3d-modeling" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="from-the-repositories">
-<h4><a class="toc-backref" href="#id5">From the repositories</a><a class="headerlink" href="#from-the-repositories" title="Permalink to this headline">¶</a></h4>
-<p>Since version 2.5 IMP is available in several repositories, like Ubuntu</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install imp
-</pre></div>
-</div>
-<p>or in <a class="reference external" href="http://conda.pydata.org/docs/intro.html">anaconda</a></p>
-<div class="highlight-python"><div class="highlight"><pre>conda install -c https://conda.anaconda.org/salilab imp
-</pre></div>
-</div>
-<p>These options may be easier than the source compilation explained
-bellow.</p>
-</div>
-<div class="section" id="from-source">
-<h4><a class="toc-backref" href="#id6">From source</a><a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h4>
 <p>The three-dimensional (3D) structure of a given genomic region is done
-via the IMP package. TADbit has been tested with <strong>IMP version 2.0.1</strong>,
-<strong>IMP version 2.1.1</strong> (recommended IMP versions to be installed) and
-<strong>IMP version 2.5</strong>. The installation procedure reported in this manual
-describes how to install IMP on Ubuntu machines (installation tested on
-Ubuntu versions 12.04, 13.04 and 14.04). However, we do not provide
-support for installing IMP; installation instructions for IMP can be
-found on the IMP website (<a class="reference external" href="http://salilab.org/imp/nightly/doc/html/">http://salilab.org/imp/nightly/doc/html/</a>).</p>
+via the IMP package. TADbit has been tested with <strong>IMP version 2.0.1</strong>
+and <strong>IMP version 2.1.1</strong> (recommended IMP versions to be installed).
+The installation procedure reported in this manual describes how to
+install IMP on Ubuntu machines (installation tested on Ubuntu versions
+12.04, 13.04 and 14.04). However, we do not provide support for
+installing IMP; installation instructions for IMP can be found on the
+IMP website (<a class="reference external" href="http://salilab.org/imp/nightly/doc/html/">http://salilab.org/imp/nightly/doc/html/</a>).</p>
 <p>Install the required libraries:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install cmake
-sudo apt-get install libboost1.49-all-dev
-sudo apt-get install libhdf5-dev
-sudo apt-get install swig
-sudo apt-get install libcgal-dev
-sudo apt-get install python-dev
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">cmake</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libboost1</span><span class="o">.</span><span class="mi">49</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libhdf5</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">swig</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libcgal</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">For Ubuntu 13.10 <em>libboost1.53-all-dev</em> should be installed</p>
-</div>
-<p>instead. For Ubuntu 14.04 <em>libboost1.54-all-dev</em> should be installed
-instead.</p>
+<p>For Ubuntu 13.10 <em>libboost1.53-all-dev</em> should be installed instead. For
+Ubuntu 14.04 <em>libboost1.54-all-dev</em> should be installed instead.</p>
 <p>Download the IMP tarball file from <a class="reference external" href="http://salilab.org/imp/">http://salilab.org/imp/</a> and
 uncompress it:</p>
-<div class="highlight-python"><div class="highlight"><pre>wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
+<div class="highlight-default"><div class="highlight"><pre><span></span>wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
 tar xzvf imp-2.0.1.tar.gz
-</pre></div>
-</div>
-<p>Create a directory for the IMP instalaltion.</p>
-<div class="highlight-python"><div class="highlight"><pre>mkdir IMP
 </pre></div>
 </div>
 <p>Move into the IMP directory and compile the code (<em>Note:</em> the <code class="docutils literal"><span class="pre">-j</span></code>
 option stands for the number of CPUs you want to assign to the compiler;
 the higher the faster).</p>
-<div class="highlight-python"><div class="highlight"><pre>cd IMP
-cmake ../imp-2.0.1 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
-make -j4
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">imp</span><span class="o">-</span><span class="mf">2.0</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">cmake</span> <span class="o">.</span> <span class="o">-</span><span class="n">DCMAKE_BUILD_TYPE</span><span class="o">=</span><span class="n">Release</span> <span class="o">-</span><span class="n">DIMP_MAX_CHECKS</span><span class="o">=</span><span class="n">NONE</span> <span class="o">-</span><span class="n">DIMP_MAX_LOG</span><span class="o">=</span><span class="n">SILENT</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">j4</span>
 </pre></div>
 </div>
 <p>Once the compilation has finished, open the file setup_environment.sh
 in your IMP directory and copy the first lines into your <code class="docutils literal"><span class="pre">~/.bashrc</span></code>
 file (if this file in not present in your home directory, create it).
 These lines should look like:</p>
-<div class="highlight-python"><div class="highlight"><pre>LD_LIBRARY_PATH=&quot;/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH&quot;
-export LD_LIBRARY_PATH
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">LD_LIBRARY_PATH</span><span class="o">=</span><span class="s2">&quot;/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH&quot;</span>
+<span class="n">export</span> <span class="n">LD_LIBRARY_PATH</span>
 
-PYTHONPATH=&quot;/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH&quot;
-export PYTHONPATH
+<span class="n">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH&quot;</span>
+<span class="n">export</span> <span class="n">PYTHONPATH</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -177,13 +150,18 @@ from <code class="docutils literal"><span class="pre">setup_environment.sh</span
 is replaced by your real path to IMP.</p>
 </div>
 </div>
+<div class="section" id="gem-mapping">
+<h3><a class="toc-backref" href="#id5">GEM - mapping</a><a class="headerlink" href="#gem-mapping" title="Permalink to this headline">¶</a></h3>
+<p>Needed to map reads from next generation seqiencing data. GEM, can be
+downloaded from: <a class="reference external" href="https://github.com/gemtools/gemtools">https://github.com/gemtools/gemtools</a></p>
+<p><em>GEM is only available for linux machines</em></p>
 </div>
 <div class="section" id="mcl-clustering">
-<h3><a class="toc-backref" href="#id7">MCL - clustering</a><a class="headerlink" href="#mcl-clustering" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id6">MCL - clustering</a><a class="headerlink" href="#mcl-clustering" title="Permalink to this headline">¶</a></h3>
 <p>MCL is the program used for clustering the 3D models generated by IMP.
 It can be downloaded from <a class="reference external" href="http://micans.org/mcl/">http://micans.org/mcl/</a>; on Debian/Ubuntu
 machines it can be automatically installed with:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install mcl
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">mcl</span>
 </pre></div>
 </div>
 <p><em>Note: if the MCL executable is not found by TADbit, an alternative
@@ -191,7 +169,7 @@ clustering method will be used. Nevertheless we strongly recommend to
 use MCL.</em></p>
 </div>
 <div class="section" id="chimera-visualization">
-<h3><a class="toc-backref" href="#id8">Chimera - visualization</a><a class="headerlink" href="#chimera-visualization" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">Chimera - visualization</a><a class="headerlink" href="#chimera-visualization" title="Permalink to this headline">¶</a></h3>
 <p>Chimera is a program used for visualization and analysis of molecular
 structures. It is used in TADbit to visualize the generated 3D models.
 Chimera is available at: <a class="reference external" href="http://www.cgl.ucsf.edu/chimera/">http://www.cgl.ucsf.edu/chimera/</a></p>
@@ -199,7 +177,7 @@ Chimera is available at: <a class="reference external" href="http://www.cgl.ucsf
 inside TADbit.</em></p>
 </div>
 <div class="section" id="liftover">
-<h3><a class="toc-backref" href="#id9">LiftOver</a><a class="headerlink" href="#liftover" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id8">LiftOver</a><a class="headerlink" href="#liftover" title="Permalink to this headline">¶</a></h3>
 <p>TADbit provides a wrapper for the LiftOver tool [Fujita2011]_ (download
 it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admin/exe/">http://hgdownload.cse.ucsc.edu/admin/exe/</a> ).</p>
 <p>This can be used to ease the conversion of genomic TAD coordinates
@@ -211,13 +189,13 @@ it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admi
 </div>
 </div>
 <div class="section" id="tadbit">
-<h2><a class="toc-backref" href="#id10">TADbit</a><a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">TADbit</a><a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h2>
 <p>Once all the needed library/software have been installed, TADbit can be
 downloaded, unpacked and installed as:</p>
-<div class="highlight-python"><div class="highlight"><pre>wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
-unzip tadbit.zip
-cd tadbit-master
-sudo python setup.py install
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="mi">3</span><span class="n">DGenomes</span><span class="o">/</span><span class="n">tadbit</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">O</span> <span class="n">tadbit</span><span class="o">.</span><span class="n">zip</span>
+<span class="n">unzip</span> <span class="n">tadbit</span><span class="o">.</span><span class="n">zip</span>
+<span class="n">cd</span> <span class="n">tadbit</span><span class="o">-</span><span class="n">master</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -230,14 +208,14 @@ not installed. This is because root user is not using the
 PYTHONPATH declared in your bashrc file. You can perfectly
 ignore the warning, or just proceed like this:</p>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>sudo PYTHONPATH=$PYTHONPATH python setup.py install
+<div class="highlight-default"><div class="highlight"><pre><span></span>sudo PYTHONPATH=$PYTHONPATH python setup.py install
 </pre></div>
 </div>
 <p>Finally, run the test script to check that the installation completed
 successfully.</p>
 <p>To do so, move to the test directory and run:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd test
-python test_all.py
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test</span>
+<span class="n">python</span> <span class="n">test_all</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -254,10 +232,11 @@ python test_all.py
             </a></p>
 <h3><a href="index.html">Table Of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Installing TADbit on GNU/Linux</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing TADbit on GNU/Linux</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#python-libraries">Python libraries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#imp-3d-modeling">IMP - 3D modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gem-mapping">GEM - mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mcl-clustering">MCL - clustering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#chimera-visualization">Chimera - visualization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#liftover">LiftOver</a></li>
@@ -267,7 +246,6 @@ python test_all.py
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="biblio.html">Bibliography</a></li>
 </ul>
@@ -281,14 +259,11 @@ python test_all.py
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -307,13 +282,13 @@ python test_all.py
         <li class="right" >
           <a href="index.html" title="Welcome to TADbit’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Apr 25, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

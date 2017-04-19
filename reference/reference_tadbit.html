@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>TAD detection functions &mdash; Tadbit 0.1 documentation</title>
+    <title>TAD detection functions &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="TAD clustering" href="reference_clustering.html" />
     <link rel="prev" title="Experiment class" href="reference_experiment.html" /> 
   </head>
@@ -43,8 +44,8 @@
         <li class="right" >
           <a href="reference_experiment.html" title="Experiment class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -81,17 +82,17 @@ sampled and not normalized. x might be either a list of list, a path to
 a file or a file handler</li>
 <li><strong>norm</strong> (<em>'visibility'</em>) &#8211; kind of normalization to use. Choose between
 &#8216;visibility&#8217; of &#8216;Imakaev&#8217;</li>
-<li><strong>remove</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a python list of lists of booleans mapping positively
+<li><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a python list of lists of booleans mapping positively
 columns to remove (if None only columns with a 0 in the diagonal will be
 removed)</li>
 <li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADbit. If
 n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
 <li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining maximum size of TAD. Default
 (auto or max) defines it as the number of rows/columns</li>
-<li><strong>no_heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use or not some heuristics</li>
-<li><strong>use_topdom</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use TopDom algorithm to find tads or not (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/26704975">http://www.ncbi.nlm.nih.gov/pubmed/26704975</a>, <a class="reference external" href="http://zhoulab.usc.edu/TopDom/">http://zhoulab.usc.edu/TopDom/</a>)</li>
+<li><strong>no_heuristic</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use or not some heuristics</li>
+<li><strong>use_topdom</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use TopDom algorithm to find tads or not (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/26704975">http://www.ncbi.nlm.nih.gov/pubmed/26704975</a>, <a class="reference external" href="http://zhoulab.usc.edu/TopDom/">http://zhoulab.usc.edu/TopDom/</a>)</li>
 <li><strong>topdom_window</strong> (<em>5</em>) &#8211; the window size for topdom algorithm</li>
-<li><strong>get_weights</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; either to return the weights corresponding to the
+<li><strong>get_weights</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; either to return the weights corresponding to the
 Hi-C count (weights are a normalization dependent of the count of each
 columns)</li>
 </ul>
@@ -133,7 +134,7 @@ they also have row names, read_options=list(header=FALSE, row.names=1).</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>directory</strong> &#8211; the directory containing the data files</li>
 <li><strong>kwargs</strong> &#8211; arguments passed to <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">tadbit()</span></code></a> function</li>
-<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a parser function that takes file name as input and
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a parser function that takes file name as input and
 returns a tuple representing the matrix of data. Tuple is a
 concatenation of column1 + column2 + column3 + ...</li>
 </ul>
@@ -158,8 +159,8 @@ something similar to the R function.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>result</strong> &#8211; the <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">tadbit()</span></code></a></li>
-<li><strong>write</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print table. If False, returns the string</li>
+<li><strong>result</strong> &#8211; the <a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">tadbit()</span></code></a></li>
+<li><strong>write</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print table. If False, returns the string</li>
 </ul>
 </td>
 </tr>
@@ -186,19 +187,19 @@ results</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">TAD detection functions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
@@ -214,14 +215,11 @@ results</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -240,14 +238,14 @@ results</p>
         <li class="right" >
           <a href="reference_experiment.html" title="Experiment class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

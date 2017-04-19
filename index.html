@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to TADbit’s documentation! &mdash; Tadbit 0.1 documentation</title>
+    <title>Welcome to TADbit’s documentation! &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installing TADbit on GNU/Linux" href="install.html" /> 
   </head>
   <body role="document">
@@ -38,7 +40,7 @@
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -49,27 +51,14 @@
             
   <div class="section" id="welcome-to-tadbit-s-documentation">
 <h1>Welcome to TADbit&#8217;s documentation!<a class="headerlink" href="#welcome-to-tadbit-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>TADbit is a computational package that deals with 3C-based data (more
-specifically Hi-C data). It handles all the steps from the alignment of
-paired-end reads to the detection of Topologically Associating Domain
-(TAD) borders, compartments and three-dimensional modeling of chromatin
-based on interaction matrices. The different steps:</p>
-<ul class="simple">
-<li>preprocessing of paired-end reads from Hi-C experiment</li>
-<li>alignment of the reads using
-<a class="reference external" href="http://algorithms.cnag.cat/wiki/The_GEM_library">GEM</a></li>
-<li>fitering of the mapped reads</li>
-<li>construction of interaction matrices and normalization</li>
-<li>the identification of TAD borders and compartments</li>
-<li>the 1D and 2D comparison of TADs</li>
-<li>the three-dimensional modeling of the chromatin</li>
-</ul>
-<p>The library has been designed to be used by researchers with minimal
-level of expertise in computer science. A set of the all-in-one scripts
-(called <strong>TADbit tools</strong>) allow to run a full analysis in one single
-command line.</p>
-<p>On the other hand, advanced users may produce their own scripts using
-the TADbit API.</p>
+<p>TADbit is a computational package that deals with 3C-based data (more specifically Hi-C data) to detect Topologically A
+ssociating Domain (TAD) borders and to further analyze TADs by: i) the identification of conserved TAD borders and ii)
+the definition of sets of TADs sharing structural features iii) the three-dimensional modeling of the chromatin.</p>
+<p>Hi-C experiments generate genomic interaction data that is usually summarized at the chromosome level. TADbit is built
+around the concept of chromosome, and uses it as a central item to compare different Hi-C experiments. The library has
+been designed to be used by researchers with minimal level of expertise in computer science; the all-in-one scripts pro
+vided in TADbit allow to run a full analysis in one single command line, while advanced users may produce their own pro
+grams using TADbit as a complementary tool.</p>
 <div class="section" id="documentation-index">
 <h2>Documentation index:<a class="headerlink" href="#documentation-index" title="Permalink to this headline">¶</a></h2>
 <blockquote class="epigraph">
@@ -79,6 +68,7 @@ the TADbit API.</p>
 <li class="toctree-l2"><a class="reference internal" href="install.html#dependencies">Dependencies</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#python-libraries">Python libraries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#imp-3d-modeling">IMP - 3D modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#gem-mapping">GEM - mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#mcl-clustering">MCL - clustering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#chimera-visualization">Chimera - visualization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#liftover">LiftOver</a></li>
@@ -92,7 +82,7 @@ the TADbit API.</p>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_0_mapping.html">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1_general.html">Getting started</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_3_clustering.html">TAD clustering</a></li>
@@ -107,17 +97,6 @@ the TADbit API.</p>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tools.html">TADbit tools</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-map">TADbit map</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-parse">TADbit parse</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-normalize">TADbit normalize</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-segment">TADbit segment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-model">TADbit model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-merge">TADbit merge</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-describe">TADbit describe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tools.html#tadbit-clean">TADbit clean</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_mapping.html">From FASTQ to matrix</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_mapping.html#mapping">Mapping</a></li>
@@ -125,6 +104,7 @@ the TADbit API.</p>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_mapping.html#filtering">Filtering</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_chromosome.html">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_chromosome.html#load-chromosome">Load chromosome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_chromosome.html#experimentlist-class">ExperimentList class</a></li>
@@ -137,8 +117,8 @@ the TADbit API.</p>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_boundary_alignment.html">Alignment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/reference_imp_model.html">IMPmodel class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/reference_imp_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_utils.html">Utilities</a></li>
 </ul>
 </li>
@@ -162,7 +142,6 @@ the TADbit API.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="biblio.html">Bibliography</a></li>
 </ul>
@@ -173,14 +152,11 @@ the TADbit API.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -196,13 +172,13 @@ the TADbit API.</p>
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

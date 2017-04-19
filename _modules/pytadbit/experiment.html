@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytadbit.experiment &mdash; Tadbit 0.1 documentation</title>
+    <title>pytadbit.experiment &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
-    <link rel="up" title="pytadbit" href="../pytadbit.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,9 +36,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -53,37 +54,38 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit</span>                     <span class="kn">import</span> <span class="n">HiC_data</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="kn">import</span> <span class="n">read_matrix</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>    <span class="kn">import</span> <span class="n">nicer</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>    <span class="kn">import</span> <span class="n">tadbit_savefig</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>      <span class="kn">import</span> <span class="n">zscore</span><span class="p">,</span> <span class="n">nozero_log_matrix</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span> <span class="kn">import</span> <span class="n">iterative</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span> <span class="kn">import</span> <span class="n">hic_filtering_for_modelling</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.tad_parser</span>  <span class="kn">import</span> <span class="n">parse_tads</span>
-<span class="kn">from</span> <span class="nn">math</span>                         <span class="kn">import</span> <span class="n">isnan</span>
-<span class="kn">from</span> <span class="nn">numpy</span>                        <span class="kn">import</span> <span class="n">log2</span><span class="p">,</span> <span class="n">array</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span>          <span class="kn">import</span> <span class="n">CONFIG</span>
-<span class="kn">from</span> <span class="nn">copy</span>                         <span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
-<span class="kn">from</span> <span class="nn">sys</span>                          <span class="kn">import</span> <span class="n">stderr</span>
-<span class="kn">from</span> <span class="nn">warnings</span>                     <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">pytadbit</span>                     <span class="k">import</span> <span class="n">HiC_data</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="k">import</span> <span class="n">read_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>    <span class="k">import</span> <span class="n">nicer</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>    <span class="k">import</span> <span class="n">tadbit_savefig</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>      <span class="k">import</span> <span class="n">zscore</span><span class="p">,</span> <span class="n">nozero_log_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span> <span class="k">import</span> <span class="n">iterative</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span> <span class="k">import</span> <span class="n">hic_filtering_for_modelling</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.tad_parser</span>  <span class="k">import</span> <span class="n">parse_tads</span>
+<span class="kn">from</span> <span class="nn">math</span>                         <span class="k">import</span> <span class="n">isnan</span>
+<span class="kn">from</span> <span class="nn">numpy</span>                        <span class="k">import</span> <span class="n">log2</span><span class="p">,</span> <span class="n">array</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.IMP_CONFIG</span> <span class="k">import</span> <span class="n">CONFIG</span>
+<span class="kn">from</span> <span class="nn">copy</span>                         <span class="k">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">sys</span>                          <span class="k">import</span> <span class="n">stderr</span>
+<span class="kn">from</span> <span class="nn">warnings</span>                     <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodels</span> <span class="k">import</span> <span class="n">StructuralModels</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span>  <span class="kn">import</span> <span class="n">IMPoptimizer</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span> <span class="kn">import</span> <span class="n">generate_3d_models</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.modelling.impoptimizer</span>  <span class="k">import</span> <span class="n">IMPoptimizer</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.modelling.imp_modelling</span> <span class="k">import</span> <span class="n">generate_3d_models</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-    <span class="kn">from</span> <span class="nn">matplotlib.cm</span> <span class="kn">import</span> <span class="n">jet</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.cm</span> <span class="k">import</span> <span class="n">jet</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;matplotlib not found</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">load_experiment_from_reads</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fnam</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> 
-                               <span class="n">conditions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                               <span class="n">enzyme</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;Hi-C&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
+                               <span class="n">conditions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">enzyme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;Hi-C&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loads an experiment object from TADbit-generated read files, that are lists</span>
 <span class="sd">    of pairs of reads mapped to a reference genome.</span>
@@ -128,7 +130,7 @@
         <span class="n">len_crm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">]))</span> <span class="o">/</span> <span class="n">resolution</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">section_sizes</span><span class="p">[(</span><span class="n">crm</span><span class="p">,)]</span> <span class="o">=</span> <span class="n">len_crm</span>
         <span class="n">size</span> <span class="o">+=</span> <span class="n">len_crm</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">crm</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%04d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">len_crm</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">crm</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%04d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">len_crm</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
     <span class="n">imx</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="p">((),</span> <span class="n">size</span><span class="p">)</span>
     <span class="n">dict_sec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sections</span><span class="p">)])</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
@@ -205,10 +207,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">norm_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">tad_def</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_warn</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">conditions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">cell_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enzyme</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;Hi-C&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tad_def</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">no_warn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">conditions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">cell_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enzyme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;Hi-C&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span>            <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>      <span class="o">=</span> <span class="n">resolution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span>      <span class="o">=</span> <span class="n">identifier</span>
@@ -216,19 +218,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span>          <span class="o">=</span> <span class="n">enzyme</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span>     <span class="o">=</span> <span class="n">kw_descr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exp_type</span>        <span class="o">=</span> <span class="n">exp_type</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>             <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>             <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span> <span class="o">=</span> <span class="n">resolution</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span>        <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_hic</span>        <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_norm</span>       <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span>        <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_hic</span>        <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_norm</span>       <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conditions</span>      <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span> <span class="k">if</span> <span class="n">conditions</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">size</span>            <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span>            <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tads</span>            <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span>            <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>            <span class="o">=</span> <span class="bp">None</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span>  <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span>  <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span>            <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>            <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span>  <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span>  <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>          <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span>        <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">hic_data</span><span class="p">:</span>
@@ -243,16 +245,16 @@
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;Experiment </span><span class="si">%s</span><span class="s1"> (resolution: </span><span class="si">%s</span><span class="s1">, TADs: </span><span class="si">%s</span><span class="s1">, Hi-C rows: </span><span class="si">%s</span><span class="s1">, normalized: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">nicer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tads</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">nicer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tads</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="k">else</span> <span class="s1">&#39;None&#39;</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">outstr</span> <span class="o">=</span> <span class="s1">&#39;Experiment </span><span class="si">%s</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   resolution        : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nicer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
-        <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   TADs              : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tads</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   TADs              : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tads</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   Hi-C rows         : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   normalized        : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   normalized        : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">ukw</span> <span class="o">=</span> <span class="s1">&#39;UNKNOWN&#39;</span>
         <span class="k">try</span><span class="p">:</span> <span class="c1"># new in version post-CSDM13</span>
             <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;   identifier        : </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">or</span> <span class="n">ukw</span><span class="p">)</span>
@@ -265,14 +267,14 @@
         <span class="k">return</span> <span class="n">outstr</span>
         
 
-    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        sum Hi-C data of experiments into a new one.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">reso1</span><span class="p">,</span> <span class="n">reso2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">resolution</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">resolution</span><span class="p">:</span>
             <span class="n">resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
-            <span class="n">changed_reso</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">changed_reso</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">resolution</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">reso1</span><span class="p">,</span> <span class="n">reso2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span>
@@ -287,7 +289,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">_normalization</span><span class="p">:</span>
                 <span class="n">other</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
-            <span class="n">changed_reso</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">changed_reso</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">:</span>
             <span class="n">new_hicdata</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="p">([],</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
@@ -295,13 +297,13 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                 <span class="n">new_hicdata</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_hicdata</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">new_hicdata</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">xpr</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">+</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
                          <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span>
-                         <span class="n">hic_data</span><span class="o">=</span><span class="n">new_hicdata</span><span class="p">,</span> <span class="n">no_warn</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                         <span class="n">hic_data</span><span class="o">=</span><span class="n">new_hicdata</span><span class="p">,</span> <span class="n">no_warn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># check if both experiments are normalized with the same method</span>
         <span class="c1"># and sum both normalized data</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">!=</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_factor:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>
                 <span class="n">other</span><span class="o">.</span><span class="n">_normalization</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_factor:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">HiC_data</span><span class="p">([],</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
@@ -365,7 +367,7 @@
         <span class="k">return</span> <span class="n">xpr</span>
 
 
-<div class="viewcode-block" id="Experiment.set_resolution"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.set_resolution"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set a new value for the resolution. Copy the original data into</span>
 <span class="sd">        Experiment._ori_hic and replace the Experiment.hic_data</span>
@@ -421,13 +423,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span>     <span class="o">=</span> <span class="p">[</span><span class="n">HiC_data</span><span class="p">([],</span> <span class="n">size</span> <span class="o">/</span> <span class="n">fact</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">rest</span> <span class="k">else</span> <span class="mi">0</span><span class="p">))]</span>
         <span class="k">def</span> <span class="nf">resize</span><span class="p">(</span><span class="n">mtrx</span><span class="p">,</span> <span class="n">copee</span><span class="p">):</span>
             <span class="s2">&quot;resize both hic_data and normalized data&quot;</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fact</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fact</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fact</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fact</span><span class="p">):</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">fact</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">fact</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="n">size</span><span class="p">:</span>
                             <span class="k">break</span>
-                        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span>  <span class="nb">xrange</span><span class="p">(</span><span class="n">fact</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span>  <span class="n">xrange</span><span class="p">(</span><span class="n">fact</span><span class="p">):</span>
                             <span class="k">if</span> <span class="n">j</span> <span class="o">+</span> <span class="n">l</span> <span class="o">&gt;=</span> <span class="n">size</span><span class="p">:</span>
                                 <span class="k">break</span>
                             <span class="n">val</span> <span class="o">+=</span> <span class="n">copee</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">size</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="n">l</span><span class="p">]</span>
@@ -445,14 +447,14 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span><span class="p">:</span>
             <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNING: definition of filtered columns lost at &#39;</span> <span class="o">+</span>
                          <span class="s1">&#39;this resolution</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
             <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ori_hic</span><span class="p">)</span>
             <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ori_norm</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Experiment.filter_columns"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                       <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.filter_columns"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call filtering function, to remove artefactual columns in a given Hi-C</span>
 <span class="sd">        matrix. This function will detect columns with very low interaction</span>
@@ -481,13 +483,13 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">diagonal</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">diagonal</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">,</span> <span class="n">has_nans</span> <span class="o">=</span> <span class="n">hic_filtering_for_modelling</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span>
             <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="n">perc_zero</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="n">auto</span><span class="p">,</span>
             <span class="n">min_count</span><span class="o">=</span><span class="n">min_count</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">has_nans</span><span class="p">:</span> <span class="c1"># to make it simple</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_size2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_size2</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="s1">&#39;nan&#39;</span><span class="p">:</span>
                     <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
         <span class="c1"># Also remove columns where there is no data in the diagonal</span>
@@ -495,11 +497,11 @@
         <span class="c1"># else:</span>
         <span class="c1">#     self._zeros.update(dict([(i, None) for i in xrange(size)</span>
         <span class="c1">#                              if not self.norm[0][i * size + i]]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="bp">True</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="Experiment.load_hic_data"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_hic_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_hic_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">wanted_resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                      <span class="n">data_resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.load_hic_data"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_hic_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_hic_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wanted_resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">data_resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a Hi-C experiment to the Chromosome object.</span>
 <span class="sd">        </span>
@@ -532,17 +534,17 @@
 <span class="sd">        :param False silent: does not warn for removed columns</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_resolution</span> <span class="ow">or</span>
                                                   <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span><span class="p">)</span>
         <span class="n">wanted_resolution</span> <span class="o">=</span> <span class="n">wanted_resolution</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">wanted_resolution</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">wanted_resolution</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bads</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bads</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="bp">True</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Experiment.load_norm_data"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_norm_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_norm_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="Experiment.load_norm_data"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_norm_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_norm_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">normalization</span><span class="o">=</span><span class="s1">&#39;visibility&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a normalized Hi-C experiment to the Chromosome object.</span>
@@ -573,15 +575,15 @@
 <span class="sd">        :param False silent: does not warn for removed columns</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span> <span class="c1"># in case we do not have original Hi-C data</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">isnan</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span>
                         <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
-                         <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)]]):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+                         <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)]]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># remove NaNs, we do not need them as we have zeroes</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]):</span>
@@ -589,10 +591,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="n">normalization</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bads</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bads</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="bp">True</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_cols</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="Experiment.load_tad_def"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_tad_def">[docs]</a>    <span class="k">def</span> <span class="nf">load_tad_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad_def</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.load_tad_def"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.load_tad_def">[docs]</a>    <span class="k">def</span> <span class="nf">load_tad_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad_def</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">         Add the Topologically Associated Domains definition detection to Slice</span>
 <span class="sd">        </span>
@@ -620,18 +622,18 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: raw Hi-C data not available, &quot;</span> <span class="o">+</span>
                  <span class="s2">&quot;TAD&#39;s height fixed to 1&quot;</span><span class="p">)</span>
-            <span class="n">norms</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">norms</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">diags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">siz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
         <span class="n">sp1</span> <span class="o">=</span> <span class="n">siz</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">siz</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">siz</span><span class="p">):</span>
                 <span class="n">s_k</span> <span class="o">=</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">k</span>
                 <span class="n">diags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="n">norms</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">sp1</span> <span class="o">+</span> <span class="n">s_k</span><span class="p">]</span>
                                  <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">zeros</span>
                                          <span class="ow">or</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="ow">in</span> <span class="n">zeros</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.</span> <span class="c1"># 1 is the mean</span>
-                                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">)])</span> <span class="o">/</span> <span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">))</span>
+                                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">)])</span> <span class="o">/</span> <span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">tads</span><span class="p">:</span>
             <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                           <span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -639,21 +641,21 @@
                 <span class="n">matrix</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">norms</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span>
                              <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">zeros</span>
                                      <span class="ow">or</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zeros</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.</span> 
-                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                              <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
                     <span class="n">height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span>
                         <span class="p">[</span><span class="n">diags</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
-                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)])</span>
+                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">height</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
                 <span class="n">height</span> <span class="o">=</span> <span class="mf">0.</span>
             <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s1">&#39;height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">height</span></div>
 
-<div class="viewcode-block" id="Experiment.normalize_hic"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">rowsums</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.normalize_hic"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">rowsums</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the Hi-C data. This normalization step does the same of</span>
 <span class="sd">        the :func:`pytadbit.tadbit.tadbit` function (default parameters),</span>
@@ -703,7 +705,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="s1">&#39;visibility&#39;</span></div>
 
 
-<div class="viewcode-block" id="Experiment.get_hic_zscores"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">zscored</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">remove_zeros</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.get_hic_zscores"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zscored</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">remove_zeros</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the Hi-C raw data. The result will be stored into</span>
 <span class="sd">        the private Experiment._zscore list.</span>
@@ -719,33 +721,33 @@
         <span class="n">zeros</span>  <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="c1"># zeros are rows or columns having a zero in the diagonal</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                         <span class="k">continue</span>
                     <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
                         <span class="ow">and</span> <span class="n">remove_zeros</span><span class="p">):</span>
-                        <span class="n">zeros</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">None</span>
+                        <span class="n">zeros</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
                         <span class="k">continue</span>
                     <span class="n">values</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                         <span class="k">continue</span>
                     <span class="n">values</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
         <span class="c1"># compute Z-score</span>
         <span class="k">if</span> <span class="n">zscored</span><span class="p">:</span>
             <span class="n">zscore</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">zeros</span> <span class="ow">and</span> <span class="n">remove_zeros</span><span class="p">:</span>
@@ -754,10 +756,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)][</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span></div>
 
 
-<div class="viewcode-block" id="Experiment.model_region"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.model_region">[docs]</a>    <span class="k">def</span> <span class="nf">model_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                     <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                     <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;dmel_01&#39;</span><span class="p">],</span>
-                     <span class="n">container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.model_region"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.model_region">[docs]</a>    <span class="k">def</span> <span class="nf">model_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                     <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;dmel_01&#39;</span><span class="p">],</span>
+                     <span class="n">container</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates of three-dimentional models using IMP, for a given segment of</span>
 <span class="sd">        chromosome.</span>
@@ -836,7 +838,7 @@
         <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                   <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
                   <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">}</span>
-        <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zeros</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zeros</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
         <span class="n">nloci</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Preparing to model </span><span class="si">%s</span><span class="s1"> particles</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nloci</span><span class="p">)</span>
@@ -848,15 +850,15 @@
                                   <span class="n">experiment</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="n">zeros</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Experiment.optimal_imp_parameters"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.optimal_imp_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">optimal_imp_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<div class="viewcode-block" id="Experiment.optimal_imp_parameters"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.optimal_imp_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">optimal_imp_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                                <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">][:],</span>
                                <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
                                <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">][:],</span>
-                               <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="s1">&#39;spearman&#39;</span><span class="p">,</span>
-                               <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                               <span class="n">container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                               <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="s1">&#39;spearman&#39;</span><span class="p">,</span>
+                               <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">container</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the optimal set of parameters to be used for the 3D modeling in</span>
 <span class="sd">        IMP.</span>
@@ -952,7 +954,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;visibility&#39;</span><span class="p">):</span>
             <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNING: normalizing according to visibility method</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
-        <span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
+        <span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">Chromosome</span>
         <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ERROR: start should be higher than 0</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">start</span> <span class="o">-=</span> <span class="mi">1</span> <span class="c1"># things starts at 0 for python. we keep the end coordinate</span>
@@ -960,36 +962,36 @@
         <span class="n">siz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">()</span>
-            <span class="n">new_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+            <span class="n">new_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span><span class="p">)</span>
             <span class="n">tmp</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s1">&#39;exp1&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="p">[</span><span class="n">new_matrix</span><span class="p">],</span>
-                               <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">filter_columns</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                               <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">filter_columns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">exp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># We want the weights and zeros calculated in the full chromosome</span>
-            <span class="n">exp</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-                         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]]</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]]</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span> <span class="c1"># no Hi-C data provided</span>
-            <span class="n">matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(</span><span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="n">new_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                           <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(</span><span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">new_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                           <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span><span class="p">)</span>
             <span class="n">tmp</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s1">&#39;exp1&#39;</span><span class="p">,</span> <span class="n">norm_data</span><span class="o">=</span><span class="p">[</span><span class="n">new_matrix</span><span class="p">],</span>
-                               <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">filter_columns</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                               <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">filter_columns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">exp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">z</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">z</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>
                            <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">z</span> <span class="o">&lt;=</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: no interaction found in selected regions&#39;</span><span class="p">)</span>
         <span class="c1"># ... but the z-scores in this particular region</span>
         <span class="n">exp</span><span class="o">.</span><span class="n">get_hic_zscores</span><span class="p">()</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
-                  <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+                  <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
             <span class="c1"># zeros are rows or columns having a zero in the diagonal</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">exp</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">*</span> <span class="n">exp</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> 
@@ -1000,10 +1002,10 @@
         <span class="k">return</span> <span class="n">exp</span><span class="o">.</span><span class="n">_zscores</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">_zeros</span>
 
 
-<div class="viewcode-block" id="Experiment.write_interaction_pairs"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">write_interaction_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">zscored</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                <span class="n">diagonal</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                                <span class="n">true_position</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">uniq</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                <span class="n">remove_zeros</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;tsv&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.write_interaction_pairs"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">write_interaction_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zscored</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">diagonal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">true_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">uniq</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">remove_zeros</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;tsv&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a tab separated file with all the pairwise interactions.</span>
 <span class="sd">        </span>
@@ -1028,16 +1030,16 @@
         <span class="c1"># write to file</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="nb">file</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Not recognize file type</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;elt1</span><span class="se">\t</span><span class="s1">elt2</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;zscore&#39;</span> <span class="k">if</span> <span class="n">zscored</span> <span class="k">else</span> 
                                                 <span class="s1">&#39;normalized hi-c&#39;</span> <span class="k">if</span> <span class="n">normalized</span> 
                                                 <span class="k">else</span> <span class="s1">&#39;raw hi-c&#39;</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">{</span>
 <span class="s1">    &quot;metadata&quot;: {</span>
@@ -1068,11 +1070,11 @@
             <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">newstart</span> <span class="o">=</span> <span class="n">i</span> <span class="k">if</span> <span class="n">uniq</span> <span class="k">else</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">newstart</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">newstart</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">diagonal</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
@@ -1093,27 +1095,27 @@
                 <span class="k">if</span> <span class="n">remove_zeros</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">true_position</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
                         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">val</span><span class="p">))</span>
-                    <span class="k">elif</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
+                    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
                         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="s1">,</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">val</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;tsv&#39;</span><span class="p">:</span>
                         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                             <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
-                    <span class="k">elif</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
+                    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
                         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                             <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;]}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Experiment.get_hic_matrix"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.get_hic_matrix"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the Hi-C matrix.</span>
 
@@ -1141,17 +1143,17 @@
             <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">end</span>   <span class="o">=</span> <span class="n">siz</span>
         <span class="k">if</span> <span class="n">diagonal</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[[</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="p">[[</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">mtrx</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+            <span class="n">mtrx</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
                 <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
             <span class="k">return</span> <span class="n">mtrx</span></div>
             
 
-<div class="viewcode-block" id="Experiment.print_hic_matrix"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.print_hic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">print_hic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">print_it</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.print_hic_matrix"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.print_hic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">print_hic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">print_it</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the Hi-C matrix as string</span>
 
@@ -1169,21 +1171,21 @@
         <span class="k">if</span> <span class="n">zeros</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="p">[</span><span class="s1">&#39;nan&#39;</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span> <span class="ow">or</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">else</span>
-                 <span class="nb">str</span><span class="p">(</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
-                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
+                 <span class="nb">str</span><span class="p">(</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
+                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">])</span> 
-                                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
-                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
+                                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
+                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
         <span class="k">if</span> <span class="n">print_it</span><span class="p">:</span>
-            <span class="k">print</span> <span class="n">out</span>
+            <span class="nb">print</span> <span class="n">out</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">out</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span></div>
 
 
-<div class="viewcode-block" id="Experiment.view"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-             <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-             <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="Experiment.view"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">decorate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the matrix of Hi-C interactions</span>
@@ -1222,7 +1224,7 @@
 <span class="sd">        :param &#39;jet&#39; cmap: color map from matplotlib. Can also be a </span>
 <span class="sd">           preconfigured cmap object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">logarithm</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">logarithm</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
             <span class="n">fun</span> <span class="o">=</span> <span class="n">log2</span>
         <span class="k">elif</span> <span class="n">logarithm</span><span class="p">:</span>
             <span class="n">fun</span> <span class="o">=</span> <span class="n">logarithm</span>
@@ -1234,7 +1236,7 @@
                             <span class="s1">&#39;experiment. Run Experiment.normalize_hic</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tad</span> <span class="ow">and</span> <span class="n">focus</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: only one of &quot;tad&quot; or &quot;focus&quot; might be set&#39;</span><span class="p">)</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
             <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">focus</span>
             <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1276,7 +1278,7 @@
                 <span class="n">vmax</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
         <span class="k">elif</span> <span class="n">clim</span><span class="p">:</span>
             <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">clim</span>
-        <span class="k">if</span> <span class="n">axe</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">axe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
             <span class="n">axe</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tad</span> <span class="ow">or</span> <span class="n">focus</span><span class="p">:</span>
@@ -1286,13 +1288,13 @@
                         <span class="p">[</span><span class="n">norm_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
                          <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>
                              <span class="ow">and</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
-                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
-                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
+                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">matrix</span> <span class="o">=</span> <span class="p">[</span>
                         <span class="p">[</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
-                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
-                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
+                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tad</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
                     <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNING: List passed, not going to be &#39;</span> <span class="o">+</span>
@@ -1306,22 +1308,22 @@
                 <span class="n">matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">norm_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
                            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>
                                <span class="ow">and</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
-                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
-                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>\
-                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span> \
-                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span> \
+                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
         <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
                     <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmin</span>
             <span class="n">alphas</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">jet</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
             <span class="n">jet</span><span class="o">.</span><span class="n">_lut</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphas</span>
         <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                     <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmin</span>
             <span class="n">alphas</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">jet</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
@@ -1347,7 +1349,7 @@
         <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
             <span class="n">cbar</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
             <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">Hi-C </span><span class="si">%s</span><span class="s1">interaction count&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="s1">&#39;Log2 &#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">logarithm</span><span class="o">==</span><span class="bp">True</span><span class="p">),</span> <span class="s1">&#39;normalized &#39;</span> <span class="o">*</span> <span class="n">normalized</span><span class="p">),</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">)</span>
+                <span class="s1">&#39;Log2 &#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">logarithm</span><span class="o">==</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;normalized &#39;</span> <span class="o">*</span> <span class="n">normalized</span><span class="p">),</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">)</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">set_title</span><span class="p">((</span><span class="s1">&#39;Chromosome </span><span class="si">%s</span><span class="s1"> experiment </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="s1">&#39;focus: </span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">tad</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
@@ -1384,7 +1386,7 @@
                 <span class="n">axe</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">t_end</span>  <span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">nwidth</span><span class="p">)</span>
             <span class="n">pwidth</span> <span class="o">=</span> <span class="n">nwidth</span>
             <span class="k">if</span> <span class="n">tad</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_start</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_start</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
                     <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">t_start</span>    <span class="p">,</span> <span class="n">t_start</span> <span class="o">+</span> <span class="n">j</span><span class="p">),</span>
                              <span class="p">(</span><span class="n">t_end</span>   <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">t_end</span>      <span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
                     <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">t_end</span>      <span class="p">,</span> <span class="n">t_end</span>   <span class="o">-</span> <span class="n">j</span><span class="p">),</span>
@@ -1410,7 +1412,7 @@
         <span class="k">return</span> <span class="n">img</span></div>
 
 
-<div class="viewcode-block" id="Experiment.write_tad_borders"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.write_tad_borders">[docs]</a>    <span class="k">def</span> <span class="nf">write_tad_borders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.write_tad_borders"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.write_tad_borders">[docs]</a>    <span class="k">def</span> <span class="nf">write_tad_borders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print a table summarizing the TADs found by tadbit. This function outputs</span>
 <span class="sd">        something similar to the R function.</span>
@@ -1432,7 +1434,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: raw Hi-C data not available, &quot;</span> <span class="o">+</span>
                  <span class="s2">&quot;TAD&#39;s height fixed to 1&quot;</span><span class="p">)</span>
-            <span class="n">norms</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">norms</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">table</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">,</span>
@@ -1441,12 +1443,12 @@
         <span class="n">sp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">diags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="n">s_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">k</span>
                 <span class="n">diags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="n">norms</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">sp1</span> <span class="o">+</span> <span class="n">s_k</span><span class="p">]</span>
                                  <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">zeros</span>
                                          <span class="ow">or</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="ow">in</span> <span class="n">zeros</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.</span>
-                                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span>
+                                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span>
                                       <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">k</span><span class="p">)])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">k</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">tads</span><span class="p">:</span>
             <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
@@ -1454,14 +1456,54 @@
                 <span class="nb">abs</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">]),</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">density</span> <span class="k">else</span>
                 <span class="s1">&#39;</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s1">&#39;height&#39;</span><span class="p">]),</span> <span class="mi">3</span><span class="p">)))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">savedata</span><span class="p">:</span>
-            <span class="k">print</span> <span class="n">table</span>
+            <span class="nb">print</span> <span class="n">table</span>
             <span class="k">return</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="nb">file</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">savedata</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div></div>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="Experiment.write_json"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save hic matrix in the json format, read by TADkit.</span>
+
+<span class="sd">        :param filename: location where the file will be written</span>
+<span class="sd">        :param None focus: if a tuple is passed (start, end), json will contain a Hi-C</span>
+<span class="sd">           matrix starting at start, and ending at end (all inclusive).</span>
+<span class="sd">        :para False normalized: use normalized data instead of raw Hi-C</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">species</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: no species specified in chromosome. TADkit will not be able to interpret the file&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: no name specified in chromosome. TADkit will not be able to interpret the file&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
+            <span class="n">start_j</span><span class="p">,</span> <span class="n">end_j</span> <span class="o">=</span> <span class="n">focus</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">end_j</span><span class="o">-</span><span class="n">start_j</span><span class="o">+</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_j</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">end_j</span> <span class="o">=</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+        
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1200</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file&quot;</span><span class="p">)</span>
+        
+        <span class="n">new_hic_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span>  <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">)</span>
+            
+        <span class="n">chrom_start</span> <span class="o">=</span> <span class="n">start_j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+        <span class="n">chrom_end</span> <span class="o">=</span> <span class="n">end_j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+        <span class="n">descr</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;chromosome&#39;</span>   <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                 <span class="s1">&#39;species&#39;</span>      <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+                 <span class="s1">&#39;resolution&#39;</span>   <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
+                 <span class="s1">&#39;chrom_start&#39;</span>  <span class="p">:</span> <span class="n">chrom_start</span><span class="p">,</span>
+                 <span class="s1">&#39;chrom_end&#39;</span>    <span class="p">:</span> <span class="n">chrom_end</span><span class="p">,</span>
+                 <span class="s1">&#39;start&#39;</span>        <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
+                 <span class="s1">&#39;end&#39;</span>          <span class="p">:</span> <span class="n">size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">}</span>
+        
+        <span class="c1"># Fake structural models object to produce json</span>
+        <span class="n">sm</span> <span class="o">=</span> <span class="n">StructuralModels</span><span class="p">(</span><span class="n">nloci</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">models</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">bad_models</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">original_data</span><span class="o">=</span><span class="n">new_hic_data</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">descr</span><span class="p">)</span>
+        <span class="n">sm</span><span class="o">.</span><span class="n">write_json</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div></div>
 
     <span class="c1"># def generate_densities(self):</span>
     <span class="c1">#     &quot;&quot;&quot;</span>
@@ -1488,7 +1530,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../biblio.html">Bibliography</a></li>
 </ul>
@@ -1496,14 +1537,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1516,15 +1554,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

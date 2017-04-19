@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytadbit.tadbit &mdash; Tadbit 0.1 documentation</title>
+    <title>pytadbit.tadbit &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
-    <link rel="up" title="pytadbit" href="../pytadbit.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,9 +36,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -51,17 +52,17 @@
 <span class="sd">24 Oct 2012</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">os</span>                           <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="kn">import</span> <span class="n">read_matrix</span>
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span>           <span class="kn">import</span> <span class="n">_tadbit_wrapper</span>
-<span class="kn">from</span> <span class="nn">math</span>                         <span class="kn">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">sqrt</span>
-<span class="kn">from</span> <span class="nn">scipy.sparse.csr</span>             <span class="kn">import</span> <span class="n">csr_matrix</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span>                  <span class="kn">import</span> <span class="n">mannwhitneyu</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">os</span>                           <span class="k">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="k">import</span> <span class="n">read_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span>           <span class="k">import</span> <span class="n">_tadbit_wrapper</span>
+<span class="kn">from</span> <span class="nn">math</span>                         <span class="k">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csr</span>             <span class="k">import</span> <span class="n">csr_matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span>                  <span class="k">import</span> <span class="n">mannwhitneyu</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-           <span class="n">max_tad_size</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_topdom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">topdom_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">max_tad_size</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_topdom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">topdom_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The TADbit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
@@ -101,14 +102,14 @@
 <span class="sd">       boundaries, and the corresponding list associated log likelihoods.</span>
 <span class="sd">       If no weights are given, it may also return calculated weights.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">hic_data</span> <span class="k">for</span> <span class="n">hic_data</span> <span class="ow">in</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)]</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">hic_data</span> <span class="k">for</span> <span class="n">hic_data</span> <span class="ow">in</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="n">use_topdom</span><span class="p">:</span>
         <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
             <span class="c1"># if not given just remove columns with zero in diagonal</span>
-            <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
+            <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
         <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s1">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
         <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span> <span class="o">=</span> \
@@ -123,14 +124,14 @@
                            <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c1"># heuristic 0/1</span>
                            <span class="p">)</span>
     
-        <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">passages</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
     
         <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-        <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="p">[]}</span>
     
@@ -147,13 +148,13 @@
                 <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         
         <span class="n">max_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])):</span>
             <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span><span class="nb">int</span><span class="p">((</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">max_score</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="batch_tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit">[docs]</a><span class="k">def</span> <span class="nf">batch_tadbit</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="batch_tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit">[docs]</a><span class="k">def</span> <span class="nf">batch_tadbit</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Use tadbit on directories of data files.</span>
 <span class="sd">    All files in the specified directory will be considered data file. The</span>
@@ -203,7 +204,7 @@
     <span class="k">return</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="print_result_r"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.print_result_r">[docs]</a><span class="k">def</span> <span class="nf">print_result_r</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="print_result_r"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.print_result_r">[docs]</a><span class="k">def</span> <span class="nf">print_result_r</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Print a table summarizing the TADs found by tadbit. This function outputs</span>
 <span class="sd">    something similar to the R function.</span>
@@ -216,17 +217,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">table</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])):</span>
         <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
                                       <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
                                       <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">table</span>
+        <span class="nb">print</span> <span class="n">table</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
 
-<span class="k">def</span> <span class="nf">TopDom</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span><span class="n">window_size</span><span class="p">,</span><span class="n">statFilter</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">TopDom</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span><span class="n">window_size</span><span class="p">,</span><span class="n">statFilter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Python implementation of the algorithm TopDom for the identification of TADs. See http://www.ncbi.nlm.nih.gov/pubmed/26704975 and http://zhoulab.usc.edu/TopDom/ </span>
 
@@ -245,7 +246,7 @@
     
     <span class="c1">#Step 1</span>
     <span class="n">csr_mat</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_hic_data_as_csr</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
         <span class="n">diamond_mean</span> <span class="o">=</span> <span class="n">Get_Diamond_Matrix_Mean</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">csr_mat</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">window_size</span><span class="p">)</span>
         <span class="n">mean_cf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">diamond_mean</span>
         
@@ -280,7 +281,7 @@
           
           <span class="n">scale_values</span> <span class="o">=</span> <span class="n">scale</span><span class="p">(</span><span class="n">mat_values</span><span class="p">)</span>
           
-          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat_row</span><span class="p">)):</span>
+          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat_row</span><span class="p">)):</span>
               <span class="n">lil_mat</span><span class="p">[</span><span class="n">mat_column</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">mat_row</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">scale_values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
               
         
@@ -290,7 +291,7 @@
             
             <span class="n">pvalue</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">Get_Pvalue</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">lil_mat</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local_ext</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local_ext</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">local_ext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">pvalue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
                 <span class="n">local_ext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
         <span class="n">local_ext</span><span class="p">[</span><span class="n">local_ext</span><span class="o">==-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -298,8 +299,8 @@
         
         <span class="n">pvalue_cut</span><span class="o">=</span><span class="mf">0.05</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">pvalue</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="n">pvalue_cut</span><span class="o">=</span><span class="bp">None</span>
+        <span class="n">pvalue</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pvalue_cut</span><span class="o">=</span><span class="kc">None</span>
         
     <span class="n">domains</span> <span class="o">=</span> <span class="n">Convert_Bin_To_Domain_TMP</span><span class="p">(</span><span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span>
                                   <span class="n">signal_idx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">local_ext</span><span class="o">==-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> 
@@ -438,7 +439,7 @@
 
 <span class="k">def</span> <span class="nf">Change_Point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s2">&quot;ERROR : The length of x and y should be the same&quot;</span>
+        <span class="nb">print</span> <span class="s2">&quot;ERROR : The length of x and y should be the same&quot;</span>
         <span class="k">return</span> <span class="mi">0</span>
   
     <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -479,7 +480,7 @@
     
     <span class="k">return</span> <span class="n">cp</span><span class="p">,</span> <span class="n">Fv</span><span class="p">,</span> <span class="n">Ev</span>
 
-<span class="k">def</span> <span class="nf">Convert_Bin_To_Domain_TMP</span><span class="p">(</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">signal_idx</span><span class="p">,</span> <span class="n">gap_idx</span><span class="p">,</span> <span class="n">pvalues</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pvalue_cut</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">Convert_Bin_To_Domain_TMP</span><span class="p">(</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">signal_idx</span><span class="p">,</span> <span class="n">gap_idx</span><span class="p">,</span> <span class="n">pvalues</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pvalue_cut</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     
     <span class="n">bins</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
    
@@ -502,7 +503,7 @@
         
     
 
-    <span class="k">if</span> <span class="n">pvalues</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">pvalue_cut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">pvalues</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pvalue_cut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bins</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;domain&#39;</span><span class="p">:</span>
                 <span class="n">start_id</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
@@ -534,7 +535,7 @@
         <span class="n">ups</span> <span class="o">=</span> <span class="n">Get_Upstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
         <span class="n">downs</span> <span class="o">=</span> <span class="n">Get_Downstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
             
-        <span class="n">wil_test</span> <span class="o">=</span>  <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dia</span><span class="o">*</span><span class="n">scale</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ups</span><span class="o">+</span><span class="n">downs</span><span class="p">,</span> <span class="n">use_continuity</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;less&#39;</span><span class="p">)</span>
+        <span class="n">wil_test</span> <span class="o">=</span>  <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dia</span><span class="o">*</span><span class="n">scale</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ups</span><span class="o">+</span><span class="n">downs</span><span class="p">,</span> <span class="n">use_continuity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;less&#39;</span><span class="p">)</span>
         <span class="n">pvalue</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">wil_test</span><span class="o">.</span><span class="n">pvalue</span>
         
   
@@ -593,7 +594,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../biblio.html">Bibliography</a></li>
 </ul>
@@ -601,14 +601,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -621,15 +618,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

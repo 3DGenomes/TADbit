@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>IMPoptimizer class &mdash; Tadbit 0.1 documentation</title>
+    <title>IMPoptimizer class &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,20 +14,21 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Reference Guide" href="index.html" />
-    <link rel="next" title="IMPmodel class" href="reference_imp_model.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="StructuralModel class" href="reference_modelling_structuralmodel.html" />
     <link rel="prev" title="Alignment class" href="reference_boundary_alignment.html" /> 
   </head>
   <body role="document">
@@ -38,13 +39,13 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="reference_imp_model.html" title="IMPmodel class"
+          <a href="reference_modelling_structuralmodel.html" title="StructuralModel class"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -76,9 +77,9 @@ their objective function value (the lower the better)</li>
 <li><strong>close_bins</strong> (<em>1</em>) &#8211; number of particles away (i.e. the bin number 
 difference) a particle pair must be in order to be considered as 
 neighbors (e.g. 1 means consecutive particles)</li>
-<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
-<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
 only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
 which are added hemispherical ends. This cylinder is defined by a radius, 
 its height (with a height of 0 the cylinder becomes a sphere) and the 
@@ -99,8 +100,8 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a description of the dataset optimized</li>
-<li><strong>with_corr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, returns also the correlation value</li>
+<li><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a description of the dataset optimized</li>
+<li><strong>with_corr</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, returns also the correlation value</li>
 </ul>
 </td>
 </tr>
@@ -154,21 +155,21 @@ avoiding to re-calculate each time the models.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">
-<code class="descname">plot_2d</code><span class="sig-paren">(</span><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_2d</code><span class="sig-paren">(</span><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em>, <em>clim=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axes</strong> (<em>'scale','maxdist','upfreq','lowfreq'</em>) &#8211; list of axes to be
+<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) &#8211; list of axes to be
 represented in the plot. The order will define which parameter will
 be placed on the x, y, z or w axe.</li>
 <li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation values to highlight in 
 the plot</li>
-<li><strong>skip</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if passed (as a dictionary), fix a given axe,
+<li><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if passed (as a dictionary), fix a given axe,
 e.g.: {&#8216;scale&#8217;: 0.001, &#8216;maxdist&#8217;: 500}</li>
-<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 </ul>
@@ -186,7 +187,7 @@ of the file name will determine the desired format).</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes</strong> (<em>'scale','maxdist','upfreq','lowfreq'</em>) &#8211; tuple of axes to be
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) &#8211; tuple of axes to be
 represented in the plot. The order will define which parameter will 
 be placed on the x, y, z or w axe.</td>
 </tr>
@@ -206,13 +207,13 @@ maxdist, lowfreq and upfreq) in the given ranges of values.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
-<li><strong>lowfreq_range</strong> (<em>(-1,0,0.1)</em>) &#8211; range of lowfreq values to be 
+<li><strong>lowfreq_range</strong> (<em></em><em>(</em><em>-1</em><em>,</em><em>0</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of lowfreq values to be 
 optimized. The last value of the input tuple is the incremental 
 step for the lowfreq values</li>
-<li><strong>upfreq_range</strong> (<em>(0,1,0.1)</em>) &#8211; range of upfreq values to be optimized.
+<li><strong>upfreq_range</strong> (<em></em><em>(</em><em>0</em><em>,</em><em>1</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of upfreq values to be optimized.
 The last value of the input tuple is the incremental step for the
 upfreq values</li>
-<li><strong>maxdist_range</strong> (<em>(400,1400,100)</em>) &#8211; upper and lower bounds
+<li><strong>maxdist_range</strong> (<em></em><em>(</em><em>400</em><em>,</em><em>1400</em><em>,</em><em>100</em><em>)</em><em></em>) &#8211; upper and lower bounds
 used to search for the optimal maximum experimental distance. The 
 last value of the input tuple is the incremental step for maxdist 
 values</li>
@@ -223,9 +224,9 @@ the input tuple is the incremental step for scale parameter values</li>
 the optimal distance cutoff parameter (distance, in number of beads,
 from which to consider 2 beads as being close). The last value of the
 input tuple is the incremental step for scale parameter values</li>
-<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; concatenate all generated models into a dictionary
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; concatenate all generated models into a dictionary
 and save it into a file named by this argument</li>
-<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
 </ul>
 </td>
 </tr>
@@ -267,9 +268,9 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -277,9 +278,9 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
@@ -290,19 +291,16 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
   <p class="topless"><a href="reference_boundary_alignment.html"
                         title="previous chapter">Alignment class</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="reference_imp_model.html"
-                        title="next chapter">IMPmodel class</a></p>
+  <p class="topless"><a href="reference_modelling_structuralmodel.html"
+                        title="next chapter">StructuralModel class</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -316,19 +314,19 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="reference_imp_model.html" title="IMPmodel class"
+          <a href="reference_modelling_structuralmodel.html" title="StructuralModel class"
              >next</a> |</li>
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

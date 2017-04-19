@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytadbit.utils.three_dim_stats &mdash; Tadbit 0.1 documentation</title>
+    <title>pytadbit.utils.three_dim_stats &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,9 +36,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -53,14 +54,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.eqv_rms_drms</span> <span class="kn">import</span> <span class="n">rmsdRMSD_wrapper</span>
-<span class="kn">from</span> <span class="nn">pytadbit.consistency</span> <span class="kn">import</span> <span class="n">consistency_wrapper</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
+<span class="kn">from</span> <span class="nn">pytadbit.eqv_rms_drms</span> <span class="k">import</span> <span class="n">rmsdRMSD_wrapper</span>
+<span class="kn">from</span> <span class="nn">pytadbit.consistency</span> <span class="k">import</span> <span class="n">consistency_wrapper</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">combinations</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
 
 
-<span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_sphere_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points">[docs]</a><span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a sphere using the</span>
 <span class="sd">    Golden Section Spiral algorithm.</span>
@@ -78,17 +79,17 @@
         <span class="n">phi</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">inc</span>
         <span class="c1"># points.append(dict(((&#39;x&#39;, cos(phi) * r),(&#39;y&#39;, y),(&#39;z&#39;, sin(phi) * r))))</span>
         <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">points</span>
+    <span class="k">return</span> <span class="n">points</span></div>
 
 
-<span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+<div class="viewcode-block" id="get_center_of_mass"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass">[docs]</a><span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the center of mass of a given object with list of x, y, z coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xm</span> <span class="o">=</span> <span class="n">ym</span> <span class="o">=</span> <span class="n">zm</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">subsize</span>  <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="k">continue</span>
         <span class="n">subsize</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -98,10 +99,10 @@
     <span class="n">xm</span> <span class="o">/=</span> <span class="n">subsize</span>
     <span class="n">ym</span> <span class="o">/=</span> <span class="n">subsize</span>
     <span class="n">zm</span> <span class="o">/=</span> <span class="n">subsize</span>
-    <span class="k">return</span> <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span>
+    <span class="k">return</span> <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span></div>
 
 
-<span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+<div class="viewcode-block" id="mass_center"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center">[docs]</a><span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms coordinates according to the center of mass</span>
 
@@ -110,10 +111,10 @@
 <span class="sd">    :param z: list of z coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span> <span class="o">=</span> <span class="n">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
         <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">xm</span>
         <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">ym</span>
-        <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">zm</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">zm</span></div>
     
 
 <span class="c1"># def generate_circle_points(x, y, z, a, b, c, u, v, w, n):</span>
@@ -167,7 +168,7 @@
 <span class="c1">#     return points</span>
 
 
-<span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+<div class="viewcode-block" id="rotate_among_y_axis"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis">[docs]</a><span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rotate and object with a list of x, y, z coordinates among its center of</span>
 <span class="sd">    mass</span>
@@ -180,10 +181,10 @@
         <span class="n">xj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">zi</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
         <span class="n">yj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
         <span class="n">zj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*-</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">+</span><span class="n">zi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">,</span> <span class="n">zj</span>
+    <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">,</span> <span class="n">zj</span></div>
 
 
-<span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
+<div class="viewcode-block" id="find_angle_rotation_improve_x"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">[docs]</a><span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds the rotation angle needed to face the longest edge of the molecule</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -193,7 +194,7 @@
     <span class="n">dist</span> <span class="o">=</span> <span class="n">distance</span><span class="p">((</span><span class="n">xdst</span><span class="p">,</span> <span class="n">ydst</span><span class="p">,</span> <span class="n">zdst</span><span class="p">),</span> <span class="n">center_of_mass</span><span class="p">)</span>
     <span class="n">angle</span> <span class="o">=</span> <span class="n">acos</span><span class="p">((</span><span class="o">-</span><span class="n">xdst</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">dist</span> <span class="o">+</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">dist</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">xdst</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">/</span>
                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">angle</span>
+    <span class="k">return</span> <span class="n">angle</span></div>
 
 
 <div class="viewcode-block" id="generate_circle_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points">[docs]</a><span class="k">def</span> <span class="nf">generate_circle_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -334,7 +335,7 @@
 
 <span class="k">def</span> <span class="nf">calc_consistency</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">combines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)]</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)]</span>
     <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">consistency_wrapper</span><span class="p">([</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
                                   <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
                                   <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
@@ -346,8 +347,8 @@
     <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combines</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="calc_eqv_rmsd"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_eqv_rmsd</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span>
-                  <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_eqv_rmsd"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_eqv_rmsd</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span>
+                  <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the RMSD, dRMSD, the number of equivalent positions and a score</span>
 <span class="sd">    combining these three measures. The measure are done between a group of</span>
@@ -384,11 +385,11 @@
     <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">z</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
-        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-    <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">True</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))])</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="kc">True</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))])</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="n">rmsdRMSD_wrapper</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
                               <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">),</span>
                               <span class="nb">int</span><span class="p">(</span><span class="n">one</span><span class="p">),</span> <span class="n">what</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">normed</span><span class="p">))</span>
@@ -422,7 +423,7 @@
         <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
+<div class="viewcode-block" id="build_mesh"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh">[docs]</a><span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main function for the calculation of the accessibility of a model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -444,7 +445,7 @@
     <span class="n">positions</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># a dict to get dots belonging to a given point</span>
     <span class="n">sphere</span>    <span class="o">=</span> <span class="n">generate_sphere_points</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nloci</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">modelx</span>   <span class="o">=</span> <span class="n">xis</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">modely</span>   <span class="o">=</span> <span class="n">yis</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">modelz</span>   <span class="o">=</span> <span class="n">zis</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -575,7 +576,7 @@
                     <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># define slices</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">between</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">between</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">modelx</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepx</span><span class="p">,</span> <span class="n">modely</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepy</span><span class="p">,</span> <span class="n">modelz</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepz</span><span class="p">]</span>
             <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
             <span class="n">pointx</span><span class="p">,</span> <span class="n">pointy</span><span class="p">,</span> <span class="n">pointz</span> <span class="o">=</span> <span class="n">point</span>
@@ -606,7 +607,7 @@
             <span class="n">supersubpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">superthing</span><span class="p">)</span>
         <span class="n">positions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">subpoints</span><span class="p">,</span> <span class="n">supersubpoints</span><span class="p">,</span> <span class="n">positions</span>
+    <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">subpoints</span><span class="p">,</span> <span class="n">supersubpoints</span><span class="p">,</span> <span class="n">positions</span></div>
 
 
 
@@ -624,7 +625,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
 </ul>
@@ -632,14 +632,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -652,15 +649,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

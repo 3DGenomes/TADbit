@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Experiment class &mdash; Tadbit 0.1 documentation</title>
+    <title>Experiment class &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="TAD detection functions" href="reference_tadbit.html" />
     <link rel="prev" title="Chromosome class" href="reference_chromosome.html" /> 
   </head>
@@ -43,8 +44,8 @@
         <li class="right" >
           <a href="reference_chromosome.html" title="Chromosome class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -67,41 +68,41 @@
 <li><strong>name</strong> &#8211; name of the experiment</li>
 <li><strong>resolution</strong> &#8211; the resolution of the experiment (size of a bin in
 bases)</li>
-<li><strong>identifier</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; some identifier relative to the Hi-C data</li>
-<li><strong>cell_type</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cell type on which the experiment was done</li>
-<li><strong>enzyme</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restriction enzyme used in  the Hi-C experiment</li>
+<li><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; some identifier relative to the Hi-C data</li>
+<li><strong>cell_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cell type on which the experiment was done</li>
+<li><strong>enzyme</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restriction enzyme used in  the Hi-C experiment</li>
 <li><strong>exp_type</strong> (<em>Hi-C</em>) &#8211; name of the experiment used (currently only Hi-C is
 supported)</li>
-<li><strong>hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
+<li><strong>hic_data</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the Hi-C data</li>
-<li><strong>tad_def</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
+<li><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
 experiment</li>
-<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>chrT_001       chrT_002        chrT_003        chrT_004
-chrT_001       629     164     88      105
-chrT_002       164     612     175     110
-chrT_003       88      175     437     100
-chrT_004       105     110     100     278
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<span class="n">chrT_001</span>       <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
+<span class="n">chrT_002</span>       <span class="mi">164</span>     <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
+<span class="n">chrT_003</span>       <span class="mi">88</span>      <span class="mi">175</span>     <span class="mi">437</span>     <span class="mi">100</span>
+<span class="n">chrT_004</span>       <span class="mi">105</span>     <span class="mi">110</span>     <span class="mi">100</span>     <span class="mi">278</span>
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
 <code class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></code></p>
 </li>
-<li><strong>conditions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of experimental conditions, e.g. 
+<li><strong>conditions</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of experimental conditions, e.g. 
 the cell type, the enzyme... (i.e.: [&#8216;HindIII&#8217;, &#8216;cortex&#8217;, &#8216;treatment&#8217;]).
 This parameter may be used to compare the effect of this conditions on
 the TADs</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
 content of low values</li>
-<li><strong>kw_descr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
+<li><strong>kw_descr</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
 complementary descriptive field. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                   <span class="n">identifier</span><span class="o">=</span><span class="s1">&#39;SRX015263&#39;</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="s1">&#39;K562&#39;</span><span class="p">,</span>
                   <span class="n">enzyme</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">cylce</span><span class="o">=</span><span class="s1">&#39;synchronized&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">exp</span>
+<span class="nb">print</span> <span class="n">exp</span>
 
 <span class="c1"># Experiment k562_rep2:</span>
 <span class="c1">#    resolution        : 100Kb</span>
@@ -137,19 +138,19 @@ stored in the dictionary Experiment._zeros.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
-<li><strong>draw_hist</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
+<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
+<li><strong>draw_hist</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
 the polynomial fit, and the cut applied.</li>
-<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; remove row/columns with zero in the diagonal</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; remove row/columns with zero in the diagonal</li>
 <li><strong>perc_zero</strong> (<em>90</em>) &#8211; maximum percentage of cells with no interactions
 allowed.</li>
-<li><strong>min_count</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; minimum number of reads mapped to a bin (recommended
+<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
 filtering... This option is slightly slower.</li>
-<li><strong>auto</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, only filters based on the given percentage
+<li><strong>auto</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, only filters based on the given percentage
 zeros</li>
 </ul>
 </td>
@@ -167,15 +168,15 @@ zeros</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if a tuple is passed (start, end), wil return a Hi-C
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if a tuple is passed (start, end), wil return a Hi-C
 matrix starting at start, and ending at end (all inclusive).</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; replace the values in the diagonal by one. Used
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; replace the values in the diagonal by one. Used
 for the filtering in order to smooth the distribution of mean values</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Para False normalized:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">returns normalized data instead of raw Hi-C</p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">returns normalized data instead of raw Hi-C</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of lists representing the Hi-C data matrix of the
@@ -196,10 +197,10 @@ the private Experiment._zscore list.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to normalize the result using the
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to normalize the result using the
 weights (see <a class="reference internal" href="#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><code class="xref py py-func docutils literal"><span class="pre">normalize_hic()</span></code></a>)</li>
-<li><strong>zscored</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; calculate the z-score of the data</li>
-<li><strong>remove_zeros</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove null interactions. Dangerous, null
+<li><strong>zscored</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; calculate the z-score of the data</li>
+<li><strong>remove_zeros</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove null interactions. Dangerous, null
 interaction are informative.</li>
 </ul>
 </td>
@@ -217,32 +218,32 @@ interaction are informative.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
+<li><strong>hic_data</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the Hi-C data</li>
 <li><strong>name</strong> &#8211; name of the experiment</li>
-<li><strong>force</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
+<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
 name</li>
-<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>chrT_001   chrT_002        chrT_003        chrT_004
-chrT_001   629     164     88      105
-chrT_002   86      612     175     110
-chrT_003   159     216     437     105
-chrT_004   100     111     146     278
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<span class="n">chrT_001</span>   <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
+<span class="n">chrT_002</span>   <span class="mi">86</span>      <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
+<span class="n">chrT_003</span>   <span class="mi">159</span>     <span class="mi">216</span>     <span class="mi">437</span>     <span class="mi">105</span>
+<span class="n">chrT_004</span>   <span class="mi">100</span>     <span class="mi">111</span>     <span class="mi">146</span>     <span class="mi">278</span>
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be:
 <code class="docutils literal"><span class="pre">[([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">105,</span> <span class="pre">278]),</span> <span class="pre">4]</span></code></p>
 </li>
-<li><strong>resolution</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; resolution of the experiment in the file; it
+<li><strong>resolution</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; resolution of the experiment in the file; it
 will be adjusted to the resolution of the experiment. By default the
 file is expected to contain a Hi-C experiment with the same resolution
 as the <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></code> created, and no change is made</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
 content of low values</li>
-<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
+<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
 </ul>
 </td>
 </tr>
@@ -259,29 +260,29 @@ content of low values</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>norm_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
+<li><strong>norm_data</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the normalized Hi-C data</li>
 <li><strong>name</strong> &#8211; name of the experiment</li>
-<li><strong>force</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
+<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
 name</li>
-<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>chrT_001   chrT_002        chrT_003        chrT_004
-chrT_001   12.5    164     8.8     0.5
-chrT_002   8.6     61.2    1.5     1.1
-chrT_003   15.9    21.6    3.7     0.5
-chrT_004   0.0     1.1     1.6     2.8
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<span class="n">chrT_001</span>   <span class="mf">12.5</span>    <span class="mi">164</span>     <span class="mf">8.8</span>     <span class="mf">0.5</span>
+<span class="n">chrT_002</span>   <span class="mf">8.6</span>     <span class="mf">61.2</span>    <span class="mf">1.5</span>     <span class="mf">1.1</span>
+<span class="n">chrT_003</span>   <span class="mf">15.9</span>    <span class="mf">21.6</span>    <span class="mf">3.7</span>     <span class="mf">0.5</span>
+<span class="n">chrT_004</span>   <span class="mf">0.0</span>     <span class="mf">1.1</span>     <span class="mf">1.6</span>     <span class="mf">2.8</span>
 </pre></div>
 </div>
 </li>
-<li><strong>resolution</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; resolution of the experiment in the file; it
+<li><strong>resolution</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; resolution of the experiment in the file; it
 will be adjusted to the resolution of the experiment. By default the
 file is expected to contain a Hi-C experiment with the same resolution
 as the <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></code> created, and no change is made</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
 content of low values</li>
-<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
+<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
 </ul>
 </td>
 </tr>
@@ -299,10 +300,10 @@ content of low values</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>tad_def</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
+<li><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
 experiment</li>
-<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the experiment, if None f_name will be used</li>
-<li><strong>weights</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; Store information about the weights, corresponding
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the experiment, if None f_name will be used</li>
+<li><strong>weights</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; Store information about the weights, corresponding
 to the normalization of the Hi-C data (see tadbit function
 documentation)</li>
 </ul>
@@ -323,13 +324,13 @@ chromosome.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>start</strong> (<em>1</em>) &#8211; first bin to model (bin number)</li>
-<li><strong>end</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
+<li><strong>end</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
 last bin.</li>
 <li><strong>n_models</strong> (<em>5000</em>) &#8211; number of modes to generate</li>
 <li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis 
 (usually the top 20% of the generated models). The models are ranked
 according to their objective function value (the lower the better)</li>
-<li><strong>keep_all</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether or not to keep the discarded models (if
+<li><strong>keep_all</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether or not to keep the discarded models (if
 True, models will be stored under tructuralModels.bad_models)</li>
 <li><strong>close_bins</strong> (<em>1</em>) &#8211; number of particles away (i.e. the bin number
 difference) a particle pair must be in order to be considered as
@@ -339,7 +340,7 @@ neighbors (e.g. 1 means consecutive particles)</li>
 objective function value the selected models (1), the objective
 function value of all the models (2), all the modeling 
 information (3)</li>
-<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
 only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
 which are added hemispherical ends. This cylinder is defined by a radius, 
 its height (with a height of 0 the cylinder becomes a sphere) and the 
@@ -347,44 +348,44 @@ force applied to the restraint. E.g. for modeling E. coli genome (2
 micrometers length and 0.5 micrometer of width), these values could be 
 used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
 (6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
-<li><strong>config</strong> (<em>CONFIG['dmel_01']</em>) &#8211; <p>a dictionary containing the standard
+<li><strong>config</strong> (<em>CONFIG</em><em>[</em><em>'dmel_01'</em><em>]</em><em></em>) &#8211; <p>a dictionary containing the standard
 parameters used to generate the models. The dictionary should
 contain the keys kforce, maxdist, upfreq and lowfreq.
 Examples can be seen by doing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="kn">import</span> <span class="n">CONFIG</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="k">import</span> <span class="n">CONFIG</span>
 </pre></div>
 </div>
 <p>where CONFIG is a dictionarry of dictionnaries to be passed to this
 function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>CONFIG = {
- &#39;dmel_01&#39;: {
-     # use these paramaters with the Hi-C data from:
-     &#39;reference&#39; : &#39;victor corces dataset 2013&#39;,
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+ <span class="s1">&#39;dmel_01&#39;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="c1"># use these paramaters with the Hi-C data from:</span>
+     <span class="s1">&#39;reference&#39;</span> <span class="p">:</span> <span class="s1">&#39;victor corces dataset 2013&#39;</span><span class="p">,</span>
 
-     # Force applied to the restraints inferred to neighbor particles
-     &#39;kforce&#39;    : 5,
+     <span class="c1"># Force applied to the restraints inferred to neighbor particles</span>
+     <span class="s1">&#39;kforce&#39;</span>    <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
 
-     # Maximum experimental contact distance
-     &#39;maxdist&#39;   : 600, # OPTIMIZATION: 500-1200
+     <span class="c1"># Maximum experimental contact distance</span>
+     <span class="s1">&#39;maxdist&#39;</span>   <span class="p">:</span> <span class="mi">600</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: 500-1200</span>
 
-     # Minimum and maximum thresholds used to decide which experimental values have to be
-     # included in the computation of restraints. Z-score values bigger than upfreq
-     # and less that lowfreq will be include, whereas all the others will be rejected
-     &#39;upfreq&#39;    : 0.3, # OPTIMIZATION: min/max Z-score
+     <span class="c1"># Minimum and maximum thresholds used to decide which experimental values have to be</span>
+     <span class="c1"># included in the computation of restraints. Z-score values bigger than upfreq</span>
+     <span class="c1"># and less that lowfreq will be include, whereas all the others will be rejected</span>
+     <span class="s1">&#39;upfreq&#39;</span>    <span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
 
-     &#39;lowfreq&#39;   : -0.7 # OPTIMIZATION: min/max Z-score
+     <span class="s1">&#39;lowfreq&#39;</span>   <span class="p">:</span> <span class="o">-</span><span class="mf">0.7</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
 
-     # How much space (radius in nm) ocupies a nucleotide
-     &#39;scale&#39;     : 0.005
-     }
- }
+     <span class="c1"># How much space (radius in nm) ocupies a nucleotide</span>
+     <span class="s1">&#39;scale&#39;</span>     <span class="p">:</span> <span class="mf">0.005</span>
+     <span class="p">}</span>
+ <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels" title="pytadbit.imp.structuralmodels.StructuralModels"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels</span></code></a> object.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels</span></code> object.</p>
 </td>
 </tr>
 </tbody>
@@ -414,8 +415,8 @@ cases.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>factor</strong> (<em>1</em>) &#8211; final mean number of normalized interactions wanted
 per cell</li>
-<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn when overwriting weights</li>
-<li><strong>rowsums</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; input a list of rowsums calculated elsewhere</li>
+<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn when overwriting weights</li>
+<li><strong>rowsums</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; input a list of rowsums calculated elsewhere</li>
 </ul>
 </td>
 </tr>
@@ -434,7 +435,7 @@ IMP.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>start</strong> (<em>1</em>) &#8211; first bin to model (bin number)</li>
-<li><strong>end</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
+<li><strong>end</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
 last bin.</li>
 <li><strong>n_models</strong> (<em>500</em>) &#8211; number of modes to generate</li>
 <li><strong>n_keep</strong> (<em>100</em>) &#8211; number of models used in the final analysis (usually
@@ -444,27 +445,27 @@ according to their objective function value (the lower the better)</li>
 difference) a particle pair must be in order to be considered as
 neighbors (e.g. 1 means consecutive particles)</li>
 <li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
-<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if set to True, information about the distance,
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if set to True, information about the distance,
 force and Z-score between particles will be printed</li>
-<li><strong>lowfreq_range</strong> (<em>(-1,0,0.1)</em>) &#8211; range of lowfreq values to be 
+<li><strong>lowfreq_range</strong> (<em></em><em>(</em><em>-1</em><em>,</em><em>0</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of lowfreq values to be 
 optimized. The last value of the input tuple is the incremental step
 for the lowfreq values</li>
-<li><strong>upfreq_range</strong> (<em>(0,1,0.1,0.1)</em>) &#8211; range of upfreq values to be
+<li><strong>upfreq_range</strong> (<em></em><em>(</em><em>0</em><em>,</em><em>1</em><em>,</em><em>0.1</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of upfreq values to be
 optimized. The last value of the input tuple is the incremental step
 for the upfreq values</li>
-<li><strong>maxdist_range</strong> (<em>(400,1400,100)</em>) &#8211; upper and lower bounds used to
+<li><strong>maxdist_range</strong> (<em></em><em>(</em><em>400</em><em>,</em><em>1400</em><em>,</em><em>100</em><em>)</em><em></em>) &#8211; upper and lower bounds used to
 search for the optimal maximum experimental distance. The last value
 of the input tuple is the incremental step for maxdist values</li>
-<li><strong>scale_range</strong> (<em>[0.01]</em>) &#8211; upper and lower bounds used to search for
+<li><strong>scale_range</strong> (<em></em><em>[</em><em>0.01</em><em>]</em><em></em>) &#8211; upper and lower bounds used to search for
 the optimal scale parameter (nm per nucleotide). The last value of
 the input tuple is the incremental step for scale parameter values</li>
-<li><strong>dcutoff_range</strong> (<em>[2]</em>) &#8211; upper and lower bounds used to search for
+<li><strong>dcutoff_range</strong> (<em></em><em>[</em><em>2</em><em>]</em><em></em>) &#8211; upper and lower bounds used to search for
 the optimal distance cutoff parameter (distance, in number of beads,
 from which to consider 2 beads as being close). The last value of the
 input tuple is the incremental step for scale parameter values</li>
-<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
-<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
 only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
 which are added hemispherical ends. This cylinder is defined by a radius, 
 its height (with a height of 0 the cylinder becomes a sphere) and the 
@@ -514,9 +515,9 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>print_it</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; Otherwise, returns the string</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; returns normalized data, instead of raw Hi-C</li>
-<li><strong>zeros</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; take into account filtered columns</li>
+<li><strong>print_it</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; Otherwise, returns the string</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; returns normalized data, instead of raw Hi-C</li>
+<li><strong>zeros</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; take into account filtered columns</li>
 </ul>
 </td>
 </tr>
@@ -542,7 +543,7 @@ with the data corresponding to new data
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>resolution</strong> &#8211; an integer representing the resolution. This number
 must be a multiple of the original resolution, and higher than it</li>
-<li><strong>keep_original</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; either to keep or not the original data</li>
+<li><strong>keep_original</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; either to keep or not the original data</li>
 </ul>
 </td>
 </tr>
@@ -559,8 +560,8 @@ must be a multiple of the original resolution, and higher than it</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>tad</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a given TAD in the form:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+<li><strong>tad</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a given TAD in the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
  <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
  <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
@@ -570,25 +571,25 @@ must be a multiple of the original resolution, and higher than it</li>
 between the first and last one passed will be showed. Thus, passing
 more than two TADs might be superfluous)</p>
 </li>
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the 
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the 
 region to visualize</li>
-<li><strong>paint_tads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a box around the TADs defined for this
+<li><strong>paint_tads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a box around the TADs defined for this
 experiment</li>
-<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; an axe object from matplotlib can be passed in order
+<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; an axe object from matplotlib can be passed in order
 to customize the picture</li>
-<li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; either to pop-up matplotlib image or not</li>
-<li><strong>logarithm</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the logarithm values</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the normalized data (weights might have
+<li><strong>show</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; either to pop-up matplotlib image or not</li>
+<li><strong>logarithm</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the logarithm values</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the normalized data (weights might have
 been calculated previously). <em>Note: white rows/columns may appear in
 the matrix displayed; these rows correspond to filtered rows (see</em>
 <a class="reference internal" href="reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="pytadbit.utils.hic_filtering.hic_filtering_for_modelling"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.hic_filtering.hic_filtering_for_modelling()</span></code></a> <em>)</em></li>
-<li><strong>relative</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; color scale is relative to the whole matrix of
+<li><strong>relative</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; color scale is relative to the whole matrix of
 data, not only to the region displayed</li>
-<li><strong>decorate</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; draws color bar, title and axes labels</li>
-<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>decorate</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; draws color bar, title and axes labels</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>clim</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; tuple with minimum and maximum value range for color
+<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; tuple with minimum and maximum value range for color
 scale. I.e. clim=(-4, 10)</li>
 <li><strong>cmap</strong> (<em>'jet'</em>) &#8211; color map from matplotlib. Can also be a 
 preconfigured cmap object.</li>
@@ -609,18 +610,41 @@ preconfigured cmap object.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fname</strong> &#8211; file name where to write the  pairwise interactions</li>
-<li><strong>zscored</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the z-score of the log10(data)</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; use the weights to normalize the data</li>
-<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if defined, only the zscores above the cutoff will
+<li><strong>zscored</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the z-score of the log10(data)</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; use the weights to normalize the data</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if defined, only the zscores above the cutoff will
 be writen to the file</li>
-<li><strong>uniq</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; only writes one representent per interacting pair</li>
-<li><strong>true_position</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if, true writes genomic coordinates,
+<li><strong>uniq</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; only writes one representent per interacting pair</li>
+<li><strong>true_position</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if, true writes genomic coordinates,
 otherwise, genomic bin.</li>
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; writes interactions between the start and stop bin
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; writes interactions between the start and stop bin
 passed to this parameter.</li>
 <li><strong>format</strong> (<em>'tsv'</em>) &#8211; in which to write the file, can be tab separated
 (tsv) or JSON (json)</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.experiment.Experiment.write_json">
+<code class="descname">write_json</code><span class="sig-paren">(</span><em>filename</em>, <em>focus=None</em>, <em>normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save hic matrix in the json format, read by TADkit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> &#8211; location where the file will be written</li>
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if a tuple is passed (start, end), json will contain a Hi-C
+matrix starting at start, and ending at end (all inclusive).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Para False normalized:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">use normalized data instead of raw Hi-C</p>
 </td>
 </tr>
 </tbody>
@@ -637,13 +661,13 @@ something similar to the R function.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>density</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, adds a column with the relative
+<li><strong>density</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, adds a column with the relative
 interaction frequency measured within each TAD (value of 1 means an
 interaction frequency equal to the expectation in the experiment)</li>
-<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
 generated (1 column per step + 1 for particle number). If None, print
 a table.</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; uses normalized data to calculate the density</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; uses normalized data to calculate the density</li>
 </ul>
 </td>
 </tr>
@@ -668,19 +692,19 @@ a table.</li>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Experiment class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
@@ -696,14 +720,11 @@ a table.</li>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -722,14 +743,14 @@ a table.</li>
         <li class="right" >
           <a href="reference_chromosome.html" title="Chromosome class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

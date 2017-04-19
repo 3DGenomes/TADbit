@@ -1,0 +1,328 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit.modelling.impmodel &#8212; Tadbit 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pytadbit.modelling.impmodel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">25 Oct 2016</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodel</span> <span class="k">import</span> <span class="n">StructuralModel</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="k">import</span> <span class="n">tadbit_savefig</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span>              <span class="k">import</span> <span class="n">spline</span>
+<span class="kn">from</span> <span class="nn">numpy</span>                          <span class="k">import</span> <span class="n">linspace</span>
+<span class="kn">from</span> <span class="nn">warnings</span>                       <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">re</span>                             <span class="k">import</span> <span class="n">findall</span><span class="p">,</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">compil</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;matplotlib not found</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_impmodel_from_cmm"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.load_impmodel_from_cmm">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_cmm</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Loads an IMPmodel object using an cmm file of the form:</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        &lt;marker_set name=&quot;1&quot;&gt;</span>
+<span class="sd">          &lt;marker id=&quot;1&quot; x=&quot;7347.50964739&quot; y=&quot;-7743.92836303&quot; z=&quot;-8283.39749204&quot; r=&quot;0.00990099009901&quot; g=&quot;0&quot; b=&quot;0.990099009901&quot; radius=&quot;500.0&quot; note=&quot;1&quot;/&gt;</span>
+<span class="sd">          &lt;marker id=&quot;2&quot; x=&quot;7647.90254377&quot; y=&quot;-7308.1816344&quot; z=&quot;-7387.75932893&quot; r=&quot;0.019801980198&quot; g=&quot;0&quot; b=&quot;0.980198019802&quot; radius=&quot;500.0&quot; note=&quot;2&quot;/&gt;</span>
+<span class="sd">          &lt;link id1=&quot;1&quot; id2=&quot;2&quot; r=&quot;1&quot; g=&quot;1&quot; b=&quot;1&quot; radius=&quot;250.0&quot;/&gt;</span>
+<span class="sd">        &lt;/marker_set&gt;</span>
+
+<span class="sd">    :params f_name: path where to find the file</span>
+<span class="sd">    :params None rand_init: IMP random initial number used to generate the model</span>
+<span class="sd">    :param None radius: radius of each particle</span>
+
+<span class="sd">    :return: IMPmodel</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rand_init</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span>
+        <span class="s1">&#39; x=&quot;([0-9.-]+)&quot; y=&quot;([0-9.-]+)&quot; z=&quot;([0-9.-]+)&quot;.* radius=&quot;([0-9.]+)&quot;&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span><span class="p">,</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">findall</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">xxx</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">yyy</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zzz</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="load_impmodel_from_xyz"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.load_impmodel_from_xyz">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_xyz</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads an IMPmodel object using an xyz file of the form:</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">          # ID              : some identifier</span>
+<span class="sd">          # SPECIES         : None</span>
+<span class="sd">          # CELL TYPE       : None</span>
+<span class="sd">          # EXPERIMENT TYPE : Hi-C</span>
+<span class="sd">          # RESOLUTION      : 10000</span>
+<span class="sd">          # ASSEMBLY        : None</span>
+<span class="sd">          # CHROMOSOME      : 19</span>
+<span class="sd">          # START           : 1</span>
+<span class="sd">          # END             : 50</span>
+<span class="sd">          1  19:1-10000        44.847     412.828    -162.673</span>
+<span class="sd">          2  19:10001-20000   -55.574     396.869    -129.782</span>
+
+<span class="sd">    :params f_name: path where to find the file</span>
+<span class="sd">    :params None rand_init: IMP random initial number used to generate the model</span>
+<span class="sd">    :param None radius: radius of each particle</span>
+
+<span class="sd">    :return: IMPmodel</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rand_init</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span><span class="s1">&#39;[0-9]+\s[A-Za-z0-9_ ]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)&#39;</span><span class="p">)</span>
+    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">f_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# &#39;</span><span class="p">):</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;# &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">][</span><span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span> <span class="ow">in</span> <span class="n">findall</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">xxx</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">yyy</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zzz</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+<span class="k">def</span> <span class="nf">load_impmodel_from_xyz_OLD</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">chromosome</span><span class="o">=</span><span class="s1">&#39;UNKNOWN&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads an IMPmodel object using an xyz file of the form:</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">          p1           1      44.847     412.828    -162.673</span>
+<span class="sd">          p2           2     -55.574     396.869    -129.782</span>
+
+<span class="sd">    :params f_name: path where to find the file</span>
+<span class="sd">    :params None rand_init: IMP random initial number used to generate the model</span>
+<span class="sd">    :param None radius: radius of each particle</span>
+
+<span class="sd">    :return: IMPmodel</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rand_init</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span><span class="s1">&#39;p[0-9]+\s+[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span> <span class="ow">in</span> <span class="n">findall</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">xxx</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">yyy</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zzz</span><span class="p">))</span>
+    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;chromosome&#39;</span><span class="p">:</span><span class="n">chromosome</span><span class="p">,</span>
+                            <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s1">&#39;resolution&#39;</span><span class="p">:</span> <span class="n">resolution</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="k">class</span> <span class="nc">IMPmodel</span><span class="p">(</span><span class="n">StructuralModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A container for the IMP modeling results. The container is a dictionary</span>
+<span class="sd">    with the following keys:</span>
+
+<span class="sd">    - log_objfun: The list of IMP objective function values</span>
+<span class="sd">    - objfun: The final objective function value of the corresponding model</span>
+<span class="sd">    - rand_init: Random number generator feed (needed for model reproducibility)</span>
+<span class="sd">    - x, y, z: 3D coordinates of each particles. Each represented as a list</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;IMP model ranked </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1"> particles) with: </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - Final objective function value: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - random initial value: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - first coordinates:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;        X      Y      Z</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;  </span><span class="si">%7s%7s%7s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;  </span><span class="si">%7s%7s%7s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;  </span><span class="si">%7s%7s%7s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]),</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;objfun&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;rand_init&#39;</span><span class="p">],</span>
+                <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;IMP model of </span><span class="si">%s</span><span class="s1"> particles with: </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - Final objective function value: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - random initial value: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; - first coordinates:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;      X    Y    Z</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span>
+                    <span class="s1">&#39;  </span><span class="si">%5s%5s%5s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]),</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;objfun&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;rand_init&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+
+    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function plots the objective function value per each Monte-Carlo</span>
+<span class="sd">        step.</span>
+
+<span class="sd">        :param False log: log plot</span>
+<span class="sd">        :param True smooth: curve smoothing</span>
+<span class="sd">        :param None axe: a matplotlib.axes.Axes object to define the plot</span>
+<span class="sd">           appearance</span>
+<span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">           of the file name will determine the desired format).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">show</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+            <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+            <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;lightgrey&#39;</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">set_axisbelow</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span> <span class="c1"># always on, not only for log</span>
+            <span class="c1"># remove tick marks</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
+        <span class="c1"># text</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Iteration number&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;IMP Objective Function Value&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Model &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;rand_init&#39;</span><span class="p">]))</span>
+        <span class="c1"># smooth</span>
+        <span class="n">nrjz</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;log_objfun&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">smooth</span><span class="p">:</span>
+            <span class="n">xnew</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nrjz</span><span class="p">),</span> <span class="mi">10000</span><span class="p">)</span>
+            <span class="n">nrjz_smooth</span> <span class="o">=</span> <span class="n">spline</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nrjz</span><span class="p">)),</span> <span class="n">nrjz</span><span class="p">,</span> <span class="n">xnew</span><span class="p">,</span>
+                                 <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xnew</span><span class="p">,</span> <span class="n">nrjz_smooth</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkred&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nrjz</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkred&#39;</span><span class="p">)</span>
+        <span class="c1"># plot</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nrjz</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkred&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+        <span class="c1"># log</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

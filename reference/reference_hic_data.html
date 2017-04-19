@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>HiC_data class &mdash; Tadbit 0.1 documentation</title>
+    <title>HiC_data class &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,18 +14,22 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" /> 
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chromosome class" href="reference_chromosome.html" />
+    <link rel="prev" title="From FASTQ to matrix" href="reference_mapping.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -34,7 +38,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_mapping.html" title="From FASTQ to matrix"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -60,8 +71,8 @@ file containing chromosome sequences. Orders matters.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>lengths</strong> &#8211; list of chromosome lengths</li>
-<li><strong>chr_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of corresponding chromosome names.</li>
-<li><strong>binned</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, leghths will not be divided by resolution</li>
+<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of corresponding chromosome names.</li>
+<li><strong>binned</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, leghths will not be divided by resolution</li>
 </ul>
 </td>
 </tr>
@@ -94,11 +105,11 @@ respect to the total number of interactions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; used normalized data</li>
-<li><strong>exclude</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; exclude a given list of chromosome from the
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; used normalized data</li>
+<li><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; exclude a given list of chromosome from the
 ratio (may want to exclude translocated chromosomes)</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; replace values in the diagonal by 0 or 1</li>
-<li><strong>equals</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can pass a function that would decide if 2 chromosomes
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; replace values in the diagonal by 0 or 1</li>
+<li><strong>equals</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can pass a function that would decide if 2 chromosomes
 have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
 consider chr2L and chr2R as being the same chromosome. WARNING: only
 working on consecutive chromosomes.</li>
@@ -128,17 +139,17 @@ stored in the dictionary Experiment._zeros.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>draw_hist</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
+<li><strong>draw_hist</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
 the polynomial fit, and the cut applied.</li>
-<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>perc_zero</strong> (<em>75</em>) &#8211; maximum percentage of cells with no interactions
 allowed.</li>
-<li><strong>min_count</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; minimum number of reads mapped to a bin (recommended
+<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
 filtering... This option is slightly slower.</li>
-<li><strong>by_mean</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter columns by mean column value using
+<li><strong>by_mean</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter columns by mean column value using
 <code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.hic_filtering.filter_by_mean()</span></code> function</li>
 </ul>
 </td>
@@ -150,14 +161,14 @@ filtering... This option is slightly slower.</li>
 <dl class="method">
 <dt id="pytadbit.parsers.hic_parser.HiC_data.find_compartments">
 <code class="descname">find_compartments</code><span class="sig-paren">(</span><em>crms=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>savecorr=None</em>, <em>show=False</em>, <em>suffix=''</em>, <em>how=''</em>, <em>label_compartments='hmm'</em>, <em>log=None</em>, <em>max_mean_size=10000</em>, <em>ev_index=None</em>, <em>rich_in_A=None</em>, <em>max_ev=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Search for A/B copartments in each chromsome of the Hi-C matrix.
+<dd><p>Search for A/B copartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
 is then calculated from this normalized matrix, and its first
 eigenvector is used to identify compartments. Changes in sign marking
 boundaries between compartments.
 Result is stored as a dictionary of compartment boundaries, keys being
-chromsome names.</p>
+chromosome names.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -168,35 +179,35 @@ chromsome names.</p>
 if not enough reads are observed at a given distance the observations
 of the distance+1 are summed. a signal to noise ratio of &lt; 0.05
 corresponds to &gt; 400 reads.</li>
-<li><strong>crms</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; only runs these given list of chromosomes</li>
-<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a directory to store matrices with
+<li><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; only runs these given list of chromosomes</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a directory to store matrices with
 compartment predictions, one image per chromosome, stored under
 &#8216;chromosome-name.png&#8217;.</li>
-<li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; show the plot</li>
-<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a new file to store compartment
+<li><strong>show</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; show the plot</li>
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a new file to store compartment
 predictions, one file only.</li>
-<li><strong>savecorr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a directory where to save correlation
+<li><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a directory where to save correlation
 matrices of each chromosome</li>
 <li><strong>vmin</strong> (<em>-1</em>) &#8211; for the color scale of the plotted map (use vmin=&#8217;auto&#8217;,
 and vmax=&#8217;auto&#8217; to color according to the absolute maximum found).</li>
 <li><strong>vmax</strong> (<em>1</em>) &#8211; for the color scale of the plotted map (use vmin=&#8217;auto&#8217;,
 and vmax=&#8217;auto&#8217; to color according to the absolute maximum found).</li>
-<li><strong>yield_ev1</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True yields one list per chromosome with the
+<li><strong>yield_ev1</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True yields one list per chromosome with the
 first eigenvector used to compute compartments.</li>
 <li><strong>suffix</strong> (<em>''</em>) &#8211; to be placed after file names of compartment images</li>
 <li><strong>max_ev</strong> (<em>3</em>) &#8211; maximum number of EV to try</li>
-<li><strong>ev_index</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of number refering to the index of the
+<li><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of number refering to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
-if asking for only one chromsome the list should be only of one 
+if asking for only one chromosome the list should be only of one 
 element.</li>
-<li><strong>rich_in_A</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; by default compartments are identified using mean
+<li><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
 less). However this measure is not very accurate. Using this
 parameter a path to a BED or BED-Graph file with a list of genes or
 active epigenetic marks can be passed, and used instead of the mean
 interactions.</li>
-<li><strong>log</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a folder where to save log of the assignment
+<li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a folder where to save log of the assignment
 of A/B compartments</li>
 <li><strong>label_compartments</strong> (<em>hmm</em>) &#8211; label compartments into A/B categories,
 otherwise just find borders (faster). Can be either hmm (default), or
@@ -247,14 +258,14 @@ compartment borders for each chromosome (keys are chromosome names)</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
 region</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by ones, or zeroes
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by ones, or zeroes
 if normalized</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
 </ul>
 </td>
 </tr>
@@ -279,7 +290,7 @@ the calculated weight.</p>
 <li><strong>iteration</strong> (<em>0</em>) &#8211; number of iterations</li>
 <li><strong>max_dev</strong> (<em>0.1</em>) &#8211; iterative process stops when the maximum deviation
 between the sum of row is equal to this number (0.1 means 10%)</li>
-<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn when overwriting weights</li>
+<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn when overwriting weights</li>
 <li><strong>factor</strong> (<em>1</em>) &#8211; final mean number of normalized interactions wanted
 per cell (excludes filtered, or bad, out columns)</li>
 </ul>
@@ -299,10 +310,10 @@ WARNING: parameters are not meant to be used by external users</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Params None bias:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">expects a dictionary of biases to use normalized matrix</td>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">expects a dictionary of biases to use normalized matrix</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Params None bads:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">extends computed bad columns</td>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">extends computed bad columns</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the sum of the Hi-C matrix skipping bad columns</td>
 </tr>
@@ -320,9 +331,41 @@ WARNING: parameters are not meant to be used by external users</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>savedata</strong> &#8211; path to a file.</li>
-<li><strong>chroms</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; write only the given list of chromosomes (default
+<li><strong>chroms</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; write only the given list of chromosomes (default
 all chromosomes are written, note that the first column corresponding
 to chromosome name will disappear in non default case)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.parsers.hic_parser.HiC_data.write_coord_table">
+<code class="descname">write_coord_table</code><span class="sig-paren">(</span><em>fname</em>, <em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em>, <em>format='BED'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_coord_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.write_coord_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes a coordinate table to a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
+window of data (start, starting at 1, and both start and end are
+inclusive). Alternatively a chromosome name can be input or a tuple
+of chromosome name, in order to retrieve a specific inter-chromosomal
+region</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by zeroes</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
+<li><strong>format</strong> (<em>BED</em>) &#8211; <dl class="docutils">
+<dt>either &#8220;BED&#8221;</dt>
+<dd>chr1        111             222             chr2:333-444,55         1       .
+chr2        333             444             chr1:111-222,55         2       .</dd>
+<dt>or &#8220;long-range&#8221; format:</dt>
+<dd>chr1:111-222        chr2:333-444            55
+chr2:333-444        chr1:111-222            55</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -339,13 +382,13 @@ to chromosome name will disappear in non default case)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
 region</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by zeroes</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by zeroes</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
 </ul>
 </td>
 </tr>
@@ -363,13 +406,13 @@ Bad row/columns are returned as null row/columns.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
 region</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by zeroes</li>
-<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, diagonal is replaced by zeroes</li>
+<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; get normalized data</li>
 </ul>
 </td>
 </tr>
@@ -394,25 +437,42 @@ region</li>
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="index.html">Reference Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">HiC_data class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_mapping.html"
+                        title="previous chapter">From FASTQ to matrix</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_chromosome.html"
+                        title="next chapter">Chromosome class</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -425,13 +485,20 @@ region</li>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_mapping.html" title="From FASTQ to matrix"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 20, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
