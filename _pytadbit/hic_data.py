@@ -349,6 +349,100 @@ class HiC_data(dict):
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
 
+
+    def write_coord_table(self, fname, focus=None, diagonal=True,
+                          normalized=False, format='BED'):
+        """
+        writes a coordinate table to a file.
+        
+        :param None focus: a tuple with the (start, end) position of the desired
+           window of data (start, starting at 1, and both start and end are
+           inclusive). Alternatively a chromosome name can be input or a tuple
+           of chromosome name, in order to retrieve a specific inter-chromosomal
+           region
+        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param False normalized: get normalized data
+        :param BED format: either "BED"
+               chr1   \t   111   \t   222   \t   chr2:333-444,55   \t   1   \t   .
+               chr2   \t   333   \t   444   \t   chr1:111-222,55   \t   2   \t   .
+           or "long-range" format:
+               chr1:111-222   \t   chr2:333-444   \t   55
+               chr2:333-444   \t   chr1:111-222   \t   55
+        """
+        if focus:
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
+        else:
+            start1 = start2 = 0
+            end1   = end2   = len(self)
+        out = open(fname, 'w')
+        if format == 'long-range':
+            rownam = ['%s:%d-%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            if not rownam:
+                raise Exception('ERROR: HiC data object should have genomic coordinates')
+            iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized)
+            pair_string = '%s\t%s\t%f\n' if normalized else '%s\t%s\t%d\n'
+            for nrow, row in enumerate(rownam, 1):
+                line = iter_rows.next()
+                iter_cols = iter(line)
+                for col in rownam[nrow:]:
+                    val = iter_cols.next()
+                    if not val:
+                        continue
+                    out.write(pair_string % (row, col, val))
+        elif format == 'BED':
+            rownam = ['%s\t%d\t%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            colnam = ['%s:%d-%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            if not rownam:
+                raise Exception('ERROR: HiC data object should have genomic coordinates')
+            iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized)
+            pair_string = '%s\t%s,%f\t%d\t.\n' if normalized else '%s\t%s,%d\t%d\t.\n'
+            count = 1
+            for nrow, row in enumerate(rownam, 1):
+                line = iter_rows.next()
+                iter_cols = iter(line)
+                for col in colnam[nrow:]:
+                    val = iter_cols.next()
+                    if not val:
+                        continue
+                    out.write(pair_string % (row, col, val, count))
+                    count += 1
+        else:
+            raise Exception('ERROR: format "%s" not found\n' % format)       
+        out.close()
+
+        
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
         writes the matrix to a file.
@@ -998,6 +1092,7 @@ class HiC_data(dict):
                     yield ([self[i, j] for j in xrange(start1, i)] +
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
+
 
 def _hmm_refine_compartments(xsec, models, bads, verbose):
     prevll = float('-inf')
