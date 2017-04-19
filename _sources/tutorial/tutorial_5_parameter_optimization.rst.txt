@@ -96,7 +96,7 @@ first thing we need to do is to filter columns with low counts:
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_11_1.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_11_1.png
 
 
 .. ansi-block::
@@ -281,7 +281,7 @@ Visualize the results
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_23_0.png
 
 
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
@@ -294,7 +294,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_25_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_25_0.png
 
 
 .. code:: python
@@ -338,7 +338,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_28_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_28_0.png
 
 
 .. code:: python
@@ -348,7 +348,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_29_0.png
 
 
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
@@ -361,7 +361,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_31_0.png
 
 
 .. code:: python
@@ -376,7 +376,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_33_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_33_0.png
 
 
 .. code:: python
@@ -385,7 +385,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_34_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_34_0.png
 
 
 .. code:: python
@@ -425,7 +425,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_39_0.png
+.. image:: ../nbpictures//tutorial_5_parameter_optimization_39_0.png
 
 
 Retrieve best parameters

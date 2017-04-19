@@ -207,7 +207,7 @@ To quickly view how does the interaction matrix look like, experiment objects ha
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_27_1.png
+.. image:: ../nbpictures//tutorial_1_general_27_1.png
 
 
 
@@ -228,7 +228,7 @@ the chromosome object.
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_29_0.png
+.. image:: ../nbpictures//tutorial_1_general_29_0.png
 
 
 Note how we pass the list of experiments to show to the :func:`pytadbit.chromosome.Chromosome.visualize` we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric.
@@ -374,7 +374,7 @@ TADs in interaction matrices
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_43_0.png
+.. image:: ../nbpictures//tutorial_1_general_43_0.png
 
 
 In this case we can also put them side by side, view a given region, and
@@ -392,7 +392,7 @@ use nrmalized data instead of the log2 of raw data:
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_45_1.png
+.. image:: ../nbpictures//tutorial_1_general_45_1.png
 
 
 *Note that the width of the line is proportional to the score of the TAD
@@ -413,7 +413,7 @@ Finally TAD bourders can be seen using the density plot summary:
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_50_0.png
+.. image:: ../nbpictures//tutorial_1_general_50_0.png
 
 
 In this plot, each grey-filled-arc represents a TAD. The eight of the
@@ -468,7 +468,7 @@ Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADb
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_61_0.png
+.. image:: ../nbpictures//tutorial_1_general_61_0.png
 
 
 Another optional inspection performed by TADbit is the presence of

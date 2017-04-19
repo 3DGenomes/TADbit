@@ -4,11 +4,11 @@ Installing TADbit on GNU/Linux
 
 .. contents::
 
-*Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
+.. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
 
 
-**TADbit requires python >= 2.6 as well as several dependencies that are
-listed below.**
+**TADbit requires python2 >= 2.6 as well as several dependencies that
+are listed below.**
 
 Dependencies
 ------------
@@ -31,19 +31,40 @@ Optional packages (but **highly** recommended):
 
 .. note:: **Alternative install**, you can install *python-setuptools*
 and use easy\_install to get these packages (e.g.
-"``easy_install scipy``\ ").
+"``easy_install scipy``").
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
 
+From the repositories
+^^^^^^^^^^^^^^^^^^^^^
+
+Since version 2.5 IMP is available in several repositories, like Ubuntu
+
+::
+
+    sudo apt-get install imp
+
+or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
+
+::
+
+    conda install -c https://conda.anaconda.org/salilab imp
+
+These options may be easier than the source compilation explained
+bellow.
+
+From source
+^^^^^^^^^^^
+
 The three-dimensional (3D) structure of a given genomic region is done
-via the IMP package. TADbit has been tested with **IMP version 2.0.1**
-and **IMP version 2.1.1** (recommended IMP versions to be installed).
-The installation procedure reported in this manual describes how to
-install IMP on Ubuntu machines (installation tested on Ubuntu versions
-12.04, 13.04 and 14.04). However, we do not provide support for
-installing IMP; installation instructions for IMP can be found on the
-IMP website (http://salilab.org/imp/nightly/doc/html/).
+via the IMP package. TADbit has been tested with **IMP version 2.0.1**,
+**IMP version 2.1.1** (recommended IMP versions to be installed) and
+**IMP version 2.5**. The installation procedure reported in this manual
+describes how to install IMP on Ubuntu machines (installation tested on
+Ubuntu versions 12.04, 13.04 and 14.04). However, we do not provide
+support for installing IMP; installation instructions for IMP can be
+found on the IMP website (http://salilab.org/imp/nightly/doc/html/).
 
 Install the required libraries:
 
@@ -56,10 +77,9 @@ Install the required libraries:
     sudo apt-get install libcgal-dev
     sudo apt-get install python-dev
 
-.. note::
-
-For Ubuntu 13.10 *libboost1.53-all-dev* should be installed instead. For
-Ubuntu 14.04 *libboost1.54-all-dev* should be installed instead.
+.. note:: For Ubuntu 13.10 *libboost1.53-all-dev* should be installed
+instead. For Ubuntu 14.04 *libboost1.54-all-dev* should be installed
+instead.
 
 Download the IMP tarball file from http://salilab.org/imp/ and
 uncompress it:
@@ -69,14 +89,20 @@ uncompress it:
     wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
     tar xzvf imp-2.0.1.tar.gz
 
+Create a directory for the IMP instalaltion.
+
+::
+
+    mkdir IMP
+
 Move into the IMP directory and compile the code (*Note:* the ``-j``
 option stands for the number of CPUs you want to assign to the compiler;
 the higher the faster).
 
 ::
 
-    cd imp-2.0.1
-    cmake . -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+    cd IMP
+    cmake ../imp-2.0.1 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
     make -j4 
 
 Once the compilation has finished, open the file setup\_environment.sh
@@ -92,18 +118,10 @@ These lines should look like:
     PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
     export PYTHONPATH
 
-.. note:: Important note:
-          Do not copy the lines above, copy them 
-          from ``setup_environment.sh``, where *SOMETHING* 
-          is replaced by your real path to IMP.
-
-GEM - mapping
-~~~~~~~~~~~~~
-
-Needed to map reads from next generation seqiencing data. GEM, can be
-downloaded from: https://github.com/gemtools/gemtools
-
-*GEM is only available for linux machines*
+.. note::  Important note:
+           Do not copy the lines above, copy them 
+           from ``setup_environment.sh``, where *SOMETHING* 
+           is replaced by your real path to IMP.
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~

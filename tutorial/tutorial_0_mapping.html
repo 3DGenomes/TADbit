@@ -85,275 +85,494 @@ chromosomes are called in these files):</p>
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="retrieving-hi-c-experiment-sra-format">
 <h3>Retrieving Hi-C experiment SRA format<a class="headerlink" href="#retrieving-hi-c-experiment-sra-format" title="Permalink to this headline">¶</a></h3>
-<p>Along this tutorial we are going to use the dataset from [Dixon2012]_
+<p>Along this tutorial we are going to use the dataset from [Rao21014]_
 that can be downloaded at:
-<a class="reference external" href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE35156">http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE35156</a></p>
+<a class="reference external" href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE63525">http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE63525</a></p>
 <p>For this part of the tutorial we are going to work with the experiments
-conducted on <em>Homo sapiens</em> IMR90 and ESC (replicate 1 in both cases).</p>
-<p>Each of this replica consists of severa SRA files:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span>! ls ~/db/FASTQs/hsap/dixon_2012/*/*/*.sra
-</pre></div>
-</div>
-<pre class="ansi-block literal-block">
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400261/SRR400261.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400262/SRR400262.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400263/SRR400263.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400264/SRR400264.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400265/SRR400265.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400266/SRR400266.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400267/SRR400267.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400268/SRR400268.sra
-</pre>
-</div>
-<div class="section" id="first-quality-check-on-the-data">
-<h3>First quality check on the data<a class="headerlink" href="#first-quality-check-on-the-data" title="Permalink to this headline">¶</a></h3>
+conducted in <em>Homo sapiens</em> GM12878 cell line with three diferent
+restriction enzymes.</p>
 <p>First we need to convert SRA files in FASTQ format, as TADbit does not
 support reading directly from SRA. For this purpose we may want to use
 the SRA-toolkit from the NCBI (<a class="reference external" href="https://github.com/ncbi/sratoolkit">https://github.com/ncbi/sratoolkit</a>). We
 finally shall endup with a single FASTQ file per experimental replica,
 with commands like (can last for hours):</p>
-<p><code class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116345</span> <span class="pre">--gzip</span> <span class="pre">SRX116345/*/*.sra</span></code>
-<code class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116344</span> <span class="pre">--gzip</span> <span class="pre">SRX116344/*/*.sra</span></code></p>
+<ul>
+<li><p class="first">HindIII dilution Hi-C replica:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR1658625</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">-</span><span class="n">X</span> <span class="mi">50000000</span> <span class="o">-</span><span class="n">O</span> <span class="n">HiC035</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">NcoI dilution Hi-C replica:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR1658632</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">-</span><span class="n">X</span> <span class="mi">50000000</span> <span class="o">-</span><span class="n">O</span> <span class="n">HiC036</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">MboI <em>in situ</em> Hi-C replica:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR1658572</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">50000000</span> <span class="o">-</span><span class="n">O</span> <span class="n">HiC003</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the parameter used here for <cite>fastq-dump</cite> are for generating clean FASTQ files, <cite>-DQ &#8216;+&#8217;</cite> tells to put a single plus sign as header of the quality input, <cite>&#8211;defline-seq &#8216;&#64;$ac.$si&#8217;</cite> reduces the information in the headers to the accession number and the read id, <cite>&#8211;split-files</cite> is to separate read1 and read2 in diferent files (note that it is only used in the two first examples in order to show different cases), finally <cite>-X 50000000</cite> is to download only 50 Milion reads.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">FASTQ files can be used compressed in order to save space. TADbit recognize [DSRC](<a class="reference external" href="https://github.com/lrog/dsrc">https://github.com/lrog/dsrc</a>), gunzip, bunzip2 and zip compression formats</p>
+</div>
+</div>
+<div class="section" id="first-quality-check-on-the-data">
+<h3>First quality check on the data<a class="headerlink" href="#first-quality-check-on-the-data" title="Permalink to this headline">¶</a></h3>
 <p>the compressed FASTQ files should be:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span>! ls ~/db/FASTQs/hsap/dixon_2012/
+<div class="code python highlight-default"><div class="highlight"><pre><span></span>! wc -l HiC036/SRR1658632_1.fastq
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-SRX116344  SRX116345
+10354635 HiC036/SRR1658632_1.fastq
 </pre>
 <p>Usig these files directly we can infer the quality of the Hi-C
 experiment with TADbit:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="k">import</span> <span class="n">quality_plot</span>
 
-<span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz&#39;</span><span class="p">,</span>
-             <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<img alt="../_images/tutorial_0_mapping_12_0.png" src="../_images/tutorial_0_mapping_12_0.png" />
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="k">import</span> <span class="n">quality_plot</span>
-
-<span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345.fastq.gz&#39;</span><span class="p">,</span>
-             <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;HiC003/SRR1658572.fastq&#39;</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_0_mapping_13_0.png" src="../_images/tutorial_0_mapping_13_0.png" />
+<pre class="ansi-block literal-block">
+(10.9159, 38.5393)
+</pre>
+<p>The plot on the top represents the typical per nucleotide quality
+profile of NGS reads, with the addition of the proportion of &#8220;N&#8221; found
+at each position. This plot is done over the first milion reads, as this
+is usually enough to asses the general quality of the experiment.</p>
+<p>The second plot, is specific to Hi-C experiments. Given a restriction
+enzyme the function searches for the presence of ligation sites and of
+undigested restriction enzyme sites. Depending on the enzyme used the
+function can differentiate between dangling-ends and undigested sites.</p>
+<p>From this proportion some qulaity statistic can be inferred before the
+mapping: - The percentage of digested sites wich is the ratio of
+digested over undigested sites found over the reads analyzed - The
+percentage os dangling-ends which is the number of time a digested site
+is found at the begining of a read - The percentage of ligation sites
+which is the number of times a ligation site is found in the processed
+reads. This number has to be transfrom to reflect the reality as it
+corresponds only to the sequenced part of the DNA fragment. For example,
+in this case, if the mean fragment size is 400 nucleotides and we found
+that 11% of 1 million reads present 1 ligation site, we should expect a
+proportional number of ligation sites in the insert (unsequenced space
+between the ends of the reads). Thus, in this case we would have a final
+number 22% of the reads with at least one ligation site.</p>
+<p>For the other replicates used in this tutorial, the enzymes (DpnII and
+HindIII) allow to differentiate between dangling-ends and undigested
+sites, as their cut site is inside the recognition pattern (<em>note that
+in the bellow plot we are now only seing one of the ends of the reads as
+we used the ``&#8211;split-file`` we have the one end per file</em>):</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;HiC035/SRR1658625_1.fastq&#39;</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_15_0.png" src="../_images/tutorial_0_mapping_15_0.png" />
+<pre class="ansi-block literal-block">
+(3.1608, 11.3747)
+</pre>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;HiC036/SRR1658632_1.fastq&#39;</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;NcoI&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_16_0.png" src="../_images/tutorial_0_mapping_16_0.png" />
+<pre class="ansi-block literal-block">
+(1.2954, 17.1003)
+</pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the function returns two numbers that can be used to further analyze the quality of the reads, e.g. when, after mapping we can confirm the mean size of the insert. These numbers are the proportion of dangling-ends and the proportion of ligation sites.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>Mapping<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>TADbit implements a flexible mapping that can be set to mimmic either
+the <strong>iterative mapping</strong> as proposed by [Imakaev2012]_ , or other
+mapping strategies based on the restriction enzyme fragments we call
+them <strong>fragment-based mapping</strong>.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytadbit</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.mapper</span> <span class="k">import</span> <span class="n">full_mapping</span>
+</pre></div>
 </div>
 <div class="section" id="iterative-mapping">
-<h3>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h3>
-<p>TADbit implements the iterative mapping as proposed by [Imakaev2012]_</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.mapper</span> <span class="k">import</span> <span class="n">iterative_mapping</span>
-
-<span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;SRX116344_200&#39;</span>
-</pre></div>
-</div>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Mapping Read 1&#39;</span>
-
-<span class="n">sams1</span> <span class="o">=</span> <span class="n">iterative_mapping</span><span class="p">(</span>
-            <span class="n">gem_index_path</span>       <span class="o">=</span> <span class="s1">&#39;ref_genome/hg38.gem&#39;</span><span class="p">,</span>
-            <span class="n">fastq_path</span>           <span class="o">=</span> <span class="s1">&#39;/scratch/db/FASTQs/hsap/dixon_2012/</span><span class="si">%s</span><span class="s1">.fastq&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">out_sam_path</span>         <span class="o">=</span> <span class="s1">&#39;/scratch/mapped_reads/</span><span class="si">%s</span><span class="s1">_r1.sam&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">temp_dir</span>             <span class="o">=</span> <span class="s1">&#39;/scratch/tmp_dir_</span><span class="si">%s</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">range_start</span>          <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">],</span> <span class="c1"># starts with a flag sequence</span>
-            <span class="n">range_stop</span>           <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">75</span><span class="p">],</span>
-            <span class="n">nthreads</span>             <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># number of CPUs to use</span>
-            <span class="n">max_reads_per_chunk</span>  <span class="o">=</span> <span class="mi">40000000</span><span class="p">,</span> <span class="c1"># this is for computers with not too much RAM</span>
-            <span class="n">single_end</span>           <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span> <span class="s1">&#39;  created </span><span class="si">%s</span><span class="s1"> SAM files:&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">sams1</span><span class="p">)</span>
+<h4>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h4>
+<p>The bellow example would be following the iterative mapping strategy,
+defining the windows over which to do the iterations:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Mapping the first end of the read</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="n">mapped_r1</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="s1">&#39;/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/SRR1658572.fastq&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_it-mapped_read1&#39;</span><span class="p">,</span>
+                         <span class="n">windows</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">75</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">)),</span>
+                         <span class="n">frag_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">temp_dir</span><span class="o">=</span><span class="s1">&#39;/scratch/test/rao2014/tmp_HiC003&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-Mapping Read 1
-Split input file /scratch/db/FASTQs/hsap/dixon_2012/SRX116344_200.fastq into chunks
-2 chunks obtained
-Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1
-Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-  created 24 SAM files:
+Mapping the first end of the read
+
+Preparing FASTQ file
+  - conversion to MAP format
+  - trimming reads 1-25
+Mapping reads in window 1-25...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq_full_1-25
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq_full_1-25.map
+Preparing MAP file
+  - trimming reads 1-50
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_NbfVlq_filt_1-25.map
+Mapping reads in window 1-50...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8 -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8_full_1-50
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8_full_1-50.map
+Preparing MAP file
+  - trimming reads 1-75
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_HxWwM8_filt_1-50.map
+Mapping reads in window 1-75...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh_full_1-75
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh_full_1-75.map
+Preparing MAP file
+  - trimming reads 1-100
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_nUa3eh_filt_1-75.map
+Mapping reads in window 1-100...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_IvYOT3
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_IvYOT3 -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_IvYOT3_full_1-100
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_IvYOT3
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_IvYOT3_full_1-100.map
 </pre>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Mapping Read 2&#39;</span>
-
-<span class="n">sams2</span> <span class="o">=</span> <span class="n">iterative_mapping</span><span class="p">(</span>
-            <span class="n">gem_index_path</span>       <span class="o">=</span> <span class="s1">&#39;ref_genome/hg38.gem&#39;</span><span class="p">,</span>
-            <span class="n">fastq_path</span>           <span class="o">=</span> <span class="s1">&#39;/scratch/db/FASTQs/hsap/dixon_2012/</span><span class="si">%s</span><span class="s1">.fastq&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">out_sam_path</span>         <span class="o">=</span> <span class="s1">&#39;/scratch/mapped_reads/</span><span class="si">%s</span><span class="s1">_r2.sam&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">temp_dir</span>             <span class="o">=</span> <span class="s1">&#39;/scratch/tmp_dir_</span><span class="si">%s</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
-            <span class="n">range_start</span>          <span class="o">=</span> <span class="p">[</span><span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">],</span>
-            <span class="n">range_stop</span>           <span class="o">=</span> <span class="p">[</span><span class="mi">121</span><span class="p">,</span> <span class="mi">126</span><span class="p">,</span> <span class="mi">131</span><span class="p">,</span> <span class="mi">136</span><span class="p">,</span> <span class="mi">141</span><span class="p">,</span> <span class="mi">146</span><span class="p">,</span> <span class="mi">151</span><span class="p">,</span> <span class="mi">156</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">166</span><span class="p">,</span> <span class="mi">171</span><span class="p">,</span> <span class="mi">176</span><span class="p">],</span>
-            <span class="n">nthreads</span>             <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
-            <span class="n">max_reads_per_chunk</span>  <span class="o">=</span> <span class="mi">40000000</span><span class="p">,</span>
-            <span class="n">single_end</span>           <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span> <span class="s1">&#39;  created </span><span class="si">%s</span><span class="s1"> SAM files:&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">sams2</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Mapping the first end of the read</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="n">mapped_r2</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="s1">&#39;/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/SRR1658572.fastq&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_it-mapped_read2&#39;</span><span class="p">,</span>
+                         <span class="n">windows</span><span class="o">=</span><span class="p">((</span><span class="mi">101</span><span class="p">,</span><span class="mi">125</span><span class="p">),</span> <span class="p">(</span><span class="mi">101</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span> <span class="p">(</span><span class="mi">101</span><span class="p">,</span><span class="mi">175</span><span class="p">),(</span><span class="mi">101</span><span class="p">,</span><span class="mi">200</span><span class="p">)),</span>
+                         <span class="n">frag_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">temp_dir</span><span class="o">=</span><span class="s1">&#39;/scratch/test/rao2014/tmp_HiC003&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-Mapping Read 2
-Split input file /scratch/db/FASTQs/hsap/dixon_2012/SRX116344_200.fastq into chunks
-2 chunks obtained
-Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1
-Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
-  created 24 SAM files:
+Mapping the first end of the read
+
+Preparing FASTQ file
+  - conversion to MAP format
+  - trimming reads 101-125
+Mapping reads in window 101-125...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_full_101-125
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_full_101-125.map
+Preparing MAP file
+  - trimming reads 101-150
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_filt_101-125.map
+Mapping reads in window 101-150...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_full_101-150
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_full_101-150.map
+Preparing MAP file
+  - trimming reads 101-175
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_filt_101-150.map
+Mapping reads in window 101-175...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_full_101-175
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_full_101-175.map
+Preparing MAP file
+  - trimming reads 101-200
+   x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_filt_101-175.map
+Mapping reads in window 101-200...
+TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc_full_101-200
+Parsing result...
+   x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc
+   x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc_full_101-200.map
 </pre>
+</div>
+<div class="section" id="fragment-based-mapping">
+<h4>Fragment-based mapping<a class="headerlink" href="#fragment-based-mapping" title="Permalink to this headline">¶</a></h4>
+<p>And here bellow an alternative mapping, fragment-based, in this case the
+restriction enzyme (RE) name is needed. And the windows parameter is
+only used for defining which part of read should be used.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Mapping the first end of the read</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="n">mapped_r1</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="s1">&#39;/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/SRR1658572.fastq&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_mapped_read1&#39;</span><span class="p">,</span>
+                         <span class="n">windows</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span>
+                         <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">frag_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="s1">&#39;tmp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Mapping the first end of the read
+
+Preparing FASTQ file
+  - conversion to MAP format
+  - trimming reads 1-100
+Mapping reads in window 1-100...
+TO GEM /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_eQYIHW
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_eQYIHW -o /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_eQYIHW_full_1-100
+Parsing result...
+   x removing GEM input /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_eQYIHW
+   x removing map /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_eQYIHW_full_1-100.map
+  - splitting into restriction enzyme (RE) fragments using ligation sites
+  - ligation sites are replaced by RE sites to match the reference genome
+    * enzyme: MboI, ligation site: GATCGATC, RE site: GATC
+Preparing MAP file
+  - trimming reads 1-100
+Mapping fragments of remaining reads...
+TO GEM /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_Sj_OYP
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_Sj_OYP -o /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_Sj_OYP_frag_1-100
+Parsing result...
+</pre>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Mapping the second end of the read</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="n">mapped_r2</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="s1">&#39;/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/SRR1658572.fastq&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_mapped_read2&#39;</span><span class="p">,</span>
+                         <span class="n">windows</span><span class="o">=</span><span class="p">(</span><span class="mi">101</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span>
+                         <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">frag_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="s1">&#39;tmp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Mapping the second end of the read
+
+Preparing FASTQ file
+  - conversion to MAP format
+  - trimming reads 101-200
+Mapping reads in window 101-200...
+TO GEM /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_3OpPDr
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_3OpPDr -o /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_3OpPDr_full_101-200
+Parsing result...
+   x removing GEM input /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_3OpPDr
+   x removing map /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_3OpPDr_full_101-200.map
+  - splitting into restriction enzyme (RE) fragments using ligation sites
+  - ligation sites are replaced by RE sites to match the reference genome
+    * enzyme: MboI, ligation site: GATCGATC, RE site: GATC
+Preparing MAP file
+  - trimming reads 101-200
+Mapping fragments of remaining reads...
+TO GEM /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_IgIT9e
+/usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_IgIT9e -o /home/fransua/Box/tadbits/tadbit/doc/notebooks/tmp/SRR1658572_IgIT9e_frag_101-200
+Parsing result...
+</pre>
+<p>The Fragment based mapping works in 2 steps: - First read ends are
+aligned entirely, assuming that no ligation occured in them. - Second,
+for the read ends that were not mapped, the function searches for a
+ligation site (in the case of MboI this would correspond to <code class="docutils literal"><span class="pre">GATCGATC</span></code>
+and in the case of HindIII to <code class="docutils literal"><span class="pre">AAGCTAGCTT</span></code>). The read-end is splitted
+accordingly replacing the ligation site by two RE sites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">one</span><span class="o">---</span><span class="n">AAGCTAGCTT</span><span class="o">----</span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">two</span>
+</pre></div>
+</div>
+<p>will be splitted in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">one</span><span class="o">---</span><span class="n">AAGCTT</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">AAGCTT</span><span class="o">----</span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">two</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">if no ligation site is found step two is repeated using digested RE site as split point (<cite>AAGCT</cite> in the case of HindIII). This in order to be protected against that sequencing errors. When this path is followed the digested RE site is removed, but not replaced.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">both mapping strategies can be mixed up, for example defining the windows as in the iterative mapping, and also gives a RE name and setting <cite>frag_map=True</cite>.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">for the following part of the tutorial we are going to continue using the result of the fragment based mapping, as it contains the most complex results.</p>
+</div>
+</div>
 </div>
 <div class="section" id="map-parsing">
 <h3>Map parsing<a class="headerlink" href="#map-parsing" title="Permalink to this headline">¶</a></h3>
-<p>In case we lost the sams1/sams2 lists of paths we can &#8220;reload&#8221; them like
-this:</p>
+<p>In case we lost the lists of paths we can &#8220;reload&#8221; them like this:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
-<span class="n">sams1</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">sams2</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">sam</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;/scratch/mapped_reads/&#39;</span><span class="p">):</span>
-    <span class="k">if</span> <span class="s1">&#39;_r1.sam&#39;</span> <span class="ow">in</span> <span class="n">sam</span><span class="p">:</span>
-        <span class="n">sams1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;/scratch/mapped_reads/&#39;</span> <span class="o">+</span> <span class="n">sam</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">sams2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;/scratch/mapped_reads/&#39;</span> <span class="o">+</span> <span class="n">sam</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">sams1</span>
-<span class="nb">print</span> <span class="n">sams2</span>
+<span class="n">mapped_r1</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mapped_r2</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">r1_dir</span> <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_mapped_read1&#39;</span>
+<span class="n">r2_dir</span> <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/01_mapped_read2&#39;</span>
+
+<span class="k">for</span> <span class="n">mapped</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">r1_dir</span><span class="p">):</span>
+    <span class="n">mapped_r1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1_dir</span><span class="p">,</span> <span class="n">mapped</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">mapped</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">r2_dir</span><span class="p">):</span>
+    <span class="n">mapped_r2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2_dir</span><span class="p">,</span> <span class="n">mapped</span><span class="p">))</span>
+
+<span class="nb">print</span> <span class="s1">&#39;Output files of the maping of the first end of the reads:</span><span class="se">\n</span><span class="s1"> - &#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> - &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapped_r1</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s1">&#39;Output files of the maping of the second end of the reads:</span><span class="se">\n</span><span class="s1"> - &#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> - &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapped_r2</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-['/scratch/mapped_reads/SRX116344_200_r1.sam.1.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.10:1-65', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.10:1-65']
-['/scratch/mapped_reads/SRX116344_200_r2.sam.1.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.12:102-176', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.12:102-176']
+Output files of the maping of the first end of the reads:
+ - /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_frag_1-100.map
+ - /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_full_1-100.map
+Output files of the maping of the second end of the reads:
+ - /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_frag_101-200.map
+ - /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_full_101-200.map
 </pre>
-<div class="section" id="mapping-analysis">
-<h4>Mapping analysis<a class="headerlink" href="#mapping-analysis" title="Permalink to this headline">¶</a></h4>
 <p>We collect mapped reads at all window sizes into a single file (a single
 file for read1, and a single file for read2). These 2 files also contain
 the placement of the restriction enzyme sites in the genome.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.sam_parser</span>    <span class="k">import</span> <span class="n">parse_sam</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.map_parser</span>    <span class="k">import</span> <span class="n">parse_map</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span> <span class="k">import</span> <span class="n">parse_fasta</span>
 </pre></div>
 </div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># loads the genome</span>
-<span class="n">genome_seq</span> <span class="o">=</span> <span class="n">parse_fasta</span><span class="p">(</span><span class="s1">&#39;/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa&#39;</span><span class="p">,</span>
-                         <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;MT&#39;</span><span class="p">]])</span>
+<span class="n">genome_seq</span> <span class="o">=</span> <span class="n">parse_fasta</span><span class="p">(</span><span class="s1">&#39;/scratch/db/Genomes/genomes/Homo_sapiens-79/Homo_sapiens.fa&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-Parsing 1 as chr1
-Parsing 2 as chr2
-Parsing 3 as chr3
-Parsing 4 as chr4
-Parsing 5 as chr5
-Parsing 6 as chr6
-Parsing 7 as chr7
-Parsing 8 as chr8
-Parsing 9 as chr9
-Parsing 10 as chr10
-Parsing 11 as chr11
-Parsing 12 as chr12
-Parsing 13 as chr13
-Parsing 14 as chr14
-Parsing 15 as chr15
-Parsing 16 as chr16
-Parsing 17 as chr17
-Parsing 18 as chr18
-Parsing 19 as chr19
-Parsing 20 as chr20
-Parsing 21 as chr21
-Parsing 22 as chr22
-Parsing X as chrX
-Parsing Y as chrY
-Parsing MT as chrMT
+Parsing 1
+Parsing 2
+Parsing 3
+Parsing 4
+Parsing 5
+Parsing 6
+Parsing 7
+Parsing 8
+Parsing 9
+Parsing 10
+Parsing 11
+Parsing 12
+Parsing 13
+Parsing 14
+Parsing 15
+Parsing 16
+Parsing 17
+Parsing 18
+Parsing 19
+Parsing 20
+Parsing 21
+Parsing 22
+Parsing X
+Parsing Y
+Parsing MT
 </pre>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<ul class="last simple">
+<li>Make sure that your renaming corresponds to the chromosomes in the files (same order)</li>
+<li>The chromosome names should be the same as the one used to generate the index file used by the mapper. Otherwise you will endup with no read mapped.</li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TADbit comes with a list of file utilities like <cite>mkdir</cite> to ease the handling of files and folders.</p>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="k">import</span> <span class="n">mkdir</span>
+
+<span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;/scratch/test/rao2014/HiC003/02_parsed_reads/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># new file with info of each &quot;read1&quot; and its placement with respect to RE sites</span>
-<span class="n">reads1</span> <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_r1_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<span class="n">reads1</span> <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/02_parsed_reads/read1.tsv&#39;</span>
 <span class="c1"># new file with info of each &quot;read2&quot; and its placement with respect to RE sites</span>
-<span class="n">reads2</span> <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_r2_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<span class="n">reads2</span> <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/02_parsed_reads/read2.tsv&#39;</span>
 </pre></div>
 </div>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Parse SAM files...&#39;</span>
-<span class="n">parse_sam</span><span class="p">(</span><span class="n">sams1</span><span class="p">,</span> <span class="n">sams2</span><span class="p">,</span> <span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Parsing MAP files is a slow process because reads have to be placed in between the closest RE sites, and they also need to be sorted in order to ease the computation of the intersection.</p>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Parse MAP files...&#39;</span>
+<span class="n">parse_map</span><span class="p">(</span><span class="n">mapped_r1</span><span class="p">,</span> <span class="n">mapped_r2</span><span class="p">,</span> <span class="n">out_file1</span><span class="o">=</span><span class="n">reads1</span><span class="p">,</span> <span class="n">out_file2</span><span class="o">=</span><span class="n">reads2</span><span class="p">,</span> <span class="n">genome_seq</span><span class="o">=</span><span class="n">genome_seq</span><span class="p">,</span>
+          <span class="n">re_name</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-Parse SAM files...
+Parse MAP files...
 Searching and mapping RE sites to the reference genome
-Found 859855 RE sites
+Found 7191117 RE sites
 Loading read1
+loading file: /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_frag_1-100.map
+loading file: /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_full_1-100.map
+Merge sort.....................................................
+Getting Multiple contacts
 Loading read2
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.3:1-30
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.6:1-45
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.7:1-50
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.8:1-55
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.12:1-75
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.12:1-75
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.6:1-45
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.1:1-20
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.2:1-25
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.9:1-60
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.10:1-65
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.1:1-20
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.4:1-35
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.4:1-35
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.9:1-60
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.2:1-25
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.3:1-30
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.11:1-70
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.8:1-55
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.11:1-70
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.5:1-40
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.7:1-50
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.10:1-65
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.5:1-40
-Sorting reads
-Removing temporary files...loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.11:102-171
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.2:102-126
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.9:102-161
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.12:102-176
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.5:102-141
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.2:102-126
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.10:102-166
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.8:102-156
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.11:102-171
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.6:102-146
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.5:102-141
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.9:102-161
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.7:102-151
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.1:102-121
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.4:102-136
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.6:102-146
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.4:102-136
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.3:102-131
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.7:102-151
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.8:102-156
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.3:102-131
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.10:102-166
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.12:102-176
-loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121
+loading file: /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_frag_101-200.map
+loading file: /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_full_101-200.map
+Merge sort...................................................
+Getting Multiple contacts
 </pre>
+<pre class="ansi-block literal-block">
+({0: {1: 14363191, 2: 38080970}, 1: {1: 13755441, 2: 37571439}},
+ {0: 5361490, 1: 4879802})
+</pre>
+<p>The output files generated here are BED-like files, with a header with
+the size of the chromosomes used, followed by the list of reads mapped.</p>
+<p>The column for each read are:</p>
+<ul class="simple">
+<li>Read Id</li>
+<li>Chromosome name</li>
+<li>genomic position</li>
+<li>strand (1: positive strand, 0: negative strand)</li>
+<li>mapped read length (this length can be extended when the fragment is
+found to be spanning over the insert paired-end read)</li>
+<li>upstream RE site position</li>
+<li>downstream RE site position</li>
+</ul>
 </div>
-</div>
-<div class="section" id="plot-iterative-mapping">
-<h3>Plot iterative mapping<a class="headerlink" href="#plot-iterative-mapping" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="mapping-analysis">
+<h3>Mapping analysis<a class="headerlink" href="#mapping-analysis" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="plot-mapping-efficiency">
+<h4>Plot mapping efficiency<a class="headerlink" href="#plot-mapping-efficiency" title="Permalink to this headline">¶</a></h4>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_iterative_mapping</span>
 
-<span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">total_reads</span><span class="o">=</span><span class="mi">51493359</span><span class="p">)</span>
+<span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">total_reads</span><span class="o">=</span><span class="mi">50000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_29_0.png" src="../_images/tutorial_0_mapping_29_0.png" />
+<img alt="../_images/tutorial_0_mapping_49_0.png" src="../_images/tutorial_0_mapping_49_0.png" />
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">in some cases the mapping efficiency might be above 100% as fragment based mapping split the original reads into fragments and map them independently.</p>
+</div>
+</div>
 </div>
 <div class="section" id="merging-mapped-read1-and-read2">
 <h3>Merging mapped &#8220;read1&#8221; and &#8220;read2&#8221;<a class="headerlink" href="#merging-mapped-read1-and-read2" title="Permalink to this headline">¶</a></h3>
 <p>We create a new file that will contain only the reads mapped in both
 ends (&#8220;read1&#8221; and &#8220;read2&#8221; uniquely mapped)</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.mapper</span> <span class="k">import</span> <span class="n">get_intersection</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping</span> <span class="k">import</span> <span class="n">get_intersection</span>
 </pre></div>
 </div>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_both_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/02_parsed_reads/both_map.tsv&#39;</span>
 </pre></div>
 </div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">get_intersection</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-Found 41123290 pair of reads mapping uniquely
+Getting intersection of reads 1 and reads 2:
+
+  .......... .......... .......... .......... ........
+Found 44674766 pair of reads mapping uniquely
+Sorting easch temporary file by genomic coordinate
+    1025/1025 sorted files
+Removing temporary files...
 </pre>
+<pre class="ansi-block literal-block">
+(44674766, {2: 7044121, 3: 20910, 4: 51})
+</pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the numbers returned by the function corresponds to the total number of mapped reads, and the number of time multiple contact where found (in this case ~7M contacts to occur between 3 fragments at the same time, ~20k between 4 and 51 between 5).</p>
+</div>
 <div class="section" id="descriptive-statistics">
 <h4>Descriptive statistics<a class="headerlink" href="#descriptive-statistics" title="Permalink to this headline">¶</a></h4>
 <p>In order to confirm the size of the inserts fed to the sequencer, we can
@@ -363,10 +582,13 @@ maximum insert size, that is an important value to classify reads during
 the filtering process.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">insert_sizes</span>
 
-<span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">)</span>
+<span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_37_0.png" src="../_images/tutorial_0_mapping_37_0.png" />
+<img alt="../_images/tutorial_0_mapping_59_0.png" src="../_images/tutorial_0_mapping_59_0.png" />
+<pre class="ansi-block literal-block">
+[355.0, 610.0]
+</pre>
 </div>
 </div>
 <div class="section" id="simple-descriptive-stats">
@@ -381,10 +603,15 @@ scale is -1.</p>
 regions that, each, spans over 10 kb (resolution parameter).</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_distance_vs_interactions</span>
 
-<span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_41_0.png" src="../_images/tutorial_0_mapping_41_0.png" />
+<pre class="ansi-block literal-block">
+((-1.0699233238000596, 15.456024589131042, -0.9992506172369725),
+ (-1.1471902596970704, 15.335536453854143, -0.99565698091932198),
+ (-2.4979074477418139, 23.753684595554244, -0.92419616437542085))
+</pre>
+<img alt="../_images/tutorial_0_mapping_63_1.png" src="../_images/tutorial_0_mapping_63_1.png" />
 </div>
 <div class="section" id="genomic-coverage-of-our-reads">
 <h4>Genomic coverage of our reads<a class="headerlink" href="#genomic-coverage-of-our-reads" title="Permalink to this headline">¶</a></h4>
@@ -398,17 +625,17 @@ with falls around centromeres and telomeres.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_45_0.png" src="../_images/tutorial_0_mapping_45_0.png" />
+<img alt="../_images/tutorial_0_mapping_67_0.png" src="../_images/tutorial_0_mapping_67_0.png" />
 <p><em>The picks in the plot correspond to PCR artifact that we will remove in
 the filtering step (see bellow)</em></p>
 <p>This plot can be zoomed in the y axis in order to avoid depending on
 these artifacts. The plot can also be generated only for a given number
 of chromosomes</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
-                          <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span>
+                          <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_48_0.png" src="../_images/tutorial_0_mapping_48_0.png" />
+<img alt="../_images/tutorial_0_mapping_70_0.png" src="../_images/tutorial_0_mapping_70_0.png" />
 </div>
 <div class="section" id="interaction-matrix">
 <h4>Interaction matrix<a class="headerlink" href="#interaction-matrix" title="Permalink to this headline">¶</a></h4>
@@ -416,23 +643,17 @@ of chromosomes</p>
 qualtity of an Hi-C experiment. This plot represents the matrix of
 interaction, the distribution of these interaction as an histogram or as
 a function of genomic distance. Some statistics on the specificity of
-these interaction, like the cis-to-trans ratio (expected to be between
-40 and 60%), and the 3 first eigen vectors of the matrix highlighting
-the principal structural features of the matrix (in non-normalized
-matrices eigen-vectors are not very informative however).</p>
+these interaction, like the cis-to-trans ratio (expected to be at least
+between 40 and 60%), and the 3 first eigen vectors of the matrix
+highlighting the principal structural features of the matrix (in
+non-normalized matrices eigen-vectors are not very informative however).</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
 </pre></div>
 </div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
-  warnings.warn(&quot;Mean of empty slice.&quot;, RuntimeWarning)
-/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
-  ret = ret.dtype.type(ret / rcount)
-</pre>
-<img alt="../_images/tutorial_0_mapping_52_1.png" src="../_images/tutorial_0_mapping_52_1.png" />
+<img alt="../_images/tutorial_0_mapping_74_0.png" src="../_images/tutorial_0_mapping_74_0.png" />
 </div>
 </div>
 </div>
@@ -450,48 +671,58 @@ to the inside (—-===&gt;—&lt;===—)</li>
 same direction</li>
 <li>extra dangling-end : reads are comming from different RE fragment
 but are close enough (&lt; max_molecule length) and point to the
-inside</li>
+inside. Maximum molecule length parameter can be set at 1.5 or 2
+times the 99.9 percentile returned by insert_size function above.</li>
 <li>too close from RES : semi-dangling-end filter, start position of one
-of the read is too close (5 bp by default) from RE cutting site.</li>
+of the read is too close (5 bp by default) from RE cutting site
+(with 4 base-pair-cutter enzyme it can be set to 4nt). This filter
+is in general not taken into account in <em>in situ</em> Hi-C experiments,
+and with 4bp cutters as the ligation may happen only one side of the
+DNA fragments.</li>
 <li>too short : remove reads comming from small restriction less than
-100 bp (default) because they are comparable to the read length</li>
+100 bp (default) because they are comparable to the read length, and
+are thus probably artifacts.</li>
 <li>too large : remove reads comming from large restriction fragments
 (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome) as they
 likely represent poorly assembled or repeated regions</li>
 <li>over-represented : reads coming from the top 0.5% most frequently
 detected restriction fragments, they may be prone to PCR artifacts
 or represent fragile regions of the genome or genome assembly errors</li>
-<li>duplicated : the combination of the start positions of the reads is
-repeated -&gt; PCR artifact (only keep one copy)</li>
+<li>duplicated : the combination of the start positions (and direction)
+of the reads is repeated -&gt; PCR artifact (only keep one copy)</li>
 <li>random breaks : start position of one of the read is too far (more
 than min_dist_to_re) from RE cutting site. Non-canonical enzyme
-activity or random physical breakage of the chromatin.</li>
+activity or random physical breakage of the chromatin. The
+min_dist_to_re parameter can be set as the 99.9 percentile of the
+distribution of insert sizes, as this parameter is important it is
+recommended to try different combinations and observe how it may
+affect the quality of the resulting interaction matrix</li>
 </ol>
 <p>The function <code class="docutils literal"><span class="pre">filter_reads</span></code> works in parallel (4 threads), and creates
 one file per filter (10 files, which path are an extension of the input
 file containing the reads).</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="k">import</span> <span class="n">filter_reads</span>
 
-<span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">505</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">760</span><span class="p">,</span>
+<span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">610</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">915</span><span class="p">,</span>
                       <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
-                      <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+                      <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
 Filtered reads (and percentage of total):
 
-     TOTAL mapped              :     41123290 (100.00%)
+     Mapped both                :     58868016 (100.00%)
   -----------------------------------------------------
-   1- self-circle               :       653029 (  1.59%)
-   2- dangling-end              :     17054088 ( 41.47%)
-   3- error                     :       250158 (  0.61%)
-   4- extra dangling-end        :      4115590 ( 10.01%)
-   5- too close from RES        :      5761851 ( 14.01%)
-   6- too short                 :       307169 (  0.75%)
-   7- too large                 :        63151 (  0.15%)
-   8- over-represented          :      1334209 (  3.24%)
-   9- duplicated                :      9132048 ( 22.21%)
-  10- random breaks             :     18282481 ( 44.46%)
+   1- self-circle               :        19763 (  0.03%)
+   2- dangling-end              :      1617270 (  2.75%)
+   3- error                     :         7907 (  0.01%)
+   4- extra dangling-end        :     11123319 ( 18.90%)
+   5- too close from RES        :     15365731 ( 26.10%)
+   6- too short                 :      6742667 ( 11.45%)
+   7- too large                 :          917 (  0.00%)
+   8- over-represented          :      2111005 (  3.59%)
+   9- duplicated                :       274430 (  0.47%)
+  10- random breaks             :        36700 (  0.06%)
 </pre>
 <p>Previous function creates one file per filter. Each containing the list
 of IDs of the reads falling into the corresponding filter. In order to
@@ -499,64 +730,77 @@ apply filter, the function <code class="docutils literal"><span class="pre">appl
 without the reads contained in the files. By default all filters are
 applied.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="k">import</span> <span class="n">apply_filter</span>
-<span class="n">filt_reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_filtered_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<span class="n">filt_reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/filtered_map.tsv&#39;</span>
 </pre></div>
 </div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-9403143 reads written to file
+saving to file 33541378 reads without .
 </pre>
-<p>An example to apply only the 9 first filters:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">])</span>
+<pre class="ansi-block literal-block">
+33541378
+</pre>
+<p>As mentioned, it is usually a good idea not to consider the filter
+number 5: &#8220;too close form REs&#8221;. To do so, we can just use the
+<code class="docutils literal"><span class="pre">filters</span></code> parameter as (the less conservative approach would be to use
+only the filters 1, 2, 3, 9 and 10):</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">])</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-13666735 reads written to file
+saving to file 40026192 reads without .
+</pre>
+<pre class="ansi-block literal-block">
+40026192
 </pre>
 <p>Filters can also be applied in a &#8220;reverse&#8221; way in order to select only
 &#8220;bad&#8221; reads.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">sc_de</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_self_circles_and_dangling-ends.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
-
-<span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">sc_de</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">sc_de</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/self_circles_and_dangling-ends.tsv&#39;</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">sc_de</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-17707117 reads written to file
+saving to file 1637033 reads with .
+</pre>
+<pre class="ansi-block literal-block">
+1637033
 </pre>
 <p>This can be used for example to analyze the distribution of
 dangling-ends and self-circle along the genome</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">])</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">300</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_65_0.png" src="../_images/tutorial_0_mapping_65_0.png" />
+<img alt="../_images/tutorial_0_mapping_88_0.png" src="../_images/tutorial_0_mapping_88_0.png" />
 <p>Once filtered the peaks previously seen should disapeear:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
-                         <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6000</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_67_0.png" src="../_images/tutorial_0_mapping_67_0.png" />
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
-                         <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
+<img alt="../_images/tutorial_0_mapping_90_0.png" src="../_images/tutorial_0_mapping_90_0.png" />
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6000</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_68_0.png" src="../_images/tutorial_0_mapping_68_0.png" />
+<img alt="../_images/tutorial_0_mapping_91_0.png" src="../_images/tutorial_0_mapping_91_0.png" />
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_69_0.png" src="../_images/tutorial_0_mapping_69_0.png" />
+<img alt="../_images/tutorial_0_mapping_92_0.png" src="../_images/tutorial_0_mapping_92_0.png" />
 <p>These maps can be zoomed to a given region, like first chromosome:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_71_0.png" src="../_images/tutorial_0_mapping_71_0.png" />
+<img alt="../_images/tutorial_0_mapping_94_0.png" src="../_images/tutorial_0_mapping_94_0.png" />
 <p>Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr1&#39;</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_73_0.png" src="../_images/tutorial_0_mapping_73_0.png" />
+<img alt="../_images/tutorial_0_mapping_96_0.png" src="../_images/tutorial_0_mapping_96_0.png" />
 </div>
 <div class="section" id="filtering-and-normalization">
 <h2>Filtering and normalization<a class="headerlink" href="#filtering-and-normalization" title="Permalink to this headline">¶</a></h2>
@@ -570,8 +814,7 @@ decide at which resolution we are going to analyze the data</strong>. For this
 tutorial we will use a resolution of 1 Mb.</p>
 <p><em>Note</em> : as all previous steps ended in the generation of a single file,
 we just need to load the name of the saved file with the filtered reads:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;SRX116344_200&#39;</span>
-<span class="n">filt_reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/results/</span><span class="si">%s</span><span class="s1">_filtered_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">filt_reads</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/filtered_map.tsv&#39;</span>
 </pre></div>
 </div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">load_hic_data_from_reads</span>
@@ -586,44 +829,48 @@ file of reads:</p>
 <span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_81_0.png" src="../_images/tutorial_0_mapping_81_0.png" />
+<img alt="../_images/tutorial_0_mapping_104_0.png" src="../_images/tutorial_0_mapping_104_0.png" />
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">draw_hist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
 WARNING: removing columns having more than 2327 zeroes:
    123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
-   143   145   340   492   585   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541  1585  1586
-  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1607  1680  1721
-  1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095  2096  2097  2098  2099
-  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212  2213  2214  2215  2216
-  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320  2321  2322  2323  2324
-  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525  2601  2602  2603  2604
-  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837  2838  2839  2840  2841  2842
-  2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044  3045  3046  3055  3067  3068
-  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086  3087  3088
-  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
-/usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+   143   342   343   584   585   742   882   929   930   931   932   953  1124  1294  1295  1296  1297  1440  1441  1541
+  1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1720  1721
+  1722  1866  1867  1868  1950  1986  1987  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095  2096  2097
+  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212  2213  2214
+  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320  2321  2322
+  2323  2324  2325  2326  2327  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2524  2525  2526  2601  2602
+  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837  2838  2839  2840
+  2841  2842  2843  2844  2845  2846  2850  2851  2946  2947  2948  2949  3044  3045  3046  3047  3048  3049  3050  3051
+  3052  3053  3054  3055  3057  3058  3059  3060  3061  3062  3063  3064  3065  3066  3067  3068  3069  3070  3071  3072
+  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086  3087  3088  3089  3090  3091  3092
+  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
+/home/fransua/.miniconda2/lib/python2.7/site-packages/numpy/core/numeric.py:474: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
-<img alt="../_images/tutorial_0_mapping_82_1.png" src="../_images/tutorial_0_mapping_82_1.png" />
+<img alt="../_images/tutorial_0_mapping_105_1.png" src="../_images/tutorial_0_mapping_105_1.png" />
 <pre class="ansi-block literal-block">
-/usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
+Found 237 of 3103 columnswith poor signal
+</pre>
+<pre class="ansi-block literal-block">
+/home/fransua/.miniconda2/lib/python2.7/site-packages/pytadbit/utils/hic_filtering.py:149: ComplexWarning: Casting complex values to real discards the imaginary part
   round(root, 3), ' '.join(
 
-WARNING: removing columns having less than 1381.618 counts:
+WARNING: removing columns having less than 2886.461 counts:
    123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
-   143   144   145   340   492   585   691   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541
-  1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1604
-  1607  1609  1680  1721  1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095
-  2096  2097  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212
-  2213  2214  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320
-  2321  2322  2323  2324  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525
-  2584  2601  2602  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837
-  2838  2839  2840  2841  2842  2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044
-  3045  3046  3047  3055  3067  3068  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082
-  3083  3084  3085  3086  3087  3088  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102
-  3103
+   143   145   342   343   584   585   742   882   929   930   931   932   953  1124  1294  1295  1296  1297  1440  1441
+  1541  1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603
+  1608  1609  1720  1721  1722  1866  1867  1868  1950  1986  1987  2085  2086  2087  2088  2089  2090  2091  2092  2093
+  2094  2095  2096  2097  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210
+  2211  2212  2213  2214  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318
+  2319  2320  2321  2322  2323  2324  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455
+  2524  2525  2526  2601  2602  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801
+  2802  2837  2838  2839  2840  2841  2842  2843  2844  2845  2846  2850  2851  2852  2946  2947  2948  2949  3044  3045
+  3046  3047  3048  3049  3050  3051  3052  3053  3054  3055  3057  3058  3059  3060  3061  3062  3063  3064  3065  3066
+  3067  3068  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086
+  3087  3088  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
 </pre>
 <p>Filtered columns (to high count of zeroes, or to low mean value) will be
 skipped in most of analysis available and are now shaded in the matrix
@@ -631,33 +878,37 @@ representation:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
-  warnings.warn(&quot;Mean of empty slice.&quot;, RuntimeWarning)
-/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
-  ret = ret.dtype.type(ret / rcount)
-</pre>
-<img alt="../_images/tutorial_0_mapping_84_1.png" src="../_images/tutorial_0_mapping_84_1.png" />
+<img alt="../_images/tutorial_0_mapping_107_0.png" src="../_images/tutorial_0_mapping_107_0.png" />
 </div>
 <div class="section" id="normalization">
 <h3>Normalization<a class="headerlink" href="#normalization" title="Permalink to this headline">¶</a></h3>
 <p>TADbit implements ICE normalization strategy [Imakaev2012]_ which
 basically consists constructing a new in dividing each cell</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
 iterative correction
-          1392.000        9454.176       13609.000    0   0.85276
-          8583.102        9678.681       18479.813    1   0.90933
-          7057.620        9725.242       10177.855    2   0.27430
-          9531.512        9733.579       11274.686    3   0.15833
-          9076.352        9735.375        9827.806    4   0.06769
+  - copying matrix
+  - computing baises
+          2836.000       27884.987       44592.000    0   0.89830
+         20089.022       30027.383       85246.499    1   1.83896
+         15842.132       31075.219       40561.598    2   0.49020
+         25400.491       31543.690       47025.449    3   0.49080
+         24496.468       31783.468       37210.830    4   0.22927
+         28213.858       31908.415       37511.228    5   0.17559
+         28468.121       31976.815       35032.068    6   0.10973
+         29843.664       32015.253       34841.364    7   0.08827
+rescaling to factor 1
 </pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For a faster normalization like the one used in <a class="reference internal" href="../biblio.html#rao2014" id="id2">[Rao2014]</a> just set the iterations parameter to 0</p>
+</div>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_88_0.png" src="../_images/tutorial_0_mapping_88_0.png" />
+<img alt="../_images/tutorial_0_mapping_112_0.png" src="../_images/tutorial_0_mapping_112_0.png" />
 </div>
 </div>
 </div>
@@ -679,10 +930,11 @@ iterative correction
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
