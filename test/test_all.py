@@ -775,7 +775,7 @@ class TestTadbit(unittest.TestCase):
                                  0.006, 0.029, 0.974, 0.076, 0.03, 0.219, 0.013,
                                  0.031, 0.08, 0.974, 0.018, 0.028, 0.004, 0.0,
                                  0.028, 0.034, 0.89])
-        system('rm -rf lala*')
+        # system('rm -rf lala*')
         if CHKTIME:
             self.assertEqual(True, True)
             print '19', time() - t0
@@ -890,12 +890,12 @@ def generate_random_ali(ali='map'):
             if pos2 > pos1:
                 sd1 = 1
                 sd2 = 0
-                pos1 -= 2 if ali=='map' else 3
+                pos1 -= 2  # if ali=='map' else 3
                 break
             elif pos2 < pos1:
                 sd1 = 0
                 sd2 = 1
-                pos2 -= 2 if ali=='map' else 3
+                pos2 -= 2  # if ali=='map' else 3
                 break
         read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala01.%012d' % (i)}
         read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala01.%012d' % (i)}
@@ -919,12 +919,12 @@ def generate_random_ali(ali='map'):
             if pos2 > pos1:
                 sd1 = 0
                 sd2 = 1
-                pos2 -= 2 if ali=='map' else 3
+                pos2 -= 2  # if ali=='map' else 3
                 break
             elif pos2 < pos1:
                 sd1 = 1
                 sd2 = 0
-                pos1 -= 2 if ali=='map' else 3
+                pos1 -= 2  # if ali=='map' else 3
                 break
         read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala02.%012d' % (i)}
         read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala02.%012d' % (i)}
@@ -948,8 +948,8 @@ def generate_random_ali(ali='map'):
                 continue
             if pos1 != pos2:
                 if sd1 == 1:
-                    pos1 -= 2 if ali=='map' else 3
-                    pos2 -= 2 if ali=='map' else 3
+                    pos1 -= 2  # if ali=='map' else 3
+                    pos2 -= 2  # if ali=='map' else 3
                 break
         read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala03.%012d' % (i)}
         read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala03.%012d' % (i)}
@@ -978,12 +978,12 @@ def generate_random_ali(ali='map'):
             if pos2 > pos1:
                 sd1 = 0
                 sd2 = 1
-                pos2 -= 2 if ali=='map' else 3
+                pos2 -= 2  # if ali=='map' else 3
                 break
             elif pos2 < pos1:
                 sd1 = 1
                 sd2 = 0
-                pos1 -= 2 if ali=='map' else 3
+                pos1 -= 2  # if ali=='map' else 3
                 break
         read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala04.%012d' % (i)}
         read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala04.%012d' % (i)}
@@ -1019,11 +1019,11 @@ def generate_random_ali(ali='map'):
         if pos2 > pos1:
             sd1 = 0
             sd2 = 1
-            pos2 -= 2 if ali=='map' else 3
+            pos2 -= 2  # if ali=='map' else 3
         elif pos2 < pos1:
             sd1 = 1
             sd2 = 0
-            pos1 -= 2 if ali=='map' else 3
+            pos1 -= 2  # if ali=='map' else 3
         read1 = {'crm': crm1, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala05.%012d' % (i)}
         read2 = {'crm': crm2, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala05.%012d' % (i)}
         out1.write(read.format(**read1))
