@@ -96,7 +96,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             if not mapper:
                 mapper = fhandler.header['PG'][0]['ID']
             if mapper.lower()=='gem':
-                condition = lambda x: x[1][0] != 'NM'
+                condition = lambda x: x[1][0][0] != 'N'
             elif mapper.lower() in ['bowtie', 'bowtie2']:
                 condition = lambda x: 'XS' in dict(x)
             else:
