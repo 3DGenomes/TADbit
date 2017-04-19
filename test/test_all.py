@@ -775,7 +775,7 @@ class TestTadbit(unittest.TestCase):
                                  0.006, 0.029, 0.974, 0.076, 0.03, 0.219, 0.013,
                                  0.031, 0.08, 0.974, 0.018, 0.028, 0.004, 0.0,
                                  0.028, 0.034, 0.89])
-        # system('rm -rf lala*')
+        system('rm -rf lala*')
         if CHKTIME:
             self.assertEqual(True, True)
             print '19', time() - t0
