@@ -164,6 +164,8 @@ Experiment class
 
       - `write_interaction_pairs <http://3dgenomes.github.io/TADbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs>`_: Creates a tab separated file with all the pairwise interactions.
 
+      - `write_json <http://3dgenomes.github.io/TADbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_json>`_: Save hic matrix in the json format, read by TADkit.
+
       - `write_tad_borders <http://3dgenomes.github.io/TADbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_tad_borders>`_ [#second]_: Print a table summarizing the TADs found by tadbit. This function outputs                                             something similar to the R function.
 
 Hic_data module
@@ -179,7 +181,9 @@ HiC_data class
 
       - `cis_trans_ratio <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio>`_: Counts the number of interactions occuring within chromosomes (cis) with                                             respect to the total number of interactions
 
-      - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B copartments in each chromsome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromsome names.
+      - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B copartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
+
+      - `get_hic_data_as_csr <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr>`_: Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
 
       - `get_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix>`_: returns a matrix.
 
@@ -187,146 +191,11 @@ HiC_data class
 
       - `write_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_compartments>`_ [#second]_: Write compartments to a file.
 
+      - `write_coord_table <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_coord_table>`_: writes a coordinate table to a file.
+
       - `write_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix>`_: writes the matrix to a file.
 
       - `yield_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix>`_: Yields a matrix line by line.                                             Bad row/columns are returned as null row/columns.
-
-Imp imp_modelling module
-------------------------
-
-   - `generate_3d_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.imp_modelling.generate_3d_models>`_ [#second]_: This function generates three-dimensional models starting from Hi-C data.                                             The final analysis will be performed on the n_keep top models.
-
-Imp impmodel module
--------------------
-
-   - `load_impmodel_from_xyz <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_xyz>`_: Loads an IMPmodel object using an xyz file of the form:
-
-   - `load_impmodel_from_cmm <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_cmm>`_: Loads an IMPmodel object using an cmm file of the form:
-
-IMPmodel class
-++++++++++++++
-    A container for the IMP modeling results.
-
-      - `accessible_surface <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface>`_ [#first]_: Calculates a mesh surface around the model (distance equal to input                                             **radius**) and checks if each point of this mesh could be replaced by                                             an object (i.e. a protein) of a given **radius**                                                                                          Outer part of the model can be excluded from the estimation of                                             accessible surface, as the occupancy outside the model is unkown (see                                             superradius option).
-
-      - `center_of_mass <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.center_of_mass>`_: Gives the center of mass of a model
-
-      - `contour <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.contour>`_: Total length of the model
-
-      - `cube_side <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.cube_side>`_: Calculates the side of a cube containing the model.
-
-      - `cube_volume <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.cube_volume>`_: Calculates the volume of a cube containing the model.
-
-      - `distance <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.distance>`_: Calculates the distance between one point of the model and an external                                             coordinate
-
-      - `inaccessible_particles <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles>`_: Gives the number of loci/particles that are accessible to an object                                             (i.e. a protein) of a given size.
-
-      - `longest_axe <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.longest_axe>`_: Gives the distance between most distant particles of the model
-
-      - `min_max_by_axis <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis>`_: Calculates the minimum and maximum coordinates of the model
-
-      - `objective_function <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step.
-
-      - `persistence_length <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.persistence_length>`_: Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
-
-      - `radius_of_gyration <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration>`_: Calculates the radius of gyration or gyradius of the model                                                                                          Defined as:
-
-      - `shortest_axe <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.shortest_axe>`_: Minimum distance between two particles in the model
-
-      - `view_model <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.view_model>`_ [#first]_: Visualize a selected model in the three dimensions. (either with Chimera                                             or through matplotlib).
-
-      - `write_cmm <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm>`_ [#second]_: Save a model in the cmm format, read by Chimera                                             (http://www.cgl.ucsf.edu/chimera).                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
-
-      - `write_json <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_json>`_ [#second]_: Save a model in the json format, read by TADkit.                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
-
-      - `write_xyz <http://3dgenomes.github.io/TADbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz>`_ [#second]_: Writes a xyz file containing the 3D coordinates of each particle in the                                             model.                                             Outfile is tab separated column with the bead number being the                                             first column, then the genomic coordinate and finaly the 3                                             coordinates X, Y and Z                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
-
-Imp impoptimizer module
------------------------
-
-IMPoptimizer class
-++++++++++++++++++
-    This class optimizes a set of paramaters (scale, maxdist, lowfreq and
-    upfreq) in order to maximize the correlation between the models generated
-    by IMP and the input data.
-
-      - `get_best_parameters_dict <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict>`_: 
-
-      - `load_from_file <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file>`_: Loads the optimized parameters from a file generated with the function:                                             pytadbit.imp.impoptimizer.IMPoptimizer.write_result.                                             This function does not overwrite the parameters that were already                                             loaded or calculated.
-
-      - `load_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search>`_: Loads one file or a list of files containing pre-calculated Structural                                             Models (keep_models parameter used). And correlate each set of models                                             with real data. Usefull to run different correlation on the same data                                             avoiding to re-calculate each time the models.
-
-      - `plot_2d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
-
-      - `plot_3d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d>`_: A grid of heatmaps representing the result of the optimization.
-
-      - `run_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             maxdist, lowfreq and upfreq) in the given ranges of values.
-
-      - `write_result <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.write_result>`_: This function writes a log file of all the values tested for each                                             parameter, and the resulting correlation value.                                                                                          This file can be used to load or merge data a posteriori using                                             the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file
-
-Imp structuralmodels module
----------------------------
-
-   - `load_structuralmodels <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.load_structuralmodels>`_: Loads StructuralModels from a file                                             (generated with                                             save_models).
-
-StructuralModels class
-++++++++++++++++++++++
-    This class contains three-dimensional models generated from a single Hi-C
-    data. They can be reached either by their index (integer representing their
-    rank according to objective function value), or by their IMP random intial
-    number (as string).
-
-      - `accessibility <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.accessibility>`_ [#first]_ [#second]_: Calculates a mesh surface around the model (distance equal to input                                             **radius**) and checks if each point of this mesh could be replaced by                                             an object (i.e. a protein) of a given **radius**                                                                                          Outer part of the model can be excluded from the estimation of                                             accessible surface, as the occupancy outside the model is unkown (see                                             superradius option).
-
-      - `align_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.align_models>`_: Three-dimensional aligner for structural models.
-
-      - `angle_between_3_particles <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles>`_: Calculates the angle between 3 particles.                                                                                                                                       Given three particles A, B and C, the angle g (angle ACB, shown below):
-
-      - `average_model <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.average_model>`_: Builds and returns an average model representing a given group of models
-
-      - `centroid_model <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.centroid_model>`_: Estimates and returns the centroid model of a given group of models.
-
-      - `cluster_analysis_dendrogram <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram>`_ [#first]_: Representation of the clustering results. The length of the leaves if                                             proportional to the final objective function value of each model. The                                             branch widths are proportional to the number of models in a given                                             cluster (or group of clusters, if it is an internal branch).
-
-      - `cluster_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.cluster_models>`_: This function performs a clustering analysis of the generated models                                             based on structural comparison. The result will be stored in                                             StructuralModels.clusters                                                                                          Clustering is done according to a score of pairwise comparison                                             calculated as:
-
-      - `contact_map <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.contact_map>`_ [#first]_ [#second]_: Plots a contact map representing the frequency of interaction (defined                                             by a distance cutoff) between two particles.
-
-      - `correlate_with_real_data <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data>`_ [#first]_: Plots the result of a correlation between a given group of models and                                             original Hi-C data.
-
-      - `deconvolve <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.deconvolve>`_ [#first]_: This function performs a deconvolution analysis of a given froup of models.                                             It first clusters models based on structural comparison (dRMSD), and                                             then, performs a differential contact map between each possible pair                                             of cluster.
-
-      - `define_best_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.define_best_models>`_: Defines the number of top models (based on the objective function) to                                             keep. If keep_all is set to True in                                             generate_3d_models or in                                             model_region, then the full set                                             of models (n_models parameter) will be used, otherwise only the n_keep                                             models will be available.
-
-      - `density_plot <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.density_plot>`_ [#first]_ [#second]_: Plots the number of nucleotides per nm of chromatin vs the modeled                                             region bins.
-
-      - `dihedral_angle <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle>`_: Calculates the dihedral angle between 2 planes formed by 4 particles.
-
-      - `fetch_model_by_rand_init <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init>`_: Models are stored according to their objective function value (first                                             best), but in order to reproduce a model, we need its initial random                                             number. This method helps to fetch the model corresponding to a given                                             initial random number stored under                                             StructuralModels.models[N]['rand_init'].
-
-      - `get_contact_matrix <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix>`_: Returns a matrix with the number of interactions observed below a given                                             cutoff distance.
-
-      - `interactions <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.interactions>`_ [#first]_ [#second]_: Plots, for each particle, the number of interactions (particles closer                                             than the guiven cut-off). The value given is the average for all models.
-
-      - `median_3d_dist <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist>`_ [#first]_: Computes the median distance between two particles over a set of models
-
-      - `model_consistency <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.model_consistency>`_ [#first]_ [#second]_: Plots the particle consistency, over a given set of models, vs the                                             modeled region bins. The consistency is a measure of the variability                                             (or stability) of the modeled region (the higher the consistency value,                                             the higher stability).
-
-      - `objective_function_model <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.objective_function_model>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step
-
-      - `particle_coordinates <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates>`_: Returns the mean coordinate of a given particle in a group of models.
-
-      - `save_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.save_models>`_ [#second]_: Saves all the models in pickle format (python object written to disk).
-
-      - `view_centroid <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.view_centroid>`_: shortcut for                                             view_models(tool='plot', show='highlighted', highlight='centroid')
-
-      - `view_models <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.view_models>`_ [#first]_: Visualize a selected model in the three dimensions (either with Chimera                                             or through matplotlib).
-
-      - `walking_angle <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.walking_angle>`_ [#first]_ [#second]_: Plots the angle between successive loci in a given model or set of                                             models. In order to limit the noise of the measure angle is calculated                                             between 3 loci, between each are two other loci. E.g. in the scheme                                             bellow, angle are calculated between loci A, D and G.
-
-      - `walking_dihedral <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral>`_ [#first]_: Plots the dihedral angle between successive planes. A plane is formed by                                             3 successive loci.
-
-      - `zscore_plot <http://3dgenomes.github.io/TADbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot>`_ [#first]_: Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one                                             of which is binary showing in red Z-scores higher than upper cut-off;                                             and in blue Z-scores lower than lower cut-off. Last plot is an histogram                                             of the distribution of Z-scores, showing selected regions. Histogram                                             also shows the fit to normal distribution.
 
 Mapping analyze module
 ----------------------
@@ -334,6 +203,8 @@ Mapping analyze module
    - `eig_correlate_matrices <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.eig_correlate_matrices>`_ [#first]_ [#second]_: Compare the iteractions of two Hi-C matrices using their 6 first                                             eigenvectors, with pearson correlation
 
    - `plot_genomic_distribution <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_genomic_distribution>`_ [#first]_ [#second]_: 
+
+   - plot_strand_bias_by_distance [#first]_: Classify reads into for categories depending on the strand on which each end                                             is mapped, and plots the proportion of each of these categories in function                                             of the genomic distance between them.                                             The four categories are:                                                                                          - Both read-ends mapped in the forward strand                                             - Both read-ends mapped in the reverse strand                                             - First read-end in the forward strand1, second in the reverse                                             - First read-end in the reverse strand1, second in the forward                                                                                          Note: First/second read-ends are according to their genomic coordinates.                                                                                          The plot is divided in two halves, in order to use different zooms for                                             read-ends mapped very close, and read-ends further (by default the first                                             half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).
 
    - `hic_map <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map>`_ [#first]_ [#second]_: function to retrieve data from HiC-data object. Data can be stored as                                             a square matrix, or drawn using matplotlib
 
@@ -343,7 +214,7 @@ Mapping analyze module
 
    - `correlate_matrices <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices>`_ [#first]_ [#second]_: Compare the iteractions of two Hi-C matrices at a given distance,                                             with spearman rank correlation
 
-   - insert_sizes [#first]_:                 Plots the distribution of dangling-ends lengths
+   - `insert_sizes <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.insert_sizes>`_ [#first]_: Plots the distribution of dangling-ends lengths
 
 Mapping filter module
 ---------------------
@@ -366,25 +237,186 @@ Mapping restriction_enzymes module
 
    - map_re_sites_nochunk:                   map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-   - repaired:                               returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
+   - `repaired <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.repaired>`_: returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
 
-   - map_re_sites:                           map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
+   - `map_re_sites <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.map_re_sites>`_: map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-   - religated:                              returns the resulting sequence after religation of two digested and repaired                                             ends.
+   - `religated <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.religated>`_: returns the resulting sequence after religation of two digested and repaired                                             ends.
+
+Modelling imp_modelling module
+------------------------------
+
+   - `generate_3d_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.imp_modelling.generate_3d_models>`_ [#second]_: This function generates three-dimensional models starting from Hi-C data.                                             The final analysis will be performed on the n_keep top models.
+
+Modelling impmodel module
+-------------------------
+
+   - `load_impmodel_from_xyz <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.load_impmodel_from_xyz>`_: Loads an IMPmodel object using an xyz file of the form:
+
+   - `load_impmodel_from_cmm <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.load_impmodel_from_cmm>`_: Loads an IMPmodel object using an cmm file of the form:
+
+IMPmodel class
+++++++++++++++
+    A container for the IMP modeling results.
+
+      - objective_function [#first]_:        This function plots the objective function value per each Monte-Carlo                                             step.
+
+Modelling impoptimizer module
+-----------------------------
+
+IMPoptimizer class
+++++++++++++++++++
+    This class optimizes a set of paramaters (scale, maxdist, lowfreq and
+    upfreq) in order to maximize the correlation between the models generated
+    by IMP and the input data.
+
+      - `get_best_parameters_dict <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict>`_: 
+
+      - `load_from_file <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file>`_: Loads the optimized parameters from a file generated with the function:                                             pytadbit.modelling.impoptimizer.IMPoptimizer.write_result.                                             This function does not overwrite the parameters that were already                                             loaded or calculated.
+
+      - `load_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search>`_: Loads one file or a list of files containing pre-calculated Structural                                             Models (keep_models parameter used). And correlate each set of models                                             with real data. Usefull to run different correlation on the same data                                             avoiding to re-calculate each time the models.
+
+      - `plot_2d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
+
+      - `plot_3d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d>`_: A grid of heatmaps representing the result of the optimization.
+
+      - `run_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             maxdist, lowfreq and upfreq) in the given ranges of values.
+
+      - `write_result <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.write_result>`_: This function writes a log file of all the values tested for each                                             parameter, and the resulting correlation value.                                                                                          This file can be used to load or merge data a posteriori using                                             the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file
+
+Modelling structuralmodel module
+--------------------------------
+
+IMPmodel class
+++++++++++++++
+    A container for the IMP modeling results.
+
+      - `accessible_surface <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.accessible_surface>`_ [#first]_: Calculates a mesh surface around the model (distance equal to input                                             **radius**) and checks if each point of this mesh could be replaced by                                             an object (i.e. a protein) of a given **radius**                                                                                          Outer part of the model can be excluded from the estimation of                                             accessible surface, as the occupancy outside the model is unkown (see                                             superradius option).
+
+      - `center_of_mass <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.center_of_mass>`_: Gives the center of mass of a model
+
+      - `contour <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.contour>`_: Total length of the model
+
+      - `cube_side <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.cube_side>`_: Calculates the side of a cube containing the model.
+
+      - `cube_volume <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.cube_volume>`_: Calculates the volume of a cube containing the model.
+
+      - `distance <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.distance>`_: Calculates the distance between one point of the model and an external                                             coordinate
+
+      - `inaccessible_particles <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.inaccessible_particles>`_: Gives the number of loci/particles that are accessible to an object                                             (i.e. a protein) of a given size.
+
+      - `longest_axe <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.longest_axe>`_: Gives the distance between most distant particles of the model
+
+      - `min_max_by_axis <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.min_max_by_axis>`_: Calculates the minimum and maximum coordinates of the model
+
+      - `persistence_length <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.persistence_length>`_: Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
+
+      - `radius_of_gyration <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.radius_of_gyration>`_: Calculates the radius of gyration or gyradius of the model                                                                                          Defined as:
+
+      - `shortest_axe <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.shortest_axe>`_: Minimum distance between two particles in the model
+
+      - `view_model <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.view_model>`_ [#first]_: Visualize a selected model in the three dimensions. (either with Chimera                                             or through matplotlib).
+
+      - `write_cmm <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.write_cmm>`_ [#second]_: Save a model in the cmm format, read by Chimera                                             (http://www.cgl.ucsf.edu/chimera).                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
+
+      - `write_xyz <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.write_xyz>`_ [#second]_: Writes a xyz file containing the 3D coordinates of each particle in the                                             model.                                             Outfile is tab separated column with the bead number being the                                             first column, then the genomic coordinate and finaly the 3                                             coordinates X, Y and Z                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
+
+Modelling structuralmodels module
+---------------------------------
+
+   - `load_structuralmodels <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.load_structuralmodels>`_: Loads StructuralModels from a file                                             (generated with                                             save_models).
+
+StructuralModels class
+++++++++++++++++++++++
+    This class contains three-dimensional models generated from a single Hi-C
+    data. They can be reached either by their index (integer representing their
+    rank according to objective function value), or by their IMP random intial
+    number (as string).
+
+      - `accessibility <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.accessibility>`_ [#first]_ [#second]_: Calculates a mesh surface around the model (distance equal to input                                             **radius**) and checks if each point of this mesh could be replaced by                                             an object (i.e. a protein) of a given **radius**                                                                                          Outer part of the model can be excluded from the estimation of                                             accessible surface, as the occupancy outside the model is unkown (see                                             superradius option).
+
+      - `align_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.align_models>`_: Three-dimensional aligner for structural models.
+
+      - `angle_between_3_particles <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.angle_between_3_particles>`_: Calculates the angle between 3 particles.                                                                                                                                       Given three particles A, B and C, the angle g (angle ACB, shown below):
+
+      - `average_model <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.average_model>`_: Builds and returns an average model representing a given group of models
+
+      - `centroid_model <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.centroid_model>`_: Estimates and returns the centroid model of a given group of models.
+
+      - `cluster_analysis_dendrogram <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.cluster_analysis_dendrogram>`_ [#first]_: Representation of the clustering results. The length of the leaves if                                             proportional to the final objective function value of each model. The                                             branch widths are proportional to the number of models in a given                                             cluster (or group of clusters, if it is an internal branch).
+
+      - `cluster_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.cluster_models>`_: This function performs a clustering analysis of the generated models                                             based on structural comparison. The result will be stored in                                             StructuralModels.clusters                                                                                          Clustering is done according to a score of pairwise comparison                                             calculated as:
+
+      - `contact_map <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.contact_map>`_ [#first]_ [#second]_: Plots a contact map representing the frequency of interaction (defined                                             by a distance cutoff) between two particles.
+
+      - `correlate_with_real_data <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.correlate_with_real_data>`_ [#first]_: Plots the result of a correlation between a given group of models and                                             original Hi-C data.
+
+      - `deconvolve <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.deconvolve>`_ [#first]_: This function performs a deconvolution analysis of a given froup of models.                                             It first clusters models based on structural comparison (dRMSD), and                                             then, performs a differential contact map between each possible pair                                             of cluster.
+
+      - `define_best_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.define_best_models>`_: Defines the number of top models (based on the objective function) to                                             keep. If keep_all is set to True in                                             generate_3d_models or in                                             model_region, then the full set                                             of models (n_models parameter) will be used, otherwise only the n_keep                                             models will be available.
+
+      - `density_plot <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.density_plot>`_ [#first]_ [#second]_: Plots the number of nucleotides per nm of chromatin vs the modeled                                             region bins.
+
+      - `dihedral_angle <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.dihedral_angle>`_: Calculates the dihedral angle between 2 planes formed by 5 particles                                             (one common to both planes).
+
+      - `fetch_model_by_rand_init <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.fetch_model_by_rand_init>`_: Models are stored according to their objective function value (first                                             best), but in order to reproduce a model, we need its initial random                                             number. This method helps to fetch the model corresponding to a given                                             initial random number stored under                                             StructuralModels.models[N]['rand_init'].
+
+      - `get_contact_matrix <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.get_contact_matrix>`_: Returns a matrix with the number of interactions observed below a given                                             cutoff distance.
+
+      - `interactions <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.interactions>`_ [#first]_ [#second]_: Plots, for each particle, the number of interactions (particles closer                                             than the guiven cut-off). The value given is the average for all models.
+
+      - `median_3d_dist <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.median_3d_dist>`_ [#first]_: Computes the median distance between two particles over a set of models
+
+      - `model_consistency <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.model_consistency>`_ [#first]_ [#second]_: Plots the particle consistency, over a given set of models, vs the                                             modeled region bins. The consistency is a measure of the variability                                             (or stability) of the modeled region (the higher the consistency value,                                             the higher stability).
+
+      - `objective_function_model <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.objective_function_model>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step
+
+      - `particle_coordinates <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.particle_coordinates>`_: Returns the mean coordinate of a given particle in a group of models.
+
+      - `save_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.save_models>`_ [#second]_: Saves all the models in pickle format (python object written to disk).
+
+      - `view_centroid <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.view_centroid>`_: shortcut for                                             view_models(tool='plot', show='highlighted', highlight='centroid')
+
+      - `view_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.view_models>`_ [#first]_: Visualize a selected model in the three dimensions (either with Chimera                                             or through matplotlib).
+
+      - `walking_angle <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.walking_angle>`_ [#first]_ [#second]_: Plots the angle between successive loci in a given model or set of                                             models. In order to limit the noise of the measure angle is calculated                                             between 3 loci, between each are two other loci. E.g. in the scheme                                             bellow, angle are calculated between loci A, D and G.
+
+      - `walking_dihedral <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.walking_dihedral>`_ [#first]_ [#second]_: Plots the dihedral angle between successive planes. A plane is formed by                                             3 successive loci.
+
+      - `zscore_plot <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.zscore_plot>`_ [#first]_: Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one                                             of which is binary showing in red Z-scores higher than upper cut-off;                                             and in blue Z-scores lower than lower cut-off. Last plot is an histogram                                             of the distribution of Z-scores, showing selected regions. Histogram                                             also shows the fit to normal distribution.
+
+Parsers bed_parser module
+-------------------------
+
+   - parse_bed:                              simple BED and BEDgraph parser that only checks for the fields 1, 2, 3 and 5                                             (or 1, 2 and 3 if 5 not availbale).
 
 Parsers genome_parser module
 ----------------------------
 
-   - parse_fasta:                            Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
+   - `parse_fasta <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta>`_: Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
 
 Parsers hic_parser module
 -------------------------
+
+   - optimal_reader:                         Reads a matrix generated by TADbit.                                             Can be slower than autoreader, but uses almost a third of the memory
 
    - autoreader:                             Auto-detect matrix format of HiC data file.
 
    - `read_matrix <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix>`_: Read and checks a matrix from a file (using                                             autoreader) or a list.
 
+   - is_asymmetric:                          Helper functions for the autoreader.
+
    - load_hic_data_from_reads:               
+
+   - symmetrize_dico:                        Make an HiC_data object symmetric by summing two halves of the matrix
+
+   - symmetrize:                             Make a matrix symmetric by summing two halves of the matrix
+
+   - is_asymmetric_dico:                     Helper functions for the optimal_reader
+
+AutoReadFail class
+++++++++++++++++++
+                      Exception to handle failed autoreader.
 
 Parsers tad_parser module
 -------------------------
@@ -454,6 +486,13 @@ Utils hic_filtering module
 
    - filter_by_zero_count:                   
 
+Utils hmm module
+----------------
+
+   - best_path:                              Viterbi algorithm with backpointers
+
+   - gaussian_prob:                          of x to follow the gaussian with given E                                             https://en.wikipedia.org/wiki/Normal_distribution
+
 Utils normalize_hic module
 --------------------------
 
@@ -490,23 +529,23 @@ Utils three_dim_stats module
 
    - `generate_circle_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points>`_: Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
-   - mass_center:                            Transforms coordinates according to the center of mass
+   - `mass_center <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center>`_: Transforms coordinates according to the center of mass
 
-   - generate_sphere_points:                 Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
+   - `generate_sphere_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points>`_: Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
 
-   - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
+   - `rotate_among_y_axis <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis>`_: Rotate and object with a list of x, y, z coordinates among its center of                                             mass
 
    - `calc_eqv_rmsd <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd>`_: Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
 
-   - get_center_of_mass:                     get the center of mass of a given object with list of x, y, z coordinates
+   - `get_center_of_mass <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass>`_: get the center of mass of a given object with list of x, y, z coordinates
 
-   - find_angle_rotation_improve_x:          Finds the rotation angle needed to face the longest edge of the molecule
+   - `find_angle_rotation_improve_x <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x>`_: Finds the rotation angle needed to face the longest edge of the molecule
 
    - fast_square_distance:                   Calculates the square distance between two coordinates.
 
    - `angle_between_3_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points>`_: Calculates the angle between 3 particles                                                                                          Given three particles A, B and C, the angle g (angle ACB, shown below):
 
-   - build_mesh:                             Main function for the calculation of the accessibility of a model.
+   - `build_mesh <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh>`_: Main function for the calculation of the accessibility of a model.
 
 
 .. [#first] functions generating plots
