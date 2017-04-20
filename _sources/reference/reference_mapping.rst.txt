@@ -19,6 +19,8 @@ Quality check and plotting
 
 .. currentmodule:: pytadbit.mapping.analyze
 
+.. autofunction:: load_hic_data_from_reads
+
 .. autofunction:: hic_map
 
 .. autofunction:: correlate_matrices
@@ -32,6 +34,8 @@ Quality check and plotting
 .. autofunction:: plot_genomic_distribution
 
 .. autofunction:: insert_sizes
+
+.. autofunction:: plot_strand_bias_by_distance
 
 .. currentmodule:: pytadbit.utils.fastq_utils
 
