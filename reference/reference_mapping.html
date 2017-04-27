@@ -144,7 +144,7 @@ index does not fit in memory</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.hic_map">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">hic_map</code><span class="sig-paren">(</span><em>data</em>, <em>resolution=None</em>, <em>normalized=False</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='jet'</em>, <em>pdf=False</em>, <em>decay=True</em>, <em>perc=10</em>, <em>name=None</em>, <em>decay_resolution=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">hic_map</code><span class="sig-paren">(</span><em>data</em>, <em>resolution=None</em>, <em>normalized=False</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>perc_clim=None</em>, <em>cmap='jet'</em>, <em>pdf=False</em>, <em>decay=True</em>, <em>perc=20</em>, <em>name=None</em>, <em>decay_resolution=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>function to retrieve data from HiC-data object. Data can be stored as
 a square matrix, or drawn using matplotlib</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -191,10 +191,14 @@ interactions (usually a decay).</li>
 <li><strong>force_image</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; force to generate an image even if resolution is
 crazy...</li>
 <li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
-of the heatmap</li>
+of the heatmap. (perc_clim should be set to None)</li>
+<li><strong>perc_clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
+of the heatmap; in percentile. (clim should be set to None)</li>
 <li><strong>pdf</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; when using the bny_chrom option, to specify the format of
 the stored images</li>
-<li><strong>cmap</strong> (<em>Reds</em>) &#8211; color map to be used for the heatmap</li>
+<li><strong>cmap</strong> (<em>jet</em>) &#8211; color map to be used for the heatmap; &#8220;tadbit&#8221; color map is
+also implemented and will use percentiles of the distribution of
+interactions to defines intensities of red.</li>
 <li><strong>decay_resolution</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; chromatin fragment size to consider when
 calculating decay of the number of interactions with genomic distance.
 Default is equal to resolution of the matrix.</li>
@@ -336,7 +340,7 @@ of the file name will determine the desired format).</li>
 <li><strong>resolution</strong> (<em>100</em>) &#8211; group reads that are closer than this resolution
 parameter</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple of lower and upper bound for the y axis</li>
-<li><strong>yscale</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if set_bad to &#8220;log&#8221; values will be represented in log2 
+<li><strong>yscale</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if set_bad to &#8220;log&#8221; values will be represented in log2
 scale</li>
 <li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
@@ -397,8 +401,8 @@ sizes divided by 100 000)</dd>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_strand_bias_by_distance">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_strand_bias_by_distance</code><span class="sig-paren">(</span><em>fnam</em>, <em>nreads=None</em>, <em>half_step=20</em>, <em>half_len=2000</em>, <em>full_step=500</em>, <em>full_len=50000</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Classify reads into for categories depending on the strand on which each end 
-is mapped, and plots the proportion of each of these categories in function 
+<dd><p>Classify reads into for categories depending on the strand on which each end
+is mapped, and plots the proportion of each of these categories in function
 of the genomic distance between them.
 The four categories are:</p>
 <blockquote>
@@ -410,8 +414,8 @@ The four categories are:</p>
 </ul>
 </div></blockquote>
 <p>Note: First/second read-ends are according to their genomic coordinates.</p>
-<p>The plot is divided in two halves, in order to use different zooms for 
-read-ends mapped very close, and read-ends further (by default the first 
+<p>The plot is divided in two halves, in order to use different zooms for
+read-ends mapped very close, and read-ends further (by default the first
 half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -695,7 +699,7 @@ ends.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 20, 2017.
+      Last updated on Apr 27, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
