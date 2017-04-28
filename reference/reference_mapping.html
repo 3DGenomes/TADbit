@@ -61,7 +61,10 @@
 <dl class="function">
 <dt id="pytadbit.mapping.full_mapper.full_mapping">
 <code class="descclassname">pytadbit.mapping.full_mapper.</code><code class="descname">full_mapping</code><span class="sig-paren">(</span><em>gem_index_path</em>, <em>fastq_path</em>, <em>out_map_dir</em>, <em>r_enz=None</em>, <em>frag_map=True</em>, <em>min_seq_len=15</em>, <em>windows=None</em>, <em>add_site=True</em>, <em>clean=False</em>, <em>get_nread=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the mapping</p>
+<dd><p>Maps FASTQ reads to an indexed reference genome. Mapping can be done either
+without knowledge of the restriction enzyme used, or for experiments
+performed without one, like Micro-C (iterative mapping), or using the
+ligation sites created from the digested ends (fragment-based mapping).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -69,7 +72,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>gem_index_path</strong> &#8211; path to index file created from a reference genome
 using gem-index tool</li>
-<li><strong>fastq_path</strong> &#8211; PATH to fastq file, either compressed or not.</li>
+<li><strong>fastq_path</strong> &#8211; PATH to FASTQ file, either compressed or not.</li>
 <li><strong>out_map_dir</strong> &#8211; path to a directory where to store mapped reads in MAP
 format .</li>
 <li><strong>r_enz</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the restriction enzyme used in the experiment e.g.
@@ -80,7 +83,7 @@ andeach is mapped.</li>
 <li><strong>add_site</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; when splitting the sequence by ligated sites found,
 removes the ligation site, and put back the original RE site.</li>
 <li><strong>min_seq_len</strong> (<em>15</em>) &#8211; minimum size of a fragment to map</li>
-<li><strong>windows</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>tuple of ranges for begining and end of the
+<li><strong>windows</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>tuple of ranges for beginning and end of the
 mapping. This parameter allows to do classical iterative mapping, e.g.</p>
 <blockquote>
 <div>windows=((1,25),(1,30),(1,35),(1,40),(1,45),(1,50))</div></blockquote>
@@ -89,7 +92,7 @@ mapping. This parameter allows to do classical iterative mapping, e.g.</p>
 <dd>windows=((1,101),)</dd>
 </dl>
 </li>
-<li><strong>clean</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove intermedite files created in temp_dir</li>
+<li><strong>clean</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove intermediate files created in temp_dir</li>
 <li><strong>nthreads</strong> (<em>4</em>) &#8211; number of threads to use for mapping (number of CPUs)</li>
 <li><strong>max_edit_distance</strong> (<em>0.04</em>) &#8211; The maximum number of edit operations allowed
 while verifying candidate matches by dynamic programming.</li>
@@ -104,7 +107,7 @@ a path and the number of reads processed</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of paths to generated outfiles. To be passed to 
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of paths to generated outfiles. To be passed to
 <code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.map_parser.parse_map()</span></code></p>
 </td>
 </tr>
@@ -443,6 +446,56 @@ reads with at least a ligation site.</p>
 </div>
 <div class="section" id="filtering">
 <h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.map_re_sites">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">map_re_sites</code><span class="sig-paren">(</span><em>enzyme_name</em>, <em>genome_seq</em>, <em>frag_chunk=100000</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#map_re_sites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.map_re_sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>map all restriction enzyme (RE) sites of a given enzyme in a genome.
+Position of a RE site is defined as the genomic coordinate of the first
+nucleotide after the first cut (genomic coordinate starts at 1).
+In the case of HindIII the genomic coordinate is this one:</p>
+<dl class="docutils">
+<dt>123456 789...</dt>
+<dd><div class="first line-block">
+<div class="line"><br /></div>
+</div>
+<p class="last">v</p>
+</dd>
+</dl>
+<p>&#8212;&#8211;A|AGCT T&#8212;&#8212;&#8212;&#8212;&#8211;
+&#8212;&#8211;T TCGA|A&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+<p>In this example the coordinate of the RE site would be 7.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>enzyme_name</strong> &#8211; name of the enzyme to map (upper/lower case are
+important)</li>
+<li><strong>genome_seq</strong> &#8211; a dictionary containing the genomic sequence by
+chromosome</li>
+<li><strong>frag_chunk</strong> (<em>100000</em>) &#8211; in order to optimize the search for nearby RE
+sites, each chromosome is splitted into chunks.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.religated">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">religated</code><span class="sig-paren">(</span><em>r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#religated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.religated" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the resulting sequence after religation of two digested and repaired
+ends.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.repaired">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">repaired</code><span class="sig-paren">(</span><em>r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#repaired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.repaired" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the resulting sequence after reparation of two digested and repaired
+ends, marking dangling ends.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="pytadbit.mapping.get_intersection">
 <code class="descclassname">pytadbit.mapping.</code><code class="descname">get_intersection</code><span class="sig-paren">(</span><em>fname1</em>, <em>fname2</em>, <em>out_path</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping.html#get_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.get_intersection" title="Permalink to this definition">¶</a></dt>

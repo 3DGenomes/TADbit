@@ -41,15 +41,13 @@ Quality check and plotting
 Filtering
 ---------
 
-.. currentmodule:: restriction_enzymes
+.. currentmodule:: pytadbit.mapping.restriction_enzymes
 
 .. autofunction:: map_re_sites
 
 .. autofunction:: religated
 
 .. autofunction:: repaired
-   
-.. autofunction:: insert_sizes
    
 .. currentmodule:: pytadbit.mapping
 
