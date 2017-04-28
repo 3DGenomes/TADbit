@@ -677,6 +677,59 @@ a table.</li>
 
 </dd></dl>
 
+<div class="section" id="load-experiment">
+<h2>Load experiment<a class="headerlink" href="#load-experiment" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytadbit.experiment.load_experiment_from_reads">
+<code class="descclassname">pytadbit.experiment.</code><code class="descname">load_experiment_from_reads</code><span class="sig-paren">(</span><em>name</em>, <em>fnam</em>, <em>genome_seq</em>, <em>resolution</em>, <em>conditions=None</em>, <em>identifier=None</em>, <em>cell_type=None</em>, <em>enzyme=None</em>, <em>exp_type='Hi-C'</em>, <em>**kw_descr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/experiment.html#load_experiment_from_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.load_experiment_from_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an experiment object from TADbit-generated read files, that are lists
+of pairs of reads mapped to a reference genome.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fnam</strong> &#8211; tsv file with reads1 and reads2</li>
+<li><strong>name</strong> &#8211; name of the experiment</li>
+<li><strong>resolution</strong> &#8211; the resolution of the experiment (size of a bin in
+bases)</li>
+<li><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; some identifier relative to the Hi-C data</li>
+<li><strong>cell_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cell type on which the experiment was done</li>
+<li><strong>enzyme</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restriction enzyme used in  the Hi-C experiment</li>
+<li><strong>exp_type</strong> (<em>Hi-C</em>) &#8211; name of the experiment used (currently only Hi-C is
+supported)</li>
+<li><strong>conditions</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of experimental conditions, e.g.
+the cell type, the enzyme... (i.e.: [&#8216;HindIII&#8217;, &#8216;cortex&#8217;, &#8216;treatment&#8217;]).
+This parameter may be used to compare the effect of this conditions on
+the TADs</li>
+<li><strong>kw_descr</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
+complementary descriptive field. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                  <span class="n">identifier</span><span class="o">=</span><span class="s1">&#39;SRX015263&#39;</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="s1">&#39;K562&#39;</span><span class="p">,</span>
+                  <span class="n">enzyme</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">cylce</span><span class="o">=</span><span class="s1">&#39;synchronized&#39;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">exp</span>
+
+<span class="c1"># Experiment k562_rep2:</span>
+<span class="c1">#    resolution        : 100Kb</span>
+<span class="c1">#    TADs              : None</span>
+<span class="c1">#    Hi-C rows         : None</span>
+<span class="c1">#    normalized        : None</span>
+<span class="c1">#    identifier        : SRX015263</span>
+<span class="c1">#    cell type         : K562</span>
+<span class="c1">#    restriction enzyme: HindIII</span>
+<span class="c1">#    cylce             : synchronized</span>
+</pre></div>
+</div>
+<p><em>note that these fields may appear in the header of generated out files</em></p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -697,7 +750,10 @@ a table.</li>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Experiment class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Experiment class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-experiment">Load experiment</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
