@@ -295,7 +295,7 @@
             <span class="n">map_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_strip_read_name</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
     <span class="n">unmap_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
                 <span class="n">gem_binary</span><span class="o">=</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param None focus: trims the sequence in the input FASTQ file according to a</span>
@@ -489,7 +489,7 @@
             <span class="nb">print</span> <span class="s1">&#39;Mapping full reads...&#39;</span><span class="p">,</span> <span class="n">curr_map</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
-            <span class="n">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="c1"># parse map file to extract not uniquely mapped reads</span>
             <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
             <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span>
@@ -531,7 +531,7 @@
         <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">frag_map</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
             <span class="nb">print</span> <span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span>
-            <span class="n">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
             <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>

@@ -329,7 +329,11 @@ and exclude them from the comparison</li>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_distance_vs_interactions</code><span class="sig-paren">(</span><em>data</em>, <em>min_diff=1</em>, <em>max_diff=1000</em>, <em>show=False</em>, <em>genome_seq=None</em>, <em>resolution=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>normalized=False</em>, <em>plot_each_cell=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Plot the number of interactions observed versus the genomic distance between
+the mapped ends of the read. The slope is expected to be around -1, in
+logarithmic scale and between 700 kb and 10 Mb (according to the prediction
+of the fractal globule model).</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -362,7 +366,10 @@ will be represented, otherwise each pair of interactions will be plotted.</p>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_iterative_mapping">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_iterative_mapping</code><span class="sig-paren">(</span><em>fnam1</em>, <em>fnam2</em>, <em>total_reads=None</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_iterative_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_iterative_mapping" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Plots the number of reads mapped at each step of the mapping process (in the
+case of the iterative mapping, each step is mapping process with a given
+size of fragments).</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -387,7 +394,9 @@ of the file name will determine the desired format).</li>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_genomic_distribution">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>ylim=None</em>, <em>yscale=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>chr_names=None</em>, <em>nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Plot the number of reads in bins along the genome (or along a given
+chromosome).</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -451,8 +460,8 @@ reads with at least a ligation site.</p>
 <code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">map_re_sites</code><span class="sig-paren">(</span><em>enzyme_name</em>, <em>genome_seq</em>, <em>frag_chunk=100000</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#map_re_sites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.map_re_sites" title="Permalink to this definition">¶</a></dt>
 <dd><p>map all restriction enzyme (RE) sites of a given enzyme in a genome.
 Position of a RE site is defined as the genomic coordinate of the first
-nucleotide after the first cut (genomic coordinate starts at 1).
-In the case of HindIII the genomic coordinate is this one:</p>
+nucleotide after the first cut (genomic coordinate starts at 1).</p>
+<p>In the case of HindIII the genomic coordinate is this one:</p>
 <dl class="docutils">
 <dt>123456 789...</dt>
 <dd><div class="first line-block">

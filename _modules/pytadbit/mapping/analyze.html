@@ -422,6 +422,11 @@
                                   <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                   <span class="n">plot_each_cell</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the number of interactions observed versus the genomic distance between</span>
+<span class="sd">    the mapped ends of the read. The slope is expected to be around -1, in</span>
+<span class="sd">    logarithmic scale and between 700 kb and 10 Mb (according to the prediction</span>
+<span class="sd">    of the fractal globule model).</span>
+
 <span class="sd">    :param data: input file name, or HiC_data object or list of lists</span>
 <span class="sd">    :param 10 min_diff: lower limit (in number of bins)</span>
 <span class="sd">    :param 1000 max_diff: upper limit (in number of bins) to look for</span>
@@ -637,6 +642,10 @@
 
 <div class="viewcode-block" id="plot_iterative_mapping"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.plot_iterative_mapping">[docs]</a><span class="k">def</span> <span class="nf">plot_iterative_mapping</span><span class="p">(</span><span class="n">fnam1</span><span class="p">,</span> <span class="n">fnam2</span><span class="p">,</span> <span class="n">total_reads</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plots the number of reads mapped at each step of the mapping process (in the</span>
+<span class="sd">    case of the iterative mapping, each step is mapping process with a given</span>
+<span class="sd">    size of fragments).</span>
+
 <span class="sd">    :param fnam: input file name</span>
 <span class="sd">    :param total_reads: total number of reads in the initial FASTQ file</span>
 <span class="sd">    :param None axe: a matplotlib.axes.Axes object to define the plot</span>
@@ -805,6 +814,9 @@
                               <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                               <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the number of reads in bins along the genome (or along a given</span>
+<span class="sd">    chromosome).</span>
+
 <span class="sd">    :param fnam: input file name</span>
 <span class="sd">    :param True first_read: uses first read.</span>
 <span class="sd">    :param 100 resolution: group reads that are closer than this resolution</span>

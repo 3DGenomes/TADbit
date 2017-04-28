@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytadbit.imp.impmodel &mdash; Tadbit 0.1 documentation</title>
+    <title>pytadbit.imp.impmodel &#8212; Tadbit 0.2 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
-    <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,9 +36,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -53,24 +54,24 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">color_residues</span><span class="p">,</span> <span class="n">chimera_view</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tadbit_savefig</span><span class="p">,</span> <span class="n">plot_3d_model</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">generate_sphere_points</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">fast_square_distance</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">build_mesh</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_coloring</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_border_coloring</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>        <span class="kn">import</span> <span class="n">newton_raphson</span>
-<span class="kn">from</span> <span class="nn">pytadbit</span>                       <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">version</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span>              <span class="kn">import</span> <span class="n">spline</span>
-<span class="kn">from</span> <span class="nn">numpy</span>                          <span class="kn">import</span> <span class="n">linspace</span>
-<span class="kn">from</span> <span class="nn">warnings</span>                       <span class="kn">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">re</span>                             <span class="kn">import</span> <span class="n">findall</span><span class="p">,</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">compil</span>
-<span class="kn">from</span> <span class="nn">math</span>                           <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="k">import</span> <span class="n">color_residues</span><span class="p">,</span> <span class="n">chimera_view</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="k">import</span> <span class="n">tadbit_savefig</span><span class="p">,</span> <span class="n">plot_3d_model</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="k">import</span> <span class="n">generate_sphere_points</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="k">import</span> <span class="n">fast_square_distance</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="k">import</span> <span class="n">build_mesh</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="k">import</span> <span class="n">tad_coloring</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="k">import</span> <span class="n">tad_border_coloring</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>        <span class="k">import</span> <span class="n">newton_raphson</span>
+<span class="kn">from</span> <span class="nn">pytadbit</span>                       <span class="k">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span>              <span class="k">import</span> <span class="n">spline</span>
+<span class="kn">from</span> <span class="nn">numpy</span>                          <span class="k">import</span> <span class="n">linspace</span>
+<span class="kn">from</span> <span class="nn">warnings</span>                       <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">re</span>                             <span class="k">import</span> <span class="n">findall</span><span class="p">,</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">compil</span>
+<span class="kn">from</span> <span class="nn">math</span>                           <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
 <span class="kn">import</span> <span class="nn">sha</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;matplotlib not found</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -86,7 +87,7 @@
         <span class="n">outstr</span> <span class="o">+=</span> <span class="s1">&#39;# </span><span class="si">%-15s</span><span class="s1"> :  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">][</span><span class="n">desc</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">outstr</span>
     
-<div class="viewcode-block" id="load_impmodel_from_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_cmm">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_cmm</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="load_impmodel_from_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_cmm">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_cmm</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Loads an IMPmodel object using an cmm file of the form:</span>
 
@@ -109,7 +110,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">rand_init</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
                       <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
     <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span>
@@ -122,7 +123,7 @@
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="load_impmodel_from_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_xyz">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_xyz</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="load_impmodel_from_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_xyz">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_xyz</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loads an IMPmodel object using an xyz file of the form:</span>
 
@@ -151,7 +152,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">rand_init</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
                       <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
     <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span><span class="s1">&#39;[0-9]+\s[A-Za-z0-9_ ]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)&#39;</span><span class="p">)</span>
@@ -166,7 +167,7 @@
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zzz</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">model</span></div>
 
-<span class="k">def</span> <span class="nf">load_impmodel_from_xyz_OLD</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">load_impmodel_from_xyz_OLD</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                <span class="n">chromosome</span><span class="o">=</span><span class="s1">&#39;UNKNOWN&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loads an IMPmodel object using an xyz file of the form:</span>
@@ -187,9 +188,9 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">rand_init</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">rand_init</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">rand_init</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">IMPmodel</span><span class="p">(((</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;rand_init&#39;</span><span class="p">,</span> <span class="n">rand_init</span><span class="p">),</span>
-                      <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
+                      <span class="p">(</span><span class="s1">&#39;objfun&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="p">)))</span>
     <span class="n">expr</span> <span class="o">=</span> <span class="n">compil</span><span class="p">(</span><span class="s1">&#39;p[0-9]+\s+[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span> <span class="ow">in</span> <span class="n">findall</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">xxx</span><span class="p">))</span>
@@ -240,8 +241,8 @@
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])</span>
 
-<div class="viewcode-block" id="IMPmodel.objective_function"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                           <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.objective_function"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function plots the objective function value per each Monte-Carlo</span>
 <span class="sd">        step.</span>
@@ -255,22 +256,22 @@
 <span class="sd">           of the file name will determine the desired format).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">show</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">show</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
             <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-            <span class="n">show</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;lightgrey&#39;</span><span class="p">)</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">)</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_axisbelow</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">set_axisbelow</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">axe</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span> <span class="c1"># always on, not only for log</span>
             <span class="c1"># remove tick marks</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                            <span class="n">right</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                            <span class="n">right</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                             <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
@@ -375,7 +376,7 @@
         <span class="n">com</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">()</span>
         <span class="n">rog</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_square_distance_to</span><span class="p">(</span><span class="n">i</span><span class="p">,</span>
                                                  <span class="p">(</span><span class="n">com</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">com</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">com</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]))</span>
-                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">rog</span></div>
 
 
@@ -386,7 +387,7 @@
 <span class="sd">        :returns: the totals length of the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dist</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="n">dist</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dist</span></div>
 
@@ -398,8 +399,8 @@
 <span class="sd">        :returns: the maximum distance between two particles in the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">maxdist</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="n">maxdist</span><span class="p">:</span>
                     <span class="n">maxdist</span> <span class="o">=</span> <span class="n">dist</span>
@@ -413,8 +414,8 @@
 <span class="sd">        :returns: the minimum distance between two particles in the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mindist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">mindist</span><span class="p">:</span>
                     <span class="n">mindist</span> <span class="o">=</span> <span class="n">dist</span>
@@ -467,7 +468,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inaccessibles</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">sphere</span> <span class="o">=</span> <span class="n">generate_sphere_points</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="n">impossibles</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span> <span class="ow">in</span> <span class="n">sphere</span><span class="p">:</span>
                 <span class="n">thing</span> <span class="o">=</span> <span class="p">(</span><span class="n">xxx</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
@@ -475,7 +476,7 @@
                          <span class="n">zzz</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
                 <span class="c1"># print form % (k+len(self), thing[&#39;x&#39;], thing[&#39;y&#39;], thing[&#39;z&#39;],</span>
                 <span class="c1"># 0, 0, 0, k+len(self)),</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
                     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
                         <span class="k">continue</span>
                     <span class="c1"># print self._square_distance_to(j, thing), radius</span>
@@ -488,7 +489,7 @@
         <span class="k">return</span> <span class="n">inaccessibles</span></div>
 
 
-<div class="viewcode-block" id="IMPmodel.persistence_length"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.persistence_length">[docs]</a>    <span class="k">def</span> <span class="nf">persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">return_guess</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.persistence_length"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.persistence_length">[docs]</a>    <span class="k">def</span> <span class="nf">persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates the persistence length (Lp) of given section of the model.</span>
 <span class="sd">        Persistence length is calculated according to [Bystricky2004]_ :</span>
@@ -522,8 +523,8 @@
 
 
 <div class="viewcode-block" id="IMPmodel.accessible_surface"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface">[docs]</a>    <span class="k">def</span> <span class="nf">accessible_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-                           <span class="n">include_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view_mesh</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                           <span class="n">write_cmm_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">include_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">write_cmm_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                            <span class="n">chimera_bin</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates a mesh surface around the model (distance equal to input</span>
@@ -625,14 +626,14 @@
             <span class="k">for</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span> <span class="ow">in</span> <span class="n">superdots</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">fast_square_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">radius2</span><span class="p">:</span>
-                        <span class="n">outdot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                        <span class="n">outdot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">outdot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">outdot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                     <span class="k">continue</span>
                 <span class="n">points</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">outdot</span> <span class="o">=</span> <span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">superdots</span><span class="p">)</span>
+            <span class="n">outdot</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">superdots</span><span class="p">)</span>
 
         <span class="c1"># calculates the number of inaccessible peaces of surface</span>
         <span class="n">radius2</span> <span class="o">=</span> <span class="p">(</span><span class="n">radius</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
@@ -671,19 +672,19 @@
         <span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contour</span><span class="p">()</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">pi</span>
                  <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="k">print</span> <span class="p">(</span><span class="s1">&#39; Accessible surface: </span><span class="si">%s</span><span class="s1"> micrometers^2&#39;</span> <span class="o">+</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="s1">&#39; Accessible surface: </span><span class="si">%s</span><span class="s1"> micrometers^2&#39;</span> <span class="o">+</span>
                    <span class="s1">&#39;(</span><span class="si">%s</span><span class="s1"> accessible times </span><span class="si">%s</span><span class="s1"> micrometers)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="nb">round</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">possibles</span><span class="p">,</span> <span class="n">dot_area</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s1">&#39;    (</span><span class="si">%s</span><span class="s1"> accessible dots of </span><span class="si">%s</span><span class="s1"> total times </span><span class="si">%s</span><span class="s1"> micrometers)&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="n">possibles</span><span class="p">,</span> <span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">dot_area</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-            <span class="k">print</span> <span class="s1">&#39;  - </span><span class="si">%s%%</span><span class="s1"> of the contour mesh&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="nb">round</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">possibles</span><span class="p">)</span><span class="o">/</span><span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-            <span class="k">print</span> <span class="s1">&#39;  - </span><span class="si">%s%%</span><span class="s1"> of a virtual straight chromatin (</span><span class="si">%s</span><span class="s1"> microm^2)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="nb">print</span> <span class="s1">&#39;    (</span><span class="si">%s</span><span class="s1"> accessible dots of </span><span class="si">%s</span><span class="s1"> total times </span><span class="si">%s</span><span class="s1"> micrometers)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">possibles</span><span class="p">,</span> <span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">dot_area</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+            <span class="nb">print</span> <span class="s1">&#39;  - </span><span class="si">%s%%</span><span class="s1"> of the contour mesh&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">round</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">possibles</span><span class="p">)</span><span class="o">/</span><span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="nb">print</span> <span class="s1">&#39;  - </span><span class="si">%s%%</span><span class="s1"> of a virtual straight chromatin (</span><span class="si">%s</span><span class="s1"> microm^2)&#39;</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="nb">round</span><span class="p">((</span><span class="n">area</span><span class="o">/</span><span class="n">total</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
         <span class="c1"># write cmm file</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
-            <span class="n">view_mesh</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">view_mesh</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">write_cmm_file</span> <span class="ow">or</span> <span class="n">view_mesh</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="s1">2</span><span class="se">\&quot;</span><span class="s1">&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s1"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s1"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s1"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span>
@@ -727,14 +728,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write_cmm</span><span class="p">(</span><span class="s1">&#39;/tmp/&#39;</span><span class="p">)</span>
             <span class="n">chimera_view</span><span class="p">([</span><span class="s1">&#39;/tmp/tmp_mesh.cmm&#39;</span><span class="p">,</span>
                           <span class="s1">&#39;/tmp/model.</span><span class="si">%s</span><span class="s1">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;rand_init&#39;</span><span class="p">])],</span>
-                         <span class="n">chimera_bin</span><span class="o">=</span><span class="n">chimera_bin</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                         <span class="n">chimera_bin</span><span class="o">=</span><span class="n">chimera_bin</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                          <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">chimera_cmd</span><span class="o">=</span><span class="n">chimera_cmd</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">possibles</span><span class="p">,</span> <span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">possibles</span><span class="p">,</span> <span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                  <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">model_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a model in the cmm format, read by Chimera</span>
 <span class="sd">        (http://www.cgl.ucsf.edu/chimera).</span>
@@ -794,7 +795,7 @@
                 <span class="s1">&#39;radius=</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="c1">#str(30) +</span>
                 <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">])</span> <span class="o">+</span>
                 <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> note=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s1">/&gt;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                            <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
                            <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -802,7 +803,7 @@
                 <span class="s1">&#39;g=</span><span class="se">\&quot;</span><span class="s1">1</span><span class="se">\&quot;</span><span class="s1"> b=</span><span class="se">\&quot;</span><span class="s1">1</span><span class="se">\&quot;</span><span class="s1"> radius=</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span>
                 <span class="c1"># str(self[&#39;radius&#39;]/2) +</span>
                 <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">/&gt;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/marker_set&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
 
@@ -819,8 +820,8 @@
         <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="IMPmodel.write_xyz_OLD"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz_OLD">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz_OLD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                  <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.write_xyz_OLD"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz_OLD">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz_OLD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">rndname</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes a xyz file containing the 3D coordinates of each particle in the</span>
 <span class="sd">        model.</span>
@@ -846,7 +847,7 @@
                                                 <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;rand_init&#39;</span><span class="p">])</span>
         <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="n">form</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%12s%12s%12.3f%12.3f%12.3f</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;p&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span>
                            <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
         <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_f</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -855,12 +856,12 @@
         <span class="k">if</span> <span class="n">get_path</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">path_f</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span></div>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 
 
-<div class="viewcode-block" id="IMPmodel.write_json"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                   <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.write_json"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">model_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a model in the json format, read by TADkit.</span>
 
@@ -942,7 +943,7 @@
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">fil</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;[</span><span class="si">%.4f</span><span class="s1">,</span><span class="si">%.4f</span><span class="s1">,</span><span class="si">%.4f</span><span class="s1">]&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
                                                          <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
-                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]))])</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]))])</span>
         
         
         <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
@@ -959,8 +960,8 @@
 
 
 
-<div class="viewcode-block" id="IMPmodel.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                  <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">rndname</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes a xyz file containing the 3D coordinates of each particle in the</span>
 <span class="sd">        model.</span>
@@ -997,7 +998,7 @@
             <span class="n">out</span> <span class="o">+=</span> <span class="n">model_header</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">form</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%.3f</span><span class="se">\t</span><span class="si">%.3f</span><span class="se">\t</span><span class="si">%.3f</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="c1"># TODO: do not use resolution directly -&gt; specific to Hi-C</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                 <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
@@ -1012,11 +1013,11 @@
         <span class="k">if</span> <span class="n">get_path</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">path_f</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span></div>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="IMPmodel.view_model"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.view_model">[docs]</a>    <span class="k">def</span> <span class="nf">view_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                   <span class="n">center_of_mass</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gyradius</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.view_model"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.view_model">[docs]</a>    <span class="k">def</span> <span class="nf">view_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">center_of_mass</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gyradius</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span>
                    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize a selected model in the three dimensions. (either with Chimera</span>
@@ -1103,7 +1104,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">gyradius</span><span class="p">:</span>
             <span class="n">gyradius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius_of_gyration</span><span class="p">()</span>
-            <span class="n">center_of_mass</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">center_of_mass</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">tool</span> <span class="o">==</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
             <span class="n">plot_3d_model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -1134,14 +1135,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1154,15 +1152,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright .
-      Last updated on Nov 18, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+        &#169; Copyright .
+      Last updated on Apr 29, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
