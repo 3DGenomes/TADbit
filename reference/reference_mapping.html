@@ -183,6 +183,49 @@ Default is equal to resolution of the matrix.</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="pytadbit.mapping.analyze.insert_sizes">
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">insert_sizes</code><span class="sig-paren">(</span><em>fnam</em>, <em>savefig=None</em>, <em>nreads=None</em>, <em>max_size=99.9</em>, <em>axe=None</em>, <em>show=False</em>, <em>xlog=False</em>, <em>stats=('median'</em>, <em>'perc_max')</em>, <em>too_large=10000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#insert_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.insert_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the distribution of dangling-ends lengths
+:param fnam: input file name
+:param None savefig: path where to store the output images.
+:param 99.9 max_size: top percentage of distances to consider, within the</p>
+<blockquote>
+<div>top 0.01% are usually found very long outliers.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xlog</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent x axis in logarithmic scale</li>
+<li><strong>'perc_max'</strong><strong>) </strong><strong>stats</strong> (<em></em><em>(</em><em>'median'</em><em>,</em><em></em>) &#8211; <p>returns this set of values calculated from the
+distribution of insert/fragment sizes. Possible values are:</p>
+<blockquote>
+<div><ul>
+<li>&#8216;median&#8217; median of the distribution</li>
+<li>&#8216;perc_max&#8217; percentil defined by the other parameter &#8216;max_size&#8217;</li>
+<li><dl class="first docutils">
+<dt>&#8216;first_deacay&#8217; starting from the median of the distribution to the</dt>
+<dd>first window where 10 consecutive insert sizes are counted less than
+a given value (this given value is equal to the sum of all
+sizes divided by 100 000)</dd>
+</dl>
+</li>
+<li>&#8216;MAD&#8217; Double Median Adjusted Deviation</li>
+</ul>
+</div></blockquote>
+</li>
+<li><strong>too_large</strong> (<em>10000</em>) &#8211; upper bound limit for fragment size to consider</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the median value and the percentile inputed as max_size.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pytadbit.mapping.analyze.correlate_matrices">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>intra=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>normalized=False</em>, <em>remove_bad_columns=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the iteractions of two Hi-C matrices at a given distance,
@@ -207,6 +250,44 @@ and exclude them from the comparison</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of correlations and list of genomic distances</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.analyze.plot_strand_bias_by_distance">
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_strand_bias_by_distance</code><span class="sig-paren">(</span><em>fnam</em>, <em>nreads=None</em>, <em>half_step=20</em>, <em>half_len=2000</em>, <em>full_step=500</em>, <em>full_len=50000</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classify reads into for categories depending on the strand on which each end
+is mapped, and plots the proportion of each of these categories in function
+of the genomic distance between them.
+The four categories are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Both read-ends mapped in the forward strand</li>
+<li>Both read-ends mapped in the reverse strand</li>
+<li>First read-end in the forward strand1, second in the reverse</li>
+<li>First read-end in the reverse strand1, second in the forward</li>
+</ul>
+</div></blockquote>
+<p>Note: First/second read-ends are according to their genomic coordinates.</p>
+<p>The plot is divided in two halves, in order to use different zooms for
+read-ends mapped very close, and read-ends further (by default the first
+half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fnam</strong> &#8211; input file name with the intersection of the two read-ends mapped</li>
+<li><strong>nreads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; number of reads to process (default: all reads)</li>
+<li><strong>half_len</strong> (<em>2000</em>) &#8211; limit in the X axis of the first plot</li>
+<li><strong>half_step</strong> (<em>20</em>) &#8211; to bin distances between read-ends in the first plot</li>
+<li><strong>full_len</strong> (<em>2000</em>) &#8211; limit in the X axis of the second plot</li>
+<li><strong>full_step</strong> (<em>20</em>) &#8211; to bin distances between read-ends in the second plot</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output images.</li>
+</ul>
 </td>
 </tr>
 </tbody>

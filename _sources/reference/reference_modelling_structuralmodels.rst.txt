@@ -2,7 +2,6 @@
 
 .. autofunction:: generate_3d_models
 
-
 .. currentmodule:: pytadbit.modelling.structuralmodels
 
 StructuralModels class
