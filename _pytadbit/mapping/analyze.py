@@ -371,6 +371,11 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                                   savefig=None, normalized=False,
                                   plot_each_cell=False):
     """
+    Plot the number of interactions observed versus the genomic distance between
+    the mapped ends of the read. The slope is expected to be around -1, in
+    logarithmic scale and between 700 kb and 10 Mb (according to the prediction
+    of the fractal globule model).
+
     :param data: input file name, or HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
@@ -586,6 +591,10 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
 
 def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=None):
     """
+    Plots the number of reads mapped at each step of the mapping process (in the
+    case of the iterative mapping, each step is mapping process with a given
+    size of fragments).
+
     :param fnam: input file name
     :param total_reads: total number of reads in the initial FASTQ file
     :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -754,6 +763,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               ylim=None, yscale=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
+    Plot the number of reads in bins along the genome (or along a given
+    chromosome).
+
     :param fnam: input file name
     :param True first_read: uses first read.
     :param 100 resolution: group reads that are closer than this resolution

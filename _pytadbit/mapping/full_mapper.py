@@ -244,7 +244,7 @@ def _gem_filter(fnam, unmap_out, map_out):
             map_out.write(_strip_read_name(line))
     unmap_out.close()
 
-def gem_mapping(gem_index_path, fastq_path, out_map_path,
+def _gem_mapping(gem_index_path, fastq_path, out_map_path,
                 gem_binary='gem-mapper', **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
@@ -438,7 +438,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping full reads...', curr_map
 
         if not skip:
-            gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
+            _gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
             _gem_filter(out_map_path,
@@ -480,7 +480,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
         if not skip:
             print 'Mapping fragments of remaining reads...'
-            gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
+            _gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
             print 'Parsing result...'
             _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                         os.path.join(out_map_dir,

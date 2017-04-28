@@ -36,6 +36,8 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
     Position of a RE site is defined as the genomic coordinate of the first
     nucleotide after the first cut (genomic coordinate starts at 1).
+
+
     In the case of HindIII the genomic coordinate is this one:
 
     123456 789...
@@ -75,6 +77,8 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
     Position of a RE site is defined as the genomic coordinate of the first
     nucleotide after the first cut (genomic coordinate starts at 1).
+
+
     In the case of HindIII the genomic coordinate is this one:
 
     123456 789...

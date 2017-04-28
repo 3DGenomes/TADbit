@@ -37,6 +37,10 @@ Quality check and plotting
 
 .. autofunction:: quality_plot
 
+.. autofunction:: count_reads_approx
+
+.. autofunction:: count_reads
+
 
 Filtering
 ---------
