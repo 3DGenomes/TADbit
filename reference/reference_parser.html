@@ -97,6 +97,28 @@ returns number or rows</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pytadbit.parsers.hic_parser.load_hic_data_from_reads">
+<code class="descclassname">pytadbit.parsers.hic_parser.</code><code class="descname">load_hic_data_from_reads</code><span class="sig-paren">(</span><em>fnam</em>, <em>resolution</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#load_hic_data_from_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.load_hic_data_from_reads" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fnam</strong> &#8211; tsv file with reads1 and reads2</li>
+<li><strong>resolution</strong> &#8211; the resolution of the experiment (size of a bin in
+bases)</li>
+<li><strong>genome_seq</strong> &#8211; a dictionary containing the genomic sequence by
+chromosome</li>
+<li><strong>get_sections</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; for very very high resolution, when the column
+index does not fit in memory</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pytadbit.parsers.genome_parser.parse_fasta">
 <code class="descclassname">pytadbit.parsers.genome_parser.</code><code class="descname">parse_fasta</code><span class="sig-paren">(</span><em>f_names</em>, <em>chr_names=None</em>, <em>chr_filter=None</em>, <em>chr_regexp=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a list of fasta files, or just one fasta.</p>
