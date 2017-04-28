@@ -83,13 +83,13 @@ file containing chromosome sequences. Orders matters.</p>
 <dl class="method">
 <dt id="pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta">
 <code class="descname">add_sections_from_fasta</code><span class="sig-paren">(</span><em>fasta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections_from_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add genomic coordinate to HiC_data object by getting them from a fasta
+<dd><p>Add genomic coordinate to HiC_data object by getting them from a FASTA
 file containing chromosome sequences</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fasta</strong> &#8211; path to a fasta file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fasta</strong> &#8211; path to a FASTA file</td>
 </tr>
 </tbody>
 </table>
@@ -98,7 +98,7 @@ file containing chromosome sequences</p>
 <dl class="method">
 <dt id="pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">
 <code class="descname">cis_trans_ratio</code><span class="sig-paren">(</span><em>normalized=False</em>, <em>exclude=None</em>, <em>diagonal=True</em>, <em>equals=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.cis_trans_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>Counts the number of interactions occuring within chromosomes (cis) with
+<dd><p>Counts the number of interactions occurring within chromosomes (cis) with
 respect to the total number of interactions</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -161,7 +161,7 @@ filtering... This option is slightly slower.</li>
 <dl class="method">
 <dt id="pytadbit.parsers.hic_parser.HiC_data.find_compartments">
 <code class="descname">find_compartments</code><span class="sig-paren">(</span><em>crms=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>savecorr=None</em>, <em>show=False</em>, <em>suffix=''</em>, <em>how=''</em>, <em>label_compartments='hmm'</em>, <em>log=None</em>, <em>max_mean_size=10000</em>, <em>ev_index=None</em>, <em>rich_in_A=None</em>, <em>max_ev=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Search for A/B copartments in each chromosome of the Hi-C matrix.
+<dd><p>Search for A/B compartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
 is then calculated from this normalized matrix, and its first
@@ -199,7 +199,7 @@ first eigenvector used to compute compartments.</li>
 <li><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of number refering to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
-if asking for only one chromosome the list should be only of one 
+if asking for only one chromosome the list should be only of one
 element.</li>
 <li><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
@@ -498,7 +498,7 @@ region</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 28, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

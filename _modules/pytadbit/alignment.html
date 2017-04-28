@@ -74,7 +74,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">consensus</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__experiments</span> <span class="o">=</span> <span class="n">experiments</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__values</span> <span class="o">=</span> <span class="p">[]</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__keys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__len</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">consensus</span> <span class="o">=</span> <span class="n">consensus</span>
@@ -170,9 +170,9 @@
                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;ansi&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print alignment of TAD boundaries between different experiments.</span>
-<span class="sd">           Alignment are displayed with colors according to the tadbit</span>
+<span class="sd">           Alignments are displayed with colors according to the TADbit</span>
 <span class="sd">           confidence score for each boundary.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param None names: if None print all experiments</span>
 <span class="sd">        :param None xpers: if None print all experiments</span>
 <span class="sd">        :param False string: return string instead of printing</span>
@@ -255,16 +255,16 @@
 <span class="sd">          cond1 = lambda x: x[&#39;score&#39;] &gt; 5</span>
 <span class="sd">          # and we want boundaries to be detected in Experiments exp1 and exp2</span>
 <span class="sd">          cond2=lambda x: x[&#39;exp&#39;] in [&#39;exp1&#39;, &#39;exp2&#39;]</span>
-<span class="sd">          </span>
+
 <span class="sd">          ali.get_column(cond1=cond1, cond2=cond2, min_num=2)</span>
-<span class="sd">          # [(33, [&gt;268&lt;, &gt;192&lt;, &gt;-&lt;, &gt;-&lt;]),	 </span>
-<span class="sd">          #  (46, [&gt;324&lt;, &gt;323&lt;, &gt;335&lt;, &gt;329&lt;]), </span>
-<span class="sd">          #  (51, [&gt;348&lt;, &gt;335&lt;, &gt;357&lt;, &gt;347&lt;]), </span>
-<span class="sd">          #  (56, [&gt;374&lt;, &gt;358&lt;, &gt;383&lt;, &gt;-&lt;]),	 </span>
-<span class="sd">          #  (64, [&gt;397&lt;, &gt;396&lt;, &gt;407&lt;, &gt;-&lt;]),	 </span>
-<span class="sd">          #  (77, [&gt;444&lt;, &gt;442&lt;, &gt;456&lt;, &gt;-&lt;])]   </span>
-<span class="sd">          </span>
-<span class="sd">          </span>
+<span class="sd">          # [(33, [&gt;268&lt;, &gt;192&lt;, &gt;-&lt;, &gt;-&lt;]),</span>
+<span class="sd">          #  (46, [&gt;324&lt;, &gt;323&lt;, &gt;335&lt;, &gt;329&lt;]),</span>
+<span class="sd">          #  (51, [&gt;348&lt;, &gt;335&lt;, &gt;357&lt;, &gt;347&lt;]),</span>
+<span class="sd">          #  (56, [&gt;374&lt;, &gt;358&lt;, &gt;383&lt;, &gt;-&lt;]),</span>
+<span class="sd">          #  (64, [&gt;397&lt;, &gt;396&lt;, &gt;407&lt;, &gt;-&lt;]),</span>
+<span class="sd">          #  (77, [&gt;444&lt;, &gt;442&lt;, &gt;456&lt;, &gt;-&lt;])]</span>
+
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cond1</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">val</span> <span class="o">=</span> <span class="n">cond1</span> <span class="o">-</span> <span class="mi">1</span>
@@ -324,7 +324,7 @@
              <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s1">&#39;ellipse&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draw alignments as a plot.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param None focus: can pass a tuple (bin_start, bin_stop) to display the</span>
 <span class="sd">           alignment between these genomic bins</span>
 <span class="sd">        :param None extras: list of coordinates (genomic bin) where to draw a</span>
@@ -346,7 +346,7 @@
 
         <span class="n">maxres</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">])</span>
         <span class="n">facts</span> <span class="o">=</span> <span class="p">[</span><span class="n">maxres</span> <span class="o">/</span> <span class="n">e</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">]</span>
-        
+
 
         <span class="n">siz</span> <span class="o">=</span> <span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
         <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
@@ -449,13 +449,13 @@
 <span class="sd">     - &#39;pos&#39;: in the alignment (column number)</span>
 <span class="sd">     - &#39;exp&#39;: Experiment this TAD belongs to</span>
 <span class="sd">     - &#39;index&#39;: of this TAD within all TADs in the Experiment</span>
-<span class="sd">    </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TAD</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">exp</span><span class="o">.</span><span class="n">tads</span> <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(((</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">),(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="n">exp</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">idx</span><span class="p">))))</span>
-        
+
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;exp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> \
                       <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&lt;&#39;</span></div>
@@ -481,7 +481,7 @@
     <span class="n">win</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
     <span class="n">cnt</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
     <span class="n">max_d</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">norm_tads</span><span class="p">)</span>
-    <span class="c1"># we ask here for a mean number of 20 values per bin </span>
+    <span class="c1"># we ask here for a mean number of 20 values per bin</span>
     <span class="n">bin_s</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_d</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">norm_tads</span><span class="p">))</span> <span class="o">/</span> <span class="mi">20</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">bee</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_d</span><span class="p">)</span> <span class="o">+</span> <span class="n">bin_s</span><span class="p">,</span> <span class="n">bin_s</span><span class="p">):</span>
         <span class="n">win</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">norm_tads</span>
@@ -535,7 +535,7 @@
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span> <span class="o">/</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">%</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> 
+                <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span>
                              <span class="s1">&#39; randomizing: &#39;</span>
                              <span class="s1">&#39;</span><span class="si">%.2f</span><span class="s1"> completed&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">val</span><span class="o">/</span><span class="n">num</span><span class="p">))</span>
                 <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
@@ -576,12 +576,12 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates random TADs over a chromosome of a given size according to a given</span>
 <span class="sd">    distribution of lengths of TADs.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param chromosome_len: length of the chromosome</span>
 <span class="sd">    :param distr: function that returns a TAD length depending on a p value</span>
 <span class="sd">    :param bin_size: size of the bin of the Hi-C experiment</span>
 <span class="sd">    :param 0 start: starting position in the chromosome</span>
-<span class="sd">    </span>
+
 <span class="sd">    :returns: list of TADs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pos</span> <span class="o">=</span> <span class="n">start</span>
@@ -656,7 +656,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 28, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -77,7 +77,7 @@ supported)</li>
 the Hi-C data</li>
 <li><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
 experiment</li>
-<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
@@ -91,11 +91,11 @@ the file example.tsv:</p>
 <code class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></code></p>
 </li>
-<li><strong>conditions</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of experimental conditions, e.g. 
+<li><strong>conditions</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of experimental conditions, e.g.
 the cell type, the enzyme... (i.e.: [&#8216;HindIII&#8217;, &#8216;cortex&#8217;, &#8216;treatment&#8217;]).
 This parameter may be used to compare the effect of this conditions on
 the TADs</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high
 content of low values</li>
 <li><strong>kw_descr</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
 complementary descriptive field. For example:</p>
@@ -127,7 +127,7 @@ TODO: normalization</p>
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.filter_columns">
 <code class="descname">filter_columns</code><span class="sig-paren">(</span><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em>, <em>diagonal=True</em>, <em>perc_zero=90</em>, <em>auto=True</em>, <em>min_count=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
+<dd><p>Call filtering function, to remove artifactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; columns passing through a cell with no interaction in the
 diagonal; and columns with NaN values (in this case NaN will be replaced
@@ -221,10 +221,10 @@ interaction are informative.</li>
 <li><strong>hic_data</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the Hi-C data</li>
 <li><strong>name</strong> &#8211; name of the experiment</li>
-<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
+<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same
 name</li>
 <li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
-representing the data matrix and the length of a row/column. 
+representing the data matrix and the length of a row/column.
 With the file example.tsv:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
 <span class="n">chrT_001</span>   <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
@@ -241,7 +241,7 @@ With the file example.tsv:</p>
 will be adjusted to the resolution of the experiment. By default the
 file is expected to contain a Hi-C experiment with the same resolution
 as the <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></code> created, and no change is made</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high
 content of low values</li>
 <li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
 </ul>
@@ -263,10 +263,10 @@ content of low values</li>
 <li><strong>norm_data</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the normalized Hi-C data</li>
 <li><strong>name</strong> &#8211; name of the experiment</li>
-<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same 
+<li><strong>force</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same
 name</li>
 <li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
-representing the data matrix and the length of a row/column. 
+representing the data matrix and the length of a row/column.
 With the file example.tsv:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
 <span class="n">chrT_001</span>   <span class="mf">12.5</span>    <span class="mi">164</span>     <span class="mf">8.8</span>     <span class="mf">0.5</span>
@@ -280,7 +280,7 @@ With the file example.tsv:</p>
 will be adjusted to the resolution of the experiment. By default the
 file is expected to contain a Hi-C experiment with the same resolution
 as the <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></code> created, and no change is made</li>
-<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
+<li><strong>filter_columns</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high
 content of low values</li>
 <li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
 </ul>
@@ -300,11 +300,11 @@ content of low values</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
+<li><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with pre-computed TADs for this
 experiment</li>
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the experiment, if None f_name will be used</li>
 <li><strong>weights</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; Store information about the weights, corresponding
-to the normalization of the Hi-C data (see tadbit function
+to the normalization of the Hi-C data (see TADbit function
 documentation)</li>
 </ul>
 </td>
@@ -316,7 +316,7 @@ documentation)</li>
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.model_region">
 <code class="descname">model_region</code><span class="sig-paren">(</span><em>start=1</em>, <em>end=None</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em>, <em>container=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates of three-dimentional models using IMP, for a given segment of
+<dd><p>Generates of three-dimensional models using IMP, for a given segment of
 chromosome.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -327,7 +327,7 @@ chromosome.</p>
 <li><strong>end</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
 last bin.</li>
 <li><strong>n_models</strong> (<em>5000</em>) &#8211; number of modes to generate</li>
-<li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis 
+<li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis
 (usually the top 20% of the generated models). The models are ranked
 according to their objective function value (the lower the better)</li>
 <li><strong>keep_all</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether or not to keep the discarded models (if
@@ -338,14 +338,14 @@ neighbors (e.g. 1 means consecutive particles)</li>
 <li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
 <li><strong>verbose</strong> (<em>0</em>) &#8211; the information printed can be: nothing (0), the
 objective function value the selected models (1), the objective
-function value of all the models (2), all the modeling 
+function value of all the models (2), all the modeling
 information (3)</li>
-<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
-only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
-which are added hemispherical ends. This cylinder is defined by a radius, 
-its height (with a height of 0 the cylinder becomes a sphere) and the 
-force applied to the restraint. E.g. for modeling E. coli genome (2 
-micrometers length and 0.5 micrometer of width), these values could be 
+<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can
+only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to
+which are added hemispherical ends. This cylinder is defined by a radius,
+its height (with a height of 0 the cylinder becomes a sphere) and the
+force applied to the restraint. E.g. for modeling E. coli genome (2
+micrometers length and 0.5 micrometer of width), these values could be
 used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
 (6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
 <li><strong>config</strong> (<em>CONFIG</em><em>[</em><em>'dmel_01'</em><em>]</em><em></em>) &#8211; <p>a dictionary containing the standard
@@ -447,7 +447,7 @@ neighbors (e.g. 1 means consecutive particles)</li>
 <li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
 <li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if set to True, information about the distance,
 force and Z-score between particles will be printed</li>
-<li><strong>lowfreq_range</strong> (<em></em><em>(</em><em>-1</em><em>,</em><em>0</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of lowfreq values to be 
+<li><strong>lowfreq_range</strong> (<em></em><em>(</em><em>-1</em><em>,</em><em>0</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of lowfreq values to be
 optimized. The last value of the input tuple is the incremental step
 for the lowfreq values</li>
 <li><strong>upfreq_range</strong> (<em></em><em>(</em><em>0</em><em>,</em><em>1</em><em>,</em><em>0.1</em><em>,</em><em>0.1</em><em>)</em><em></em>) &#8211; range of upfreq values to be
@@ -465,12 +465,12 @@ from which to consider 2 beads as being close). The last value of the
 input tuple is the incremental step for scale parameter values</li>
 <li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
-<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
-only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
-which are added hemispherical ends. This cylinder is defined by a radius, 
-its height (with a height of 0 the cylinder becomes a sphere) and the 
-force applied to the restraint. E.g. for modeling E. coli genome (2 
-micrometers length and 0.5 micrometer of width), these values could be 
+<li><strong>container</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can
+only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to
+which are added hemispherical ends. This cylinder is defined by a radius,
+its height (with a height of 0 the cylinder becomes a sphere) and the
+force applied to the restraint. E.g. for modeling E. coli genome (2
+micrometers length and 0.5 micrometer of width), these values could be
 used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
 (6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
 <li><strong>verbose</strong> &#8211; print the results to the standard output</li>
@@ -534,7 +534,7 @@ current experiment</p>
 <code class="descname">set_resolution</code><span class="sig-paren">(</span><em>resolution</em>, <em>keep_original=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.set_resolution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a new value for the resolution. Copy the original data into
 Experiment._ori_hic and replace the Experiment.hic_data
-with the data corresponding to new data 
+with the data corresponding to new data
 (<code class="xref py py-func docutils literal"><span class="pre">pytadbit.Chromosome.compare_condition()</span></code>).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -571,7 +571,7 @@ must be a multiple of the original resolution, and higher than it</li>
 between the first and last one passed will be showed. Thus, passing
 more than two TADs might be superfluous)</p>
 </li>
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the 
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the
 region to visualize</li>
 <li><strong>paint_tads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a box around the TADs defined for this
 experiment</li>
@@ -591,7 +591,7 @@ if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; tuple with minimum and maximum value range for color
 scale. I.e. clim=(-4, 10)</li>
-<li><strong>cmap</strong> (<em>'jet'</em>) &#8211; color map from matplotlib. Can also be a 
+<li><strong>cmap</strong> (<em>'jet'</em>) &#8211; color map from matplotlib. Can also be a
 preconfigured cmap object.</li>
 </ul>
 </td>
@@ -692,6 +692,7 @@ a table.</li>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
@@ -749,7 +750,7 @@ a table.</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 20, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

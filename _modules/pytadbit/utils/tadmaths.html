@@ -63,8 +63,8 @@
 
 <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Median Absolute Deviation: a &quot;Robust&quot; version of standard deviation.</span>
-<span class="sd">        Indices variabililty of the sample.</span>
-<span class="sd">        https://en.wikipedia.org/wiki/Median_absolute_deviation </span>
+<span class="sd">        Indices variability of the sample.</span>
+<span class="sd">        https://en.wikipedia.org/wiki/Median_absolute_deviation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
@@ -74,7 +74,7 @@
 
 <span class="k">def</span> <span class="nf">right_double_mad</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Double Median Absolute Deviation: a &#39;Robust&#39; version of standard deviation.</span>
-<span class="sd">        Indices variabililty of the sample.</span>
+<span class="sd">        Indices variability of the sample.</span>
 <span class="sd">        http://eurekastatistics.com/using-the-median-absolute-deviation-to-find-outliers</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -89,7 +89,7 @@
 <span class="sd">    Newton-Raphson method as defined in:</span>
 <span class="sd">    http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html</span>
 <span class="sd">    used to search for the persistence length of a given model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param guess: starting value</span>
 <span class="sd">    :param contour: of the model</span>
 <span class="sd">    :param sq_length: square of the distance between first and last particle</span>
@@ -117,7 +117,7 @@
 <span class="k">class</span> <span class="nc">Interpolate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple linear interpolation, to be used when the one from scipy is not</span>
-<span class="sd">    avaiable</span>
+<span class="sd">    available.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_list</span><span class="p">,</span> <span class="n">y_list</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
@@ -132,7 +132,7 @@
         <span class="n">y_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">y_list</span><span class="p">)</span>
         <span class="n">intervals</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">y_list</span><span class="p">,</span> <span class="n">y_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slopes</span> <span class="o">=</span> <span class="p">[(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="k">for</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">]</span>
-        
+
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -188,9 +188,9 @@
 <span class="k">def</span> <span class="nf">zscore</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the log10, Z-score of a given list of values.</span>
-<span class="sd">    </span>
+
 <span class="sd">    .. note::</span>
-<span class="sd">    </span>
+
 <span class="sd">      _______________________/___</span>
 <span class="sd">                            /</span>
 <span class="sd">                           /</span>
@@ -207,7 +207,7 @@
 <span class="sd">                /                     score</span>
 <span class="sd">            ___/_________________________________</span>
 <span class="sd">              /</span>
-<span class="sd">  </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get the log trasnform values</span>
     <span class="n">nozero_log</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
@@ -233,7 +233,7 @@
 <span class="sd">    Where :math:`B(k)` and :math:`W(k)` are the between and within cluster sums</span>
 <span class="sd">    of squares, with :math:`k` clusters, and :math:`n` the total number of</span>
 <span class="sd">    elements (models in this case).</span>
-<span class="sd">   </span>
+
 <span class="sd">    :param scores: a dict with, as keys, a tuple with a pair of models; and, as</span>
 <span class="sd">       value, the distance between these models.</span>
 <span class="sd">    :param clusters: a dict with, as key, the cluster number, and as value a</span>
@@ -253,12 +253,12 @@
                             <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="n">cl1</span><span class="p">])</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="n">cl2</span><span class="p">]))</span>
                             <span class="k">for</span> <span class="n">cl1</span><span class="p">,</span> <span class="n">cl2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
                        <span class="o">/</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
-    
+
     <span class="n">within_cluster</span> <span class="o">=</span> <span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">([</span><span class="n">scores</span><span class="p">[(</span><span class="n">md1</span><span class="p">,</span> <span class="n">md2</span><span class="p">)]</span><span class="o">**</span><span class="mi">2</span>
                                 <span class="k">for</span> <span class="n">md1</span><span class="p">,</span> <span class="n">md2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="n">cls</span><span class="p">],</span> <span class="mi">2</span><span class="p">)])</span>
                            <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="n">cls</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="n">cls</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
                            <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">]))</span>
-    
+
     <span class="k">return</span> <span class="p">((</span><span class="n">between_cluster</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
             <span class="o">/</span>
             <span class="p">(</span><span class="n">within_cluster</span> <span class="o">/</span> <span class="p">(</span><span class="n">nmodels</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">))))</span></div>
@@ -268,7 +268,7 @@
 <span class="k">def</span> <span class="nf">mean_none</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the mean of a list of values without taking into account the None</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param values: list of values</span>
 
 <span class="sd">    :returns: the mean value</span>
@@ -278,8 +278,6 @@
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    
-    
 </pre></div>
 
           </div>
@@ -326,7 +324,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 28, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

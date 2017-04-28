@@ -76,14 +76,14 @@ experiments passed.</li>
 containing the Hi-C count matrices corresponding to different experiments</li>
 <li><strong>experiment_tads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of paths to files
 containing the definition of TADs corresponding to different experiments</li>
-<li><strong>experiment_names</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of the names of each 
+<li><strong>experiment_names</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <code class="xref py py-func docutils literal"><span class="pre">list()</span></code> of the names of each
 experiment</li>
 <li><strong>max_tad_size</strong> (<em>infinite</em>) &#8211; maximum TAD size allowed. TADs longer than
 this value will not be considered, and size of the corresponding
 chromosome size will be reduced accordingly</li>
 <li><strong>chr_len</strong> (<em>0</em>) &#8211; size of the DNA chromosome in bp. By default it will be
 inferred from the distribution of TADs</li>
-<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
@@ -105,8 +105,8 @@ complementary descriptive field. For example:</p>
 <span class="nb">print</span> <span class="n">crm</span>
 
 <span class="c1"># Chromosome 19:</span>
-<span class="c1">#    0  experiment loaded: </span>
-<span class="c1">#    0  alignment loaded: </span>
+<span class="c1">#    0  experiment loaded:</span>
+<span class="c1">#    0  alignment loaded:</span>
 <span class="c1">#    species         : mus musculus</span>
 <span class="c1">#    assembly version: UNKNOWN</span>
 <span class="c1">#    subspecies      : musculus musculus</span>
@@ -141,8 +141,8 @@ the Hi-C data</li>
 experiment</li>
 <li><strong>replace</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same
 name</li>
-<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
-representing the data matrix and the length of a row/column. With 
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
+representing the data matrix and the length of a row/column. With
 a file example.tsv containing:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
 <span class="n">chrT_001</span>   <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
@@ -165,7 +165,7 @@ a file example.tsv containing:</p>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.align_experiments">
 <code class="descname">align_experiments</code><span class="sig-paren">(</span><em>names=None</em>, <em>verbose=False</em>, <em>randomize=False</em>, <em>rnd_method='interpolate'</em>, <em>rnd_num=1000</em>, <em>get_score=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.align_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.align_experiments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Align the predicted boundaries of two different experiments. The 
+<dd><p>Align the predicted boundaries of two different experiments. The
 resulting alignment will be stored in the self.experiment list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -179,7 +179,7 @@ align all</li>
 <li><strong>penalty</strong> (<em>-0.1</em>) &#8211; penalty for inserting a gap in the alignment</li>
 <li><strong>max_dist</strong> (<em>100000</em>) &#8211; maximum distance between two boundaries
 allowing match (100Kb seems fair with HUMAN chromosomes)</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, print some information about the 
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, print some information about the
 alignments</li>
 <li><strong>randomize</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; check the alignment quality by comparing
 randomized boundaries over Chromosomes of the same size. This will
@@ -199,9 +199,9 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>an alignment object or, if the randomizattion was invoked,
-an alignment object, and a list of statistics that are, the alignment 
-score, the probability that observed alignment performs better than 
-randoms, the proportion of borders from the first experiment found 
+an alignment object, and a list of statistics that are, the alignment
+score, the probability that observed alignment performs better than
+randoms, the proportion of borders from the first experiment found
 aligned in the second experiment and the proportion of borders from
 the second experiment found aligned in the first experiment.
 Returned calues can be catched like this:</p>
@@ -238,11 +238,11 @@ as well as a simple column filtering will be applied (remove columns
 where value at the diagonal is null)</li>
 <li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADbit. If
 n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
-<li><strong>max_tad_size</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#max" title="(in Python v2.7)"><em>max</em></a>) &#8211; an integer defining the maximum size of a 
+<li><strong>max_tad_size</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#max" title="(in Python v2.7)"><em>max</em></a>) &#8211; an integer defining the maximum size of a
 TAD. Default (auto) defines it as the number of rows/columns</li>
 <li><strong>heuristic</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to use or not some heuristics</li>
-<li><strong>batch_mode</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, all the experiments will be 
-concatenated into one for the search of TADs. The resulting TADs 
+<li><strong>batch_mode</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, all the experiments will be
+concatenated into one for the search of TADs. The resulting TADs
 found are stored under the name &#8216;batch&#8217; plus a concatenation of the
 experiment names passed (e.g.: if experiments=[&#8216;exp1&#8217;, &#8216;exp2&#8217;], the
 name would be: &#8216;batch_exp1_exp2&#8217;).</li>
@@ -328,7 +328,7 @@ the <a class="reference external" href="https://docs.python.org/2/library/pickle
 object</li>
 <li><strong>fast</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, skip Hi-C data and weights</li>
 <li><strong>divide</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True writes two pickles, one with what would
-result by using the fast option, and the second with the Hi-C and 
+result by using the fast option, and the second with the Hi-C and
 weights data. The second file name will be extended by &#8216;_hic&#8217; (ie:
 with out_f=&#8217;chromosome12.pik&#8217; we would obtain chromosome12.pik and
 chromosome12.pik_hic). When loaded <a class="reference internal" href="#pytadbit.chromosome.load_chromosome" title="pytadbit.chromosome.load_chromosome"><code class="xref py py-func docutils literal"><span class="pre">load_chromosome()</span></code></a> will
@@ -410,7 +410,7 @@ experiment names. If None, all experiments will be shown</li>
 between the first and last one passed will be showed. Thus, passing
 more than two TADs might be superfluous)</p>
 </li>
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the 
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the
 region to visualize</li>
 <li><strong>paint_tads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a box around the TADs defined for this
 experiment</li>
@@ -430,7 +430,7 @@ if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; tuple with minimum and maximum value range for color
 scale. I.e. clim=(-4, 10)</li>
-<li><strong>cmap</strong> (<em>'jet'</em>) &#8211; color map from matplotlib. Can also be a 
+<li><strong>cmap</strong> (<em>'jet'</em>) &#8211; color map from matplotlib. Can also be a
 preconfigured cmap object.</li>
 </ul>
 </td>
@@ -475,7 +475,7 @@ memory. Finally if fast=0, both the weights and Hi-C data will be loaded</li>
 <dl class="class">
 <dt id="pytadbit.chromosome.ExperimentList">
 <em class="property">class </em><code class="descclassname">pytadbit.chromosome.</code><code class="descname">ExperimentList</code><span class="sig-paren">(</span><em>thing</em>, <em>crm</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#ExperimentList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.ExperimentList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inherited from python built in <code class="xref py py-func docutils literal"><span class="pre">list()</span></code>, modified for tadbit
+<dd><p>Inherited from python built in <code class="xref py py-func docutils literal"><span class="pre">list()</span></code>, modified for TADbit
 <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></code>.</p>
 <p>Mainly, <cite>getitem</cite>, <cite>setitem</cite>, and <cite>append</cite> were modified in order to
 be able to search for experiments by index or by name, and to add
@@ -500,6 +500,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
@@ -561,7 +562,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 20, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

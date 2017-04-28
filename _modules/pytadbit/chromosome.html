@@ -53,19 +53,19 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">string</span>                            <span class="k">import</span> <span class="n">ascii_lowercase</span> <span class="k">as</span> <span class="n">letters</span>
+<span class="kn">from</span> <span class="nn">copy</span>                              <span class="k">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">cPickle</span>                           <span class="k">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">random</span>                            <span class="k">import</span> <span class="n">random</span>
+<span class="kn">from</span> <span class="nn">math</span>                              <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">sys</span>                               <span class="k">import</span> <span class="n">stderr</span>
 <span class="kn">from</span> <span class="nn">os.path</span>                           <span class="k">import</span> <span class="n">exists</span>
 <span class="kn">from</span> <span class="nn">pytadbit.boundary_aligner.aligner</span> <span class="k">import</span> <span class="n">align</span>
 <span class="kn">from</span> <span class="nn">pytadbit</span>                          <span class="k">import</span> <span class="n">tadbit</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="k">import</span> <span class="n">tadbit_savefig</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="k">import</span> <span class="n">_tad_density_plot</span>
 <span class="kn">from</span> <span class="nn">pytadbit.experiment</span>               <span class="k">import</span> <span class="n">Experiment</span>
-<span class="kn">from</span> <span class="nn">string</span>                            <span class="k">import</span> <span class="n">ascii_lowercase</span> <span class="k">as</span> <span class="n">letters</span>
-<span class="kn">from</span> <span class="nn">copy</span>                              <span class="k">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
-<span class="kn">from</span> <span class="nn">cPickle</span>                           <span class="k">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
 <span class="kn">from</span> <span class="nn">pytadbit.alignment</span>                <span class="k">import</span> <span class="n">Alignment</span><span class="p">,</span> <span class="n">randomization_test</span>
-<span class="kn">from</span> <span class="nn">random</span>                            <span class="k">import</span> <span class="n">random</span>
-<span class="kn">from</span> <span class="nn">math</span>                              <span class="k">import</span> <span class="n">sqrt</span>
-<span class="kn">from</span> <span class="nn">sys</span>                               <span class="k">import</span> <span class="n">stderr</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -169,19 +169,19 @@
 <span class="sd">       containing the Hi-C count matrices corresponding to different experiments</span>
 <span class="sd">    :param None experiment_tads: :py:func:`list` of paths to files</span>
 <span class="sd">       containing the definition of TADs corresponding to different experiments</span>
-<span class="sd">    :param None experiment_names: :py:func:`list` of the names of each </span>
+<span class="sd">    :param None experiment_names: :py:func:`list` of the names of each</span>
 <span class="sd">        experiment</span>
 <span class="sd">    :param infinite max_tad_size: maximum TAD size allowed. TADs longer than</span>
 <span class="sd">        this value will not be considered, and size of the corresponding</span>
 <span class="sd">        chromosome size will be reduced accordingly</span>
 <span class="sd">    :param 0 chr_len: size of the DNA chromosome in bp. By default it will be</span>
 <span class="sd">        inferred from the distribution of TADs</span>
-<span class="sd">    :param None parser: a parser function that returns a tuple of lists </span>
+<span class="sd">    :param None parser: a parser function that returns a tuple of lists</span>
 <span class="sd">       representing the data matrix and the length of a row/column. With</span>
 <span class="sd">       the file example.tsv:</span>
 
 <span class="sd">       ::</span>
-<span class="sd">       </span>
+
 <span class="sd">         chrT_001	chrT_002	chrT_003	chrT_004</span>
 <span class="sd">         chrT_001	629	164	88	105</span>
 <span class="sd">         chrT_002	164	612	175	110</span>
@@ -193,15 +193,15 @@
 <span class="sd">       110, 100, 278]), 4]``</span>
 <span class="sd">    :param None kw_descr: any other argument passed would be stored as</span>
 <span class="sd">       complementary descriptive field. For example::</span>
-<span class="sd">       </span>
+
 <span class="sd">           crm  = Chromosome(&#39;19&#39;, species=&#39;mus musculus&#39;,</span>
 <span class="sd">                             subspecies=&#39;musculus musculus&#39;,</span>
 <span class="sd">                             skin_color=&#39;black&#39;)</span>
 <span class="sd">           print crm</span>
 
 <span class="sd">           # Chromosome 19:</span>
-<span class="sd">           #    0  experiment loaded: </span>
-<span class="sd">           #    0  alignment loaded: </span>
+<span class="sd">           #    0  experiment loaded:</span>
+<span class="sd">           #    0  alignment loaded:</span>
 <span class="sd">           #    species         : mus musculus</span>
 <span class="sd">           #    assembly version: UNKNOWN</span>
 <span class="sd">           #    subspecies      : musculus musculus</span>
@@ -309,7 +309,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">forbidden</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span>
                                    <span class="nb">set</span><span class="p">(</span><span class="n">forbidden</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">)])</span>
         <span class="c1"># search for centromere:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
@@ -348,7 +348,7 @@
 <span class="sd">           object</span>
 <span class="sd">        :param True fast: if True, skip Hi-C data and weights</span>
 <span class="sd">        :param True divide: if True writes two pickles, one with what would</span>
-<span class="sd">           result by using the fast option, and the second with the Hi-C and </span>
+<span class="sd">           result by using the fast option, and the second with the Hi-C and</span>
 <span class="sd">           weights data. The second file name will be extended by &#39;_hic&#39; (ie:</span>
 <span class="sd">           with out_f=&#39;chromosome12.pik&#39; we would obtain chromosome12.pik and</span>
 <span class="sd">           chromosome12.pik_hic). When loaded :func:`load_chromosome` will</span>
@@ -409,9 +409,9 @@
                           <span class="n">rnd_method</span><span class="o">=</span><span class="s1">&#39;interpolate&#39;</span><span class="p">,</span> <span class="n">rnd_num</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
                           <span class="n">get_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Align the predicted boundaries of two different experiments. The </span>
+<span class="sd">        Align the predicted boundaries of two different experiments. The</span>
 <span class="sd">        resulting alignment will be stored in the self.experiment list.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param None names: list of names of the experiments to align. If None,</span>
 <span class="sd">            align all</span>
 <span class="sd">        :param experiment1: name of the first experiment to align</span>
@@ -419,7 +419,7 @@
 <span class="sd">        :param -0.1 penalty: penalty for inserting a gap in the alignment</span>
 <span class="sd">        :param 100000 max_dist: maximum distance between two boundaries</span>
 <span class="sd">            allowing match (100Kb seems fair with HUMAN chromosomes)</span>
-<span class="sd">        :param False verbose: if True, print some information about the </span>
+<span class="sd">        :param False verbose: if True, print some information about the</span>
 <span class="sd">            alignments</span>
 <span class="sd">        :param False randomize: check the alignment quality by comparing</span>
 <span class="sd">            randomized boundaries over Chromosomes of the same size. This will</span>
@@ -437,9 +437,9 @@
 <span class="sd">            used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)</span>
 
 <span class="sd">        :returns: an alignment object or, if the randomizattion was invoked,</span>
-<span class="sd">           an alignment object, and a list of statistics that are, the alignment </span>
-<span class="sd">           score, the probability that observed alignment performs better than </span>
-<span class="sd">           randoms, the proportion of borders from the first experiment found </span>
+<span class="sd">           an alignment object, and a list of statistics that are, the alignment</span>
+<span class="sd">           score, the probability that observed alignment performs better than</span>
+<span class="sd">           randoms, the proportion of borders from the first experiment found</span>
 <span class="sd">           aligned in the second experiment and the proportion of borders from</span>
 <span class="sd">           the second experiment found aligned in the first experiment.</span>
 <span class="sd">           Returned calues can be catched like this:</span>
@@ -480,11 +480,11 @@
 
 
 <div class="viewcode-block" id="Chromosome.add_experiment"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tad_def</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">norm_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                       <span class="n">norm_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">conditions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a Hi-C experiment to Chromosome</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param name: name of the experiment or of the Experiment object</span>
 <span class="sd">        :param resolution: resolution of the experiment (needed if name is not</span>
 <span class="sd">           an Experiment object)</span>
@@ -494,22 +494,22 @@
 <span class="sd">           experiment</span>
 <span class="sd">        :param False replace: overwrite the experiments loaded under the same</span>
 <span class="sd">           name</span>
-<span class="sd">        :param None parser: a parser function that returns a tuple of lists </span>
-<span class="sd">           representing the data matrix and the length of a row/column. With </span>
+<span class="sd">        :param None parser: a parser function that returns a tuple of lists</span>
+<span class="sd">           representing the data matrix and the length of a row/column. With</span>
 <span class="sd">           a file example.tsv containing:</span>
 
 <span class="sd">           ::</span>
-<span class="sd">           </span>
+
 <span class="sd">             chrT_001	chrT_002	chrT_003	chrT_004</span>
 <span class="sd">             chrT_001	629	164	88	105</span>
 <span class="sd">             chrT_002	164	612	175	110</span>
 <span class="sd">             chrT_003	88	175	437	100</span>
 <span class="sd">             chrT_004	105	110	100	278</span>
-<span class="sd">           </span>
+
 <span class="sd">           the output of parser(&#39;example.tsv&#39;) would be:</span>
 <span class="sd">           ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,</span>
 <span class="sd">           110, 100, 278]), 4]``</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">letters</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">letters</span><span class="p">))]</span> \
@@ -540,7 +540,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call the :func:`pytadbit.tadbit.tadbit` function to calculate the</span>
 <span class="sd">        position of Topologically Associated Domain boundaries</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param experiment: A square matrix of interaction counts of Hi-C</span>
 <span class="sd">           data or a list of such matrices for replicated experiments. The</span>
 <span class="sd">           counts must be evenly sampled and not normalized. &#39;experiment&#39;</span>
@@ -550,11 +550,11 @@
 <span class="sd">           where value at the diagonal is null)</span>
 <span class="sd">        :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">           n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
-<span class="sd">        :param max max_tad_size: an integer defining the maximum size of a </span>
+<span class="sd">        :param max max_tad_size: an integer defining the maximum size of a</span>
 <span class="sd">           TAD. Default (auto) defines it as the number of rows/columns</span>
 <span class="sd">        :param True heuristic: whether to use or not some heuristics</span>
-<span class="sd">        :param False batch_mode: if True, all the experiments will be </span>
-<span class="sd">           concatenated into one for the search of TADs. The resulting TADs </span>
+<span class="sd">        :param False batch_mode: if True, all the experiments will be</span>
+<span class="sd">           concatenated into one for the search of TADs. The resulting TADs</span>
 <span class="sd">           found are stored under the name &#39;batch&#39; plus a concatenation of the</span>
 <span class="sd">           experiment names passed (e.g.: if experiments=[&#39;exp1&#39;, &#39;exp2&#39;], the</span>
 <span class="sd">           name would be: &#39;batch_exp1_exp2&#39;).</span>
@@ -620,14 +620,14 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the chromosome size and relative size after loading new Hi-C</span>
 <span class="sd">        experiments, unless the Chromosome size was defined by hand.</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_given_size</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">)][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span>   <span class="o">=</span> <span class="n">ChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">resized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            
+
         <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">)</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="n">RelativeChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
@@ -637,7 +637,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draw an summary of the TAD found in a given experiment and their density</span>
 <span class="sd">        in terms of relative Hi-C interaction count.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param name: name of the experiment to visualize</span>
 <span class="sd">        :param None focus: can pass a tuple (bin_start, bin_stop) to display the</span>
 <span class="sd">           alignment between these genomic bins</span>
@@ -672,16 +672,16 @@
 <span class="sd">           experiment names. If None, all experiments will be shown</span>
 <span class="sd">        :param None tad: a given TAD in the form:</span>
 <span class="sd">           ::</span>
-<span class="sd">           </span>
+
 <span class="sd">             {&#39;start&#39;: start,</span>
 <span class="sd">              &#39;end&#39;  : end,</span>
 <span class="sd">              &#39;brk&#39;  : end,</span>
 <span class="sd">              &#39;score&#39;: score}</span>
-<span class="sd">              </span>
+
 <span class="sd">           **Alternatively** a list of the TADs can be passed (all the TADs</span>
 <span class="sd">           between the first and last one passed will be showed. Thus, passing</span>
 <span class="sd">           more than two TADs might be superfluous)</span>
-<span class="sd">        :param None focus: a tuple with the start and end positions of the </span>
+<span class="sd">        :param None focus: a tuple with the start and end positions of the</span>
 <span class="sd">           region to visualize</span>
 <span class="sd">        :param False paint_tads: draw a box around the TADs defined for this</span>
 <span class="sd">           experiment</span>
@@ -701,7 +701,7 @@
 <span class="sd">           of the file name will determine the desired format).</span>
 <span class="sd">        :param None clim: tuple with minimum and maximum value range for color</span>
 <span class="sd">           scale. I.e. clim=(-4, 10)</span>
-<span class="sd">        :param &#39;jet&#39; cmap: color map from matplotlib. Can also be a </span>
+<span class="sd">        :param &#39;jet&#39; cmap: color map from matplotlib. Can also be a</span>
 <span class="sd">           preconfigured cmap object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">names</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
@@ -731,7 +731,7 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
                         <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="n">scale</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
                         <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span>
-                            <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>                        
+                            <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                     <span class="n">xpr1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
                     <span class="n">xpr2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
                     <span class="n">img</span> <span class="o">=</span> <span class="n">xpr1</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span>
@@ -747,7 +747,7 @@
                     <span class="c1">#axe = axe.twinx()</span>
                     <span class="c1">#axe.set_aspect(&#39;equal&#39;,adjustable=&#39;box-forced&#39;,anchor=&#39;NE&#39;)</span>
                     <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
-                        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> 
+                        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span>
                                  <span class="s1">&#39;Chromosome </span><span class="si">%s</span><span class="s1"> experiment </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">xpr2</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
                                   <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">,</span>
@@ -765,16 +765,16 @@
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
-        
+
 
 <div class="viewcode-block" id="Chromosome.get_tad_hic"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.get_tad_hic">[docs]</a>    <span class="k">def</span> <span class="nf">get_tad_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad</span><span class="p">,</span> <span class="n">x_name</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">matrix_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the Hi-C data matrix corresponding to a given TAD.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param tad: a given TAD (:py:class:`dict`)</span>
 <span class="sd">        :param x_name: name of the experiment</span>
 <span class="sd">        :param True normed: if True, normalize the Hi-C data</span>
-<span class="sd">        </span>
+
 <span class="sd">        :returns: Hi-C data matrix for the given TAD</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>
@@ -955,7 +955,7 @@
 
 <div class="viewcode-block" id="ExperimentList"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.ExperimentList">[docs]</a><span class="k">class</span> <span class="nc">ExperimentList</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Inherited from python built in :py:func:`list`, modified for tadbit</span>
+<span class="sd">    Inherited from python built in :py:func:`list`, modified for TADbit</span>
 <span class="sd">    :class:`pytadbit.Experiment`.</span>
 
 <span class="sd">    Mainly, `getitem`, `setitem`, and `append` were modified in order to</span>
@@ -1025,7 +1025,7 @@
 <span class="k">class</span> <span class="nc">AlignmentDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :py:func:`dict` of :class:`pytadbit.Alignment`</span>
-<span class="sd">    </span>
+
 <span class="sd">    Modified getitem, setitem, and append in order to be able to search</span>
 <span class="sd">    alignments by index or by name.</span>
 
@@ -1044,7 +1044,7 @@
 
 <span class="k">class</span> <span class="nc">ChromosomeSize</span><span class="p">(</span><span class="nb">int</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Simple class inheriting from interger designed to hold chromosome size in</span>
+<span class="sd">    Simple class inheriting from integer designed to hold chromosome size in</span>
 <span class="sd">    base pairs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
@@ -1106,7 +1106,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 28, 2017.
+      Last updated on Apr 29, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
