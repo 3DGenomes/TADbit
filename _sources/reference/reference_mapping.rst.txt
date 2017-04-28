@@ -6,20 +6,15 @@ Mapping
 -------
 
 
-.. currentmodule:: pytadbit.mapping.mapper
-
-.. autofunction:: get_intersection
-
 .. currentmodule:: pytadbit.mapping.full_mapper
 
 .. autofunction:: full_mapping
+
 
 Quality check and plotting
 --------------------------
 
 .. currentmodule:: pytadbit.mapping.analyze
-
-.. autofunction:: load_hic_data_from_reads
 
 .. autofunction:: hic_map
 
@@ -33,9 +28,7 @@ Quality check and plotting
 
 .. autofunction:: plot_genomic_distribution
 
-.. autofunction:: insert_sizes
 
-.. autofunction:: plot_strand_bias_by_distance
 
 .. currentmodule:: pytadbit.utils.fastq_utils
 
@@ -45,16 +38,15 @@ Quality check and plotting
 Filtering
 ---------
 
+.. currentmodule:: pytadbit.mapping
+
+.. autofunction:: get_intersection
+
+.. autofunction:: merge_2d_beds
+
 .. currentmodule:: pytadbit.mapping.filter
 
 .. autofunction:: filter_reads
 
 .. autofunction:: apply_filter
 
-.. currentmodule:: pytadbit.mapping.restriction_enzymes
-
-.. autofunction:: repaired
-
-.. autofunction:: map_re_sites
-
-.. autofunction:: religated
