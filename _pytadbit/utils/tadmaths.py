@@ -13,8 +13,8 @@ import numpy as np
 
 def mad(arr):
     """ Median Absolute Deviation: a "Robust" version of standard deviation.
-        Indices variabililty of the sample.
-        https://en.wikipedia.org/wiki/Median_absolute_deviation 
+        Indices variability of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation
     """
     if not isinstance(arr, np.ndarray):
         arr = np.array(arr)
@@ -24,7 +24,7 @@ def mad(arr):
 
 def right_double_mad(arr):
     """ Double Median Absolute Deviation: a 'Robust' version of standard deviation.
-        Indices variabililty of the sample.
+        Indices variability of the sample.
         http://eurekastatistics.com/using-the-median-absolute-deviation-to-find-outliers
     """
     if not isinstance(arr, np.ndarray):
@@ -39,7 +39,7 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     Newton-Raphson method as defined in:
     http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html
     used to search for the persistence length of a given model.
-    
+
     :param guess: starting value
     :param contour: of the model
     :param sq_length: square of the distance between first and last particle
@@ -67,7 +67,7 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
 class Interpolate(object):
     """
     Simple linear interpolation, to be used when the one from scipy is not
-    avaiable
+    available.
     """
     def __init__(self, x_list, y_list):
         for i, (x, y) in enumerate(zip(x_list, x_list[1:])):
@@ -82,7 +82,7 @@ class Interpolate(object):
         y_list = self.y_list = map(float, y_list)
         intervals = zip(x_list, x_list[1:], y_list, y_list[1:])
         self.slopes = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
-        
+
     def __call__(self, x):
         i = bisect_left(self.x_list, x) - 1
         return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])
@@ -138,9 +138,9 @@ def nozero_log_matrix(values, transformation):
 def zscore(values):
     """
     Calculates the log10, Z-score of a given list of values.
-    
+
     .. note::
-    
+
       _______________________/___
                             /
                            /
@@ -157,7 +157,7 @@ def zscore(values):
                 /                     score
             ___/_________________________________
               /
-  
+
     """
     # get the log trasnform values
     nozero_log(values)
@@ -183,7 +183,7 @@ def calinski_harabasz(scores, clusters):
     Where :math:`B(k)` and :math:`W(k)` are the between and within cluster sums
     of squares, with :math:`k` clusters, and :math:`n` the total number of
     elements (models in this case).
-   
+
     :param scores: a dict with, as keys, a tuple with a pair of models; and, as
        value, the distance between these models.
     :param clusters: a dict with, as key, the cluster number, and as value a
@@ -203,12 +203,12 @@ def calinski_harabasz(scores, clusters):
                             / (len(clusters[cl1]) * len(clusters[cl2]))
                             for cl1, cl2 in combinations(cluster_list, 2)])
                        / ((len(cluster_list) - 1.0) / 2))
-    
+
     within_cluster = (sum([sum([scores[(md1, md2)]**2
                                 for md1, md2 in combinations(clusters[cls], 2)])
                            / (len(clusters[cls]) * (len(clusters[cls]) - 1.0) / 2)
                            for cls in cluster_list]))
-    
+
     return ((between_cluster / (len(cluster_list) - 1))
             /
             (within_cluster / (nmodels - len(cluster_list))))
@@ -218,7 +218,7 @@ def calinski_harabasz(scores, clusters):
 def mean_none(values):
     """
     Calculates the mean of a list of values without taking into account the None
-    
+
     :param values: list of values
 
     :returns: the mean value
@@ -228,5 +228,3 @@ def mean_none(values):
         return float(sum(values)) / len(values)
     else:
         return None
-    
-    

@@ -862,8 +862,8 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                        savefig=None, show=False, savedata=None,
                        normalized=False, remove_bad_columns=True, **kwargs):
     """
-    Compare the iteractions of two Hi-C matrices at a given distance,
-    with spearman rank correlation
+    Compare the interactions of two Hi-C matrices at a given distance,
+    with Spearman rank correlation
 
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
@@ -958,8 +958,8 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                            savefig=None, show=False, savedata=None,
                            remove_bad_columns=True, **kwargs):
     """
-    Compare the iteractions of two Hi-C matrices using their 6 first
-    eigenvectors, with pearson correlation
+    Compare the interactions of two Hi-C matrices using their 6 first
+    eigenvectors, with Pearson correlation
 
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object

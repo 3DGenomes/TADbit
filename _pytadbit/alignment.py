@@ -24,7 +24,7 @@ class Alignment(object):
     def __init__(self, name, alignment, experiments, consensus, score=None):
         self.name = name
         self.__experiments = experiments
-        self.__values = []        
+        self.__values = []
         self.__keys = []
         self.__len = None
         self.consensus = consensus
@@ -120,9 +120,9 @@ class Alignment(object):
                         title='', ftype='ansi'):
         """
         Print alignment of TAD boundaries between different experiments.
-           Alignment are displayed with colors according to the tadbit
+           Alignments are displayed with colors according to the TADbit
            confidence score for each boundary.
-        
+
         :param None names: if None print all experiments
         :param None xpers: if None print all experiments
         :param False string: return string instead of printing
@@ -205,16 +205,16 @@ class Alignment(object):
           cond1 = lambda x: x['score'] > 5
           # and we want boundaries to be detected in Experiments exp1 and exp2
           cond2=lambda x: x['exp'] in ['exp1', 'exp2']
-          
+
           ali.get_column(cond1=cond1, cond2=cond2, min_num=2)
-          # [(33, [>268<, >192<, >-<, >-<]),	 
-          #  (46, [>324<, >323<, >335<, >329<]), 
-          #  (51, [>348<, >335<, >357<, >347<]), 
-          #  (56, [>374<, >358<, >383<, >-<]),	 
-          #  (64, [>397<, >396<, >407<, >-<]),	 
-          #  (77, [>444<, >442<, >456<, >-<])]   
-          
-          
+          # [(33, [>268<, >192<, >-<, >-<]),
+          #  (46, [>324<, >323<, >335<, >329<]),
+          #  (51, [>348<, >335<, >357<, >347<]),
+          #  (56, [>374<, >358<, >383<, >-<]),
+          #  (64, [>397<, >396<, >407<, >-<]),
+          #  (77, [>444<, >442<, >456<, >-<])]
+
+
         """
         if isinstance(cond1, int):
             val = cond1 - 1
@@ -274,7 +274,7 @@ class Alignment(object):
              normalized=True, savefig=None, shape='ellipse'):
         """
         Draw alignments as a plot.
-        
+
         :param None focus: can pass a tuple (bin_start, bin_stop) to display the
            alignment between these genomic bins
         :param None extras: list of coordinates (genomic bin) where to draw a
@@ -296,7 +296,7 @@ class Alignment(object):
 
         maxres = max([e.resolution for e in experiments])
         facts = [maxres / e.resolution for e in experiments]
-        
+
 
         siz = experiments[0].size
         if focus:
@@ -399,13 +399,13 @@ class TAD(dict):
      - 'pos': in the alignment (column number)
      - 'exp': Experiment this TAD belongs to
      - 'index': of this TAD within all TADs in the Experiment
-    
+
     """
     def __init__(self, thing, i, exp):
         super(TAD, self).__init__(thing)
         idx = [t for t in exp.tads if exp.tads[t]['start']==self['start']][0]
         self.update(dict((('pos', i),('exp', exp), ('index', idx))))
-        
+
     def __repr__(self):
         return '>' + (str(int(self['end']) * self['exp'].resolution / 1000) \
                       if int(self['end']) else '-') + '<'
@@ -431,7 +431,7 @@ def _interpolation(experiments):
     win = [0.0]
     cnt = [0.0]
     max_d = max(norm_tads)
-    # we ask here for a mean number of 20 values per bin 
+    # we ask here for a mean number of 20 values per bin
     bin_s = int(max_d / (float(len(norm_tads)) / 20))
     for bee in range(0, int(max_d) + bin_s, bin_s):
         win.append(len([i for i in norm_tads
@@ -485,7 +485,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
         if verbose:
             val = float(val)
             if not val / num * 100 % 5:
-                stdout.write('\r' + ' ' * 10 + 
+                stdout.write('\r' + ' ' * 10 +
                              ' randomizing: '
                              '%.2f completed' % (100 * val/num))
                 stdout.flush()
@@ -526,12 +526,12 @@ def generate_rnd_tads(chromosome_len, distr, start=0):
     """
     Generates random TADs over a chromosome of a given size according to a given
     distribution of lengths of TADs.
-    
+
     :param chromosome_len: length of the chromosome
     :param distr: function that returns a TAD length depending on a p value
     :param bin_size: size of the bin of the Hi-C experiment
     :param 0 start: starting position in the chromosome
-    
+
     :returns: list of TADs
     """
     pos = start

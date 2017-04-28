@@ -33,8 +33,8 @@ class StructuralModel(dict):
     """
     A container for the structural modelling results. The container is a dictionary
     with the following keys:
-    
-    - rand_init: Random number generator feed (needed for model reproducibility)    
+
+    - rand_init: Random number generator feed (needed for model reproducibility)
     - x, y, z: 3D coordinates of each particles. Each represented as a list
 
     """
@@ -45,7 +45,7 @@ class StructuralModel(dict):
         """
         Calculates the distance between one point of the model and an external
         coordinate
-        
+
         :param part1: index of a particle in the model
         :param part2: index of a particle in the model
 
@@ -61,7 +61,7 @@ class StructuralModel(dict):
         """
         Calculates the square istance between one point of the model and an
         external coordinate
-        
+
         :param part1: index of a particle in the model
         :param part2: index of a particle in the model
 
@@ -89,7 +89,7 @@ class StructuralModel(dict):
     def center_of_mass(self):
         """
         Gives the center of mass of a model
-        
+
         :returns: the center of mass of a given model
         """
         r_x = sum(self['x'])/len(self)
@@ -101,18 +101,18 @@ class StructuralModel(dict):
     def radius_of_gyration(self):
         """
         Calculates the radius of gyration or gyradius of the model
-        
+
         Defined as:
-        
+
         .. math::
 
           \sqrt{\\frac{\sum_{i=1}^{N} (x_i-x_{com})^2+(y_i-y_{com})^2+(z_i-z_{com})^2}{N}}
 
         with:
-        
+
         * :math:`N` the number of particles in the model
         * :math:`com` the center of mass
-        
+
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
@@ -125,7 +125,7 @@ class StructuralModel(dict):
     def contour(self):
         """
         Total length of the model
-        
+
         :returns: the totals length of the model
         """
         dist = 0
@@ -137,7 +137,7 @@ class StructuralModel(dict):
     def longest_axe(self):
         """
         Gives the distance between most distant particles of the model
-        
+
         :returns: the maximum distance between two particles in the model
         """
         maxdist = 0
@@ -152,7 +152,7 @@ class StructuralModel(dict):
     def shortest_axe(self):
         """
         Minimum distance between two particles in the model
-        
+
         :returns: the minimum distance between two particles in the model
         """
         mindist = float('inf')
@@ -167,7 +167,7 @@ class StructuralModel(dict):
     def min_max_by_axis(self):
         """
         Calculates the minimum and maximum coordinates of the model
-        
+
         :returns: the minimum and maximum coordinates for each x, y and z axis
         """
         return ((min(self['x']), max(self['x'])),
@@ -178,7 +178,7 @@ class StructuralModel(dict):
     def cube_side(self):
         """
         Calculates the side of a cube containing the model.
-        
+
         :returns: the diagonal length of the cube containing the model
         """
         return sqrt((min(self['x']) - max(self['x']))**2 +
@@ -256,7 +256,7 @@ class StructuralModel(dict):
         clength = float(self.contour())
         end = end or len(self)
         sq_length = float(self._square_distance(start, end))
-        
+
         guess = sq_length / clength
         if return_guess:
             return guess # incredible!
@@ -274,7 +274,7 @@ class StructuralModel(dict):
         an object (i.e. a protein) of a given **radius**
 
         Outer part of the model can be excluded from the estimation of
-        accessible surface, as the occupancy outside the model is unkown (see
+        accessible surface, as the occupancy outside the model is unknown (see
         superradius option).
 
         :param radius: radius of the object we want to fit in the model.
@@ -309,7 +309,7 @@ class StructuralModel(dict):
         cylinders around edges joining particles (no overlap is allowed between
         sphere and cylinders or cylinder and cylinder when they are
         consecutive).
-        
+
         If we want that all dots of the mesh representing the surface of the
         chromatin, corresponds to an equal area (:math:`a`)
 
@@ -332,7 +332,7 @@ class StructuralModel(dict):
         .. math::
 
           2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
-        
+
         It is fair to state the number of dots represented along a circle as:
 
         .. math::
@@ -349,7 +349,7 @@ class StructuralModel(dict):
            occupied by an object of the given radius *2-* the total number of
            dots in the mesh *3-* the estimated area of the mesh (in square
            micrometers) *4-* the area of the mesh of a virtually straight strand
-           of chromatin defined as 
+           of chromatin defined as
            :math:`contour\\times 2\pi r + 4\pi r^2` (also in
            micrometers) *5-* a list of number of (accessibles, inaccessible) for
            each particle (percentage burried can be infered afterwards by
@@ -360,7 +360,7 @@ class StructuralModel(dict):
         points, dots, superdots, points2dots = build_mesh(
             self['x'], self['y'], self['z'], len(self), nump, radius,
             superradius, include_edges)
-        
+
         # calculates the number of inaccessible peaces of surface
         if superradius:
             radius2 = (superradius - 4)**2
@@ -672,7 +672,7 @@ class StructuralModel(dict):
       	            "centroid":[%(centroid)s],
 	            "restraints": [[][]],
 		    "chromatinColor" : [ ]
-		}    
+		}
 	}
 }
 '''
@@ -686,8 +686,8 @@ class StructuralModel(dict):
         fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
                                                          self['z'][i])
                                    for i in xrange(len(self['x']))])
-        
-        
+
+
         if filename:
                 out_f = open('%s/%s' % (directory, filename), 'w')
         else:
@@ -708,7 +708,7 @@ class StructuralModel(dict):
         Writes a xyz file containing the 3D coordinates of each particle in the
         model.
         Outfile is tab separated column with the bead number being the
-        first column, then the genomic coordinate and finaly the 3
+        first column, then the genomic coordinate and finally the 3
         coordinates X, Y and Z
 
         **Note:** If none of model_num, models or cluster parameter are set,

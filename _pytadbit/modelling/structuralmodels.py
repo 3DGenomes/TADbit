@@ -1126,7 +1126,7 @@ class StructuralModels(object):
                      savefig=None, savedata=None, average=True, plot=True):
         """
         Plots, for each particle, the number of interactions (particles closer
-        than the guiven cut-off). The value given is the average for all models.
+        than the given cut-off). The value given is the average for all models.
 
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set

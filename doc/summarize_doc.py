@@ -5,15 +5,18 @@
 """
 
 import inspect
+from string import uppercase
+import re
+from sys import stderr
 import pytadbit
+from pytadbit.utils   import fastq_utils
+from pytadbit.parsers import genome_parser, map_parser, bed_parser, sam_parser
+from pytadbit         import mapping
 from pytadbit.mapping import mapper
 from pytadbit.mapping import filter
 from pytadbit.mapping import analyze
 from pytadbit.mapping import restriction_enzymes
 from pytadbit.tad_clustering import tad_cmo
-from string import uppercase
-import re
-from sys import stderr
 
 from lxml.html import parse
 
@@ -113,8 +116,12 @@ def main():
     """
 
     all_members = get_all(pytadbit)
+    get_all(fastq_utils, all_members)
     get_all(pytadbit.utils, all_members)
+    get_all(genome_parser, all_members)
+    get_all(pytadbit.parsers, all_members)
     get_all(tad_cmo, all_members)
+    get_all(mapping, all_members)
     get_all(mapper, all_members)
     get_all(restriction_enzymes, all_members)
     get_all(analyze, all_members)
@@ -136,7 +143,7 @@ def main():
     print ''
     for module in sorted(modules):
         print print_doc(module, header=1)
-        
+
         submodules = [m for m in all_members
                       if all_members[m]['son'].__module__ == module]
         dadies = set([all_members[m]['dady'] for m in submodules
@@ -167,6 +174,6 @@ def main():
     print '.. [#second] functions writing text files\n'
     stderr.write('Reporting %s modules, %s classes and %s functions\n' %(
         nummodules, numclasses, nfunctions))
-    
+
 if __name__ == "__main__":
     exit(main())

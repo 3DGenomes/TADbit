@@ -1,8 +1,9 @@
+import os
+
 """
 09 Jun 2015
 """
 
-import os
 from pytadbit.utils.file_handling import mkdir, which
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
@@ -23,7 +24,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
     """
     skip = kwargs.get('skip', False)
-    ## define local funcitons to process reads and sequences
+    ## define local functions to process reads and sequences
     def _get_fastq_read_heavy(rlines):
         """
         returns header and sequence of 1 FASTQ entry
@@ -70,7 +71,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
            qal = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
         should yield these fragments:
-        
+
             -------oGATCo========oGATC
             xxxxxxxxxxxxxxxxxxxxxxHHHH
 
@@ -79,7 +80,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
             GATCo~~~~~~~~~~~~
             HHHHxxxxxxxxxxxxx
-        
+
         """
         cnt += 1
         try:
@@ -133,7 +134,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     else:
         get_seq = _get_fastq_read_heavy if fastq else _get_map_read_heavy
         insert_mark = insert_mark_heavy
-        
+
     ## Start processing the input file
     if verbose:
         print 'Preparing %s file' % ('FASTQ' if fastq else 'MAP')
@@ -210,7 +211,7 @@ def _gem_filter(fnam, unmap_out, map_out):
     """
     Divides reads in a map file in two categories: uniquely mapped, and not.
     Writes them in two files
-    
+
     Notes:
        - GEM unique-maps can not be used as it gets rid of reads like 1:0:0:5
        - not feasible with gt.filter
@@ -337,11 +338,14 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                  min_seq_len=15, windows=None, add_site=True, clean=False,
                  get_nread=False, **kwargs):
     """
-    Do the mapping
+    Maps FASTQ reads to an indexed reference genome. Mapping can be done either
+    without knowledge of the restriction enzyme used, or for experiments
+    performed without one, like Micro-C (iterative mapping), or using the
+    ligation sites created from the digested ends (fragment-based mapping).
 
     :param gem_index_path: path to index file created from a reference genome
        using gem-index tool
-    :param fastq_path: PATH to fastq file, either compressed or not.
+    :param fastq_path: PATH to FASTQ file, either compressed or not.
     :param out_map_dir: path to a directory where to store mapped reads in MAP
        format .
     :param None r_enz: name of the restriction enzyme used in the experiment e.g.
@@ -352,12 +356,12 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :param True add_site: when splitting the sequence by ligated sites found,
        removes the ligation site, and put back the original RE site.
     :param 15 min_seq_len: minimum size of a fragment to map
-    :param None windows: tuple of ranges for begining and end of the
+    :param None windows: tuple of ranges for beginning and end of the
        mapping. This parameter allows to do classical iterative mapping, e.g.
          windows=((1,25),(1,30),(1,35),(1,40),(1,45),(1,50))
        A unique window can also be passed, for trimming, like this:
          windows=((1,101),)
-    :param False clean: remove intermedite files created in temp_dir
+    :param False clean: remove intermediate files created in temp_dir
     :param 4 nthreads: number of threads to use for mapping (number of CPUs)
     :param 0.04 max_edit_distance: The maximum number of edit operations allowed
        while verifying candidate matches by dynamic programming.
@@ -370,7 +374,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :param False get_nreads: returns a list of lists where each element contains
        a path and the number of reads processed
 
-    :returns: a list of paths to generated outfiles. To be passed to 
+    :returns: a list of paths to generated outfiles. To be passed to
        :func:`pytadbit.parsers.map_parser.parse_map`
     """
 
@@ -495,4 +499,3 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
-

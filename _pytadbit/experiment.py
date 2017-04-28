@@ -4,6 +4,12 @@
 
 """
 
+from math                         import isnan
+from numpy                        import log2, array
+from pytadbit.modelling.IMP_CONFIG import CONFIG
+from copy                         import deepcopy as copy
+from sys                          import stderr
+from warnings                     import warn
 from pytadbit                     import HiC_data
 from pytadbit.parsers.hic_parser  import read_matrix
 from pytadbit.utils.extraviews    import nicer
@@ -12,12 +18,6 @@ from pytadbit.utils.tadmaths      import zscore, nozero_log_matrix
 from pytadbit.utils.normalize_hic import iterative
 from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser  import parse_tads
-from math                         import isnan
-from numpy                        import log2, array
-from pytadbit.modelling.IMP_CONFIG import CONFIG
-from copy                         import deepcopy as copy
-from sys                          import stderr
-from warnings                     import warn
 from pytadbit.modelling.structuralmodels import StructuralModels
 
 try:
@@ -33,13 +33,13 @@ except ImportError:
     stderr.write('matplotlib not found\n')
 
 
-def load_experiment_from_reads(name, fnam, genome_seq, resolution, 
+def load_experiment_from_reads(name, fnam, genome_seq, resolution,
                                conditions=None, identifier=None, cell_type=None,
                                enzyme=None, exp_type='Hi-C', **kw_descr):
     """
     Loads an experiment object from TADbit-generated read files, that are lists
     of pairs of reads mapped to a reference genome.
-    
+
     :param fnam: tsv file with reads1 and reads2
     :param name: name of the experiment
     :param resolution: the resolution of the experiment (size of a bin in
@@ -49,13 +49,13 @@ def load_experiment_from_reads(name, fnam, genome_seq, resolution,
     :param None enzyme: restriction enzyme used in  the Hi-C experiment
     :param Hi-C exp_type: name of the experiment used (currently only Hi-C is
        supported)
-    :param None conditions: :py:func:`list` of experimental conditions, e.g. 
+    :param None conditions: :py:func:`list` of experimental conditions, e.g.
        the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
        This parameter may be used to compare the effect of this conditions on
        the TADs
     :param None kw_descr: any other argument passed would be stored as
        complementary descriptive field. For example::
-       
+
            exp  = Experiment('k562_rep2', resolution=100000,
                              identifier='SRX015263', cell_type='K562',
                              enzyme='HindIII', cylce='synchronized')
@@ -89,7 +89,7 @@ def load_experiment_from_reads(name, fnam, genome_seq, resolution,
         ps2 = dict_sec[(cr2, '%04d' % (int(ps2) / resolution))]
         imx[ps1 + ps2 * size] += 1
         imx[ps2 + ps1 * size] += 1
-    
+
     return Experiment(name, resolution=resolution, hic_data=imx,
                       conditions=conditions, identifier=identifier,
                       cell_type=cell_type, enzyme=enzyme, exp_type=exp_type,
@@ -111,12 +111,12 @@ class Experiment(object):
        the Hi-C data
     :param None tad_def: a file or a dict with precomputed TADs for this
        experiment
-    :param None parser: a parser function that returns a tuple of lists 
+    :param None parser: a parser function that returns a tuple of lists
        representing the data matrix and the length of a row/column. With
        the file example.tsv:
 
        ::
-       
+
          chrT_001	chrT_002	chrT_003	chrT_004
          chrT_001	629	164	88	105
          chrT_002	164	612	175	110
@@ -126,15 +126,15 @@ class Experiment(object):
        the output of parser('example.tsv') would be be:
        ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
        110, 100, 278]), 4]``
-    :param None conditions: :py:func:`list` of experimental conditions, e.g. 
+    :param None conditions: :py:func:`list` of experimental conditions, e.g.
        the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
        This parameter may be used to compare the effect of this conditions on
        the TADs
-    :param True filter_columns: filter the columns with unexpectedly high 
+    :param True filter_columns: filter the columns with unexpectedly high
        content of low values
     :param None kw_descr: any other argument passed would be stored as
        complementary descriptive field. For example::
-       
+
            exp  = Experiment('k562_rep2', resolution=100000,
                              identifier='SRX015263', cell_type='K562',
                              enzyme='HindIII', cylce='synchronized')
@@ -178,7 +178,7 @@ class Experiment(object):
         self.size            = None
         self.tads            = {}
         self.norm            = None
-        self.bias            = None 
+        self.bias            = None
         self._normalization  = None
         self._filtered_cols  = False
         self._zeros          = {}
@@ -215,7 +215,7 @@ class Experiment(object):
         except AttributeError:
             pass
         return outstr
-        
+
 
     def __add__(self, other, silent=False):
         """
@@ -296,19 +296,19 @@ class Experiment(object):
         xpr.crm = self.crm
         if not xpr.size:
             xpr.size = len(xpr.norm[0])
-        
+
         def __merge(own, fgn):
             "internal function to merge descriptions"
             if own == fgn:
                 return own
             return '%s+%s' % (own , fgn)
-        
+
         xpr.identifier  = __merge(self.identifier , other.identifier )
         xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
         xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
         xpr.description = __merge(self.description, other.description)
         xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
-        
+
         for des in self.description:
             if not des in other.description:
                 continue
@@ -321,7 +321,7 @@ class Experiment(object):
         """
         Set a new value for the resolution. Copy the original data into
         Experiment._ori_hic and replace the Experiment.hic_data
-        with the data corresponding to new data 
+        with the data corresponding to new data
         (:func:`pytadbit.Chromosome.compare_condition`).
 
         :param resolution: an integer representing the resolution. This number
@@ -406,7 +406,7 @@ class Experiment(object):
     def filter_columns(self, silent=False, draw_hist=False, savefig=None,
                        diagonal=True, perc_zero=90, auto=True, min_count=None):
         """
-        Call filtering function, to remove artefactual columns in a given Hi-C
+        Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
         counts; columns passing through a cell with no interaction in the
         diagonal; and columns with NaN values (in this case NaN will be replaced
@@ -454,24 +454,24 @@ class Experiment(object):
                       data_resolution=None, silent=False, **kwargs):
         """
         Add a Hi-C experiment to the Chromosome object.
-        
+
         :param None hic_data: whether a file or a list of lists corresponding to
            the Hi-C data
         :param name: name of the experiment
-        :param False force: overwrite the experiments loaded under the same 
+        :param False force: overwrite the experiments loaded under the same
            name
         :param None parser: a parser function that returns a tuple of lists
-           representing the data matrix and the length of a row/column. 
+           representing the data matrix and the length of a row/column.
            With the file example.tsv:
 
            ::
-           
+
              chrT_001	chrT_002	chrT_003	chrT_004
              chrT_001	629	164	88	105
              chrT_002	86	612	175	110
              chrT_003	159	216	437	105
              chrT_004	100	111	146	278
-           
+
            the output of parser('example.tsv') would be:
            ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
            110, 105, 278]), 4]``
@@ -479,7 +479,7 @@ class Experiment(object):
            will be adjusted to the resolution of the experiment. By default the
            file is expected to contain a Hi-C experiment with the same resolution
            as the :class:`pytadbit.Experiment` created, and no change is made
-        :param True filter_columns: filter the columns with unexpectedly high 
+        :param True filter_columns: filter the columns with unexpectedly high
            content of low values
         :param False silent: does not warn for removed columns
 
@@ -498,32 +498,32 @@ class Experiment(object):
                        normalization='visibility', **kwargs):
         """
         Add a normalized Hi-C experiment to the Chromosome object.
-        
+
         :param None norm_data: whether a file or a list of lists corresponding to
            the normalized Hi-C data
         :param name: name of the experiment
-        :param False force: overwrite the experiments loaded under the same 
+        :param False force: overwrite the experiments loaded under the same
            name
         :param None parser: a parser function that returns a tuple of lists
-           representing the data matrix and the length of a row/column. 
+           representing the data matrix and the length of a row/column.
            With the file example.tsv:
 
            ::
-           
+
              chrT_001	chrT_002	chrT_003	chrT_004
              chrT_001	12.5	164	8.8	0.5
              chrT_002	8.6	61.2	1.5	1.1
              chrT_003	15.9	21.6	3.7	0.5
              chrT_004	0.0	1.1	1.6	2.8
-           
+
         :param None resolution: resolution of the experiment in the file; it
            will be adjusted to the resolution of the experiment. By default the
            file is expected to contain a Hi-C experiment with the same resolution
            as the :class:`pytadbit.Experiment` created, and no change is made
-        :param True filter_columns: filter the columns with unexpectedly high 
+        :param True filter_columns: filter the columns with unexpectedly high
            content of low values
         :param False silent: does not warn for removed columns
-        
+
         """
         self.norm = read_matrix(norm_data, parser=parser, hic=False, one=False)
         self._ori_size       = self.size       = len(self.norm[0])
@@ -547,14 +547,14 @@ class Experiment(object):
     def load_tad_def(self, tad_def, weights=None):
         """
          Add the Topologically Associated Domains definition detection to Slice
-        
-        :param None tad_def: a file or a dict with precomputed TADs for this
+
+        :param None tad_def: a file or a dict with pre-computed TADs for this
            experiment
         :param None name: name of the experiment, if None f_name will be used
         :param None weights: Store information about the weights, corresponding
-           to the normalization of the Hi-C data (see tadbit function
+           to the normalization of the Hi-C data (see TADbit function
            documentation)
-        
+
         """
         tads, norm = parse_tads(tad_def)
         last = max(tads.keys())
@@ -590,7 +590,7 @@ class Experiment(object):
             if norms:
                 matrix = sum([norms[i + siz * j]
                              if not (i in zeros
-                                     or j in zeros) else 1. 
+                                     or j in zeros) else 1.
                               for i in xrange(start - 1, end - 1)
                               for j in xrange(i + 1, end - 1)])
             try:
@@ -623,10 +623,10 @@ class Experiment(object):
 
           weight_{(I,J)} = \\frac{\\sum^N_{j=0}\\sum^N_{i=0}(matrix(i,j))}
                                  {\\sum^N_{i=0}(matrix(i,J)) \\times \\sum^N_{j=0}(matrix(I,j))}
- 
+
         with N being the number or rows/columns of the Hi-C matrix in both
         cases.
-        
+
         :param 1 factor: final mean number of normalized interactions wanted
            per cell
         :param False silent: does not warn when overwriting weights
@@ -711,14 +711,14 @@ class Experiment(object):
                      outfile=None, config=CONFIG['dmel_01'],
                      container=None):
         """
-        Generates of three-dimentional models using IMP, for a given segment of
+        Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
-        
+
         :param 1 start: first bin to model (bin number)
         :param None end: last bin to model (bin number). By default goes to the
            last bin.
         :param 5000 n_models: number of modes to generate
-        :param 1000 n_keep: number of models used in the final analysis 
+        :param 1000 n_keep: number of models used in the final analysis
            (usually the top 20% of the generated models). The models are ranked
            according to their objective function value (the lower the better)
         :param False keep_all: whether or not to keep the discarded models (if
@@ -729,48 +729,48 @@ class Experiment(object):
         :param n_cpus: number of CPUs to use
         :param 0 verbose: the information printed can be: nothing (0), the
            objective function value the selected models (1), the objective
-           function value of all the models (2), all the modeling 
+           function value of all the models (2), all the modeling
            information (3)
-        :param None container: restrains particle to be within a given object. Can 
-           only be a 'cylinder', which is, in fact a cylinder of a given height to 
-           which are added hemispherical ends. This cylinder is defined by a radius, 
-           its height (with a height of 0 the cylinder becomes a sphere) and the 
-           force applied to the restraint. E.g. for modeling E. coli genome (2 
-           micrometers length and 0.5 micrometer of width), these values could be 
+        :param None container: restrains particle to be within a given object. Can
+           only be a 'cylinder', which is, in fact a cylinder of a given height to
+           which are added hemispherical ends. This cylinder is defined by a radius,
+           its height (with a height of 0 the cylinder becomes a sphere) and the
+           force applied to the restraint. E.g. for modeling E. coli genome (2
+           micrometers length and 0.5 micrometer of width), these values could be
            used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
            (6 micrometers diameter): ['cylinder', 3000, 0, 50]
         :param CONFIG['dmel_01'] config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
-           
+
            ::
-           
+
              from pytadbit.imp.CONFIG import CONFIG
 
            where CONFIG is a dictionarry of dictionnaries to be passed to this
            function:
-           
+
            ::
-           
+
              CONFIG = {
               'dmel_01': {
                   # use these paramaters with the Hi-C data from:
                   'reference' : 'victor corces dataset 2013',
-             
+
                   # Force applied to the restraints inferred to neighbor particles
                   'kforce'    : 5,
-             
+
                   # Maximum experimental contact distance
                   'maxdist'   : 600, # OPTIMIZATION: 500-1200
-             
+
                   # Minimum and maximum thresholds used to decide which experimental values have to be
                   # included in the computation of restraints. Z-score values bigger than upfreq
                   # and less that lowfreq will be include, whereas all the others will be rejected
                   'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
-             
+
                   'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
-             
+
                   # How much space (radius in nm) ocupies a nucleotide
                   'scale'     : 0.005
                   }
@@ -826,7 +826,7 @@ class Experiment(object):
         :param n_cpus: number of CPUs to use
         :param False verbose: if set to True, information about the distance,
            force and Z-score between particles will be printed
-        :param (-1,0,0.1) lowfreq_range:  range of lowfreq values to be 
+        :param (-1,0,0.1) lowfreq_range:  range of lowfreq values to be
            optimized. The last value of the input tuple is the incremental step
            for the lowfreq values
         :param (0,1,0.1,0.1) upfreq_range: range of upfreq values to be
@@ -834,7 +834,7 @@ class Experiment(object):
            for the upfreq values
         :param (400,1400,100) maxdist_range: upper and lower bounds used to
            search for the optimal maximum experimental distance. The last value
-           of the input tuple is the incremental step for maxdist values 
+           of the input tuple is the incremental step for maxdist values
         :param [0.01] scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
@@ -844,18 +844,18 @@ class Experiment(object):
            input tuple is the incremental step for scale parameter values
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
-        :param None container: restrains particle to be within a given object. Can 
-           only be a 'cylinder', which is, in fact a cylinder of a given height to 
-           which are added hemispherical ends. This cylinder is defined by a radius, 
-           its height (with a height of 0 the cylinder becomes a sphere) and the 
-           force applied to the restraint. E.g. for modeling E. coli genome (2 
-           micrometers length and 0.5 micrometer of width), these values could be 
+        :param None container: restrains particle to be within a given object. Can
+           only be a 'cylinder', which is, in fact a cylinder of a given height to
+           which are added hemispherical ends. This cylinder is defined by a radius,
+           its height (with a height of 0 the cylinder becomes a sphere) and the
+           force applied to the restraint. E.g. for modeling E. coli genome (2
+           micrometers length and 0.5 micrometer of width), these values could be
            used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
            (6 micrometers diameter): ['cylinder', 3000, 0, 50]
         :param True verbose: print the results to the standard output
 
         .. note::
-        
+
           Each of the *_range* parameters accept tuples in the form
            *(start, end, step)*, or a list with the list of values to test.
 
@@ -944,7 +944,7 @@ class Experiment(object):
             for j in xrange(i + 1, exp.size):
                 if j in exp._zeros:
                     continue
-                if (not exp.norm[0][i * exp.size + j] 
+                if (not exp.norm[0][i * exp.size + j]
                     or not exp.norm[0][i * exp.size + j]):
                     continue
                 values[i][j] = exp.norm[0][i * exp.size + j]
@@ -958,8 +958,8 @@ class Experiment(object):
                                 remove_zeros=False, focus=None, format='tsv'):
         """
         Creates a tab separated file with all the pairwise interactions.
-        
-        :param fname: file name where to write the  pairwise interactions 
+
+        :param fname: file name where to write the  pairwise interactions
         :param True zscored: computes the z-score of the log10(data)
         :param True normalized: use the weights to normalize the data
         :param None cutoff: if defined, only the zscores above the cutoff will
@@ -971,7 +971,7 @@ class Experiment(object):
            passed to this parameter.
         :param 'tsv' format: in which to write the file, can be tab separated
            (tsv) or JSON (json)
-           
+
         """
         if not self._zscores and zscored:
             self.get_hic_zscores()
@@ -986,8 +986,8 @@ class Experiment(object):
             raise Exception('Not recognize file type\n')
         if header:
             if format == 'tsv':
-                out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
-                                                'normalized hi-c' if normalized 
+                out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else
+                                                'normalized hi-c' if normalized
                                                 else 'raw hi-c'))
             elif format == 'json':
                 out.write('''
@@ -1101,7 +1101,7 @@ class Experiment(object):
             for i in xrange(start, end):
                 mtrx[i][i] = 1 if mtrx[i][i] else 0
             return mtrx
-            
+
 
     def print_hic_matrix(self, print_it=True, normalized=False, zeros=False):
         """
@@ -1124,7 +1124,7 @@ class Experiment(object):
                  str(hic[i+siz * j]) for i in xrange(siz)])
                              for j in xrange(siz)])
         else:
-            out = '\n'.join(['\t'.join([str(hic[i+siz * j]) 
+            out = '\n'.join(['\t'.join([str(hic[i+siz * j])
                                         for i in xrange(siz)])
                              for j in xrange(siz)])
         if print_it:
@@ -1142,16 +1142,16 @@ class Experiment(object):
 
         :param None tad: a given TAD in the form:
            ::
-           
+
              {'start': start,
               'end'  : end,
               'brk'  : end,
               'score': score}
-              
+
            **Alternatively** a list of the TADs can be passed (all the TADs
            between the first and last one passed will be showed. Thus, passing
            more than two TADs might be superfluous)
-        :param None focus: a tuple with the start and end positions of the 
+        :param None focus: a tuple with the start and end positions of the
            region to visualize
         :param False paint_tads: draw a box around the TADs defined for this
            experiment
@@ -1171,7 +1171,7 @@ class Experiment(object):
            of the file name will determine the desired format).
         :param None clim: tuple with minimum and maximum value range for color
            scale. I.e. clim=(-4, 10)
-        :param 'jet' cmap: color map from matplotlib. Can also be a 
+        :param 'jet' cmap: color map from matplotlib. Can also be a
            preconfigured cmap object.
         """
         if logarithm==True:
@@ -1309,7 +1309,7 @@ class Experiment(object):
             else:
                 axe.set_ylabel('Genomic bin (resolution: %s)' % (
                     self.resolution))
-        if not paint_tads:            
+        if not paint_tads:
             axe.set_ylim(int(start or 1) - 0.5,
                          int(start or 1) + len(matrix) - 0.5)
             axe.set_xlim(int(start or 1) - 0.5,
@@ -1428,19 +1428,19 @@ class Experiment(object):
             warn("WARNING: no species specified in chromosome. TADkit will not be able to interpret the file")
         if not self.crm.name:
             warn("WARNING: no name specified in chromosome. TADkit will not be able to interpret the file")
-        
+
         if focus:
             start_j, end_j = focus
             size = end_j-start_j+1
         else:
             start_j = 1
             end_j = size = self.size
-        
+
         if size > 1200:
             warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
-        
+
         new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
-            
+
         chrom_start = start_j * self.resolution
         chrom_end = end_j * self.resolution
         descr = {'chromosome'   : self.crm.name,
@@ -1450,7 +1450,7 @@ class Experiment(object):
                  'chrom_end'    : chrom_end,
                  'start'        : self.resolution,
                  'end'          : size * self.resolution}
-        
+
         # Fake structural models object to produce json
         sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr)
         sm.write_json(filename=filename)
@@ -1465,4 +1465,3 @@ class Experiment(object):
     #     for i in self.size:
     #         dens[i] = self.resolution
     #     return dens
-

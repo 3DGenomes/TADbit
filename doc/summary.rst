@@ -6,7 +6,7 @@ Summary of TADbit classes and functions
 Root module
 -----------
 
-   - `get_dependencies_version <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.get_dependencies_version>`_: Check versions of TADbit and all dependencies, as well and retieves system                                             info. May be used to ensure reproductibility.
+   - `get_dependencies_version <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.get_dependencies_version>`_: Check versions of TADbit and all dependencies, as well and retrieves system                                             info. May be used to ensure reproducibility.
 
 Alignment module
 ----------------
@@ -197,6 +197,17 @@ HiC_data class
 
       - `yield_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix>`_: Yields a matrix line by line.                                             Bad row/columns are returned as null row/columns.
 
+Mapping module
+--------------
+
+   - gt_reads:                               Compare reads accounting for multicontacts
+
+   - `get_intersection <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.get_intersection>`_: Merges the two files corresponding to each reads sides. Reads found in both                                             files are merged and written in an output file.                                                                                          Dealing with multiple contacts:                                             - a pairwise contact is created for each possible combnation of the                                             multicontacts.                                             - if no other fragment from this read are mapped than, both are kept                                             - otherwise, they are merged into one longer (as if they were mapped                                             in the positive strand)
+
+   - eq_reads:                               Compare reads accounting for multicontacts
+
+   - `merge_2d_beds <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.merge_2d_beds>`_: Merge two result files (file resulting from get_intersection or from                                             the filtering) into one.
+
 Mapping analyze module
 ----------------------
 
@@ -226,7 +237,7 @@ Mapping filter module
 Mapping full_mapper module
 --------------------------
 
-   - `full_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping>`_: Do the mapping
+   - `full_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping>`_: Maps FASTQ reads to an indexed reference genome. Mapping can be done either                                             without knowledge of the restriction enzyme used, or for experiments                                             performed without one, like Micro-C (iterative mapping), or using the                                             ligation sites created from the digested ends (fragment-based mapping).
 
    - transform_fastq:                        Given a FASTQ file it can split it into chunks of a given number of reads,                                             trim each read according to a start/end positions or split them into                                             restriction enzyme fragments
 
@@ -406,7 +417,7 @@ Parsers hic_parser module
 
    - is_asymmetric:                          Helper functions for the autoreader.
 
-   - `load_hic_data_from_reads <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.load_hic_data_from_reads>`_: 
+   - `load_hic_data_from_reads <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.hic_parser.load_hic_data_from_reads>`_: 
 
    - symmetrize_dico:                        Make an HiC_data object symmetric by summing two halves of the matrix
 
@@ -417,6 +428,16 @@ Parsers hic_parser module
 AutoReadFail class
 ++++++++++++++++++
                       Exception to handle failed autoreader.
+
+Parsers map_parser module
+-------------------------
+
+   - parse_map:                              Parse map files                                                                                          Keep a summary of the results into 2 tab-separated files that will contain 6                                             columns: read ID, Chromosome, position, strand (either 0 or 1), mapped                                             sequence lebgth, position of the closest upstream RE site, position of                                             the closest downstream RE site.                                                                                          The position of reads mapped on reverse strand will be computed from the end of                                             the read (original position + read length - 1)
+
+Parsers sam_parser module
+-------------------------
+
+   - `parse_sam <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.sam_parser.parse_sam>`_: Parse sam/bam file using pysam tools.                                                                                          Keep a summary of the results into 2 tab-separated files that will contain 6                                             columns: read ID, Chromosome, position, strand (either 0 or 1), mapped                                             sequence lebgth, position of the closest upstream RE site, position of                                             the closest downstream RE site
 
 Parsers tad_parser module
 -------------------------
@@ -465,6 +486,17 @@ Utils extraviews module
    - `plot_3d_optimization_result <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_optimization_result>`_: Displays a three dimensional scatter plot representing the result of the                                             optimization.
 
    - nicer:                                  writes resolution number for human beings.
+
+Utils fastq_utils module
+------------------------
+
+   - count_reads_approx:                     Get the approximate number of reads in a FASTQ file. By averaging the sizes                                             of a given sample od randomly selected reads, and relating this mean to the                                             size of the file.
+
+   - `quality_plot <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.utils.fastq_utils.quality_plot>`_ [#first]_: Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme                                             (RE) name is provided, can also represent the distribution of digested and                                             undigested RE sites and estimate an expected proportion of dangling-ends.                                                                                          Proportion of dangling-ends is inferred by counting the number of times a                                             dangling-end site, is found at the beginning of any of the reads (divided by                                             the number of reads).
+
+   - count_reads:                            Count the number of reads in a FASTQ file (can be slow on big files, try                                             count_reads_approx)
+
+   - estimate_cardinality:                   Estimates the number of unique elements in the input set values.                                                                                          from: http://blog.notdot.net/2012/09/Dam-Cool-Algorithms-Cardinality-Estimation                                                                                          Arguments:                                             values: An iterator of hashable elements to estimate the cardinality of.                                             k: The number of bits of hash to use as a bucket number; there will be 2**k buckets.
 
 Utils file_handling module
 --------------------------

@@ -218,7 +218,7 @@ def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
                                 min_count=None, draw_hist=False, savefig=None,
                                 diagonal=True):
     """
-    Call filtering function, to remove artefactual columns in a given Hi-C
+    Call filtering function, to remove artifactual columns in a given Hi-C
     matrix. This function will detect columns with very low interaction
     counts; and columns with NaN values (in this case NaN will be replaced
     by zero in the original Hi-C data matrix). Filtered out columns will be
