@@ -452,6 +452,49 @@ reads with at least a ligation site.</p>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="pytadbit.utils.fastq_utils.count_reads_approx">
+<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">count_reads_approx</code><span class="sig-paren">(</span><em>fnam</em>, <em>samples=1000</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#count_reads_approx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.count_reads_approx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the approximate number of reads in a FASTQ file. By averaging the sizes
+of a given sample od randomly selected reads, and relating this mean to the
+size of the file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fnam</strong> &#8211; path to FASTQ file</li>
+<li><strong>samples</strong> (<em>1000</em>) &#8211; number of reads to sample. 1000 generally gives an
+accuracy bellow 0.1%</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; prints Number of reads and accuracy (based on standard
+error of the mean)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">number of reads estimated</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.fastq_utils.count_reads">
+<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">count_reads</code><span class="sig-paren">(</span><em>fnam</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#count_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.count_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the number of reads in a FASTQ file (can be slow on big files, try
+count_reads_approx)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fnam</strong> &#8211; path to file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the number of reads (number of lines divided by four)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="filtering">
 <h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>

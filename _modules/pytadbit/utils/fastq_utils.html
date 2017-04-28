@@ -307,7 +307,7 @@
         <span class="n">sp</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">count_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+<div class="viewcode-block" id="count_reads"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.utils.fastq_utils.count_reads">[docs]</a><span class="k">def</span> <span class="nf">count_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Count the number of reads in a FASTQ file (can be slow on big files, try</span>
 <span class="sd">    count_reads_approx)</span>
@@ -319,10 +319,10 @@
     <span class="n">nlines</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">nlines</span> <span class="o">%</span> <span class="mi">4</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;ERROR: Number of lines not multiple of four</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">nlines</span> <span class="o">/</span> <span class="mi">4</span>
+    <span class="k">return</span> <span class="n">nlines</span> <span class="o">/</span> <span class="mi">4</span></div>
 
 
-<span class="k">def</span> <span class="nf">count_reads_approx</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="count_reads_approx"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.utils.fastq_utils.count_reads_approx">[docs]</a><span class="k">def</span> <span class="nf">count_reads_approx</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the approximate number of reads in a FASTQ file. By averaging the sizes</span>
 <span class="sd">    of a given sample od randomly selected reads, and relating this mean to the</span>
@@ -369,7 +369,7 @@
         <span class="c1"># print nreads, &#39;- 186168911 = &#39;,</span>
         <span class="c1"># print int(nreads) - 186168911, &#39;(&#39;,</span>
         <span class="c1"># print abs(nreads - 186168911.00000) / nreads * 100, &#39;% )&#39;</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">nreads</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">nreads</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_trailing_zeroes</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
