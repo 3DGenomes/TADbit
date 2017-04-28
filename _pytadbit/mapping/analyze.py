@@ -27,8 +27,8 @@ except ImportError:
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='jet', pdf=False, decay=True,
-            perc=10, name=None, decay_resolution=None, **kwargs):
+            focus=None, clim=None,  perc_clim=None, cmap='jet', pdf=False, decay=True,
+            perc=20, name=None, decay_resolution=None, **kwargs):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -64,10 +64,14 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param False force_image: force to generate an image even if resolution is
        crazy...
     :param None clim: cutoff for the upper and lower bound in the coloring scale
-       of the heatmap
+       of the heatmap. (perc_clim should be set to None)
+    :param None perc_clim: cutoff for the upper and lower bound in the coloring scale
+       of the heatmap; in percentile. (clim should be set to None)
     :param False pdf: when using the bny_chrom option, to specify the format of
        the stored images
-    :param Reds cmap: color map to be used for the heatmap
+    :param jet cmap: color map to be used for the heatmap; "tadbit" color map is
+       also implemented and will use percentiles of the distribution of
+       interactions to defines intensities of red.
     :param None decay_resolution: chromatin fragment size to consider when
        calculating decay of the number of interactions with genomic distance.
        Default is equal to resolution of the matrix.
@@ -77,6 +81,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
         if not kwargs.get('get_sections', True) and decay:
             warn('WARNING: not decay not available when get_sections is off.')
             decay = False
+    if clim and perc_clim:
+        raise Exception('ERROR: only one of clim or perc_clim should be set\n')
     hic_data = data
     resolution = data.resolution
     if not decay_resolution:
@@ -128,7 +134,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                             warn('WARNING: Matrix image not created, more than '
                                  '10000 rows, use a lower resolution to create images')
                             continue
-                        draw_map(subdata, 
+                        draw_map(subdata,
                                  OrderedDict([(k, hic_data.chromosomes[k])
                                               for k in hic_data.chromosomes.keys()
                                               if k in [crm1, crm2]]),
@@ -136,9 +142,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                  '%s/%s.%s' % (savefig,
                                                '_'.join(set((crm1, crm2))),
                                                'pdf' if pdf else 'png'),
-                                 show, one=True, clim=clim, cmap=cmap,
-                                 decay_resolution=decay_resolution, perc=perc,
-                                 name=name, cistrans=float('NaN'))
+                                 show, one=True, clim=clim, perc_clim=perc_clim,
+                                 cmap=cmap, decay_resolution=decay_resolution,
+                                 perc=perc, name=name, cistrans=float('NaN'))
                 except ValueError, e:
                     print 'Value ERROR: problem with chromosome %s' % crm1
                     print str(e)
@@ -171,7 +177,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
                      one = True if focus else False, decay=decay,
-                     clim=clim, cmap=cmap, decay_resolution=decay_resolution,
+                     clim=clim, perc_clim=perc_clim, cmap=cmap,
+                     decay_resolution=decay_resolution,
                      perc=perc, normalized=normalized,
                      max_diff=kwargs.get('max_diff', None),
                      name=name, cistrans=float('NaN') if focus else
@@ -182,8 +189,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
 
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
-             cmap='jet', decay=False, perc=10, name=None, cistrans=None,
-             decay_resolution=10000, normalized=False, max_diff=None):
+             perc_clim=None, cmap='jet', decay=False, perc=20, name=None,
+             cistrans=None, decay_resolution=10000, normalized=False,
+             max_diff=None):
     _ = plt.figure(figsize=(15.,12.5))
     if not max_diff:
         max_diff = len(data)
@@ -210,49 +218,36 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
 
+    if perc_clim:
+        try:
+            clim = np.percentile(vals, perc_clim[0]), np.percentile(vals, perc_clim[1])
+        except ValueError:
+            clim = None
+
     mindata = np.nanmin(vals)
     maxdata = np.nanmax(vals)
     diff = maxdata - mindata
-    posI = 0.01 if not clim else (float(clim[0]) / diff) if clim[0] != None else 0.01
-    posF = 1.0  if not clim else (float(clim[1]) / diff) if clim[1] != None else 1.0
+
+    norm = lambda x: (x - mindata) / diff
+
+    posI = 0.01 if not clim else norm(clim[0]) if clim[0] != None else 0.01
+    posF = 1.0  if not clim else norm(clim[1]) if clim[1] != None else 1.0
+
     if cmap == 'tadbit':
         cuts = perc
-        cdict = {'red'  : [(0.0,  0.0, 0.0)],
-                 'green': [(0.0,  0.0, 0.0)],
-                 'blue' : [(0.0,  0.5, 0.5)]}
-        prev_pos  = 0
-        median = (np.median(vals) - mindata) / diff
-        for prc in np.linspace(posI, median, cuts / 2, endpoint=False):
-            try:
-                pos = (np.percentile(vals, prc * 100.) - mindata) / diff
-                prc = ((prc - posI) / (median - posI)) + 1. / cuts
-            except ValueError:
-                pos = prc = 0
-            if prev_pos >= pos:
-                continue
-            cdict['red'  ].append([pos, prc, prc])
-            cdict['green'].append([pos, prc, prc])
-            cdict['blue' ].append([pos, 1, 1])
-            prev_pos  = pos
-        for prc in np.linspace(median + 1. / cuts, posF, cuts / 2, endpoint=False):
-            try:
-                pos = (np.percentile(vals, prc * 100.) - mindata) / diff
-                prc = ((prc - median) / (posF - median))
-            except ValueError:
-                pos = prc = 0
-            if prev_pos >= pos:
-                continue
-            cdict['red'  ].append([pos, 1.0, 1.0])
+        cdict = {'red'  : [(0.0,  1.0, 1.0)],
+                 'green': [(0.0,  1.0, 1.0)],
+                 'blue' : [(0.0,  1.0, 1.0)]}
+
+        for i in np.linspace(posI, posF, cuts, endpoint=False):
+            prc = (i / (posF - posI)) / 1.75
+            pos = norm(np.percentile(vals, i * 100.))
+            # print '%7.4f %7.4f %7.4f %7.4f' % (prc, pos, np.percentile(vals, i * 100.), i)
+            cdict['red'  ].append([pos, 1      , 1      ])
             cdict['green'].append([pos, 1 - prc, 1 - prc])
             cdict['blue' ].append([pos, 1 - prc, 1 - prc])
-            prev_pos  = pos
-        pos = (np.percentile(vals ,97.) - mindata) / diff
-        cdict['red'  ].append([pos, 0.1, 0.1])
-        cdict['green'].append([pos, 0, 0])
-        cdict['blue' ].append([pos, 0, 0])
-
         cdict['red'  ].append([1.0, 1, 1])
-        cdict['green'].append([1.0, 1, 1])
+        cdict['green'].append([1.0, 0, 0])
         cdict['blue' ].append([1.0, 0, 0])
         cmap  = LinearSegmentedColormap(cmap, cdict)
         clim = None
@@ -289,6 +284,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     h  = ax2.hist(data, color='darkgrey', linewidth=2,
                   bins=20, histtype='step', normed=True)
     _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
+                    vmin=clim[0] if clim else None, vmax=clim[1] if clim else None,
                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
     if genome_seq:
         for crm in genome_seq:
@@ -340,7 +336,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     ax2.plot(subdata, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
-    try: 
+    try:
         ax4.vlines(range(size1), 0, evect[:,-1], color='k')
     except (TypeError, IndexError):
         pass
@@ -520,7 +516,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     best = (r2, v1, v2, a1, a2, a3,
                             b1, b2, b3, k)
         # plot line of best fit
-        (v1, v2, 
+        (v1, v2,
          a1, a2, a3,
          b1, b2, b3, k) = best[1:]
         yfit1 = lambda xx: np.exp(b1 + a1*np.array (np.log(xx)))
@@ -679,7 +675,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     genome_seq = OrderedDict()
     pos = 0
     fhandler = open(fnam)
-    for line in fhandler: 
+    for line in fhandler:
         if line.startswith('#'):
             if line.startswith('# CRM '):
                 crm, clen = line[6:].split('\t')
@@ -725,7 +721,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     to_return['MAD'] = mad(des)
     if not savefig and not axe and not show:
         return [to_return[k] for k in stats]
-    
+
     ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
                          label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
@@ -763,7 +759,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param 100 resolution: group reads that are closer than this resolution
        parameter
     :param None ylim: a tuple of lower and upper bound for the y axis
-    :param None yscale: if set_bad to "log" values will be represented in log2 
+    :param None yscale: if set_bad to "log" values will be represented in log2
        scale
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
@@ -771,7 +767,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param None savedata: path where to store the output read counts per bin.
     :param None chr_names: can pass a list of chromosome names in case only some
        them the need to be plotted (this option may last even more than default)
-    
+
     """
     distr = {}
     idx1, idx2 = (1, 3) if first_read else (7, 9)
@@ -789,7 +785,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     count = 0
     pos = 0
     fhandler = open(fnam)
-    for line in fhandler: 
+    for line in fhandler:
         if line.startswith('#'):
             if line.startswith('# CRM '):
                 crm, clen = line[6:].split('\t')
@@ -894,13 +890,13 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     else:
         get_the_guy1 = lambda i, j: hic_data1[j, i]
         get_the_guy2 = lambda i, j: hic_data2[j, i]
-    
+
     if remove_bad_columns:
         # union of bad columns
         bads = hic_data1.bads.copy()
         bads.update(hic_data2.bads)
 
-    if (intra and hic_data1.sections and hic_data2.sections and 
+    if (intra and hic_data1.sections and hic_data2.sections and
         hic_data1.sections == hic_data2.sections):
         for dist in xrange(1, max_dist + 1):
             diag1 = []
@@ -958,7 +954,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     else:
         return corrs, dists
 
-def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False, 
+def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                            savefig=None, show=False, savedata=None,
                            remove_bad_columns=True, **kwargs):
     """
@@ -1024,7 +1020,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         axe.set_yticklabels(range(1, nvect + 2))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
-        
+
         cbar = plt.colorbar(im, cax = cbaxes )
         cbar.ax.set_ylabel('Pearson correlation', rotation=90*3,
                            verticalalignment='bottom')
@@ -1035,14 +1031,14 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                         verticalalignment='bottom')
         axe2.set_ylim((-0.5, nvect - 0.5))
         axe2.yaxis.set_tick_params(length=0, width=0)
-        
+
         axe3 = axe.twiny()
         axe3.set_xticks(range(nvect))
         axe3.set_xticklabels(['%.1f' % (e) for e in ev1[-nvect:][::-1]])
         axe3.set_xlabel('corresponding Eigen Values exp. 1')
         axe3.set_xlim((-0.5, nvect - 0.5))
         axe3.xaxis.set_tick_params(length=0, width=0)
-        
+
         axe.set_ylim((-0.5, nvect - 0.5))
         axe.set_xlim((-0.5, nvect - 0.5))
         if savefig:
@@ -1151,7 +1147,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
     plt.ylabel("Count")
     plt.title("Histogram of counts around cut site")
     plt.xticks(ind[::2], rotation="vertical")
-    plt.legend((pl[0], pr[0]), ("~~X", "X~~")) 
+    plt.legend((pl[0], pr[0]), ("~~X", "X~~"))
     plt.gca().set_xlim([-window-1,window+1])
     pp.savefig()
     pp.close()
@@ -1291,8 +1287,8 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
 def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
                                  full_step=500, full_len=50000, savefig=None):
     """
-    Classify reads into for categories depending on the strand on which each end 
-    is mapped, and plots the proportion of each of these categories in function 
+    Classify reads into for categories depending on the strand on which each end
+    is mapped, and plots the proportion of each of these categories in function
     of the genomic distance between them.
     The four categories are:
 
@@ -1303,8 +1299,8 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
 
     Note: First/second read-ends are according to their genomic coordinates.
 
-    The plot is divided in two halves, in order to use different zooms for 
-    read-ends mapped very close, and read-ends further (by default the first 
+    The plot is divided in two halves, in order to use different zooms for
+    read-ends mapped very close, and read-ends further (by default the first
     half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).
 
     :param fnam: input file name with the intersection of the two read-ends mapped
@@ -1318,7 +1314,7 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
 
     fhandler = open(fnam)
     pos = 0
-    for line in fhandler: 
+    for line in fhandler:
         if not line.startswith('#'):
             break
         pos += len(line)
@@ -1331,7 +1327,7 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
             [0 for i in range(max_len)]]
 
     iterator = (fhandler.next() for _ in xrange(nreads)) if nreads else fhandler
-    
+
     for line in iterator:
         (crm1, pos1, dir1, _, re1, _,
          crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
@@ -1353,12 +1349,12 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
             except ZeroDivisionError:
                 dirs[d][i] = 0.
             sum_dirs[i] = sum_dir
-            
-    names = ['==> ==> both forward', 
-             '<== ==> opposed (Extra-self-circles)', 
-             '==> <== facing (Extra-dangling-ends)', 
+
+    names = ['==> ==> both forward',
+             '<== ==> opposed (Extra-self-circles)',
+             '==> <== facing (Extra-dangling-ends)',
              '<== <== both backward']
-    
+
     plt.figure(figsize=(14, 9))
 
     axLp = plt.subplot2grid((3, 2), (0, 0), rowspan=2)
@@ -1367,8 +1363,8 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
     axRb = plt.subplot2grid((3, 2), (2, 1), sharex=axRp, sharey=axLb)
 
     for d in range(4):
-        axLp.plot([sum(dirs[d][i:i + half_step]) / half_step 
-                   for i in range(0, half_len - half_step, half_step)], 
+        axLp.plot([sum(dirs[d][i:i + half_step]) / half_step
+                   for i in range(0, half_len - half_step, half_step)],
                    alpha=0.7, label=names[d])
 
     axLp.set_ylim(0, 1)
@@ -1383,8 +1379,8 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
     axLp.set_ylabel('Proportion of reads in each category')
 
     for d in range(4):
-        axRp.plot([sum(dirs[d][i:i + full_step]) / full_step 
-                   for i in range(half_len, full_len + full_step, full_step)], 
+        axRp.plot([sum(dirs[d][i:i + full_step]) / full_step
+                   for i in range(half_len, full_len + full_step, full_step)],
                   alpha=0.7, label=names[d])
 
     axRp.spines['left'].set_visible(False)
@@ -1398,7 +1394,7 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
     axRp.tick_params(labelright='off')
     axRp.grid()
 
-    axLb.bar(range(0, half_len / half_step - 1), 
+    axLb.bar(range(0, half_len / half_step - 1),
             [sum(sum_dirs[i:i + half_step]) / half_step
              for i in range(0, half_len - half_step, half_step)],
            alpha=0.5, color='k')
@@ -1410,8 +1406,8 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
     axLb.set_xlabel('Distance between mapping position of the two ends\n'
                 '(averaged in windows of 20 nucleotides)')
 
-    axRb.bar(range(0, full_len / full_step - half_len / full_step + 1), 
-             [sum(sum_dirs[i:i + full_step]) / full_step 
+    axRb.bar(range(0, full_len / full_step - half_len / full_step + 1),
+             [sum(sum_dirs[i:i + full_step]) / full_step
               for i in range(half_len, full_len + full_step, full_step)],
              alpha=0.5, color='k')
 
@@ -1453,5 +1449,3 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
         tadbit_savefig(savefig)
     else:
         plt.show()
-
-    
