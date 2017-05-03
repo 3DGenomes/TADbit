@@ -59,7 +59,7 @@ class HiC_data(dict):
     def _update_size(self, size):
         self.__size +=  size
         self._size2 = self.__size**2
-        
+
     def __len__(self):
         return self.__size
 
@@ -100,7 +100,7 @@ class HiC_data(dict):
                     'ERROR: position %d larger than %s^2' % (row_col,
                                                              self.__size))
             super(HiC_data, self).__setitem__(row_col, val)
-    
+
     def get_hic_data_as_csr(self):
         """
         Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
@@ -115,15 +115,15 @@ class HiC_data(dict):
             values.append(float(value))
             cols.append(col)
             rows.append(row)
-                
+
         return csr_matrix((values, (rows, cols)), shape=(self.__size,self.__size))
-        
+
     def add_sections_from_fasta(self, fasta):
         """
-        Add genomic coordinate to HiC_data object by getting them from a fasta
+        Add genomic coordinate to HiC_data object by getting them from a FASTA
         file containing chromosome sequences
 
-        :param fasta: path to a fasta file
+        :param fasta: path to a FASTA file
         """
         genome = parse_fasta(fasta, verbose=False)
         sections = []
@@ -190,7 +190,7 @@ class HiC_data(dict):
     def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=True,
                         equals=None):
         """
-        Counts the number of interactions occuring within chromosomes (cis) with
+        Counts the number of interactions occurring within chromosomes (cis) with
         respect to the total number of interactions
 
         :param False normalized: used normalized data
@@ -294,7 +294,7 @@ class HiC_data(dict):
 
         :params None bias: expects a dictionary of biases to use normalized matrix
         :params None bads: extends computed bad columns
-        
+
         :returns: the sum of the Hi-C matrix skipping bad columns
         """
         N = self.__size
@@ -350,10 +350,104 @@ class HiC_data(dict):
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
 
+
+    def write_coord_table(self, fname, focus=None, diagonal=True,
+                          normalized=False, format='BED'):
+        """
+        writes a coordinate table to a file.
+
+        :param None focus: a tuple with the (start, end) position of the desired
+           window of data (start, starting at 1, and both start and end are
+           inclusive). Alternatively a chromosome name can be input or a tuple
+           of chromosome name, in order to retrieve a specific inter-chromosomal
+           region
+        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param False normalized: get normalized data
+        :param BED format: either "BED"
+               chr1   \t   111   \t   222   \t   chr2:333-444,55   \t   1   \t   .
+               chr2   \t   333   \t   444   \t   chr1:111-222,55   \t   2   \t   .
+           or "long-range" format:
+               chr1:111-222   \t   chr2:333-444   \t   55
+               chr2:333-444   \t   chr1:111-222   \t   55
+        """
+        if focus:
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
+        else:
+            start1 = start2 = 0
+            end1   = end2   = len(self)
+        out = open(fname, 'w')
+        if format == 'long-range':
+            rownam = ['%s:%d-%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            if not rownam:
+                raise Exception('ERROR: HiC data object should have genomic coordinates')
+            iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized)
+            pair_string = '%s\t%s\t%f\n' if normalized else '%s\t%s\t%d\n'
+            for nrow, row in enumerate(rownam, 1):
+                line = iter_rows.next()
+                iter_cols = iter(line)
+                for col in rownam[nrow:]:
+                    val = iter_cols.next()
+                    if not val:
+                        continue
+                    out.write(pair_string % (row, col, val))
+        elif format == 'BED':
+            rownam = ['%s\t%d\t%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            colnam = ['%s:%d-%d' % (k[0],
+                                     k[1] * self.resolution,
+                                     (k[1] + 1) * self.resolution)
+                      for k in sorted(self.sections,
+                                      key=lambda x: self.sections[x])
+                      if start2 <= self.sections[k] < end2]
+            if not rownam:
+                raise Exception('ERROR: HiC data object should have genomic coordinates')
+            iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized)
+            pair_string = '%s\t%s,%f\t%d\t.\n' if normalized else '%s\t%s,%d\t%d\t.\n'
+            count = 1
+            for nrow, row in enumerate(rownam, 1):
+                line = iter_rows.next()
+                iter_cols = iter(line)
+                for col in colnam[nrow:]:
+                    val = iter_cols.next()
+                    if not val:
+                        continue
+                    out.write(pair_string % (row, col, val, count))
+                    count += 1
+        else:
+            raise Exception('ERROR: format "%s" not found\n' % format)
+        out.close()
+
+
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
         writes the matrix to a file.
-        
+
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -406,7 +500,7 @@ class HiC_data(dict):
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """
         returns a matrix.
-        
+
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -469,13 +563,13 @@ class HiC_data(dict):
             start1 = start2 = 0
             end1   = end2   = siz
         return start1, start2, end1, end2
-            
+
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
-                          ev_index=None, rich_in_A=None, max_ev=3,show_compartment_labels=False, **kwargs):
+                          ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
         """
-        Search for A/B copartments in each chromosome of the Hi-C matrix.
+        Search for A/B compartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
         distance, and by visibility (one iteration of ICE). A correlation matrix
         is then calculated from this normalized matrix, and its first
@@ -483,7 +577,7 @@ class HiC_data(dict):
         boundaries between compartments.
         Result is stored as a dictionary of compartment boundaries, keys being
         chromosome names.
-        
+
         :param 99 perc_zero: to filter bad columns
         :param 0.05 signal_to_noise: to calculate expected interaction counts,
            if not enough reads are observed at a given distance the observations
@@ -509,7 +603,7 @@ class HiC_data(dict):
         :param None ev_index: a list of number refering to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones. Note:
-           if asking for only one chromosome the list should be only of one 
+           if asking for only one chromosome the list should be only of one
            element.
         :param None rich_in_A: by default compartments are identified using mean
            number of intra-interactions (A compartments are expected to have
@@ -524,8 +618,7 @@ class HiC_data(dict):
            cluster.
         :param 'ratio' how: ratio divide by column, subratio divide by
            compartment, diagonal only uses diagonal
-        :param False'show_compartment_labels': if True draw A and B compartment blocks.
-           
+
 
         TODO: this is really slow...
 
@@ -687,7 +780,7 @@ class HiC_data(dict):
             firsts[sec] = n_first
             # needed for the plotting
             self._apply_metric(cmprts, sec, rich_in_A, how=how)
-            
+
             if label_compartments == 'cluster':
                 if log:
                     logf = os.path.join(log, sec + suffix + '.log')
@@ -748,9 +841,9 @@ class HiC_data(dict):
 
             # train two HMMs on the genomic data:
             #  - one with 2 states A B
-            #  - one with 3 states A B I 
+            #  - one with 3 states A B I
             #  - one with 4 states A a B b
-            #  - one with 5 states A a B b I 
+            #  - one with 5 states A a B b I
             models = {}
             for n in range(2, 6):
                 if kwargs.get('verbose', False):
@@ -774,7 +867,7 @@ class HiC_data(dict):
                 cmprts[sec] = breaks
                 # print 'CMPRTS after hmm', sec, cmprts[sec]
                 self._apply_metric(cmprts, sec, rich_in_A, how=how)
-                
+
                 if rich_in_A:
                     test = lambda x: x >= 1
                 else:
@@ -931,13 +1024,13 @@ class HiC_data(dict):
                         (str(sec) + '\t') if sections else '',
                         c['start'], c['end'], c['dens'], ''))
         out.close()
-        
+
 
     def yield_matrix(self, focus=None, diagonal=True, normalized=False):
         """
         Yields a matrix line by line.
         Bad row/columns are returned as null row/columns.
-        
+
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -985,7 +1078,7 @@ class HiC_data(dict):
                 else:
                     yield ([self[i, j] / self.bias[i] / self.bias[j]
                             for j in xrange(start1, i)] +
-                           [0.0] + 
+                           [0.0] +
                            [self[i, j] / self.bias[i] / self.bias[j]
                             for j in xrange(i + 1, end1)])
         else:
@@ -1000,8 +1093,9 @@ class HiC_data(dict):
                 # diagonal replaced by zeroes
                 else:
                     yield ([self[i, j] for j in xrange(start1, i)] +
-                           [0] + 
+                           [0] +
                            [self[i, j] for j in xrange(i + 1, end1)])
+
 
 def _hmm_refine_compartments(xsec, models, bads, verbose):
     prevll = float('-inf')
@@ -1059,7 +1153,7 @@ def _training(x, n, verbose):
         x[c] = [v / this_std  for v in x[c]]
     train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=1000)
     return E, pi, T
-    
+
 def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
                              ev_num=1, log=None, verbose=False, savefig=None,
                              n_clust=2):
@@ -1167,25 +1261,24 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
     # score = score1 + score2
     if verbose:
         print ('[EV%d CL%s] g:%5s prop:%5s%% tt:%7s '
-               'score-interleave:%5s ' # score-proportion:%7s 
+               'score-interleave:%5s ' # score-proportion:%7s
                'final: %7s pv:%7s' % (
                    ev_num, n_clust, gamma - 1, round(prop * 100, 1),
-                   round(tt, 3), round(score, 3), #round(score2, 3), 
+                   round(tt, 3), round(score, 3), #round(score2, 3),
                    round(score + tt, 3), round(pval, 5)))
     if log:
         log = open(log, 'a')
         log.write('[EV%d CL%s] g:%5s prop:%5s%% tt:%6s '
-                  'score-interleave:%6s ' # score-proportion:%7s 
+                  'score-interleave:%6s ' # score-proportion:%7s
                   'final: %7s pv:%s\n' % (
                       ev_num, n_clust, gamma - 1, round(prop * 100, 1),
-                      round(tt, 3), round(score, 3), # round(score2, 3), 
+                      round(tt, 3), round(score, 3), # round(score2, 3),
                       round(score + tt, 3), round(pval, 4)))
         log.close()
     if not save:
         for cmprt in cmprtsec:
             if 'type' in cmprt:
-                cmprt['type'] = None 
+                cmprt['type'] = None
     return score + tt, tt, prop
-
 
 

@@ -29,9 +29,9 @@ else:
 
 def get_dependencies_version(dico=False):
     """
-    Check versions of TADbit and all dependencies, as well and retieves system
-    info. May be used to ensure reproductibility.
-    
+    Check versions of TADbit and all dependencies, as well and retrieves system
+    info. May be used to ensure reproducibility.
+
     :returns: string with description of versions installed
     """
     versions = {'  TADbit': __version__ + '\n\n'}

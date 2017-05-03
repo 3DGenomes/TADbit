@@ -6,10 +6,12 @@ from bisect import bisect_right as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings import warn
+import os
+from sys import stdout
 
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
-              genome_seq=None, re_name=None, verbose=False, mapper=None,
-              **kwargs):
+              genome_seq=None, re_name=None, verbose=False, clean=True,
+              mapper=None, **kwargs):
     """
     Parse sam/bam file using pysam tools.
 
@@ -60,12 +62,21 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         fnames = (f_names1,)
         outfiles = (out_file1, )
 
+    # max number of reads per intermediate files for sorting
+    max_size = 1000000
+
+    windows = {}
+    multis  = {}
+    procs   = []
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
-        windows = {}
-        reads    = []
+        windows[read] = {}
         num = 0
+        # iteration over reads
+        nfile = 0
+        tmp_files = []
+        reads     = []
         for fnam in fnames[read]:
             try:
                 fhandler = Samfile(fnam)
@@ -79,20 +90,21 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 num = int(fnam.split('.')[-1].split(':')[0])
             except:
                 num += 1
-            windows.setdefault(num, 0)
+            # set read counter
+            windows[read].setdefault(num, 0)
             # guess mapper used
             if not mapper:
                 mapper = fhandler.header['PG'][0]['ID']
             if mapper.lower()=='gem':
-                condition = lambda x: x[1][1] != 1
+                condition = lambda x: x[1][0][0] != 'N'
             elif mapper.lower() in ['bowtie', 'bowtie2']:
                 condition = lambda x: 'XS' in dict(x)
             else:
                 warn('WARNING: unrecognized mapper used to generate file\n')
                 condition = lambda x: x[1][1] != 1
             if verbose:
-                print 'loading %s file: %s' % (mapper, fnam)
-            # iteration over reads
+                print 'loading SAM file from %s: %s' % (mapper, fnam)
+            # getrname chromosome names
             i = 0
             crm_dict = {}
             while True:
@@ -101,6 +113,8 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                     i += 1
                 except ValueError:
                     break
+            # iteration over reads
+            sub_count = 0  # to empty read buffer
             for r in fhandler:
                 if r.is_unmapped:
                     continue
@@ -112,7 +126,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 if positive:
                     pos = r.pos + 1
                 else:
-                    pos = r.pos + len_seq + 1
+                    pos = r.pos + len_seq
                 try:
                     frag_piece = frags[crm][pos / frag_chunk]
                 except KeyError:
@@ -137,16 +151,125 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 name       = r.qname
                 reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
                     name, crm, pos, positive, len_seq, prev_re, next_re))
-                windows[num] += 1
+                windows[read][num] += 1
+                sub_count += 1
+                if sub_count >= max_size:
+                    sub_count = 0
+                    nfile += 1
+                    write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
+            nfile += 1
+            write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
+
+
+        # we have now sorted temporary files
+        # we do merge sort for eah pair
+        if verbose:
+            stdout.write('Merge sort')
+            stdout.flush()
+        while len(tmp_files) > 1:
+            file1 = tmp_files.pop(0)
+            try:
+                file2 = tmp_files.pop(0)
+            except IndexError:
+                break
+            if verbose:
+                stdout.write('.')
+            stdout.flush()
+            nfile += 1
+            tmp_files.append(merge_sort(file1, file2, outfiles[read], nfile))
+        if verbose:
+            stdout.write('\n')
+        tmp_name = tmp_files[0]
+        
+        if verbose:
+            print 'Getting Multiple contacts'
         reads_fh = open(outfiles[read], 'w')
-        ## write file header
+        ## Also pipe file header
         # chromosome sizes (in order)
-        reads_fh.write('## Chromosome lengths (order matters):\n')
+        reads_fh.write('# Chromosome lengths (order matters):\n')
         for crm in genome_seq:
             reads_fh.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
-        reads_fh.write('## Number of mapped reads by iteration\n')
-        for size in windows:
-            reads_fh.write('# MAPPED %d %d\n' % (size, windows[size]))
-        reads_fh.write(''.join(sorted(reads)))
+        reads_fh.write('# Mapped\treads count by iteration\n')
+        for size in windows[read]:
+            reads_fh.write('# MAPPED %d %d\n' % (size, windows[read][size]))
+
+        ## Multicontacts
+        tmp_reads_fh = open(tmp_name)
+        try:
+            read_line = tmp_reads_fh.next()
+        except StopIteration:
+            raise StopIteration('ERROR!\n Nothing parsed, check input files and'
+                                ' chromosome names (in genome.fasta and SAM/MAP'
+                                ' files).')
+        prev_head = read_line.split('\t', 1)[0]
+        prev_head = prev_head.split('~' , 1)[0]
+        prev_read = read_line
+        multis[read] = 0
+        for read_line in tmp_reads_fh:
+            head = read_line.split('\t', 1)[0]
+            head = head.split('~' , 1)[0]
+            if head == prev_head:
+                multis[read] += 1
+                prev_read =  prev_read.strip() + '|||' + read_line
+            else:
+                reads_fh.write(prev_read)
+                prev_read = read_line
+            prev_head = head
+        reads_fh.write(prev_read)
         reads_fh.close()
-    del reads
+        if clean:
+            os.system('rm -rf ' + tmp_name)
+    # wait for compression to finish
+    for p in procs:
+        p.communicate()
+    return windows, multis
+
+
+def write_reads_to_file(reads, outfiles, tmp_files, nfile):
+    if not reads: # can be...
+        return
+    tmp_name = os.path.join(*outfiles.split('/')[:-1] +
+                            [('tmp_%03d_' % nfile) + outfiles.split('/')[-1]])
+    tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
+    tmp_files.append(tmp_name)
+    out = open(tmp_name, 'w')
+    out.write(''.join(sorted(reads, key=lambda x: x.split('\t', 1)[0].split('~')[0])))
+    out.close()
+    del(reads[:]) # empty list
+
+
+def merge_sort(file1, file2, outfiles, nfile):
+    tmp_name = os.path.join(*outfiles.split('/')[:-1] +
+                            [('tmp_merged_%03d_' % nfile) + outfiles.split('/')[-1]])
+    tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
+    tmp_file = open(tmp_name, 'w')
+    fh1 = open(file1)
+    fh2 = open(file2)
+    greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
+    read1 = fh1.next()
+    read2 = fh2.next()
+    while True:
+        if greater(read2, read1):
+            tmp_file.write(read1)
+            try:
+                read1 = fh1.next()
+            except StopIteration:
+                tmp_file.write(read2)
+                break
+        else:
+            tmp_file.write(read2)
+            try:
+                read2 = fh2.next()
+            except StopIteration:
+                tmp_file.write(read1)
+                break
+    for read in fh1:
+        tmp_file.write(read)
+    for read in fh2:
+        tmp_file.write(read)
+    fh1.close()
+    fh2.close()
+    tmp_file.close()
+    os.system('rm -f ' + file1)
+    os.system('rm -f ' + file2)
+    return tmp_name

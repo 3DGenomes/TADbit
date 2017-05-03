@@ -3,19 +3,19 @@
 
 """
 
+from string                            import ascii_lowercase as letters
+from copy                              import deepcopy as copy
+from cPickle                           import load, dump
+from random                            import random
+from math                              import sqrt
+from sys                               import stderr
 from os.path                           import exists
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit                          import tadbit
 from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
-from string                            import ascii_lowercase as letters
-from copy                              import deepcopy as copy
-from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
-from random                            import random
-from math                              import sqrt
-from sys                               import stderr
 
 try:
     import matplotlib.pyplot as plt
@@ -119,19 +119,19 @@ class Chromosome(object):
        containing the Hi-C count matrices corresponding to different experiments
     :param None experiment_tads: :py:func:`list` of paths to files
        containing the definition of TADs corresponding to different experiments
-    :param None experiment_names: :py:func:`list` of the names of each 
+    :param None experiment_names: :py:func:`list` of the names of each
         experiment
     :param infinite max_tad_size: maximum TAD size allowed. TADs longer than
         this value will not be considered, and size of the corresponding
         chromosome size will be reduced accordingly
     :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
         inferred from the distribution of TADs
-    :param None parser: a parser function that returns a tuple of lists 
+    :param None parser: a parser function that returns a tuple of lists
        representing the data matrix and the length of a row/column. With
        the file example.tsv:
 
        ::
-       
+
          chrT_001	chrT_002	chrT_003	chrT_004
          chrT_001	629	164	88	105
          chrT_002	164	612	175	110
@@ -143,15 +143,15 @@ class Chromosome(object):
        110, 100, 278]), 4]``
     :param None kw_descr: any other argument passed would be stored as
        complementary descriptive field. For example::
-       
+
            crm  = Chromosome('19', species='mus musculus',
                              subspecies='musculus musculus',
                              skin_color='black')
            print crm
 
            # Chromosome 19:
-           #    0  experiment loaded: 
-           #    0  alignment loaded: 
+           #    0  experiment loaded:
+           #    0  alignment loaded:
            #    species         : mus musculus
            #    assembly version: UNKNOWN
            #    subspecies      : musculus musculus
@@ -259,7 +259,7 @@ class Chromosome(object):
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
-            self.forbidden = dict([(f, None) for f in 
+            self.forbidden = dict([(f, None) for f in
                                    set(forbidden).intersection(self.forbidden)])
         # search for centromere:
         if self._search_centromere:
@@ -298,7 +298,7 @@ class Chromosome(object):
            object
         :param True fast: if True, skip Hi-C data and weights
         :param True divide: if True writes two pickles, one with what would
-           result by using the fast option, and the second with the Hi-C and 
+           result by using the fast option, and the second with the Hi-C and
            weights data. The second file name will be extended by '_hic' (ie:
            with out_f='chromosome12.pik' we would obtain chromosome12.pik and
            chromosome12.pik_hic). When loaded :func:`load_chromosome` will
@@ -359,9 +359,9 @@ class Chromosome(object):
                           rnd_method='interpolate', rnd_num=1000,
                           get_score=False, **kwargs):
         """
-        Align the predicted boundaries of two different experiments. The 
+        Align the predicted boundaries of two different experiments. The
         resulting alignment will be stored in the self.experiment list.
-        
+
         :param None names: list of names of the experiments to align. If None,
             align all
         :param experiment1: name of the first experiment to align
@@ -369,7 +369,7 @@ class Chromosome(object):
         :param -0.1 penalty: penalty for inserting a gap in the alignment
         :param 100000 max_dist: maximum distance between two boundaries
             allowing match (100Kb seems fair with HUMAN chromosomes)
-        :param False verbose: if True, print some information about the 
+        :param False verbose: if True, print some information about the
             alignments
         :param False randomize: check the alignment quality by comparing
             randomized boundaries over Chromosomes of the same size. This will
@@ -387,9 +387,9 @@ class Chromosome(object):
             used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)
 
         :returns: an alignment object or, if the randomizattion was invoked,
-           an alignment object, and a list of statistics that are, the alignment 
-           score, the probability that observed alignment performs better than 
-           randoms, the proportion of borders from the first experiment found 
+           an alignment object, and a list of statistics that are, the alignment
+           score, the probability that observed alignment performs better than
+           randoms, the proportion of borders from the first experiment found
            aligned in the second experiment and the proportion of borders from
            the second experiment found aligned in the first experiment.
            Returned calues can be catched like this:
@@ -430,11 +430,11 @@ class Chromosome(object):
 
 
     def add_experiment(self, name, resolution=None, tad_def=None, hic_data=None,
-                       norm_data=None, replace=False, parser=None, 
+                       norm_data=None, replace=False, parser=None,
                        conditions=None, **kwargs):
         """
         Add a Hi-C experiment to Chromosome
-        
+
         :param name: name of the experiment or of the Experiment object
         :param resolution: resolution of the experiment (needed if name is not
            an Experiment object)
@@ -444,22 +444,22 @@ class Chromosome(object):
            experiment
         :param False replace: overwrite the experiments loaded under the same
            name
-        :param None parser: a parser function that returns a tuple of lists 
-           representing the data matrix and the length of a row/column. With 
+        :param None parser: a parser function that returns a tuple of lists
+           representing the data matrix and the length of a row/column. With
            a file example.tsv containing:
 
            ::
-           
+
              chrT_001	chrT_002	chrT_003	chrT_004
              chrT_001	629	164	88	105
              chrT_002	164	612	175	110
              chrT_003	88	175	437	100
              chrT_004	105	110	100	278
-           
+
            the output of parser('example.tsv') would be:
            ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
            110, 100, 278]), 4]``
-        
+
         """
         if not name:
             name = ''.join([letters[int(random() * len(letters))] \
@@ -490,7 +490,7 @@ class Chromosome(object):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domain boundaries
-        
+
         :param experiment: A square matrix of interaction counts of Hi-C
            data or a list of such matrices for replicated experiments. The
            counts must be evenly sampled and not normalized. 'experiment'
@@ -500,11 +500,11 @@ class Chromosome(object):
            where value at the diagonal is null)
         :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
            n_cpus='max' the total number of CPUs will be used
-        :param max max_tad_size: an integer defining the maximum size of a 
+        :param max max_tad_size: an integer defining the maximum size of a
            TAD. Default (auto) defines it as the number of rows/columns
         :param True heuristic: whether to use or not some heuristics
-        :param False batch_mode: if True, all the experiments will be 
-           concatenated into one for the search of TADs. The resulting TADs 
+        :param False batch_mode: if True, all the experiments will be
+           concatenated into one for the search of TADs. The resulting TADs
            found are stored under the name 'batch' plus a concatenation of the
            experiment names passed (e.g.: if experiments=['exp1', 'exp2'], the
            name would be: 'batch_exp1_exp2').
@@ -570,14 +570,14 @@ class Chromosome(object):
         """
         Update the chromosome size and relative size after loading new Hi-C
         experiments, unless the Chromosome size was defined by hand.
-        
+
         """
         if not self._given_size:
             self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
                             self.size)
             self.size   = ChromosomeSize(self.size)
         self._get_forbidden_region(xpr, resized=True)
-            
+
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
         self.r_size = RelativeChromosomeSize(self.size)
 
@@ -587,7 +587,7 @@ class Chromosome(object):
         """
         Draw an summary of the TAD found in a given experiment and their density
         in terms of relative Hi-C interaction count.
-        
+
         :param name: name of the experiment to visualize
         :param None focus: can pass a tuple (bin_start, bin_stop) to display the
            alignment between these genomic bins
@@ -622,16 +622,16 @@ class Chromosome(object):
            experiment names. If None, all experiments will be shown
         :param None tad: a given TAD in the form:
            ::
-           
+
              {'start': start,
               'end'  : end,
               'brk'  : end,
               'score': score}
-              
+
            **Alternatively** a list of the TADs can be passed (all the TADs
            between the first and last one passed will be showed. Thus, passing
            more than two TADs might be superfluous)
-        :param None focus: a tuple with the start and end positions of the 
+        :param None focus: a tuple with the start and end positions of the
            region to visualize
         :param False paint_tads: draw a box around the TADs defined for this
            experiment
@@ -651,7 +651,7 @@ class Chromosome(object):
            of the file name will determine the desired format).
         :param None clim: tuple with minimum and maximum value range for color
            scale. I.e. clim=(-4, 10)
-        :param 'jet' cmap: color map from matplotlib. Can also be a 
+        :param 'jet' cmap: color map from matplotlib. Can also be a
            preconfigured cmap object.
         """
         if names == None:
@@ -681,7 +681,7 @@ class Chromosome(object):
                     if not axe:
                         fig = plt.figure(figsize=(scale[0] * cols, scale[1] * rows))
                         axe = fig.add_subplot(
-                            rows, cols, i * cols + j + 1)                        
+                            rows, cols, i * cols + j + 1)
                     xpr1 = self.get_experiment(names[i * cols + j][0])
                     xpr2 = self.get_experiment(names[i * cols + j][1])
                     img = xpr1.view(tad=tad, focus=focus, paint_tads=paint_tads,
@@ -697,7 +697,7 @@ class Chromosome(object):
                     #axe = axe.twinx()
                     #axe.set_aspect('equal',adjustable='box-forced',anchor='NE')
                     if decorate:
-                        plt.text(1.01, .5, 
+                        plt.text(1.01, .5,
                                  'Chromosome %s experiment %s' % (
                                      self.name, xpr2.name),
                                   rotation=-90, va='center', size='large',
@@ -715,16 +715,16 @@ class Chromosome(object):
             tadbit_savefig(savefig)
         if show:
             plt.show()
-        
+
 
     def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):
         """
         Retrieve the Hi-C data matrix corresponding to a given TAD.
-        
+
         :param tad: a given TAD (:py:class:`dict`)
         :param x_name: name of the experiment
         :param True normed: if True, normalize the Hi-C data
-        
+
         :returns: Hi-C data matrix for the given TAD
         """
         beg, end = int(tad['start']), int(tad['end'])
@@ -905,7 +905,7 @@ class Chromosome(object):
 
 class ExperimentList(list):
     """
-    Inherited from python built in :py:func:`list`, modified for tadbit
+    Inherited from python built in :py:func:`list`, modified for TADbit
     :class:`pytadbit.Experiment`.
 
     Mainly, `getitem`, `setitem`, and `append` were modified in order to
@@ -975,7 +975,7 @@ class ExperimentList(list):
 class AlignmentDict(dict):
     """
     :py:func:`dict` of :class:`pytadbit.Alignment`
-    
+
     Modified getitem, setitem, and append in order to be able to search
     alignments by index or by name.
 
@@ -994,7 +994,7 @@ class AlignmentDict(dict):
 
 class ChromosomeSize(int):
     """
-    Simple class inheriting from interger designed to hold chromosome size in
+    Simple class inheriting from integer designed to hold chromosome size in
     base pairs
     """
     def __init__(self, thing):

@@ -235,7 +235,10 @@ def merge_sort(file1, file2, outfiles, nfile):
 
 def read_read(r, frags, frag_chunk):
     name, seq, _, _, ali = r.split('\t')[:5]
-    crm, strand, pos = ali.split(':')[:3]
+    try:
+        crm, strand, pos = ali.split(':')[:3]
+    except ValueError:
+        raise KeyError()
     positive = strand == '+'
     len_seq  = len(seq)
     if positive:

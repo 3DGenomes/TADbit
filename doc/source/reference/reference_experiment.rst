@@ -7,3 +7,7 @@ Experiment class
    :members:
    :no-undoc-members:
 
+Load experiment
+---------------
+
+.. autofunction:: load_experiment_from_reads

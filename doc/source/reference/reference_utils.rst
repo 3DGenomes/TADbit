@@ -33,6 +33,9 @@ Utilities
 
 .. autofunction:: pytadbit.utils.hic_filtering.hic_filtering_for_modelling
 
+.. autofunction:: pytadbit.utils.file_handling.magic_open
+
+.. autofunction:: pytadbit.utils.file_handling.get_free_space_mb
 
 .. currentmodule:: pytadbit.utils.three_dim_stats
 

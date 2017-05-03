@@ -15,28 +15,28 @@ import multiprocessing as mu
 
 class IMPoptimizer(object):
     """
-    This class optimizes a set of paramaters (scale, maxdist, lowfreq and
-    upfreq) in order to maximize the correlation between the models generated 
+    This class optimizes a set of parameters (scale, maxdist, lowfreq and
+    upfreq) in order to maximize the correlation between the models generated
     by IMP and the input data.
 
     :param experiment: an instance of the class pytadbit.experiment.Experiment
     :param start: first bin to model (bin number)
     :param end: last bin to model (bin number)
     :param 5000 n_models: number of models to generate
-    :param 1000 n_keep: number of models used in the final analysis (usually 
+    :param 1000 n_keep: number of models used in the final analysis (usually
        the top 20% of the generated models). The models are ranked according to
        their objective function value (the lower the better)
-    :param 1 close_bins: number of particles away (i.e. the bin number 
-       difference) a particle pair must be in order to be considered as 
+    :param 1 close_bins: number of particles away (i.e. the bin number
+       difference) a particle pair must be in order to be considered as
        neighbors (e.g. 1 means consecutive particles)
     :param None cutoff: distance cutoff (nm) to define whether two particles
        are in contact or not, default is 2 times resolution, times scale.
-    :param None container: restrains particle to be within a given object. Can 
-       only be a 'cylinder', which is, in fact a cylinder of a given height to 
-       which are added hemispherical ends. This cylinder is defined by a radius, 
-       its height (with a height of 0 the cylinder becomes a sphere) and the 
-       force applied to the restraint. E.g. for modeling E. coli genome (2 
-       micrometers length and 0.5 micrometer of width), these values could be 
+    :param None container: restrains particle to be within a given object. Can
+       only be a 'cylinder', which is, in fact a cylinder of a given height to
+       which are added hemispherical ends. This cylinder is defined by a radius,
+       its height (with a height of 0 the cylinder becomes a sphere) and the
+       force applied to the restraint. E.g. for modeling E. coli genome (2
+       micrometers length and 0.5 micrometer of width), these values could be
        used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     """
@@ -63,7 +63,7 @@ class IMPoptimizer(object):
         self.results = {}
 
 
-    def run_grid_search(self, 
+    def run_grid_search(self,
                         upfreq_range=(0, 1, 0.1),
                         lowfreq_range=(-1, 0, 0.1),
                         maxdist_range=(400, 1500, 100),
@@ -72,20 +72,20 @@ class IMPoptimizer(object):
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True):
         """
-        This function calculates the correlation between the models generated 
-        by IMP and the input data for the four main IMP parameters (scale, 
+        This function calculates the correlation between the models generated
+        by IMP and the input data for the four main IMP parameters (scale,
         maxdist, lowfreq and upfreq) in the given ranges of values.
-        
+
         :param n_cpus: number of CPUs to use
-        :param (-1,0,0.1) lowfreq_range: range of lowfreq values to be 
-           optimized. The last value of the input tuple is the incremental 
+        :param (-1,0,0.1) lowfreq_range: range of lowfreq values to be
+           optimized. The last value of the input tuple is the incremental
            step for the lowfreq values
         :param (0,1,0.1) upfreq_range: range of upfreq values to be optimized.
            The last value of the input tuple is the incremental step for the
            upfreq values
         :param (400,1400,100) maxdist_range: upper and lower bounds
-           used to search for the optimal maximum experimental distance. The 
-           last value of the input tuple is the incremental step for maxdist 
+           used to search for the optimal maximum experimental distance. The
+           last value of the input tuple is the incremental step for maxdist
            values
         :param 0.01 scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
@@ -275,7 +275,7 @@ class IMPoptimizer(object):
         """
         Loads one file or a list of files containing pre-calculated Structural
         Models (keep_models parameter used). And correlate each set of models
-        with real data. Usefull to run different correlation on the same data
+        with real data. Useful to run different correlation on the same data
         avoiding to re-calculate each time the models.
 
         :param filenames: either a path to a file or a list of paths.
@@ -330,7 +330,7 @@ class IMPoptimizer(object):
 
         :returns: a dict that can be used for modelling, see config parameter in
            :func:`pytadbit.experiment.Experiment.model_region`
-           
+
         """
         if not self.results:
             stderr.write('WARNING: no optimization done yet\n')
@@ -354,7 +354,7 @@ class IMPoptimizer(object):
                          ('lowfreq', float(best[0][3])),
                          ('dcutoff', float(best[0][4])),
                          ('reference', reference or ''), ('kforce', 5)))
-    
+
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
                 show_best=0, skip=None, savefig=None,clim=None):
@@ -364,7 +364,7 @@ class IMPoptimizer(object):
         :param 'scale','maxdist','upfreq','lowfreq' axes: list of axes to be
            represented in the plot. The order will define which parameter will
            be placed on the x, y, z or w axe.
-        :param 0 show_best: number of best correlation values to highlight in 
+        :param 0 show_best: number of best correlation values to highlight in
            the plot
         :param None skip: if passed (as a dictionary), fix a given axe,
            e.g.: {'scale': 0.001, 'maxdist': 500}
@@ -388,7 +388,7 @@ class IMPoptimizer(object):
         A grid of heatmaps representing the result of the optimization.
 
         :param 'scale','maxdist','upfreq','lowfreq' axes: tuple of axes to be
-           represented in the plot. The order will define which parameter will 
+           represented in the plot. The order will define which parameter will
            be placed on the x, y, z or w axe.
 
         """
@@ -425,17 +425,17 @@ class IMPoptimizer(object):
 
     def write_result(self, f_name):
         """
-        This function writes a log file of all the values tested for each 
+        This function writes a log file of all the values tested for each
         parameter, and the resulting correlation value.
 
-        This file can be used to load or merge data a posteriori using 
+        This file can be used to load or merge data a posteriori using
         the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file
-        
+
         :param f_name: file name with the absolute path
         """
         out = open(f_name, 'w')
         out.write(('## n_models: %s n_keep: %s ' +
-                   'close_bins: %s\n') % (self.n_models, 
+                   'close_bins: %s\n') % (self.n_models,
                                           self.n_keep, self.close_bins))
         out.write('# scale\tmax_dist\tup_freq\tlow_freq\tdcutoff\tcorrelation\n')
         for scale in self.scale_range:
@@ -467,7 +467,7 @@ class IMPoptimizer(object):
         """
         Loads the optimized parameters from a file generated with the function:
         pytadbit.modelling.impoptimizer.IMPoptimizer.write_result.
-        This function does not overwrite the parameters that were already 
+        This function does not overwrite the parameters that were already
         loaded or calculated.
 
         :param f_name: file name with the absolute path
@@ -477,7 +477,7 @@ class IMPoptimizer(object):
             if line.startswith('##'):
                 n_models, _, n_keep, _, close_bins = line.split()[2:]
                 if ([int(n_models), int(n_keep), int(close_bins)]
-                    != 
+                    !=
                     [self.n_models, self.n_keep, self.close_bins]):
                     raise Exception('Parameters does in %s not match: %s\n%s' %(
                         f_name,
@@ -540,4 +540,3 @@ def _mu_correlate(svd, corr, off_diag, scale, maxdist, upfreq, lowfreq,
     except Exception, e:
         print 'ERROR %s' % e
     return result
-

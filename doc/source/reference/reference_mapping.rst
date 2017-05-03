@@ -18,7 +18,11 @@ Quality check and plotting
 
 .. autofunction:: hic_map
 
+.. autofunction:: insert_sizes
+
 .. autofunction:: correlate_matrices
+
+.. autofunction:: plot_strand_bias_by_distance
 
 .. autofunction:: eig_correlate_matrices
 
@@ -29,18 +33,31 @@ Quality check and plotting
 .. autofunction:: plot_genomic_distribution
 
 
-
 .. currentmodule:: pytadbit.utils.fastq_utils
 
 .. autofunction:: quality_plot
+
+.. autofunction:: count_reads_approx
+
+.. autofunction:: count_reads
 
 
 Filtering
 ---------
 
+.. currentmodule:: pytadbit.mapping.restriction_enzymes
+
+.. autofunction:: map_re_sites
+
+.. autofunction:: religated
+
+.. autofunction:: repaired
+   
 .. currentmodule:: pytadbit.mapping
 
 .. autofunction:: get_intersection
+
+.. autofunction:: merge_2d_beds
 
 .. currentmodule:: pytadbit.mapping.filter
 

@@ -1148,7 +1148,7 @@ class StructuralModels(object):
                      savefig=None, savedata=None, average=True, plot=True):
         """
         Plots, for each particle, the number of interactions (particles closer
-        than the guiven cut-off). The value given is the average for all models.
+        than the given cut-off). The value given is the average for all models.
 
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -1988,10 +1988,12 @@ class StructuralModels(object):
             return
         # View with Chimera
         cmm_files = []
+        radius = 10
         for model_num in models:
             if show in ['all', 'grid'] or model_num == mdl or mdl == 'all':
                 self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
                 cmm_files.append('/tmp/model.%s.cmm' % (self[model_num]['rand_init']))
+                radius = self[model_num]['radius']
         chimera_view(cmm_files,
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      highlight=(0 if (show == 'highlighted' and mdl != 'all')
@@ -2438,10 +2440,12 @@ class StructuralModels(object):
              for c in self.clusters]) + ']'
         fil['len_hic_data'] = len(self._original_data)
         try:
-            fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']),
-                                    str(self.experiment.tads[tad]['end']),
-                                    str(self.experiment.tads[tad]['height'])])+']' 
-                                       for i,tad in enumerate(self.experiment.tads)])
+            fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']*self.resolution),
+                                    str(self.experiment.tads[tad]['end']*self.resolution),
+                                    str(self.experiment.tads[tad]['score'])])+']' 
+                                       for i,tad in enumerate(self.experiment.tads) 
+                                        if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0] 
+                                            and self.experiment.tads[tad]['end']*self.resolution <= my_descr['chrom_end'][0]])
         except:
             fil['tad_def'] = ''
         out_f = open(filename, 'w')
