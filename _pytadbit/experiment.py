@@ -317,6 +317,105 @@ class Experiment(object):
         return xpr
 
 
+    def __div__(self, other, silent=False):
+        """
+        sum Hi-C data of experiments into a new one.
+        """
+        reso1, reso2 = self.resolution, other.resolution
+        if self.resolution == other.resolution:
+            resolution = self.resolution
+            changed_reso = False
+        else:
+            resolution = max(reso1, reso2)
+            self.set_resolution(resolution)
+            other.set_resolution(resolution)
+            if not silent:
+                stderr.write('WARNING: experiments of different resolution, ' +
+                             'setting both resolution of %s, and normalizing ' +
+                             'at this resolution\n' % (resolution))
+            norm1 = copy(self.norm)
+            norm2 = copy(other.norm)
+            if self._normalization:
+                self.normalize_hic()
+            if other._normalization:
+                other.normalize_hic()
+            changed_reso = True
+        if self.hic_data:
+            new_hicdata = HiC_data([], size=self.size)
+            for i in self.hic_data[0]:
+                new_hicdata[i] = self.hic_data[0].get(i)
+            for i in other.hic_data[0]:
+                try:
+                    new_hicdata[i] /= other.hic_data[0].get(i)
+                except ZeroDivisionError:
+                    new_hicdata[i] = float('NaN')
+        else:
+            new_hicdata = None
+        xpr = Experiment(name='%s/%s' % (self.name, other.name),
+                         resolution=resolution,
+                         hic_data=new_hicdata, no_warn=True)
+        # check if both experiments are normalized with the same method
+        # and sum both normalized data
+        if self._normalization != None and other._normalization != None:
+            if (self._normalization.split('_factor:')[0] ==
+                other._normalization.split('_factor:')[0]):
+                xpr.norm = [HiC_data([], size=self.size)]
+                for i in self.norm[0]:
+                    xpr.norm[0][i] = self.norm[0].get(i)
+                for i in other.norm[0]:
+                    try:
+                        xpr.norm[0][i] /= other.norm[0].get(i)
+                    except ZeroDivisionError:
+                        xpr.norm[0][i] = float('NaN')
+                # The final value of the factor should be the same of each
+                try:
+                    xpr._normalization = (
+                        self._normalization.split('_factor:')[0] +
+                        '_factor:' +
+                        str(int(self._normalization.split('_factor:')[1]) +
+                            int(other._normalization.split('_factor:')[1]))) / 2
+                except IndexError: # no factor there
+                    xpr._normalization = (self._normalization)
+        elif self.norm or other.norm:
+            try:
+                if (self.norm[0] or other.norm[0]) != {}:
+                    if not silent:
+                        raise Exception('ERROR: normalization differs between' +
+                                        ' each experiment\n')
+            except TypeError:
+                pass
+        if changed_reso:
+            self.set_resolution(reso1)
+            self.norm = norm1
+            other.set_resolution(reso2)
+            other.norm = norm2
+        xpr.crm = self.crm
+        if not xpr.size:
+            xpr.size = len(xpr.norm[0])
+
+        
+            
+        def __merge(own, fgn):
+            "internal function to merge descriptions"
+            if own == fgn:
+                return own
+            return '%s+%s' % (own , fgn)
+        
+        xpr.identifier  = __merge(self.identifier , other.identifier )
+        xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
+        xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
+        xpr.description = __merge(self.description, other.description)
+        xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
+        
+        for des in self.description:
+            if not des in other.description:
+                continue
+            xpr.description[des] = __merge(self.description[des],
+                                           other.description[des])
+        return xpr
+
+
+    
     def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for the resolution. Copy the original data into
@@ -1316,6 +1415,8 @@ class Experiment(object):
                          int(start or 1) + len(matrix) - 0.5)
             if show:
                 plt.show()
+            if savefig:
+                tadbit_savefig(savefig) 
             return img
         pwidth = 1
         tads = dict([(t, self.tads[t]) for t in self.tads
