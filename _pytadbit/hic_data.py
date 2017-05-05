@@ -617,7 +617,7 @@ class HiC_data(dict):
                 count += 1
                 continue
             index = ev_index[count] if ev_index else 1
-            two_first = [evect[:, -1], evect[:, -2]]
+            two_first = [list(evect[:, -1]), list(evect[:, -2])]
             for ev_num in range(index, 3):
                 first = list(evect[:, -ev_num])
                 breaks = [i for i, (a, b) in
@@ -641,6 +641,8 @@ class HiC_data(dict):
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
+            for evect in two_first:
+                _ = [evect.insert(b, 0) for b in bads]
             _ = [first.insert(b, 0) for b in bads]
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
                  for b in bads]
@@ -735,6 +737,8 @@ class HiC_data(dict):
                     x, sec, models, bads, kwargs.get('verbose', False))
                 results[sec] = n_states, breaks
                 cmprts[sec] = breaks
+                if sec in ["chrY", "chrM", "chrMT"]:
+                    continue
                 self._apply_metric(cmprts, sec, rich_in_A, how=how)
                 
                 if rich_in_A:
@@ -782,7 +786,10 @@ class HiC_data(dict):
                         comp['type'] = 'I'
         self.compartments = cmprts
         if savedata:
-            self.write_compartments(savedata, chroms=self.compartments.keys(),
+            self.write_compartments(savedata,
+                                    chroms=[i for i in
+                                            self.compartments.keys()
+                                            if i not in ["chrY", "chrM", "chrMT"]],
                                     ev_nums=ev_nums)
         return firsts
 
@@ -877,9 +884,15 @@ class HiC_data(dict):
                         c['start'] + 1, c['end'] + 1,
                         c['dens'], c['type']))
                 except KeyError:
-                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (sec + '\t') if sections else '',
-                        c['start'], c['end'], c['dens'], ''))
+                    try:
+                        out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                                (sec + '\t') if sections else '',
+                                c['start'], c['end'], c['dens'], ''))
+                    except KeyError:
+                        out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                                (sec + '\t') if sections else '',
+                                c['start'], c['end'], float('nan'), ''))
+
         out.close()
         
 
