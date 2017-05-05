@@ -12,6 +12,8 @@ from argparse                     import ArgumentParser
 from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
+from tarfile                      import open as taropen
+from lockfile                     import LockFile
 import datetime
 import sys
 import os
@@ -217,6 +219,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     print_progress(procs)
     pool.join()
 
+    #######################################################################
     printime('  - Writing matrices')
     bias1  = dict((k - start_bin, v)
                   for k, v in biases.get('biases', {}).iteritems()
@@ -248,30 +251,24 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     else:
         name = 'full'
 
-
-
-
-
+    outfiles = []
     if 'raw' in opts.matrices:
-        out_raw = '# %s resolution:%d\n' % (name, resolution)
+        fnam = 'matrix_raw_%s_%s.abc' % (name,
+                                         nicer(resolution).replace(' ', ''))
+        outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_raw = open(os.path.join(outdir, fnam), 'w')
+        out_raw.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
-            out_raw += '# BADROWS %s\n' % (','.join([str(b) for b in bads1]))
-            out_raw += '# BADCOLS %s\n' % (','.join([str(b) for b in bads2]))
-        else:
-            out_raw += '# BADS %s\n' % (','.join([str(b) for b in bads1]))
-
-    out_raw = open(os.path.join(outdir, 'matrix_raw_%s_%s.abc' % (
-        name, nicer(resolution).replace(' ', ''))), 'w')
-    out_raw.write('# %s resolution:%d\n' % (name, resolution))
-    if region2:
-        out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
-        out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+            out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+            out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
     else:
         out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
 
     if 'norm' in opts.matrices:
-        out_nrm = open(os.path.join(outdir, 'matrix_nrm_%s_%s.abc' % (
-            name, nicer(resolution).replace(' ', ''))), 'w')
+        fnam = 'matrix_nrm_%s_%s.abc' % (name,
+                                         nicer(resolution).replace(' ', ''))
+        outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_nrm = open(os.path.join(outdir, fnam), 'w')
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -279,8 +276,10 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         else:
             out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
     if 'decay' in opts.matrices:
-        out_dec = open(os.path.join(outdir, 'matrix_dec_%s_%s.abc' % (
-            name, nicer(resolution).replace(' ', ''))), 'w')
+        fnam = 'matrix_dec_%s_%s.abc' % (name,
+                                         nicer(resolution).replace(' ', ''))
+        outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_dec = open(os.path.join(outdir, fnam), 'w')
         out_dec.write('# %s resolution:%d\n' % (
             name, resolution))
         if region2:
@@ -289,53 +288,73 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         else:
             out_dec.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
 
-    def write_raw(func):
-        def writer(a, b, c):
+    def write_raw(func=None):
+        def writer2(a, b, c):
             func(a, b, c)
             out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        return writer
-
-    def write_bias(func):
         def writer(a, b, c):
+            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
+        return writer2 if func else writer
+
+    def write_bias(func=None):
+        def writer2(a, b, c):
             func(a, b, c)
             out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
-        return writer
-
-    def write_expc(func):
         def writer(a, b, c):
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        return writer2 if func else writer
+
+    def write_expc(func=None):
+        def writer2(a, b, c):
             func(a, b, c)
             out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
                                             decay[abs(a-b)]))
-        return writer
-
-    def write_expc_2reg(func):
         def writer(a, b, c):
+            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                            decay[abs(a-b)]))
+        return writer2 if func else writer
+
+    def write_expc_2reg(func=None):
+        def writer2(a, b, c):
             func(a, b, c)
             out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
                                             decay[abs((a + start_bin) -
                                                       (b + start_bin2))]))
-        return writer
-
-    def write_expc_err(func):
         def writer(a, b, c):
+            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                            decay[abs((a + start_bin) -
+                                                      (b + start_bin2))]))
+        return writer2 if func else writer
+
+    def write_expc_err(func=None):
+        def writer2(a, b, c):
             func(a, b, c)
             try:
                 out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
                                                 decay[abs(a-b)]))
             except KeyError:  # different chromsomes
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
-        return writer
+        def writer(a, b, c):
+            try:
+                out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                                decay[abs(a-b)]))
+            except KeyError:  # different chromsomes
+                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+        return writer2 if func else writer
 
-    def decorate_if(condition, decorator):
-        return decorator if condition else lambda x: x
-
-    @decorate_if('raw'   in opts.matrices, write_raw)
-    @decorate_if('bias'  in opts.matrices, write_bias)
-    @decorate_if('decay' in opts.matrices and len(regions) == 1 and region2, write_expc_2reg)
-    @decorate_if('decay' in opts.matrices and len(regions) == 1 and not region2, write_expc)
-    @decorate_if('decay' in opts.matrices and len(regions) != 1, write_expc_err)
-    def write(*args):
-        pass
+    write = None
+    if 'raw'   in opts.matrices:
+        write = write_raw(write)
+    if 'norm'  in opts.matrices:
+        write = write_bias(write)
+    if 'decay'  in opts.matrices:
+        if len(regions) == 1:
+            if region2:
+                write = write_expc_2reg(write)
+            else:
+                write = write_expc(write)
+        else:
+            write = write_expc_err(write)
 
     sys.stdout.write('     ')
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
@@ -353,13 +372,24 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
                 continue
             write(j, k, v)
         os.system('rm -f %s' % (fname))
-    out_raw.close()
-    if biases:
+    if 'raw' in opts.matrices:
+        out_raw.close()
+    if 'norm' in opts.matrices:
         out_nrm.close()
+    if 'decay' in opts.matrices:
         out_dec.close()
     print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
                         '%s/%s' % (len(regs),len(regs)))
 
+    #########################################################################
+    if opts.tarfile:
+        lock = LockFile(opts.tarfile)
+        with lock:
+            archive = taropen(opts.tarfile, "w|gz")
+            for fpath, fnam in outfiles:
+                archive.add(fpath, arcname=fnam)
+                os.system('rm -f %s' % fpath)
+            archive.close()
 
 def main():
     opts          = get_options()
@@ -448,7 +478,10 @@ def get_options():
     parser.add_argument('-i', '--infile', dest='inbam', metavar='',
                         required=True, default=False, help='input HiC-BAM file.')
     parser.add_argument('-o', '--outdir', dest='outdir', metavar='',
-                        required=True, default=False, help='output directory.')
+                        default=True, help='output directory.')
+    parser.add_argument('-t', '--tarfile', dest='tarfile', metavar='',
+                        default=False, help='''append gnerated files to the
+                        input tar file (does not need to be created).''')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the
                         generated matrix''')
