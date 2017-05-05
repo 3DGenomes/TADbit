@@ -1,20 +1,42 @@
 #! /usr/bin/python
 
 """
-extract subset-matrix from a BAM file, and evantually normalizes it using
+extract subset-matrix from a BAM file, and eventually normalizes it using
  precomputed biases
+ From list of sub-matrices to extract, use index list to write in a file of nGb
+ Check that not pass character limit
+ Not output raw matrix and normalized with decay
 """
 
 from argparse                     import ArgumentParser
-from pytadbit.utils.file_handling import mkdir
 from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
+import datetime
+import sys
+import os
+import multiprocessing as mu
+from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.extraviews    import nicer
 import pysam
-import datetime
-import sys, os
-import multiprocessing as mu
+
+
+MASKED = {1 : {'name': 'self-circle'       },
+          2 : {'name': 'dangling-end'      },
+          3 : {'name': 'error'             },
+          4 : {'name': 'extra dangling-end'},
+          5 : {'name': 'too close from RES'},
+          6 : {'name': 'too short'         },
+          7 : {'name': 'too large'         },
+          8 : {'name': 'over-represented'  },
+          9 : {'name': 'duplicated'        },
+          10: {'name': 'random breaks'     },
+          11: {'name': 'trans-chromosomic' }}
+
+
+def filters_to_bin(filters):
+    return sum((k in filters) * 2**(k-1) for k in MASKED)
+
 
 def printime(msg):
     print (msg +
@@ -37,7 +59,7 @@ def print_progress(procs):
                 sys.stdout.write(' %9s\n     ' % ('%s/%s' % (i , len(procs))))
             sys.stdout.write('.')
             sys.stdout.flush()
-        prev_done = done    
+        prev_done = done
     print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
                         '%s/%s' % (len(procs),len(procs)))
 
@@ -81,10 +103,10 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2,
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
-def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
+def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
              region1=None, start1=None, end1=None,
              region2=None, start2=None, end2=None, outdir='.'):
-    
+
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -145,9 +167,9 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         else:
             regs.append(crm1)
             begs.append(beg1 * resolution)
-            ends.append(fin2 * resolution + resolution - 1)            
+            ends.append(fin2 * resolution + resolution - 1)
     ends[-1] += 1  # last nucleotide included
-    
+
     # reduce dictionaries
     bins = []
     for crm in regions:
@@ -225,6 +247,19 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
             name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
     else:
         name = 'full'
+
+
+
+
+
+    if 'raw' in opts.matrices:
+        out_raw = '# %s resolution:%d\n' % (name, resolution)
+        if region2:
+            out_raw += '# BADROWS %s\n' % (','.join([str(b) for b in bads1]))
+            out_raw += '# BADCOLS %s\n' % (','.join([str(b) for b in bads2]))
+        else:
+            out_raw += '# BADS %s\n' % (','.join([str(b) for b in bads1]))
+
     out_raw = open(os.path.join(outdir, 'matrix_raw_%s_%s.abc' % (
         name, nicer(resolution).replace(' ', ''))), 'w')
     out_raw.write('# %s resolution:%d\n' % (name, resolution))
@@ -233,7 +268,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
     else:
         out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
-    if biases:
+
+    if 'norm' in opts.matrices:
         out_nrm = open(os.path.join(outdir, 'matrix_nrm_%s_%s.abc' % (
             name, nicer(resolution).replace(' ', ''))), 'w')
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
@@ -242,6 +278,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
             out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
             out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+    if 'decay' in opts.matrices:
         out_dec = open(os.path.join(outdir, 'matrix_dec_%s_%s.abc' % (
             name, nicer(resolution).replace(' ', ''))), 'w')
         out_dec.write('# %s resolution:%d\n' % (
@@ -252,38 +289,53 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         else:
             out_dec.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
 
-    def write2matrix(a, b, c):
-        out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-    def write2matrices(a, b, c):
-        out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
-        out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                                   decay[abs(a-b)]))
-    def write2matrices_2reg(a, b, c):
-        out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
-        out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                        decay[abs((a + start_bin) -
-                                                  (b + start_bin2))]))
-    def write2matrices_err(a, b, c):
-        out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
-        try:
+    def write_raw(func):
+        def writer(a, b, c):
+            func(a, b, c)
+            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
+        return writer
+
+    def write_bias(func):
+        def writer(a, b, c):
+            func(a, b, c)
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        return writer
+
+    def write_expc(func):
+        def writer(a, b, c):
+            func(a, b, c)
             out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
                                             decay[abs(a-b)]))
-        except KeyError:  # different chromsomes
-            out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+        return writer
 
-    if biases:
-        if len(regions) == 1:
-            if region2:
-                write = write2matrices_2reg
-            else:
-                write = write2matrices
-        else:
-            write = write2matrices_err
-    else:
-        write = write2matrix
+    def write_expc_2reg(func):
+        def writer(a, b, c):
+            func(a, b, c)
+            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                            decay[abs((a + start_bin) -
+                                                      (b + start_bin2))]))
+        return writer
+
+    def write_expc_err(func):
+        def writer(a, b, c):
+            func(a, b, c)
+            try:
+                out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                                decay[abs(a-b)]))
+            except KeyError:  # different chromsomes
+                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+        return writer
+
+    def decorate_if(condition, decorator):
+        return decorator if condition else lambda x: x
+
+    @decorate_if('raw'   in opts.matrices, write_raw)
+    @decorate_if('bias'  in opts.matrices, write_bias)
+    @decorate_if('decay' in opts.matrices and len(regions) == 1 and region2, write_expc_2reg)
+    @decorate_if('decay' in opts.matrices and len(regions) == 1 and not region2, write_expc)
+    @decorate_if('decay' in opts.matrices and len(regions) != 1, write_expc_err)
+    def write(*args):
+        pass
 
     sys.stdout.write('     ')
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
@@ -381,12 +433,12 @@ def main():
                 sys.stdout.write('\n')
     else:
         sys.stdout.write('\nExtraction of full genome\n')
-    
-    read_bam(inbam, filter_exclude, resolution, biases,
+
+    read_bam(inbam, filter_exclude, resolution, biases, opts,
              region1=region1, start1=start1, end1=end1,
              region2=region2, start2=start2, end2=end2,
              ncpus=ncpus, outdir=outdir)
-    
+
     printime('\nDone.')
 
 
@@ -398,28 +450,42 @@ def get_options():
     parser.add_argument('-o', '--outdir', dest='outdir', metavar='',
                         required=True, default=False, help='output directory.')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
-                        required=True, help='''wanted resolution form the 
+                        required=True, help='''wanted resolution form the
                         generated matrix''')
     parser.add_argument('-b', '--biases', dest='biases', metavar='',
                         help='''path to pickle file with array of biases''')
-    parser.add_argument('-c', '--coord', dest='coord1',  metavar='', 
-                        default=None, help='''Coordinate of the region to 
-                        retrieve. By default all genome, arguments can be 
-                        either one chromosome name, or the coordinate in 
+    parser.add_argument('-c', '--coord', dest='coord1',  metavar='',
+                        default=None, help='''Coordinate of the region to
+                        retrieve. By default all genome, arguments can be
+                        either one chromosome name, or the coordinate in
                         the form: "-c chr3:110000000-120000000"''')
-    parser.add_argument('-c2', '--coord2', dest='coord2',  metavar='', 
-                        default=None, help='''Coordinate of a second region to 
+    parser.add_argument('-c2', '--coord2', dest='coord2',  metavar='',
+                        default=None, help='''Coordinate of a second region to
                         retrieve the matrix in the intersection with the first
                         region.''')
     parser.add_argument('-C', '--cpus', dest='cpus', metavar='', type=int,
-                        default=8, help='''[%(default)s] number of cpus to be 
+                        default=8, help='''[%(default)s] number of cpus to be
                         used for parsing the HiC-BAM file''')
-    parser.add_argument('-F', '--filter', dest='filter', metavar='', type=int,
-                        default=391, help='''[%(default)s] binary code to 
-                        exclude filtered reads [OPTION TO BE IMPROVED]''')
-    
+    parser.add_argument('--matrices', dest='matrices', metavar='', type=str,
+                        nargs='+', default=['norm', 'raw', 'decay'],
+                        help='''[%(default)s] which matrix to generate''')
+    parser.add_argument('-F', '--filter', dest='filter', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
+
     opts = parser.parse_args()
-    
+    # convert filters to binary for samtools
+    opts.filter = filters_to_bin(opts.filter)
+    if not opts.biases and ('norm' in opts.matrices or
+                            'decay' in opts.matrices):
+        raise Exception('ERROR: should provide path to bias file.')
+
     return opts
 
 

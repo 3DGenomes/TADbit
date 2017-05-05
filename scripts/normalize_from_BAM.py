@@ -1,23 +1,41 @@
 #! /usr/bin/python
 
 """
-reads a BAM file extracts valid pairs, and from them, computes an array of 
-biases (1 round ICE) and array of normalized expected counts according to 
+reads a BAM file extracts valid pairs, and from them, computes an array of
+biases (1 round ICE) and array of normalized expected counts according to
 genomic distance, and an array of columns with poor_bins signal.
 """
 
+import sys
+import os
+import multiprocessing  as mu
+import datetime
 from collections                  import OrderedDict
-from pytadbit.utils.file_handling import mkdir
-from pytadbit.utils.extraviews    import nicer
 from cPickle                      import dump, load
 from time                         import sleep, time
 from argparse                     import ArgumentParser, SUPPRESS
 from scipy.optimize               import curve_fit
 import numpy as np
-import sys, os
 import pysam
-import multiprocessing  as mu
-import datetime
+from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.extraviews    import nicer
+
+
+MASKED = {1 : {'name': 'self-circle'       },
+          2 : {'name': 'dangling-end'      },
+          3 : {'name': 'error'             },
+          4 : {'name': 'extra dangling-end'},
+          5 : {'name': 'too close from RES'},
+          6 : {'name': 'too short'         },
+          7 : {'name': 'too large'         },
+          8 : {'name': 'over-represented'  },
+          9 : {'name': 'duplicated'        },
+          10: {'name': 'random breaks'     },
+          11: {'name': 'trans-chromosomic' }}
+
+
+def filters_to_bin(filters):
+    return sum((k in filters) * 2**(k-1) for k in MASKED)
 
 
 def printime(msg):
@@ -28,7 +46,7 @@ def printime(msg):
            ']')
 
 
-def read_bam_frag(inbam, filter_exclude, sections, bin2crm,
+def read_bam_frag(inbam, filter_exclude, sections, 
                   resolution, outdir, region, start, end):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     refs = bamfile.references
@@ -84,7 +102,7 @@ def print_progress(procs):
                 sys.stdout.write(' %9s\n     ' % ('%s/%s' % (i , len(procs))))
             sys.stdout.write('.')
             sys.stdout.flush()
-        prev_done = done    
+        prev_done = done
     print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
                         '%s/%s' % (len(procs),len(procs)))
 
@@ -133,18 +151,17 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         else:
             regs.append(crm1)
             begs.append(beg1 * resolution)
-            ends.append(end2 * resolution + resolution - 1)            
+            ends.append(end2 * resolution + resolution - 1)
     ends[-1] += 1  # last nucleotide included
 
     # print '\n'.join(['%s %d %d' % (a, b, c) for a, b, c in zip(regs, begs, ends)])
     printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
     bins_dict = dict([(j, i) for i, j in enumerate(bins)])
-    bin2crm = dict((v, k[0]) for k, v in bins_dict.iteritems())
     pool = mu.Pool(ncpus)
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         procs.append(pool.apply_async(
-            read_bam_frag, args=(inbam, filter_exclude, bins_dict, bin2crm,
+            read_bam_frag, args=(inbam, filter_exclude, bins_dict, 
                                  resolution, outdir, region, start, end,)))
     pool.close()
     print_progress(procs)
@@ -260,7 +277,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     # normalize sum per diagonal by total number of cells in diagonal
     for k in sumdec:
         sumdec[k] = sumdec[k] / ndiags[k]
-    
+
     return biases, sumdec, badcol
 
 
@@ -301,26 +318,26 @@ def main():
     ncpus          = opts.cpus
     factor         = 1
     outdir         = opts.outdir
-    
+
     mkdir(outdir)
-    
+
     sys.stdout.write('\nNormalization of full genome\n')
 
     biases, decay, badcol = read_bam(inbam, filter_exclude, resolution,
                                      min_count=min_count, ncpus=ncpus,
                                      factor=factor, outdir=outdir, check_sum=opts.check_sum)
-    
+
     printime('  - Saving biases and badcol columns')
     # biases
     out = open(os.path.join(outdir, 'biases_%s.pickle' % (
         nicer(resolution).replace(' ', ''))), 'w')
-    
+
     dump({'biases'    : biases,
           'decay'     : decay,
           'badcol'    : badcol,
           'resolution': resolution}, out)
     out.close()
-    
+
     # hic_data.write_matrix('chr_names%s_%d-%d.mat' % (region, start, end), focus=())
     printime('\nDone.')
 
@@ -333,25 +350,33 @@ def get_options():
     parser.add_argument('-o', '--outdir', dest='outdir', metavar='',
                         required=True, default=False, help='output directory.')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
-                        required=True, help='''wanted resolution form the 
+                        required=True, help='''wanted resolution form the
                         generated matrix''')
-    parser.add_argument('--check_sum', dest='check_sum', 
+    parser.add_argument('--check_sum', dest='check_sum',
                         action='store_true', default=False, help=SUPPRESS
     #                    '''print the sum_dec_matrix of the normalized matrix and exit'''
                         )
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
                         default=None,
-                        help='''[%(default)s] minimum number of interactions 
+                        help='''[%(default)s] minimum number of interactions
                         perc_zero bin. By default this value is optimized.''')
     parser.add_argument('-C', '--cpus', dest='cpus', metavar='', type=int,
-                        default=8, help='''[%(default)s] number of cpus to be 
+                        default=8, help='''[%(default)s] number of cpus to be
                         used for parsing the HiC-BAM file''')
-    parser.add_argument('-F', '--filter', dest='filter', metavar='', type=int,
-                        default=391, help='''[%(default)s] binary code to 
-                        exclude filtered reads [OPTION TO BE IMPROVED]''')
-    
+    parser.add_argument('-F', '--filter', dest='filter', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
+
     opts = parser.parse_args()
-    
+    # convert filters to binary for samtools
+    opts.filter = filters_to_bin(opts.filter)
+
     return opts
 
 
