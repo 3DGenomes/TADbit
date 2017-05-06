@@ -6,7 +6,8 @@ import os
 from pytadbit.utils.file_handling import mkdir, which
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
+from pytadbit.mapping.restriction_enzymes import religateds
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from tempfile import gettempdir, mkstemp
 from subprocess import CalledProcessError, PIPE, Popen
 
@@ -23,7 +24,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
     """
     skip = kwargs.get('skip', False)
-    ## define local funcitons to process reads and sequences
+    ## define local functions to process reads and sequences
     def _get_fastq_read_heavy(rlines):
         """
         returns header and sequence of 1 FASTQ entry
@@ -57,7 +58,17 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         header, seq, qal, _ = line.split('\t', 3)
         return header, seq, qal
 
-    def _split_read_re(seq, qal, pattern, max_seq_len=None, site='', cnt=0):
+    def _inverse_find(seq, pat):
+        try:
+            return seq.index(pat)
+        except ValueError:
+            return 'nan'
+
+    def find_patterns(seq, patterns):
+        pos, pat = min((_inverse_find(seq, patterns[p]), p) for p in patterns)
+        return int(pos), pat
+
+    def _split_read_re(seq, qal, patterns, site, max_seq_len=None, cnt=0):
         """
         Recursive generator that splits reads according to the
         predefined restriction enzyme.
@@ -70,7 +81,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
            qal = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
         should yield these fragments:
-        
+
             -------oGATCo========oGATC
             xxxxxxxxxxxxxxxxxxxxxxHHHH
 
@@ -79,28 +90,40 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
             GATCo~~~~~~~~~~~~
             HHHHxxxxxxxxxxxxx
-        
+
+        :param seq: sequence of the read fragment
+        :param qal: quality of the sequence of the read fragment
+        :param patterns: list of patterns of the ligated cut sites
+        :param None max_seq_len: to control that all reads are bellow this 
+           length
+        :param '' site: non-ligated cut site to replace ligation site
+        :param 0 cnt: to count number of fragments
+
+        :yields: seq fragments, their qualities and their count, or index 
+           (higher than 0 if ligation sites are found)
         """
         cnt += 1
         try:
-            pos = seq.index(pattern)
+            pos, (r_enz1, r_enz2) = find_patterns(seq, patterns)
         except ValueError:
             if len(seq) == max_seq_len:
                 raise ValueError
             if len(seq) > min_seq_len:
                 yield seq, qal, cnt
             return
-        xqal = ('H' * len(site))
+        # add quality before corresponding to the space occupied by the cut-site
+        xqal1 = ('H' * len(site[r_enz1]))
+        xqal2 = ('H' * len(site[r_enz2]))
         if pos < min_seq_len:
-            split_read(site + seq[pos + len_relg:],
-                       xqal + qal[pos + len_relg:],
-                       pattern, max_seq_len, cnt=cnt)
+            split_read(site[r_enz2] + seq[pos + len_relgs[(r_enz1, r_enz2)]:],
+                       xqal2        + qal[pos + len_relgs[(r_enz1, r_enz2)]:],
+                       patterns, no_site, max_seq_len, cnt=cnt)
         else:
-            yield seq[:pos] + site, qal[:pos] + xqal, cnt
-        new_pos = pos + len_relg
-        for sseq, sqal, cnt in split_read(site + seq[new_pos:],
-                                          xqal + qal[new_pos:], pattern,
-                                          max_seq_len, site=site, cnt=cnt):
+            yield seq[:pos] + site[r_enz1], qal[:pos] + xqal1, cnt
+        new_pos = pos + len_relgs[(r_enz1, r_enz2)]
+        for sseq, sqal, cnt in split_read(site[r_enz2] + seq[new_pos:],
+                                          xqal2 + qal[new_pos:], patterns,
+                                          site, max_seq_len, cnt=cnt):
             yield sseq, sqal, cnt
 
     # Define function for stripping lines according to focus
@@ -113,17 +136,37 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
     # define function to split reads according to restriction enzyme sites
     if isinstance(r_enz, str):
-        enzyme = RESTRICTION_ENZYMES[r_enz].replace('|', '')
-        enz_pattern = religated(r_enz)
-        sub_enz_pattern = enz_pattern[:len(enz_pattern) / 2]
-        len_relg = len(enz_pattern)
+        r_enzs = [r_enz]
+    elif isinstance(r_enz, list):
+        r_enzs = r_enz
+    else:
+        r_enzs = None
+    
+    if r_enzs:
+        enzymes = {}
+        enz_patterns = {}
+        for r_enz in r_enzs:
+            enzymes[r_enz] = RESTRICTION_ENZYMES[r_enz].replace('|', '')
+        enz_patterns = religateds(r_enzs)
+        sub_enz_patterns = {}
+        len_relgs = {}
+        for r_enz1, r_enz2 in enz_patterns:
+            sub_enz_patterns[(r_enz1, r_enz2)] = (
+                enz_patterns[(r_enz1, r_enz2)][:len(enz_patterns[(r_enz1, r_enz2)])
+                                               / 2])
+            len_relgs[(r_enz1, r_enz2)] = len(enz_patterns[(r_enz1, r_enz2)])
         print '  - splitting into restriction enzyme (RE) fragments using ligation sites'
         print '  - ligation sites are replaced by RE sites to match the reference genome'
-        print '    * enzyme: %s, ligation site: %s, RE site: %s' % (r_enz, enz_pattern, enzyme)
+        for r_enz1 in r_enzs:
+            for r_enz2 in r_enzs:
+                print '    * enzymes: %s & %s, ligation site: %s, RE site: %s & %s' % (
+                    r_enz1, r_enz2, enz_patterns[(r_enz1, r_enz2)],
+                    enzymes[r_enz1], enzymes[r_enz2])
         split_read = _split_read_re
     else:
-        enzyme = ''
-        enz_pattern = ''
+        enzymes = ''
+        enz_patterns = ''
+        sub_enz_patterns = ''
         split_read = lambda x, y, z, after_z, after_after_z: (yield x, y , 1)
 
     # function to yield reads from input file
@@ -133,7 +176,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     else:
         get_seq = _get_fastq_read_heavy if fastq else _get_map_read_heavy
         insert_mark = insert_mark_heavy
-        
+
     ## Start processing the input file
     if verbose:
         print 'Preparing %s file' % ('FASTQ' if fastq else 'MAP')
@@ -156,7 +199,8 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out_name = out_fastq
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
-    site = enzyme if add_site else ''
+    no_site = dict([(r_enz, '') for r_enz in enzymes])
+    site = enzymes if add_site else no_site
     for header in fhandler:
         header, seq, qal = get_seq(header)
         counter += 1
@@ -164,7 +208,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         seq = strip_line(seq)
         qal = strip_line(qal)
         # get the generator of restriction enzyme fragments
-        iter_frags = split_read(seq, qal, enz_pattern, len(seq), site)
+        iter_frags = split_read(seq, qal, enz_patterns, site, len(seq))
         # the first fragment should not be preceded by the RE site
         try:
             seq, qal, cnt = iter_frags.next()
@@ -175,7 +219,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             # or not ligation site found, in which case we try with half
             # ligation site in case there was a sequencing error (half ligation
             # site is a RE site or nearly, and thus should not be found anyway)
-            iter_frags = split_read(seq, qal, sub_enz_pattern, len(seq), '')
+            iter_frags = split_read(seq, qal, sub_enz_patterns, no_site, len(seq))
             try:
                 seq, qal, cnt = iter_frags.next()
             except ValueError:
@@ -210,7 +254,7 @@ def _gem_filter(fnam, unmap_out, map_out):
     """
     Divides reads in a map file in two categories: uniquely mapped, and not.
     Writes them in two files
-    
+
     Notes:
        - GEM unique-maps can not be used as it gets rid of reads like 1:0:0:5
        - not feasible with gt.filter
@@ -242,6 +286,7 @@ def _gem_filter(fnam, unmap_out, map_out):
         if not bad:
             map_out.write(_strip_read_name(line))
     unmap_out.close()
+
 
 def gem_mapping(gem_index_path, fastq_path, out_map_path,
                 gem_binary='gem-mapper', **kwargs):
@@ -333,15 +378,19 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
         print err
         raise Exception(e.output)
 
+
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
                  get_nread=False, **kwargs):
     """
-    Do the mapping
+    Maps FASTQ reads to an indexed reference genome. Mapping can be done either
+    without knowledge of the restriction enzyme used, or for experiments
+    performed without one, like Micro-C (iterative mapping), or using the
+    ligation sites created from the digested ends (fragment-based mapping).
 
     :param gem_index_path: path to index file created from a reference genome
        using gem-index tool
-    :param fastq_path: PATH to fastq file, either compressed or not.
+    :param fastq_path: PATH to FASTQ file, either compressed or not.
     :param out_map_dir: path to a directory where to store mapped reads in MAP
        format .
     :param None r_enz: name of the restriction enzyme used in the experiment e.g.
@@ -352,12 +401,12 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :param True add_site: when splitting the sequence by ligated sites found,
        removes the ligation site, and put back the original RE site.
     :param 15 min_seq_len: minimum size of a fragment to map
-    :param None windows: tuple of ranges for begining and end of the
+    :param None windows: tuple of ranges for beginning and end of the
        mapping. This parameter allows to do classical iterative mapping, e.g.
          windows=((1,25),(1,30),(1,35),(1,40),(1,45),(1,50))
        A unique window can also be passed, for trimming, like this:
          windows=((1,101),)
-    :param False clean: remove intermedite files created in temp_dir
+    :param False clean: remove intermediate files created in temp_dir
     :param 4 nthreads: number of threads to use for mapping (number of CPUs)
     :param 0.04 max_edit_distance: The maximum number of edit operations allowed
        while verifying candidate matches by dynamic programming.
@@ -370,7 +419,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :param False get_nreads: returns a list of lists where each element contains
        a path and the number of reads processed
 
-    :returns: a list of paths to generated outfiles. To be passed to 
+    :returns: a list of paths to generated outfiles. To be passed to
        :func:`pytadbit.parsers.map_parser.parse_map`
     """
 
@@ -397,8 +446,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         light_storage = True
         windows = (None, )
     elif isinstance(windows[0], int):
+        # if windows starts at zero we do not need to store all the sequence
+        # otherwise we need it because sequence can be trimmed two times
+        # in fragment based mapping
+        light_storage = True if not windows[0] else False
         windows = [tuple(windows)]
-        light_storage = True
     else:
         # ensure that each element is a tuple, not a list
         windows = [tuple(win) for win in windows]
@@ -431,7 +483,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping full reads...', curr_map
 
         if not skip:
-            gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
+            _gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
             _gem_filter(out_map_path,
@@ -473,7 +525,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
         if not skip:
             print 'Mapping fragments of remaining reads...'
-            gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
+            _gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
             print 'Parsing result...'
             _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                         os.path.join(out_map_dir,
@@ -492,4 +544,3 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
-
