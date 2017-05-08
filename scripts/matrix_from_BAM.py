@@ -13,11 +13,12 @@ from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
 from tarfile                      import open as taropen
-from lockfile                     import LockFile
+from random                       import getrandbits
 import datetime
 import sys
 import os
 import multiprocessing as mu
+from lockfile                     import LockFile
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.extraviews    import nicer
 import pysam
@@ -66,7 +67,7 @@ def print_progress(procs):
                         '%s/%s' % (len(procs),len(procs)))
 
 
-def read_bam_frag(inbam, filter_exclude, sections1, sections2,
+def read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
                   resolution, outdir, region, start, end, half=False):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     refs = bamfile.references
@@ -91,11 +92,11 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2,
             except KeyError:
                 dico[(pos1, pos2)] = 1
         if half:
-            for i, j in dico.keys():
+            for i, j in dico:
                 if i < j:
-                    del(dico[(i,j)])
-        out = open(os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (
-            region, start, end)), 'w')
+                    del dico[(i,j)]
+        out = open(os.path.join(outdir, '_tmp_%s' % (rand_hash),
+                                '%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
         out.close()
     except Exception, e:
@@ -203,17 +204,21 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         bins_dict2 = bins_dict1
     pool = mu.Pool(ncpus)
     ## RUN!
+    # create random hash associated to the run:
+    rand_hash = "%032x" % getrandbits(128)
+
     printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
+    mkdir(os.path.join(outdir, '_tmp_%s' % (rand_hash)))
     procs = []
     for i, (region, b, e) in enumerate(zip(regs, begs, ends)):
         if ncpus == 1:
             read_bam_frag(inbam, filter_exclude,
-                          bins_dict1, bins_dict2,
+                          bins_dict1, bins_dict2, rand_hash,
                           resolution, outdir, region, b, e,)
         else:
             procs.append(pool.apply_async(
                 read_bam_frag, args=(inbam, filter_exclude,
-                                     bins_dict1, bins_dict2,
+                                     bins_dict1, bins_dict2, rand_hash,
                                      resolution, outdir, region, b, e,)))
     pool.close()
     print_progress(procs)
@@ -261,8 +266,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         if region2:
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
-    else:
-        out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+        else:
+            out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
 
     if 'norm' in opts.matrices:
         fnam = 'matrix_nrm_%s_%s.abc' % (name,
@@ -365,13 +370,14 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         sys.stdout.write('.')
         sys.stdout.flush()
 
-        fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
+        fname = os.path.join(outdir, '_tmp_%s' % (rand_hash),
+                             '%s:%d-%d.pickle' % (region, start, end))
         dico = load(open(fname))
         for (j, k), v in dico.iteritems():
             if j in bads1 or k in bads2:
                 continue
             write(j, k, v)
-        os.system('rm -f %s' % (fname))
+    os.system('rm -rf %s' % (os.path.join(outdir, '_tmp_%s' % (rand_hash))))
     if 'raw' in opts.matrices:
         out_raw.close()
     if 'norm' in opts.matrices:
@@ -385,7 +391,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     if opts.tarfile:
         lock = LockFile(opts.tarfile)
         with lock:
-            archive = taropen(opts.tarfile, "w|gz")
+            archive = taropen(opts.tarfile, "a:")
             for fpath, fnam in outfiles:
                 archive.add(fpath, arcname=fnam)
                 os.system('rm -f %s' % fpath)
