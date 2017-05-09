@@ -13,6 +13,7 @@ from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
 from tarfile                      import open as taropen
+from StringIO                     import StringIO
 from random                       import getrandbits
 import datetime
 import sys
@@ -260,8 +261,12 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     if 'raw' in opts.matrices:
         fnam = 'matrix_raw_%s_%s.abc' % (name,
                                          nicer(resolution).replace(' ', ''))
-        outfiles.append((os.path.join(outdir, fnam), fnam))
-        out_raw = open(os.path.join(outdir, fnam), 'w')
+        if opts.tarfile:
+            out_raw = StringIO()
+            outfiles.append((out_raw, fnam))
+        else:
+            out_raw = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
         out_raw.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -272,8 +277,12 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     if 'norm' in opts.matrices:
         fnam = 'matrix_nrm_%s_%s.abc' % (name,
                                          nicer(resolution).replace(' ', ''))
-        outfiles.append((os.path.join(outdir, fnam), fnam))
-        out_nrm = open(os.path.join(outdir, fnam), 'w')
+        if opts.tarfile:
+            out_nrm = StringIO()
+            outfiles.append((out_nrm, fnam))
+        else:
+            out_nrm = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -283,8 +292,12 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     if 'decay' in opts.matrices:
         fnam = 'matrix_dec_%s_%s.abc' % (name,
                                          nicer(resolution).replace(' ', ''))
-        outfiles.append((os.path.join(outdir, fnam), fnam))
-        out_dec = open(os.path.join(outdir, fnam), 'w')
+        if opts.tarfile:
+            out_dec = StringIO()
+            outfiles.append((out_dec, fnam))
+        else:
+            out_dec = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
         out_dec.write('# %s resolution:%d\n' % (
             name, resolution))
         if region2:
@@ -378,24 +391,27 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
                 continue
             write(j, k, v)
     os.system('rm -rf %s' % (os.path.join(outdir, '_tmp_%s' % (rand_hash))))
-    if 'raw' in opts.matrices:
-        out_raw.close()
-    if 'norm' in opts.matrices:
-        out_nrm.close()
-    if 'decay' in opts.matrices:
-        out_dec.close()
-    print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
-                        '%s/%s' % (len(regs),len(regs)))
 
     #########################################################################
     if opts.tarfile:
         lock = LockFile(opts.tarfile)
         with lock:
             archive = taropen(opts.tarfile, "a:")
-            for fpath, fnam in outfiles:
-                archive.add(fpath, arcname=fnam)
-                os.system('rm -f %s' % fpath)
+            for fobj, fnam in outfiles:
+                fobj.seek(0)
+                info = archive.tarinfo(name=fnam)
+                info.size=len(fobj.buf)
+                archive.addfile(tarinfo=info, fileobj=fobj)
             archive.close()
+    else:
+        if 'raw' in opts.matrices:
+            out_raw.close()
+        if 'norm' in opts.matrices:
+            out_nrm.close()
+        if 'decay' in opts.matrices:
+            out_dec.close()
+    print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
+                        '%s/%s' % (len(regs),len(regs)))
 
 def main():
     opts          = get_options()
@@ -486,8 +502,9 @@ def get_options():
     parser.add_argument('-o', '--outdir', dest='outdir', metavar='',
                         default=True, help='output directory.')
     parser.add_argument('-t', '--tarfile', dest='tarfile', metavar='',
-                        default=False, help='''append gnerated files to the
-                        input tar file (does not need to be created).''')
+                        default=False, help='''skip the generation of files, directly
+                        append them to a tar file
+                        (does not need to be created).''')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the
                         generated matrix''')
