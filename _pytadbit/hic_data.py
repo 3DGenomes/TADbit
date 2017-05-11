@@ -567,7 +567,7 @@ class HiC_data(dict):
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
-                          ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
+                          ev_index=None, rich_in_A=None, max_ev=3,show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -618,7 +618,8 @@ class HiC_data(dict):
            cluster.
         :param 'ratio' how: ratio divide by column, subratio divide by
            compartment, diagonal only uses diagonal
-
+        :param False'show_compartment_labels': if True draw A and B compartment blocks.
+           
 
         TODO: this is really slow...
 
@@ -1280,5 +1281,3 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
             if 'type' in cmprt:
                 cmprt['type'] = None
     return score + tt, tt, prop
-
-
