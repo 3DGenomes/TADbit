@@ -249,8 +249,10 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     pool = mu.Pool(ncpus)
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
-        fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
-        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, biases, badcol, bins)))
+        fname = os.path.join(outdir,
+                             'tmp_%s:%d-%d.pickle' % (region, start, end))
+        procs.append(pool.apply_async(sum_dec_matrix,
+                                      args=(fname, biases, badcol, bins)))
     pool.close()
     print_progress(procs)
     pool.join()
@@ -260,19 +262,33 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     for proc in procs:
         for k, v in proc.get().iteritems():
             try:
-                sumdec[k] +=v
+                sumdec[k] += v
             except KeyError:
-                sumdec[k] = v
+                sumdec[k]  = v
 
-    # count the number of cells perc1 diagonal
+    # count the number of cells per diagonal
     ndiags = {}
     for crm in section_pos:
-        diff = section_pos[crm][1] - section_pos[crm][0]
-        for i in xrange(diff):
+        chr_size = section_pos[crm][1] - section_pos[crm][0]
+        thesebads = [i for i in badcol
+                     if section_pos[crm][0] <= i <= section_pos[crm][1]]
+        for dist in xrange(1, chr_size):
             try:
-                ndiags[i] += diff - i
+                ndiags[dist] += chr_size - dist
             except KeyError:
-                ndiags[i]  = diff - i
+                ndiags[dist]  = chr_size - dist
+            # from this we remove bad columns
+            # bad columns will only affect if they are at least as distant from
+            # a border as the distance between the longest diagonal and the
+            # current diagonal.
+            ndiags[dist] -= sum((dist < b - section_pos[crm][0]) +
+                                (dist < section_pos[crm][1] - b)
+                                for b in thesebads)
+        # chr_sizeerent behavior for longest diagonal:
+        try:
+            ndiags[0] += chr_size - len(thesebads)
+        except KeyError:
+            ndiags[0]  = chr_size - len(thesebads)
 
     # normalize sum per diagonal by total number of cells in diagonal
     for k in sumdec:
@@ -292,11 +308,12 @@ def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
     sumdec = {}
     for (i, j), v in dico.iteritems():
+        # different chromosome
+        if bins[i][0] != bins[j][0]:
+            continue
         if i < j:
             continue
         if i in badcol or j in badcol:
-            continue
-        if bins[i][0] != bins[j][0]:
             continue
         k = i - j
         val = v / biases[i] / biases[j]
