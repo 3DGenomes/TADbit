@@ -139,6 +139,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                                'cforce': None}
     # Particles initial radius
     global RADIUS
+
     RADIUS = float(resolution * CONFIG['scale']) / 2
     CONFIG['lowrdist'] = RADIUS * 2.
 
@@ -181,6 +182,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     # verbose
     global VERBOSE
     VERBOSE = verbose
+    #VERBOSE = 3
 
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all)
@@ -602,6 +604,7 @@ def get_hicbased_restraints(model, nnkforce):
                 RestraintType, dist = get_second_nearest_neighbors_restraint_distance(model, i, j)
                 kforce = nnkforce
 
+            # 3 - CASE OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
             if seqdist >  2:
 
                 #CASES OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
