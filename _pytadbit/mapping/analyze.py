@@ -1000,7 +1000,6 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                 _ = data1[i].pop(bad)
                 _ = data2[i].pop(bad)
     # get the log
-    size = len(data1)
     data1 = nozero_log(data1, np.log2)
     data2 = nozero_log(data2, np.log2)
     # get the eigenvectors

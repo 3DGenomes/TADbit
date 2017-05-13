@@ -259,8 +259,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
 
     outfiles = []
     if 'raw' in opts.matrices:
-        fnam = 'matrix_raw_%s_%s.abc' % (name,
-                                         nicer(resolution).replace(' ', ''))
+        fnam = 'raw_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
         if opts.tarfile:
             out_raw = StringIO()
             outfiles.append((out_raw, fnam))
@@ -275,8 +275,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
             out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
 
     if 'norm' in opts.matrices:
-        fnam = 'matrix_nrm_%s_%s.abc' % (name,
-                                         nicer(resolution).replace(' ', ''))
+        fnam = 'nrm_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
         if opts.tarfile:
             out_nrm = StringIO()
             outfiles.append((out_nrm, fnam))
@@ -290,8 +290,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         else:
             out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
     if 'decay' in opts.matrices:
-        fnam = 'matrix_dec_%s_%s.abc' % (name,
-                                         nicer(resolution).replace(' ', ''))
+        fnam = 'dec_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
         if opts.tarfile:
             out_dec = StringIO()
             outfiles.append((out_dec, fnam))
@@ -325,38 +325,36 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     def write_expc(func=None):
         def writer2(a, b, c):
             func(a, b, c)
-            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                            decay[abs(a-b)]))
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
         def writer(a, b, c):
-            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                            decay[abs(a-b)]))
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
         return writer2 if func else writer
 
     def write_expc_2reg(func=None):
         def writer2(a, b, c):
             func(a, b, c)
-            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                            decay[abs((a + start_bin) -
-                                                      (b + start_bin2))]))
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin) - (b + start_bin2))]))
         def writer(a, b, c):
-            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                            decay[abs((a + start_bin) -
-                                                      (b + start_bin2))]))
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin) - (b + start_bin2))]))
         return writer2 if func else writer
 
     def write_expc_err(func=None):
         def writer2(a, b, c):
             func(a, b, c)
             try:
-                out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                                decay[abs(a-b)]))
-            except KeyError:  # different chromsomes
+                out_dec.write('%d\t%d\t%f\n' % (
+                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+            except KeyError:  # different chromosomes
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
         def writer(a, b, c):
             try:
-                out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
-                                                decay[abs(a-b)]))
-            except KeyError:  # different chromsomes
+                out_dec.write('%d\t%d\t%f\n' % (
+                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+            except KeyError:  # different chromosomes
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
         return writer2 if func else writer
 
@@ -365,7 +363,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         write = write_raw(write)
     if 'norm'  in opts.matrices:
         write = write_bias(write)
-    if 'decay'  in opts.matrices:
+    if 'decay' in opts.matrices:
         if len(regions) == 1:
             if region2:
                 write = write_expc_2reg(write)

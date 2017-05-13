@@ -46,7 +46,7 @@ def printime(msg):
            ']')
 
 
-def read_bam_frag(inbam, filter_exclude, sections, 
+def read_bam_frag(inbam, filter_exclude, sections,
                   resolution, outdir, region, start, end):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     refs = bamfile.references
@@ -161,7 +161,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         procs.append(pool.apply_async(
-            read_bam_frag, args=(inbam, filter_exclude, bins_dict, 
+            read_bam_frag, args=(inbam, filter_exclude, bins_dict,
                                  resolution, outdir, region, start, end,)))
     pool.close()
     print_progress(procs)
@@ -267,41 +267,38 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 sumdec[k]  = v
 
     # count the number of cells per diagonal
-    ndiags = {}
+    # TODO: parallelize
+    # find larget chromsome
+    len_big = max(section_pos[c][1] - section_pos[c][0] for c in section_pos)
+    # initialize dictionary
+    ndiags = dict((k, 0) for k in xrange(len_big))
     for crm in section_pos:
-        chr_size = section_pos[crm][1] - section_pos[crm][0]
-        thesebads = [i for i in badcol
-                     if section_pos[crm][0] <= i <= section_pos[crm][1]]
+        beg_chr, end_chr = section_pos[crm][0], section_pos[crm][1]
+        chr_size = end_chr - beg_chr
+        thesebads = [b for b in badcol if beg_chr <= b <= end_chr]
         for dist in xrange(1, chr_size):
-            try:
-                ndiags[dist] += chr_size - dist
-            except KeyError:
-                ndiags[dist]  = chr_size - dist
+            ndiags[dist] += chr_size - dist
             # from this we remove bad columns
             # bad columns will only affect if they are at least as distant from
             # a border as the distance between the longest diagonal and the
             # current diagonal.
-            ndiags[dist] -= sum((dist < b - section_pos[crm][0]) +
-                                (dist < section_pos[crm][1] - b)
-                                for b in thesebads)
+            bad_diag = set()  # 2 bad rows can point to the same bad cell in diagonal
+            maxp = end_chr - dist
+            minp = beg_chr + dist
+            for b in thesebads:
+                if b <= maxp:
+                    bad_diag.add(b)
+                if b >= minp:
+                    bad_diag.add(b - dist)
+            ndiags[dist] -= len(bad_diag)
         # chr_sizeerent behavior for longest diagonal:
-        try:
-            ndiags[0] += chr_size - len(thesebads)
-        except KeyError:
-            ndiags[0]  = chr_size - len(thesebads)
+        ndiags[0] += chr_size - len(thesebads)
 
     # normalize sum per diagonal by total number of cells in diagonal
     for k in sumdec:
-        sumdec[k] = sumdec[k] / ndiags[k]
+        sumdec[k] /= ndiags[k]
 
     return biases, sumdec, badcol
-
-
-def sum_nrm_matrix(fname, biases):
-    dico = load(open(fname))
-    sumnrm = sum(v / biases[i] / biases[j]
-                 for (i, j), v in dico.iteritems())
-    return sumnrm
 
 
 def sum_dec_matrix(fname, biases, badcol, bins):
@@ -323,6 +320,13 @@ def sum_dec_matrix(fname, biases, badcol, bins):
             sumdec[k]  = val
     os.system('rm -f %s' % (fname))
     return sumdec
+
+
+def sum_nrm_matrix(fname, biases):
+    dico = load(open(fname))
+    sumnrm = sum(v / biases[i] / biases[j]
+                 for (i, j), v in dico.iteritems())
+    return sumnrm
 
 
 def main():
@@ -371,8 +375,8 @@ def get_options():
                         generated matrix''')
     parser.add_argument('--check_sum', dest='check_sum',
                         action='store_true', default=False, help=SUPPRESS
-    #                    '''print the sum_dec_matrix of the normalized matrix and exit'''
-                        )
+                        # '''print the sum_dec_matrix of the normalized matrix and exit'''
+    )
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
                         default=None,
                         help='''[%(default)s] minimum number of interactions
