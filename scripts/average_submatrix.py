@@ -37,9 +37,8 @@ def index_tar(tarfile):
         out = open(tarfile + 'i', 'w')
         out.write('# TAR size: %d\n' % tarsize)
         for member in tarh:
-            out.write('%s\t%d\t%d\n' % (member.name[:-4],
-                                        member.offset_data,
-                                        member.size))
+            out.write('%s\t%d\t%d\n' % (
+                member.name.rsplit('_', 1)[0], member.offset_data, member.size))
         out.close()
 
 
@@ -51,31 +50,6 @@ def load_index(tarfile):
     fh = open(tarfile + 'i')
     _ = fh.next()
     return dict(imap(_trans, fh))
-
-
-def do_3d_plot(nam, outfile, sigma=0):
-    fig = plt.figure(figsize=(12,8))
-    ax = fig.add_subplot(1, 1, 1, projection='3d')
-    X = np.arange(-10, 10, 1)
-    Y = np.arange(-10, 10, 1)
-    X, Y = np.meshgrid(X, Y)
-    Z = np.array([np.array([float(i) for i in l.split()]) for l in open(nam)])
-    plt.title(nam + '\nav: %.3f med:%.3f std:%.3f' % (np.mean(Z), np.median(Z), np.std(Z)))
-    if sigma:
-        Z = ndimage.gaussian_filter(Z, sigma=sigma, order=0)
-    zspan = np.max(np.abs(Z - 1)) * 1
-    zmin = -zspan + 1
-    zmax =  zspan + 1
-    cmap = 'coolwarm'  # 'coolwarm'
-    _ = ax.contourf(X, Y, Z, zdir='z', offset=zmin,
-                    cmap=cmap, vmin=zmin, vmax=zmax)
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cmap,
-                           linewidth=0, antialiased=True, alpha=1,
-                           vmin=zmin, vmax=zmax, shade=True)
-    ax.set_zlim3d(zmin, zmax)
-    ax.view_init(elev=15, azim=25)
-    fig.colorbar(surf, shrink=0.5, aspect=20)
-    tadbit_savefig(outfile)
 
 
 def parse_tar(tarfile, listfile, index, outlist, kind, size):
@@ -95,7 +69,7 @@ def parse_tar(tarfile, listfile, index, outlist, kind, size):
     outfh = open(outlist, 'w')
     for k1, k2 in list_coords:
         try:
-            beg, end = index['matrix_%s_%s_%s_10kb' % (kind, k1, k2)]
+            beg, end = index['matrix_%s_%s_%s' % (kind, k1, k2)]
         except KeyError:
             warn('WANRING: some elements not found. Writting them in:\n'
                  + ('%s\n' % outlist) +
@@ -158,6 +132,31 @@ def main():
     print 'Done.'
 
 
+def do_3d_plot(nam, outfile, sigma=0):
+    fig = plt.figure(figsize=(12,8))
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+    X = np.arange(-10, 10, 1)
+    Y = np.arange(-10, 10, 1)
+    X, Y = np.meshgrid(X, Y)
+    Z = np.array([np.array([float(i) for i in l.split()]) for l in open(nam)])
+    plt.title(nam + '\nav: %.3f med:%.3f std:%.3f' % (np.mean(Z), np.median(Z), np.std(Z)))
+    if sigma:
+        Z = ndimage.gaussian_filter(Z, sigma=sigma, order=0)
+    zspan = np.max(np.abs(Z - 1)) * 1
+    zmin = -zspan + 1
+    zmax =  zspan + 1
+    cmap = 'coolwarm'  # 'coolwarm'
+    _ = ax.contourf(X, Y, Z, zdir='z', offset=zmin,
+                    cmap=cmap, vmin=zmin, vmax=zmax)
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cmap,
+                           linewidth=0, antialiased=True, alpha=1,
+                           vmin=zmin, vmax=zmax, shade=True)
+    ax.set_zlim3d(zmin, zmax)
+    ax.view_init(elev=15, azim=25)
+    fig.colorbar(surf, shrink=0.5, aspect=20)
+    tadbit_savefig(outfile)
+
+
 def get_options():
     parser = ArgumentParser(usage="%(prog)s -i PATH -l PATH -o PATH -n INT [options]")
 
@@ -189,7 +188,7 @@ def get_options():
                         default=False,
                         help='output file to plot matrix.')
     parser.add_argument('--sigma', dest='sigma', type=float,
-                        required=True, default=0.0,
+                        default=0.0,
                         help='[%(default)s] smoothing parameter for the plotting')
 
     opts = parser.parse_args()
@@ -202,7 +201,9 @@ def get_options():
     else:
         if not opts.outplot:
             raise Exception('ERROR: should input path to output plot file')
-
+        if not os.path.exists(opts.outfile):
+            raise Exception('ERROR: "output" path to matrix file should exist '
+                            'for plotting')
     return opts
 
 if __name__ == "__main__":
