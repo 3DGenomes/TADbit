@@ -13,7 +13,7 @@ from pytadbit.utils.extraviews import tadbit_savefig
 def write_mat(matrix, outfile):
     out = open(outfile, 'w')
     for i in matrix:
-        out.write(' '.join('%-8.6f' % v for v in i) + '\n')
+        out.write('\t'.join('%f' % v for v in i) + '\n')
     out.close()
 
 
@@ -52,12 +52,18 @@ def load_index(tarfile):
     return dict(imap(_trans, fh))
 
 
-def parse_tar(tarfile, listfile, index, outlist, kind, size):
+def parse_tar(tarfile, listfile, index, outlist, reso, kind, size):
     if listfile:
         print ' - Parsing input list of coordinates'
-        list_coords = [l.split() for l in open(listfile)]
+        def divide(x):
+            a, b = x.split()
+            c, d, e = a.replace(':', '-').split('-')
+            f, g, h = b.replace(':', '-').split('-')
+            return ('%s:%d-%d' % (c, int(d) / reso, int(e) / reso),
+                    '%s:%d-%d' % (f, int(g) / reso, int(h) / reso))
+        list_coords = (divide(l) for l in open(listfile))
     else:
-        list_coords = (k.split('_')[2:4] for k in index.keys() if k.startswith('matrix_' + kind))
+        list_coords = (k.split('_')[1:3] for k in index.keys() if k.startswith(kind))
 
     vmatrix = [[0 for _ in xrange(size)] for _ in xrange(size)]
     wmatrix = [[0 for _ in xrange(size)] for _ in xrange(size)]
@@ -69,7 +75,7 @@ def parse_tar(tarfile, listfile, index, outlist, kind, size):
     outfh = open(outlist, 'w')
     for k1, k2 in list_coords:
         try:
-            beg, end = index['matrix_%s_%s_%s' % (kind, k1, k2)]
+            beg, end = index['%s_%s_%s' % (kind, k1, k2)]
         except KeyError:
             warn('WANRING: some elements not found. Writting them in:\n'
                  + ('%s\n' % outlist) +
@@ -113,6 +119,7 @@ def main():
     outplot  = opts.outplot
     outlist  = opts.outfile + '.lst'
     size     = opts.size
+    reso     = opts.reso
     kind     = opts.matrix
 
     if not opts.plot_only:
@@ -121,7 +128,7 @@ def main():
 
         index = load_index(tarfile)
 
-        vmatrix = parse_tar(tarfile, listfile, index, outlist, kind, size)
+        vmatrix = parse_tar(tarfile, listfile, index, outlist, reso, kind, size)
 
         write_mat(vmatrix, outfile)
 
@@ -182,6 +189,8 @@ def get_options():
                               'created, in order to compute the matrices.'))
     parser.add_argument('-n', '--size', dest='size', type=int, metavar='',
                         required=False, help='size of the matrices')
+    parser.add_argument('-r', '--reso', dest='reso', type=int, metavar='',
+                        required=False, help='resolution at which matrices were created')
     parser.add_argument('--matrix', dest='matrix', metavar='', type=str,
                         choices=['nrm', 'raw', 'dec'], default='dec',
                         help='''[%(default)s] which matrix to generate
