@@ -296,7 +296,10 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     # normalize sum per diagonal by total number of cells in diagonal
     for k in sumdec:
-        sumdec[k] /= ndiags[k]
+        try:
+            sumdec[k] /= ndiags[k]
+        except ZeroDivisionError:  # all columns at this distance are "bad"
+            pass
 
     return biases, sumdec, badcol
 

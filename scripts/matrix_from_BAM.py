@@ -123,6 +123,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     for crm in sections:
         len_crm = sections[crm]
         bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+    if len(bins) == 0:
+        raise Exception('ERROR: Chromsome %s smaller than bin size\n' % (crm))
     start_bin = 0
     end_bin   = len(bins) + 1
     if region1:
@@ -206,7 +208,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     pool = mu.Pool(ncpus)
     ## RUN!
     # create random hash associated to the run:
-    rand_hash = "%032x" % getrandbits(128)
+    rand_hash = "%016x" % getrandbits(64)
 
     printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
     mkdir(os.path.join(outdir, '_tmp_%s' % (rand_hash)))

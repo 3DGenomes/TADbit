@@ -127,24 +127,30 @@ def main():
 
     if outplot:
         print ' - plotting'
-        do_3d_plot(outfile, outplot, sigma=opts.sigma)
+        do_3d_plot(outfile, outplot, sigma=opts.sigma, log=opts.log)
 
     print 'Done.'
 
 
-def do_3d_plot(nam, outfile, sigma=0):
+def do_3d_plot(nam, outfile, sigma=0, log=False):
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1, 1, 1, projection='3d')
     X = np.arange(-10, 10, 1)
     Y = np.arange(-10, 10, 1)
     X, Y = np.meshgrid(X, Y)
     Z = np.array([np.array([float(i) for i in l.split()]) for l in open(nam)])
-    plt.title(nam + '\nav: %.3f med:%.3f std:%.3f' % (np.mean(Z), np.median(Z), np.std(Z)))
+    plt.title(nam + '\nMean: %.3f, median: %.3f, standard-deviation: %.3f' % (np.mean(Z), np.median(Z), np.std(Z)))
     if sigma:
         Z = ndimage.gaussian_filter(Z, sigma=sigma, order=0)
-    zspan = np.max(np.abs(Z - 1)) * 1
-    zmin = -zspan + 1
-    zmax =  zspan + 1
+    if log:
+        Z = np.log(Z)
+        zspan = np.max(np.abs(Z))
+        zmax =  zspan
+        zmin = -zspan
+    else:
+        zspan = np.max(np.abs(Z - 1))
+        zmin = -zspan + 1
+        zmax =  zspan + 1
     cmap = 'coolwarm'  # 'coolwarm'
     _ = ax.contourf(X, Y, Z, zdir='z', offset=zmin,
                     cmap=cmap, vmin=zmin, vmax=zmax)
@@ -153,7 +159,10 @@ def do_3d_plot(nam, outfile, sigma=0):
                            vmin=zmin, vmax=zmax, shade=True)
     ax.set_zlim3d(zmin, zmax)
     ax.view_init(elev=15, azim=25)
-    fig.colorbar(surf, shrink=0.5, aspect=20)
+    cb = fig.colorbar(surf, shrink=0.5, aspect=20)
+    cb.set_label('%sverage normalized interactions%s' %
+                 ('Log a' if log else 'A',
+                  '\nSmoothed with $\sigma=%s$' % sigma))
     tadbit_savefig(outfile)
 
 
@@ -190,6 +199,9 @@ def get_options():
     parser.add_argument('--sigma', dest='sigma', type=float,
                         default=0.0,
                         help='[%(default)s] smoothing parameter for the plotting')
+    parser.add_argument('--log', dest='log', action='store_true',
+                        default=False,
+                        help='apply log on interaction counts for plotting')
 
     opts = parser.parse_args()
 
