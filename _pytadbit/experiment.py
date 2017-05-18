@@ -1416,7 +1416,7 @@ class Experiment(object):
             if show:
                 plt.show()
             if savefig:
-                tadbit_savefig(savefig) 
+                tadbit_savefig(savefig)
             return img
         pwidth = 1
         tads = dict([(t, self.tads[t]) for t in self.tads

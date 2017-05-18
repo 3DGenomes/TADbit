@@ -525,6 +525,9 @@ def get_options():
     parser.add_argument('--matrices', dest='matrices', metavar='', type=str,
                         nargs='+', default=['norm', 'raw', 'decay'],
                         help='''[%(default)s] which matrix to generate''')
+    parser.add_argument('-f', '--format', dest='format', default='abc',
+                        choices=['abc', 'mat'], required=False, help='''[%(default)s]
+                        format in which to write the output matrix (choose from %(choices)s)''')
     parser.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
                         choices = range(1, 11),

@@ -3,13 +3,17 @@
 """
 
 import os
-from pytadbit.utils.file_handling import mkdir, which
+import re
 from warnings import warn
+from tempfile import gettempdir, mkstemp
+from subprocess import CalledProcessError, PIPE, Popen
+
+from pytadbit.utils.file_handling import mkdir, which
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import religateds
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from tempfile import gettempdir, mkstemp
-from subprocess import CalledProcessError, PIPE, Popen
+from pytadbit.mapping.restriction_enzymes import iupac2regex
+
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True,
@@ -60,10 +64,10 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
     def _inverse_find(seq, pat):
         try:
-            return seq.index(pat)
-        except ValueError:
+            return pat.search(seq).start()
+        except AttributeError:
             return 'nan'
-    
+
     def find_patterns(seq, patterns):
         pos, pat = min((_inverse_find(seq, patterns[p]), p) for p in patterns)
         return int(pos), pat
@@ -90,16 +94,16 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
             GATCo~~~~~~~~~~~~
             HHHHxxxxxxxxxxxxx
-        
+
         :param seq: sequence of the read fragment
         :param qal: quality of the sequence of the read fragment
         :param patterns: list of patterns of the ligated cut sites
-        :param None max_seq_len: to control that all reads are bellow this 
+        :param None max_seq_len: to control that all reads are bellow this
            length
         :param '' site: non-ligated cut site to replace ligation site
         :param 0 cnt: to count number of fragments
 
-        :yields: seq fragments, their qualities and their count, or index 
+        :yields: seq fragments, their qualities and their count, or index
            (higher than 0 if ligation sites are found)
         """
         cnt += 1
@@ -141,7 +145,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         r_enzs = r_enz
     else:
         r_enzs = None
-    
+
     if r_enzs:
         enzymes = {}
         enz_patterns = {}
@@ -162,6 +166,11 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                 print '    * enzymes: %s & %s, ligation site: %s, RE site: %s & %s' % (
                     r_enz1, r_enz2, enz_patterns[(r_enz1, r_enz2)],
                     enzymes[r_enz1], enzymes[r_enz2])
+        # replace pattern with regex to support IUPAC annotation
+        for ezp in enz_patterns:
+            enz_patterns[ezp] = re.compile(iupac2regex(enz_patterns[ezp]))
+        for ezp in sub_enz_patterns:
+            sub_enz_patterns[ezp] = iupac2regex(sub_enz_patterns[ezp])
         split_read = _split_read_re
     else:
         enzymes = ''
@@ -236,19 +245,23 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out.close()
     return out_name, counter
 
+
 def insert_mark_heavy(header, num):
     if num == 1 :
         return header
     h, s, q = header.rsplit(' ', 2)
     return '%s~%d~ %s %s' % (h, num, s, q)
 
+
 def insert_mark_light(header, num):
     if num == 1 :
         return header
     return '%s~%d~' % (header, num)
 
+
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
+
 
 def _gem_filter(fnam, unmap_out, map_out):
     """
@@ -287,8 +300,8 @@ def _gem_filter(fnam, unmap_out, map_out):
             map_out.write(_strip_read_name(line))
     unmap_out.close()
 
-    
-def gem_mapping(gem_index_path, fastq_path, out_map_path,
+
+def _gem_mapping(gem_index_path, fastq_path, out_map_path,
                 gem_binary='gem-mapper', **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
@@ -378,7 +391,7 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
         print err
         raise Exception(e.output)
 
-    
+
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
                  get_nread=False, **kwargs):
@@ -544,4 +557,3 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
-

@@ -6,28 +6,31 @@ information needed
 
 """
 
-from argparse                     import HelpFormatter
-from os                           import path, listdir, remove
-from string                       import ascii_letters
-from random                       import random
-from shutil                       import copyfile
-from pytadbit.imp.imp_modelling   import generate_3d_models, TADbitModelingOutOfBound
-from pytadbit                     import load_structuralmodels
-from pytadbit                     import Chromosome
-from pytadbit.utils.file_handling import mkdir
-from pytadbit.utils.extraviews    import nicer
-from pytadbit.utils.sqlite_utils  import get_path_id, add_path, get_jobid
-from pytadbit.utils.sqlite_utils  import digest_parameters
-from pytadbit                     import load_hic_data_from_reads
-from pytadbit                     import get_dependencies_version
-from pytadbit.parsers.hic_parser  import optimal_reader
-from itertools                    import product
-from warnings                     import warn
-from numpy                        import arange
-from cPickle                      import load
-from hashlib                      import md5
+from argparse                         import HelpFormatter
+from os                               import path, listdir, remove
+from string                           import ascii_letters
+from random                           import random
+from shutil                           import copyfile
+from itertools                        import product
+from warnings                         import warn
+from cPickle                          import load
+from hashlib                          import md5
 import sqlite3 as lite
 import time
+
+from numpy                            import arange
+
+from pytadbit.modelling.imp_modelling import generate_3d_models
+from pytadbit.modelling.imp_modelling import TADbitModelingOutOfBound
+from pytadbit                         import load_structuralmodels
+from pytadbit                         import Chromosome
+from pytadbit.utils.file_handling     import mkdir
+from pytadbit.utils.extraviews        import nicer
+from pytadbit.utils.sqlite_utils      import get_path_id, add_path, get_jobid
+from pytadbit.utils.sqlite_utils      import digest_parameters
+from pytadbit                         import load_hic_data_from_reads
+from pytadbit                         import get_dependencies_version
+from pytadbit.parsers.hic_parser      import optimal_reader, read_matrix
 
 
 
@@ -191,7 +194,7 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
 
 
 def big_run(exp, opts, job_file_handler, outdir, optpar):
-    m, u, l, s = (optpar['maxdist'], 
+    m, u, l, s = (optpar['maxdist'],
                   optpar['upfreq' ],
                   optpar['lowfreq'],
                   optpar['scale'  ])
@@ -204,7 +207,6 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
     except KeyError:
         runned = [0]
 
-        
     if opts.rand == '1':
         # In this case we can use models already_run runned
         start = str(max(runned) + 1)
@@ -258,6 +260,7 @@ def run(opts):
            opts.end - opts.beg))
 
     # load data
+    opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
     if opts.matrix:
         crm = load_hic_data(opts)
     else:
@@ -270,7 +273,6 @@ def run(opts):
                              for l in open(biases))
 
     exp = crm.experiments[0]
-    opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
 
     # prepare output folders
     batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
@@ -760,6 +762,20 @@ def load_parameters_fromdb(opts):
                 mreads, mreads_id, reso)
 
 
+def load_sub_matrix(matrix, beg, end):
+    fh = open(matrix)
+    masked = map(int, fh.next().replace('# MASKED ').split())
+    wanted = set(range(beg, end + 1))
+    masked = [m for m in masked if m in wanted]
+    matrix = []
+    for i, l in enumerate(fh):
+        if i not in wanted:
+            continue
+        matrix.append([])
+        matrix[i] = map(float, l.split()[beg + 2: end + 3])  # two first columns are coordinates
+    return matrix, masked
+
+
 def load_hic_data(opts):
     """
     Load Hi-C data
@@ -768,7 +784,10 @@ def load_hic_data(opts):
     crm = Chromosome(opts. crm)  # Create chromosome object
     print '     o Loading Hi-C matrix'
     try:
-        hic = optimal_reader(open(opts.matrix), normalized=True, resolution=opts.reso)
+        # hic = optimal_reader(open(opts.matrix), normalized=True,
+        #                      resolution=opts.reso)
+        hic = read_matrix(open(opts.matrix), normalized=True,
+                          resolution=opts.reso)
         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                            norm_data=hic)
     except Exception, e:
@@ -779,7 +798,7 @@ def load_hic_data(opts):
     # TODO: if not bad columns:...
     if not crm.experiments[0]._zeros:
         crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
-    
+
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
