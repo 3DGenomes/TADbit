@@ -7,6 +7,25 @@ Definition and mapping of restriction enymes
 from re import compile
 from warnings import warn
 
+
+def iupac2regex(restring):
+    """
+    Convert target sites with IUPAC nomenclature to regex pattern
+    """
+    restring = restring.replace('R', '[AG]')
+    restring = restring.replace('Y', '[CT]')
+    restring = restring.replace('M', '[AC]')
+    restring = restring.replace('K', '[GT]')
+    restring = restring.replace('S', '[CG]')
+    restring = restring.replace('W', '[AT]')
+    restring = restring.replace('H', '[ACT]')
+    restring = restring.replace('B', '[CGT]')
+    restring = restring.replace('V', '[ACG]')
+    restring = restring.replace('D', '[AGT]')
+    restring = restring.replace('N', '[ATGC]')
+    return restring
+
+
 def count_re_fragments(fnam):
     frag_count = {}
     fhandler = open(fnam)
@@ -67,17 +86,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     restring = ('%s') % ('|'.join(['(?<=%s(?=%s))' % tuple(enzymes[n].split('|'))
                                    for n in enzymes]))
     # IUPAC conventions
-    restring.replace('R', '[AG]')
-    restring.replace('Y', '[CT]')
-    restring.replace('M', '[AC]')
-    restring.replace('K', '[GT]')
-    restring.replace('S', '[CG]')
-    restring.replace('W', '[AT]')
-    restring.replace('H', '[ACT]')
-    restring.replace('B', '[CGT]')
-    restring.replace('V', '[ACG]')
-    restring.replace('D', '[AGT]')
-    restring.replace('N', '[ATGC]')
+    restring = iupac2regex(restring)
 
     enz_pattern = compile(restring)
 
@@ -122,7 +131,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     :param 100000 frag_chunk: in order to optimize the search for nearby RE
        sites, each chromosome is splitted into chunks.
     """
-    if isinstance(enzyme_name, str):
+    if isinstance(enzyme_name, basestring):
         enzyme_names = [enzyme_name]
     elif isinstance(enzyme_name, list):
         enzyme_names = enzyme_name
@@ -134,17 +143,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     restring = ('%s') % ('|'.join(['(?<=%s(?=%s))' % tuple(enzymes[n].split('|'))
                                    for n in enzymes]))
     # IUPAC conventions
-    restring.replace('R', '[AG]')
-    restring.replace('Y', '[CT]')
-    restring.replace('M', '[AC]')
-    restring.replace('K', '[GT]')
-    restring.replace('S', '[CG]')
-    restring.replace('W', '[AT]')
-    restring.replace('H', '[ACT]')
-    restring.replace('B', '[CGT]')
-    restring.replace('V', '[ACG]')
-    restring.replace('D', '[AGT]')
-    restring.replace('N', '[ATGC]')
+    restring = iupac2regex(restring)
 
     enz_pattern = compile(restring)
 
@@ -233,7 +232,7 @@ class RE_dict(dict):
                 if nam.lower() == i.lower():
                     return self[nam]
             raise KeyError('Restriction Enzyme %s not found\n' % (i))
-    
+
 
 RESTRICTION_ENZYMES = RE_dict([('AanI'       , 'TTA|TAA'                     ),
                                ('AarI'       , 'CACCTGC|'                    ),
