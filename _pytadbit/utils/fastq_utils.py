@@ -117,7 +117,6 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             liges[k] = []  # initialize dico to store sites
             ligep[k] = 0   # initialize dico to store sites
             l_sites[k] = l_sites[k].lower()
-            print l_sites[k], iupac2regex(l_sites[k])
             lige[k] = re.compile('(' + iupac2regex(l_sites[k]) + ')')
         while len(quals) <= nreads:
             try:
@@ -130,7 +129,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 seq = re.sub('(' + iupac2regex(l_sites[k].upper()) + ')',
                              lambda s: s.group(0).lower(), seq)
             for r_enz in r_enzs:
-                sites[r_enz].extend(matches)
+                sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
                 # TODO: you cannot have a repaired/fixed site in the middle of
                 # the sequence, this could be only checked at the beginning
                 fixes[r_enz].extend([m.start() for m in fixe[r_enz].finditer(seq)])
@@ -265,7 +264,6 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                      else 'Undigested & Dangling-Ends (%s: %s)' % (r_enz, r_sites[r_enz]))
         ax2.set_ylabel('Undigested')
         ax2.yaxis.label.set_color('darkred')
-        ax2.set_ylim(0, n_reads_with_site)
         ax2.tick_params(axis='y', colors='darkred', **tkw)
 
         lines, labels = ax2.get_legend_handles_labels()
