@@ -23,6 +23,17 @@ def iupac2regex(restring):
     restring = restring.replace('V', '[ACG]')
     restring = restring.replace('D', '[AGT]')
     restring = restring.replace('N', '[ATGC]')
+    restring = restring.replace('r', '[ag]')
+    restring = restring.replace('y', '[ct]')
+    restring = restring.replace('m', '[ac]')
+    restring = restring.replace('k', '[gt]')
+    restring = restring.replace('s', '[cg]')
+    restring = restring.replace('w', '[at]')
+    restring = restring.replace('h', '[act]')
+    restring = restring.replace('b', '[cgt]')
+    restring = restring.replace('v', '[acg]')
+    restring = restring.replace('d', '[agt]')
+    restring = restring.replace('n', '[atgc]')
     return restring
 
 

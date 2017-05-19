@@ -4,15 +4,18 @@
 
 from warnings                             import warn
 from gzip                                 import open as gopen
-from pytadbit.utils.extraviews            import tadbit_savefig
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from pytadbit.mapping.restriction_enzymes import religateds, repaired
 from os                                   import SEEK_END
-from numpy                                import std, mean
 from random                               import random
 from subprocess                           import Popen, PIPE
 import re
-import numpy as np
+
+from numpy                                import std, mean, nansum, linspace
+
+from pytadbit.utils.extraviews            import tadbit_savefig
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import iupac2regex
+from pytadbit.mapping.restriction_enzymes import religateds, repaired
+
 
 try:
     from matplotlib import pyplot as plt
@@ -106,15 +109,16 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         site = {}
         fixe = {}
         for r_enz in r_enzs:
-            site[r_enz] = re.compile(r_sites[r_enz])
-            fixe[r_enz] = re.compile(d_sites[r_enz])
+            site[r_enz] = re.compile(iupac2regex(r_sites[r_enz]))
+            fixe[r_enz] = re.compile(iupac2regex(d_sites[r_enz]))
         # ligation sites should appear in lower case in the sequence
         lige = {}
         for k in l_sites:
             liges[k] = []  # initialize dico to store sites
             ligep[k] = 0   # initialize dico to store sites
             l_sites[k] = l_sites[k].lower()
-            lige[k] = re.compile(l_sites[k])
+            print l_sites[k], iupac2regex(l_sites[k])
+            lige[k] = re.compile('(' + iupac2regex(l_sites[k]) + ')')
         while len(quals) <= nreads:
             try:
                 next(fhandler)
@@ -122,16 +126,18 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 break
             seq = next(fhandler)
             # ligation sites replaced by lower case to ease the search
-            for lig in l_sites.values():
-                seq = seq.replace(lig.upper(), lig)
+            for k in liges:
+                seq = re.sub('(' + iupac2regex(l_sites[k].upper()) + ')',
+                             lambda s: s.group(0).lower(), seq)
             for r_enz in r_enzs:
-                sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
+                sites[r_enz].extend(matches)
                 # TODO: you cannot have a repaired/fixed site in the middle of
                 # the sequence, this could be only checked at the beginning
                 fixes[r_enz].extend([m.start() for m in fixe[r_enz].finditer(seq)])
             for k  in lige:  # for each paired of cut-site
-                liges[k].extend([m.start() for m in lige[k].finditer(seq)])
-                ligep[k] += l_sites[k] in seq
+                matches = [m.start() for m in lige[k].finditer(seq)]
+                liges[k].extend(matches)
+                ligep[k] += 1 if matches else 0
             # store the number of Ns found in the sequences
             if 'N' in seq:
                 henes.extend([i for i, s in enumerate(seq) if s == 'N'])
@@ -142,8 +148,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     if not nreads:
         nreads = len(quals)
     quals = zip(*quals)
-    meanquals = [np.mean(q) for q in quals]
-    errorquals = [np.std(q) for q in quals]
+    meanquals = [mean(q) for q in quals]
+    errorquals = [std(q) for q in quals]
 
     if axe:
         ax = axe
@@ -205,8 +211,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         # seq_len is the length of the line to plot. we don't want to plot
         # if there is no room for the cut-site, or ligation site.
         site_len = max((max([len(r_sites[k]) for k in r_sites]),
-                                   max([len(l_sites[k]) for k in l_sites]),
-                                   max([len(d_sites[k]) for k in d_sites])))
+                        max([len(l_sites[k]) for k in l_sites]),
+                        max([len(d_sites[k]) for k in d_sites])))
         seq_len = len(line) - site_len
 
         # transform dictionaries of positions into dictionaries of counts
@@ -248,7 +254,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 liges[k][len(line) / 2 - site_len:
                          len(line) / 2] = [float('nan')] * site_len
         # plot undigested cut-sites
-        color = iter(plt.cm.Reds(np.linspace(0.3, 0.95, len(r_enzs))))
+        color = iter(plt.cm.Reds(linspace(0.3 if len(liges) > 1 else 0.8, 0.95, len(r_enzs))))
         for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
@@ -259,12 +265,13 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                      else 'Undigested & Dangling-Ends (%s: %s)' % (r_enz, r_sites[r_enz]))
         ax2.set_ylabel('Undigested')
         ax2.yaxis.label.set_color('darkred')
+        ax2.set_ylim(0, n_reads_with_site)
         ax2.tick_params(axis='y', colors='darkred', **tkw)
 
         lines, labels = ax2.get_legend_handles_labels()
 
         ax3 = ax2.twinx()
-        color = iter(plt.cm.Blues(np.linspace(0.3, 0.95, len(liges))))
+        color = iter(plt.cm.Blues(linspace(0.3 if len(liges) > 1 else 0.8, 0.95, len(liges))))
         for r1, r2 in liges:
             # print 'ligated', r1, r2
             # print liges[(r1, r2)][:20]
@@ -278,8 +285,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         tmp_lines, tmp_labels = ax3.get_legend_handles_labels()
         lines.extend(tmp_lines)
         labels.extend(tmp_labels)
-        
-        color = iter(plt.cm.Greens(np.linspace(0.3, 0.95, len(r_enzs))))
+
+        color = iter(plt.cm.Greens(linspace(0.3 if len(liges) > 1 else 0.8, 0.95, len(r_enzs))))
         for i, r_enz in enumerate(r_enzs):
             if any([f > 0 for f in fixes[r_enz]]):
                 ax4 = ax2.twinx()
@@ -303,12 +310,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         # Count ligation sites
         lig_cnt = {}
         for k in liges:
-            lig_cnt[k] = (np.nansum(liges[k]) - liges[k][0] -
+            lig_cnt[k] = (nansum(liges[k]) - liges[k][0] -
                               liges[k][len(line) / 2])
         # Count undigested sites
         sit_cnt = {}
         for r_enz in r_enzs:
-            sit_cnt[r_enz] = (np.nansum(sites[r_enz]) - sites[r_enz][0] -
+            sit_cnt[r_enz] = (nansum(sites[r_enz]) - sites[r_enz][0] -
                               sites[r_enz][len(line) / 2])
         # Count Dangling-Ends
         des = {}
@@ -324,20 +331,20 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             lcnt = float(sum([lig_cnt[(r_enz1, r_enz2)] * (2 if r_enz1 == r_enz2 else 1)
                               for r_enz1 in r_enzs for r_enz2 in r_enzs
                               if r_enz1 == r_enz or r_enz2 == r_enz]))
-            title += ('Percentage of digested sites (not considering Dangling-Ends) '
+            title += ('Digested sites (excluding Dangling-Ends) '
                       '%s: %.1f%%\n' % (r_enz,
                                         100. * float(lcnt) / (lcnt + sit_cnt[r_enz])))
         for r_enz in r_enzs:
-            title += 'Percentage of dangling-ends %s: %.1f%%\n' % (r_enz, des[r_enz])
+            title += 'Dangling-ends %s: %.1f%%\n' % (r_enz, des[r_enz])
 
         for r_enz1 in r_enzs:
             for r_enz2 in r_enzs:
-                title += ('Percentage of reads with ligation site (%s-%s): %.1f%% \n' %
+                title += ('Reads with ligation site (%s-%s): %.1f%% \n' %
                           (r_enz1, r_enz2, (ligep[(r_enz1, r_enz2)] * 100.) / nreads))
-        plt.title(title.strip(), size=10, ha='left', x=0)
+        plt.title(title.strip(), size=13, ha='left', x=0)
         plt.subplots_adjust(right=0.85)
-        ax2.legend(lines, labels, bbox_to_anchor=(0.75, 1.0),
-                   loc=3, borderaxespad=0., frameon=False, fontsize=9)
+        ax2.legend(lines, labels, bbox_to_anchor=(0.7, 1.0),
+                   loc=3, borderaxespad=0., frameon=False, fontsize=12)
     plt.tight_layout()
     if savefig:
         tadbit_savefig(savefig)
