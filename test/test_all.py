@@ -429,8 +429,9 @@ class TestTadbit(unittest.TestCase):
         wanted = {'maxdist': 600.0, 'upfreq': 0.0, 'kforce': 5,
                   'dcutoff': 2,
                   'reference': '', 'lowfreq': -0.6, 'scale': 0.01}
-        self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
-                         [round(i, 4) for i in wanted.values()if not type(i) is str])
+
+        self.assertEqual([round(config[i], 4) for i in config.keys() if not type(i) is str],
+                         [round(config[i], 4) for i in wanted.keys() if not type(i) is str])
         if CHKTIME:
             print '12', time() - t0
 
@@ -460,7 +461,7 @@ class TestTadbit(unittest.TestCase):
         models = exp.model_region(51, 71, n_models=40, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
-                                          'scale': 0.01,
+                                          'scale': 0.01, 'kbending': 0.0,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
         models.save_models('models.pick')
 
@@ -504,6 +505,7 @@ class TestTadbit(unittest.TestCase):
         nrmsd = (sum([((m1[0][i] - m2[0][i])**2 + (m1[1][i] - m2[1][i])**2 + (m1[2][i] - m2[2][i])**2)**.5
                       for i in xrange(len(m1[0]))]) / (len(m1[0])))
         self.assertTrue(nrmsd < 160)
+
         # fetching models
         models.define_best_models(5)
         m = models.fetch_model_by_rand_init('1', all_models=True)
