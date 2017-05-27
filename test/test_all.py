@@ -433,8 +433,9 @@ class TestTadbit(unittest.TestCase):
         wanted = {"maxdist": 600.0, "upfreq": 0.0, "kforce": 5,
                   "dcutoff": 2,
                   "reference": "", "lowfreq": -0.6, "scale": 0.01}
-        self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
-                         [round(i, 4) for i in wanted.values()if not type(i) is str])
+
+        self.assertEqual([round(config[i], 4) for i in config.keys() if not type(i) is str],
+                         [round(config[i], 4) for i in wanted.keys() if not type(i) is str])
         if CHKTIME:
             print "12", time() - t0
 
@@ -463,10 +464,10 @@ class TestTadbit(unittest.TestCase):
         exp.normalize_hic(silent=True, factor=None)
         models = exp.model_region(51, 71, n_models=40, n_keep=25,
                                   n_cpus=4,
-                                  config={"kforce": 5, "maxdist": 500,
-                                          "scale": 0.01,
-                                          "upfreq": 1.0, "lowfreq": -0.6})
-        models.save_models("models.pick")
+                                  config={'kforce': 5, 'maxdist': 500,
+                                          'scale': 0.01, 'kbending': 0.0,
+                                          'upfreq': 1.0, 'lowfreq': -0.6})
+        models.save_models('models.pick')
 
         avg = models.average_model()
         nmd = len(models)
