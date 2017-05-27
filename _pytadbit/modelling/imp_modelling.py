@@ -143,41 +143,11 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                                'height': None,
                                'cforce': None}
 
-    # Setup CONFIG['kforce']
-    try:
-        CONFIG['kforce'] = config['kforce']
-    except KeyError:
-        CONFIG['kforce'] = CONFIG['dmel_01']['kforce']
-
-    # Setup CONFIG['scale']
-    try:
-        CONFIG['scale'] = config['scale']
-    except KeyError:
-        CONFIG['scale'] = CONFIG['dmel_01']['scale']
-
-    # Setup CONFIG['kbending']
-    try:
-        CONFIG['kbending'] = config['kbending']
-    except KeyError:
-        CONFIG['kbending'] = CONFIG['dmel_01']['kbending']
-
-    # Setup CONFIG['maxdist']
-    try:
-        CONFIG['maxdist'] = config['maxdist']
-    except KeyError:
-        CONFIG['maxdist'] = CONFIG['dmel_01']['maxdist']
-
-    # Setup CONFIG['lowfreq']
-    try:
-        CONFIG['lowfreq'] = config['lowfreq']
-    except KeyError:
-        CONFIG['lowfreq'] = CONFIG['dmel_01']['lowfreq']
-
-    # Setup CONFIG['upfreq']
-    try:
-        CONFIG['upfreq'] = config['upfreq']
-    except KeyError:
-        CONFIG['upfreq'] = CONFIG['dmel_01']['upfreq']
+    # Setup CONFIG
+    if isinstance(config, dict):
+        CONFIG.update(config)
+    elif config:
+        raise Exception('ERROR: "config" must be a dictionary')
 
     # print "Used",CONFIG,'\n'
     # print "Input",config,'\n'
@@ -569,12 +539,12 @@ def add_harmonic_restraint(model, p1, p2, dist, kforce, verbose=None): #, restra
     #restraints.append(hr)
 
     if verbose == 3:
-       try:
+        try:
             print "Total number of restraints: %i" % (
                 model['model'].get_number_of_restraints())
         except:
-	        print "Total number of restraints: %i" % (
-		        model['restraints'].get_number_of_restraints()) # 2.6.1 compat
+            print "Total number of restraints: %i" % (
+                model['restraints'].get_number_of_restraints()) # 2.6.1 compat
 
 
 def add_harmonic_upperbound_restraint(model, p1, p2, dist, kforce): #, restraints):
