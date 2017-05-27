@@ -32,7 +32,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None):
+                       first=None, container=None, use_HiC=True,
+                       use_confining_environment=True, use_excluded_volume=True):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -88,21 +89,24 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
               # Force applied to the restraints inferred to neighbor particles
               'kforce'    : 5,
 
+              # Space occupied by a nucleotide (nm)
+              'scale'     : 0.005
+
+              # Strength of the bending interaction
+              'kbending'     : 0.0, # OPTIMIZATION:
+
               # Maximum experimental contact distance
               'maxdist'   : 600, # OPTIMIZATION: 500-1200
-
-              # Maximum threshold used to decide which experimental values have to be
-              # included in the computation of restraints. Z-score values greater than upfreq
-              # and less than lowfreq will be included, while all the others will be rejected
-              'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
               # Minimum thresholds used to decide which experimental values have to be
               # included in the computation of restraints. Z-score values bigger than upfreq
               # and less that lowfreq will be include, whereas all the others will be rejected
               'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
-              # Space occupied by a nucleotide (nm)
-              'scale'     : 0.005
+              # Maximum threshold used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values greater than upfreq
+              # and less than lowfreq will be included, while all the others will be rejected
+              'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
 
               }
           }
@@ -116,6 +120,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
        micrometers length and 0.5 micrometer of width), these values could be
        used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
+    :param True  use_HiC
+    :param True  use_confining_environment
+    :param True  use_excluded_volume
 
     :returns: a StructuralModels object
 
@@ -123,10 +130,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     # Main config parameters
     global CONFIG
-    CONFIG = config or CONFIG['dmel_01']
-    CONFIG['kforce'] = CONFIG.get('kforce', 5)
 
-    # setup container
+    # Setup CONFIG['container']
     try:
         CONFIG['container'] = {'shape' : container[0],
                                'radius': container[1],
@@ -137,6 +142,46 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                                'radius': None,
                                'height': None,
                                'cforce': None}
+
+    # Setup CONFIG['kforce']
+    try:
+        CONFIG['kforce'] = config['kforce']
+    except KeyError:
+        CONFIG['kforce'] = CONFIG['dmel_01']['kforce']
+
+    # Setup CONFIG['scale']
+    try:
+        CONFIG['scale'] = config['scale']
+    except KeyError:
+        CONFIG['scale'] = CONFIG['dmel_01']['scale']
+
+    # Setup CONFIG['kbending']
+    try:
+        CONFIG['kbending'] = config['kbending']
+    except KeyError:
+        CONFIG['kbending'] = CONFIG['dmel_01']['kbending']
+
+    # Setup CONFIG['maxdist']
+    try:
+        CONFIG['maxdist'] = config['maxdist']
+    except KeyError:
+        CONFIG['maxdist'] = CONFIG['dmel_01']['maxdist']
+
+    # Setup CONFIG['lowfreq']
+    try:
+        CONFIG['lowfreq'] = config['lowfreq']
+    except KeyError:
+        CONFIG['lowfreq'] = CONFIG['dmel_01']['lowfreq']
+
+    # Setup CONFIG['upfreq']
+    try:
+        CONFIG['upfreq'] = config['upfreq']
+    except KeyError:
+        CONFIG['upfreq'] = CONFIG['dmel_01']['upfreq']
+
+    # print "Used",CONFIG,'\n'
+    # print "Input",config,'\n'
+
     # Particles initial radius
     global RADIUS
 
@@ -150,6 +195,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
              'universe...\nIn this case, maxdist must be higher than %s\n' +
              '   -> resolution times scale -- %s*%s)') % (
                 CONFIG['lowrdist'], resolution, CONFIG['scale']))
+
+    # print CONFIG
 
     # get SLOPE and regression for all particles of the z-score data
     global SLOPE, INTERCEPT
@@ -185,7 +232,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
 
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models, n_keep, keep_all)
+        n_cpus, n_models, n_keep, keep_all, use_HiC=True,
+        use_confining_environment=True, use_excluded_volume=True)
 
     try:
         xpr = experiment
@@ -260,7 +308,8 @@ def _get_restraints():
     return restraints
 
 
-def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
+def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, use_HiC=True,
+                                   use_confining_environment=True, use_excluded_volume=True):
     """
     Parallelize the
     :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
@@ -273,7 +322,8 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     jobs = {}
     for rand_init in xrange(START, n_models + START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
-                                           args=(rand_init,))
+                                           args=(rand_init,use_HiC, use_confining_environment,
+                                                 use_excluded_volume))
 
     pool.close()
     pool.join()
@@ -296,7 +346,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
 
 
 def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
-                      use_bending_rigidity=False, use_excluded_volume=True):
+                      use_excluded_volume=True):
     """
     Generates one IMP model
 
@@ -311,7 +361,6 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
     IMP.random_number_generator.seed(rand_init)
     #print IMP.random_number_generator()
 
-    #restraints   = []
     log_energies = []
     model = {'radius'     : IMP.FloatKey("radius"),
              'model'      : Model(),
@@ -337,10 +386,10 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
         add_confining_environment(model)
 
     # Separated function for the bending rigidity restraints
-    if use_bending_rigidity:
+    if CONFIG['kbending'] > 0.0:
         # print "\nEnforcing the bending rigidity restraint"
         theta0 = 0.0
-        bending_kforce=CONFIG['kforce']
+        bending_kforce = CONFIG['kbending']
         add_bending_rigidity_restraint(model, theta0, bending_kforce)
 
     # Separated function fot the HiC-based restraints
@@ -428,14 +477,14 @@ def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints
         p1  = model['particles'].get_particle(particle)
         p2  = model['particles'].get_particle(particle+1)
         p3  = model['particles'].get_particle(particle+2)
-        
+
         try: # 2.6.1 compat
             brr = IMP.core.AngleRestraint(harmonic, p1, p2, p3)
         except TypeError:
             brr = IMP.core.AngleRestraint(model['model'], harmonic, p1, p2, p3)
         # print "Adding an Harmonic bending rigidity restraint between particles %s, %s, and %s using parameters theta0 %f and k %f" % (p1,p2,p3,theta0,bending_kforce)
         #restraints.append(brr)
-        
+
         brr.set_name("BendingRigidityRestraint%s%s%s" % (p1, p2, p3))
         try:
             model['model'].add_restraint(brr)
@@ -510,7 +559,7 @@ def add_harmonic_restraint(model, p1, p2, dist, kforce, verbose=None): #, restra
             IMP.core.Harmonic(dist, kforce),
             p1,
             p2)
-    
+
     #print p1, p2, "Harmonic", "%.30f" % kforce, "%.30f" % dist
     hr.set_name("HarmonicDistanceRestraint%s%s" % (p1, p2))
     try:
@@ -520,12 +569,12 @@ def add_harmonic_restraint(model, p1, p2, dist, kforce, verbose=None): #, restra
     #restraints.append(hr)
 
     if verbose == 3:
-	   try:
-	       print "Total number of restraints: %i" % (
-		       model['model'].get_number_of_restraints())
-	   except:
-	       print "Total number of restraints: %i" % (
-		       model['restraints'].get_number_of_restraints()) # 2.6.1 compat
+       try:
+            print "Total number of restraints: %i" % (
+                model['model'].get_number_of_restraints())
+        except:
+	        print "Total number of restraints: %i" % (
+		        model['restraints'].get_number_of_restraints()) # 2.6.1 compat
 
 
 def add_harmonic_upperbound_restraint(model, p1, p2, dist, kforce): #, restraints):
@@ -612,7 +661,7 @@ def get_hicbased_restraints(model, nnkforce):
                 if RestraintType == "None":
                     #print "No HiC-based restraint between particles %d and %d" % (i,j)
                     continue
-            
+
             HiCbasedRestraints.append([i, j, RestraintType, kforce, dist])
 
     return HiCbasedRestraints
