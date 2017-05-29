@@ -14,7 +14,7 @@ into compressed BAM format.
 #    - chromosome ID of the first pair of the contact
 #    - genomic position of the first pair of the contact
 #    - mapped length of the first pair of the contact
-#    - pseudo CIGAR with strand orientation of the first pair (0M = -, 1M = +)
+#    - pseudo CIGAR with strand orientation of the first pair ("1=": -, "1M": +)
 #    - chromosome ID of the second pair of the contact
 #    - genomic position of the second pair of the contact
 #    - SIGNED mapped length of the first pair of the contact (sign ~ orientation)
@@ -33,9 +33,8 @@ import sys
 import os
 import collections
 
-# get arguments
 
-def map2sam (line, flag):
+def _map2sam_short(line, flag):
     """
     translate map + flag into hic-sam (two lines per contact)
     """
@@ -43,40 +42,71 @@ def map2sam (line, flag):
      rname, pos, s1, l1, e1, e2,
      rnext, pnext, s2, l2, e3, e4) = line.strip().split('\t')
 
-    # store mapped length and strand in a single value
-    mapq = ('-' * (s1 == '0')) + l1
-    tlen = ('-' * (s2 == '0')) + l2
+    # multicontact?
+    tc = str(int("~" in qname) + 1)
+    # trans contact?
+    if rname != rnext:
+        flag += 1024 # filter_keys['trans'] = 2**10
+    r1r2 = ('{0}\t{1}\t{2}\t{3}\t{4}\t1M\t{6}\t{7}\t{5}\t*\t*\t'
+            'TC:i:{10}\tS1:i:{8}\tS2:i:{9}\n'
+            '{0}\t{1}\t{6}\t{7}\t{5}\t1M\t{2}\t{3}\t{4}\t*\t*\t'
+            'TC:i:{10}\tS2:i:{9}\tS1:i:{8}\n'
+           ).format(
+               qname,               # 0
+               flag,                # 1
+               rname,               # 2
+               pos,                 # 3
+               l1,                  # 4
+               l2,                  # 5
+               rnext,               # 6
+               pnext,               # 7
+               s1,                  # 8
+               s2,                  # 9
+               tc)                  # 10
+    return r1r2
+
+
+def _map2sam_long(line, flag):
+    """
+    translate map + flag into hic-sam (two lines per contact)
+    """
+    (qname,
+     rname, pos, s1, l1, e1, e2,
+     rnext, pnext, s2, l2, e3, e4) = line.strip().split('\t')
 
     # multicontact?
     tc = str(int("~" in qname) + 1)
     # trans contact?
     if rname != rnext:
         flag += 1024 # filter_keys['trans'] = 2**10
-    r1r2 = ('{0}\t{1}\t{2}\t{3}\t{4}\t1M\t{6}\t{7}\t{8}\t*\t*\t'
-            'TC:i:{10}\tE1:i:{11}\tE2:i:{12}\tE3:i:{13}\tE4:i:{14}\n'
-            '{0}\t{1}\t{6}\t{7}\t{5}\t1M\t{2}\t{3}\t{9}\t*\t*\t'
-            'TC:i:{10}\tE3:i:{13}\tE4:i:{14}\tE1:i:{11}\tE2:i:{12}\n').format(
+    r1r2 = ('{0}\t{1}\t{2}\t{3}\t{4}\t1M\t{6}\t{7}\t{5}\t*\t*\t'
+            'TC:i:{8}\tE1:i:{9}\tE2:i:{10}\tE3:i:{11}\tE4:i:{12}\t'
+            'S1:i:{13}\tS2:i:{14}\n'
+            '{0}\t{1}\t{6}\t{7}\t{5}\t1M\t{2}\t{3}\t{4}\t*\t*\t'
+            'TC:i:{8}\tE3:i:{11}\tE4:i:{12}\tE1:i:{9}\tE2:i:{10}\t'
+            'S2:i:{14}\tS1:i:{13}\n').format(
                 qname,               # 0
                 flag,                # 1
                 rname,               # 2
                 pos,                 # 3
                 l1,                  # 4
-                l2,                  # 5 
-                rnext,               # 6 
-                pnext,               # 7 
-                tlen,                # 8
-                mapq,                # 9
-                tc,                  # 10 
-                e1,                  # 11
-                e2,                  # 12
-                e3,                  # 13
-                e4)                  # 14
+                l2,                  # 5
+                rnext,               # 6
+                pnext,               # 7
+                tc,                  # 8
+                e1,                  # 9
+                e2,                  # 10
+                e3,                  # 11
+                e4,                  # 12
+                s1,                  # 13
+                s2)                  # 14
     return r1r2
+
 
 def main():
     opts = get_options()
     infile = os.path.realpath(opts.inbed)
-    
+
     # define filter codes
     filter_keys = collections.OrderedDict()
     filter_keys['self-circle']        = 2 ** 0
@@ -90,37 +120,46 @@ def main():
     filter_keys['duplicated']         = 2 ** 8
     filter_keys['random-breaks']      = 2 ** 9
     filter_keys['trans']              = 2 ** 10
-        
+
     # write header
     print "\t".join(("@HD" ,"VN:1.5", "SO:queryname"))
-    
+
     fhandler = open(infile)
     line = fhandler.next()
     # chromosome lengths
     pos_fh = 0
-    
+
     while line.startswith('#'):
         (_, _, cr, ln) = line.replace("\t", " ").strip().split(" ")
         print "\t".join(("@SQ", "SN:" + cr, "LN:" + ln))
         pos_fh += len(line)
         line = fhandler.next()
-    
+
     # filter codes
     for i in filter_keys:
         print "\t".join(("@CO", "filter:" + i, "flag:" + str(filter_keys[i])))
-    
+
     # tags
     print "\t".join(("@CO" ,"TC:i", "Multicontact? 0 = no 1 = yes"))
-    print "\t".join(("@CO" ,"E1:i", "Position of the left RE site of first read"))
-    print "\t".join(("@CO" ,"E2:i", "Position of the right RE site of first read"))
-    print "\t".join(("@CO" ,"E3:i", "Position of the left RE site of second read"))
-    print "\t".join(("@CO" ,"E4:i", "Position of the right RE site of second read"))    
-    
+    print "\t".join(("@CO" ,("Each read is duplicated: once starting with the "
+                             "left read-end, once with the right read-end")))
+    print "\t".join(("@CO" , (" the order of RE sites changes "
+                              "depending on which read-end comes first ("
+                              "when right end is first: E3 E4 E1 E2)")))
+    print "\t".join(("@CO" ,"E1:i", "Position of the left RE site of 1st read-end."))
+    print "\t".join(("@CO" ,"E2:i", "Position of the right RE site of 1st read-end"))
+    print "\t".join(("@CO" ,"E3:i", "Position of the left RE site of 2nd read-end"))
+    print "\t".join(("@CO" ,"E4:i", "Position of the right RE site of 2nd read-end"))
+    print "\t".join(("@CO" ,"S1:i", "Strand of the 1st read-end (1: positive, 0: negative)"))
+    print "\t".join(("@CO" ,"S2:i", "Strand of the 2nd read-end  (1: positive, 0: negative)"))
+
     # open and init filter files
     if not opts.valid:
         filter_line, filter_handler = get_filters(infile)
-    
+
     fhandler.seek(pos_fh)
+    map2sam = _map2sam_long
+    # map2sam = _map2sam_short
     if opts.valid:
         for line in fhandler:
             flag = 0
@@ -140,12 +179,12 @@ def main():
                         pass
             # get output in sam format
             sys.stdout.write(map2sam(line, flag))
-    
+
     # close file handlers
     fhandler.close()
     if not opts.valid:
         for i in filter_handler:
-            filter_handler[i].close()    
+            filter_handler[i].close()
 
 
 def get_filters(infile):
@@ -180,9 +219,9 @@ def get_options():
                         required=True, default=False,
                         help="input TADbit's 2D bed.")
     parser.add_argument('--valid', dest='valid', action='store_true',
-                        default=False, help='input already filtered')    
+                        default=False, help='input already filtered')
     opts = parser.parse_args()
-    
+
     return opts
 
 if __name__ == '__main__':

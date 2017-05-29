@@ -4,16 +4,20 @@ into compressed BAM format.
 
 """
 
-from pytadbit.utils.file_handling import mkdir
 from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
-from pytadbit.utils.extraviews    import nicer
 from warnings                     import warn
-import pysam
 import datetime
-import sys, os
+import sys
+import os
 import multiprocessing as mu
+
+import pysam
+
+from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.extraviews    import nicer
+
 
 def printime(msg):
     print (msg +
@@ -36,7 +40,7 @@ def print_progress(procs):
                 sys.stdout.write(' %9s\n     ' % ('%s/%s' % (i , len(procs))))
             sys.stdout.write('.')
             sys.stdout.flush()
-        prev_done = done    
+        prev_done = done
     print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
                         '%s/%s' % (len(procs),len(procs)))
 
@@ -105,7 +109,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     :param False get_all_data:
 
     returns: dictionary of interactions. If get_all_data is set to True, returns
-       a dictionary with all biases used and bads1 columns (keys of the 
+       a dictionary with all biases used and bads1 columns (keys of the
        dicitionary are: matrix, bias1, bias2, bads1, bads1, decay).
     """
     if outdir:
@@ -172,9 +176,9 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         else:
             regs.append(crm1)
             begs.append(beg1 * resolution)
-            ends.append(fin2 * resolution + resolution - 1)            
+            ends.append(fin2 * resolution + resolution - 1)
     ends[-1] += 1  # last nucleotide included
-    
+
     # reduce dictionaries
     bins = []
     for crm in regions:
@@ -317,7 +321,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
                 write = write2matrices_err
         else:
             write = write2matrix
-    
+
     if verbose:
         sys.stdout.write('     ')
     dico = {}
@@ -376,7 +380,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
                     'bads2' : bads2,
                     'decay' : decay}
         return dico
-        
+
 
 def bam_to_hic_data(inbam, resolution_list, filter_exclude, filter_include):
     """
@@ -385,7 +389,7 @@ def bam_to_hic_data(inbam, resolution_list, filter_exclude, filter_include):
     :param inbam: path to a BAM file
     :param resolution_list: list of reolutions
     :param filter_exclude: filters to exclude expects a number, which in binary would
-       correspond to the presence/absence of the filters in the corresponding 
+       correspond to the presence/absence of the filters in the corresponding
        order:
          - self_circle
          - dangling end
@@ -399,7 +403,7 @@ def bam_to_hic_data(inbam, resolution_list, filter_exclude, filter_include):
          - random breaks
          - trans
     :param filter_include: filters to be included (see doc of filter_exclude param)
- 
+
     :returns: a list of HiC_data objects
     """
     # open bam file
@@ -410,7 +414,7 @@ def bam_to_hic_data(inbam, resolution_list, filter_exclude, filter_include):
     # init HiC_data objects
     dat_list = [init_hic_data(bamfile, resolution) for resolution in resolution_list]
     bin_list = [get_bins(bamfile, resolution) for resolution in resolution_list]
-    # close bam file    
+    # close bam file
     bamfile.close()
     # access bam file per chromosome
     for chrom in sections.keys():
@@ -450,7 +454,7 @@ def bam_to_2Dbed(inbam, outbed, resolution, filter_exclude=None, filter_include=
     :param outbed: path to output 2Dbed file
     :param resolution_list: list of reolutions
     :param None filter_exclude: filters to exclude expects a number, which in binary would
-       correspond to the presence/absence of the filters in the corresponding 
+       correspond to the presence/absence of the filters in the corresponding
        order:
          - self_circle
          - dangling end
@@ -464,7 +468,7 @@ def bam_to_2Dbed(inbam, outbed, resolution, filter_exclude=None, filter_include=
          - random breaks
          - trans
     :param None filter_include: filters to be included (see doc of filter_exclude param)
- 
+
     :returns: a list of HiC_data objects
     """
     # open bam file
@@ -475,7 +479,7 @@ def bam_to_2Dbed(inbam, outbed, resolution, filter_exclude=None, filter_include=
     outbed = open(outbed, 'w')
     for sec in sections:
         outbed.write('# CRM %s %d\n' % (sec, sections[sec]))
-    # close bam file    
+    # close bam file
     bamfile.close()
     # access bam file per chromosome
     j = 0
@@ -505,5 +509,44 @@ def bam_to_2Dbed(inbam, outbed, resolution, filter_exclude=None, filter_include=
     return dat_list, bin_list
 
 
+def map2sam (line, flag):
+    """
+    translate map + flag into hic-sam (two lines per contact)
+    """
+    (qname,
+     rname, pos, s1, l1, e1, e2,
+     rnext, pnext, s2, l2, e3, e4) = line.strip().split('\t')
+
+    # store mapped length and strand in a single value
+    mapq = ('-' * (s1 == '0')) + l1
+    tlen = ('-' * (s2 == '0')) + l2
+
+    # multicontact?
+    tc = str(int("~" in qname) + 1)
+    # trans contact?
+    if rname != rnext:
+        flag += 1024 # filter_keys['trans'] = 2**10
+    r1r2 = ('{0}\t{1}\t{2}\t{3}\t{4}\t1M\t{6}\t{7}\t{8}\t*\t*\t'
+            'TC:i:{10}\tE1:i:{11}\tE2:i:{12}\tE3:i:{13}\tE4:i:{14}\n'
+            '{0}\t{1}\t{6}\t{7}\t{5}\t1M\t{2}\t{3}\t{9}\t*\t*\t'
+            'TC:i:{10}\tE3:i:{13}\tE4:i:{14}\tE1:i:{11}\tE2:i:{12}\n').format(
+                qname,               # 0
+                flag,                # 1
+                rname,               # 2
+                pos,                 # 3
+                l1,                  # 4
+                l2,                  # 5
+                rnext,               # 6
+                pnext,               # 7
+                tlen,                # 8
+                mapq,                # 9
+                tc,                  # 10
+                e1,                  # 11
+                e2,                  # 12
+                e3,                  # 13
+                e4)                  # 14
+    return r1r2
 
 
+def 2DBED_to_BAM():
+    

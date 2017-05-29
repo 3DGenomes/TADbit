@@ -7,20 +7,24 @@ information needed
 """
 
 from argparse                     import HelpFormatter
-from pytadbit.mapping             import get_intersection
-from pytadbit.utils.file_handling import mkdir
 from string                       import ascii_letters
 from random                       import random
 from os                           import path, remove
 from shutil                       import copyfile
+
+import sqlite3 as lite
+import time
+
+from pytadbit.mapping             import get_intersection
+from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.sqlite_utils  import get_jobid, add_path, get_path_id, print_db
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.mapping.analyze     import insert_sizes
 from pytadbit.mapping.filter      import filter_reads, apply_filter
-import sqlite3 as lite
-import time
+
 
 DESC = "Filter parsed Hi-C reads and get valid pair of reads to work with"
+
 
 def run(opts):
     check_options(opts)
@@ -49,11 +53,11 @@ def run(opts):
         median, max_f, mad = insert_sizes(
             reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
             savefig=hist_path)
-        
+
         print '  - median insert size =', median
         print '  - double median absolution of insert size =', mad
         print '  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f
-    
+
         max_mole = max_f # pseudo DEs
         min_dist = max_f + mad # random breaks
         print ('   Using the maximum continuous fragment size'
@@ -61,7 +65,7 @@ def run(opts):
                'for pseudo-dangling ends') % max_mole
         print ('   Using maximum continuous fragment size plus the MAD '
                '(%d bp) to check for random breaks') % min_dist
-    
+
         print "identify pairs to filter..."
         masked = filter_reads(reads, max_molecule_length=max_mole,
                               over_represented=opts.over_represented,
@@ -73,11 +77,15 @@ def run(opts):
     n_valid_pairs = apply_filter(reads, mreads, masked,
                                  filters=opts.apply)
 
+    # TODO: save to BAM, and compress/remove other files
+    
+    
     finish_time = time.localtime()
     print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                hist_path, median, max_f, mad, launch_time, finish_time)
+
 
 def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                hist_path, median, max_f, mad, launch_time, finish_time):
@@ -121,7 +129,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
             unique (PATHid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
-            param_hash = digest_parameters(opts, get_md5=True )            
+            param_hash = digest_parameters(opts, get_md5=True )
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
@@ -134,7 +142,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
             pass
 
         jobid = get_jobid(cur)
-        
+
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
         add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
         add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
@@ -212,7 +220,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         print_db(cur, 'MAPPED_OUTPUTs')
         print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTION_OUTPUTs')        
+        print_db(cur, 'INTERSECTION_OUTPUTs')
         print_db(cur, 'FILTER_OUTPUTs')
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
@@ -262,11 +270,12 @@ def load_parameters_fromdb(opts):
 
     return fname1, fname2
 
+
 def populate_args(parser):
     """
     parse option from call
     """
-    masked = {1 : {'name': 'self-circle'       }, 
+    masked = {1 : {'name': 'self-circle'       },
               2 : {'name': 'dangling-end'      },
               3 : {'name': 'error'             },
               4 : {'name': 'extra dangling-end'},
@@ -282,20 +291,20 @@ def populate_args(parser):
     glopts = parser.add_argument_group('General options')
 
     glopts.add_argument('--force', dest='force', action='store_true',
-                      default=False,
-                      help='overwrite previously run job')
+                        default=False,
+                        help='overwrite previously run job')
 
     glopts.add_argument('--resume', dest='resume', action='store_true',
-                      default=False,
-                      help='use filters of previously run job')
+                        default=False,
+                        help='use filters of previously run job')
 
     glopts.add_argument('--apply', dest='apply', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
                         choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os valid pair of reads
-                        e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
-                        "correspond to: %s" % (', '.join(
-                            ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
+                        e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
@@ -334,17 +343,19 @@ def populate_args(parser):
                         help='''Use as input data generated by a job under a given
                         pathids. Use tadbit describe to find out which.
                         Needs one PATHid per read, first for read 1,
-                        second for read 2.''')    
+                        second for read 2.''')
 
     parser.add_argument_group(glopts)
 
+
 def check_options(opts):
 
-    if not opts.workdir: raise Exception('ERROR: output option required.')
+    if not opts.workdir:
+        raise Exception('ERROR: output option required.')
 
     # check resume
     if not path.exists(opts.workdir) and opts.resume:
-        print ('WARNING: can use output files, found, not resuming...')
+        print 'WARNING: can use output files, found, not resuming...'
         opts.resume = False
 
     # sort filters
@@ -368,6 +379,3 @@ def check_options(opts):
         if 'tmpdb' in opts and opts.tmpdb:
             remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
-
-
-
