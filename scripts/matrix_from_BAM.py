@@ -69,7 +69,7 @@ def print_progress(procs):
 
 
 def read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
-                  resolution, outdir, region, start, end, half=False):
+                  resolution, tmpdir, region, start, end, half=False):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     try:
@@ -96,7 +96,7 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
             for i, j in dico:
                 if i < j:
                     del dico[(i,j)]
-        out = open(os.path.join(outdir, '_tmp_%s' % (rand_hash),
+        out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                                 '%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
         out.close()
@@ -109,7 +109,8 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
 
 def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
              region1=None, start1=None, end1=None,
-             region2=None, start2=None, end2=None, outdir='.'):
+             region2=None, start2=None, end2=None,
+             outdir='.', tmpdir='.'):
 
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
@@ -211,18 +212,18 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
     rand_hash = "%016x" % getrandbits(64)
 
     printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
-    mkdir(os.path.join(outdir, '_tmp_%s' % (rand_hash)))
+    mkdir(os.path.join(tmpdir, '_tmp_%s' % (rand_hash)))
     procs = []
     for i, (region, b, e) in enumerate(zip(regs, begs, ends)):
         if ncpus == 1:
             read_bam_frag(inbam, filter_exclude,
                           bins_dict1, bins_dict2, rand_hash,
-                          resolution, outdir, region, b, e,)
+                          resolution, tmpdir, region, b, e,)
         else:
             procs.append(pool.apply_async(
                 read_bam_frag, args=(inbam, filter_exclude,
                                      bins_dict1, bins_dict2, rand_hash,
-                                     resolution, outdir, region, b, e,)))
+                                     resolution, tmpdir, region, b, e,)))
     pool.close()
     print_progress(procs)
     pool.join()
@@ -383,14 +384,14 @@ def read_bam(inbam, filter_exclude, resolution, biases, opts, ncpus=8,
         sys.stdout.write('.')
         sys.stdout.flush()
 
-        fname = os.path.join(outdir, '_tmp_%s' % (rand_hash),
+        fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.pickle' % (region, start, end))
         dico = load(open(fname))
         for (j, k), v in dico.iteritems():
             if j in bads1 or k in bads2:
                 continue
             write(j, k, v)
-    os.system('rm -rf %s' % (os.path.join(outdir, '_tmp_%s' % (rand_hash))))
+    os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
 
     #########################################################################
     if opts.tarfile:
@@ -424,6 +425,7 @@ def main():
     else:
         biases     = {}
     outdir         = opts.outdir
+    tmpdir         = opts.tmpdir
     coord1         = opts.coord1
     coord2         = opts.coord2
 
@@ -468,6 +470,7 @@ def main():
             end2    = None
 
     mkdir(outdir)
+    mkdir(tmpdir)
     if region1:
         if region1:
             sys.stdout.write('\nExtraction of %s' % (region1))
@@ -489,7 +492,7 @@ def main():
     read_bam(inbam, filter_exclude, resolution, biases, opts,
              region1=region1, start1=start1, end1=end1,
              region2=region2, start2=start2, end2=end2,
-             ncpus=ncpus, outdir=outdir)
+             ncpus=ncpus, outdir=outdir, tmpdir=tmpdir)
 
     printime('\nDone.')
 
@@ -505,6 +508,9 @@ def get_options():
                         default=False, help='''skip the generation of files, directly
                         append them to a tar file
                         (does not need to be created).''')
+    parser.add_argument('--tmp', dest='tmp', metavar='',
+                        default=False, help='''path where to store temporary
+                        files (by default outdir is used).''')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the
                         generated matrix''')
@@ -544,6 +550,8 @@ def get_options():
     if not opts.biases and ('norm' in opts.matrices or
                             'decay' in opts.matrices):
         raise Exception('ERROR: should provide path to bias file.')
+    if not opts.tmp:
+        opts.tmp = opts.outdir
 
     return opts
 
