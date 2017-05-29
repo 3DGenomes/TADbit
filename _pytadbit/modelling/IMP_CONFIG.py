@@ -14,23 +14,26 @@ CONFIG = {
         
         # Force applied to the restraints inferred to neighbor particles
         'kforce'    : 5,
+
+        # How much space (in nm) ocupies a nucleotide
+        'scale'     : 0.01, 
+        
+        # Strength of the bending interaction
+        'kbending'     : 0.0, # OPTIMIZATION: 
         
         # Maximum experimental contact distance
         'maxdist'   : 600, # OPTIMIZATION: 500-1200
-        
-        # Maximum thresholds used to decide which experimental values have to be
-        # included in the computation of restraints. Z-score values bigger than upfreq
-        # and less that lowfreq will be include, whereas all the others will be rejected
-        'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
         
         # Minimum thresholds used to decide which experimental values have to be
         # included in the computation of restraints. Z-score values bigger than upfreq
         # and less that lowfreq will be include, whereas all the others will be rejected
         'lowfreq'   : -0.7, # OPTIMIZATION: min/max Z-score
 
-        # How much space (in nm) ocupies a nucleotide
-        'scale'     : 0.01
-        
+        # Maximum thresholds used to decide which experimental values have to be
+        # included in the computation of restraints. Z-score values bigger than upfreq
+        # and less that lowfreq will be include, whereas all the others will be rejected
+        'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
+
         }
     }
 
