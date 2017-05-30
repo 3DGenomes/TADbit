@@ -6,9 +6,9 @@
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/tadbit/badge.svg?branch=master :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master |
 <<<<<<< HEAD
-| Current version: v0.2.0.93          |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
+| Current version: v0.2.0.100         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
 =======
-| Current version: 3DAROC_2016.139    |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
+| Current version: v0.2.0.100         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
 >>>>>>> cfb78515c9e338a2633beb05f2bc2d8e1265d26a
 |                                     |                                                                           |                                                                                                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+

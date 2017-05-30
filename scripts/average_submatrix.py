@@ -107,7 +107,10 @@ def parse_tar(tarfile, listfile, index, outlist, reso, kind, size):
 
     for i in xrange(size):
         for j in xrange(size):
-            vmatrix[i][j] /= wmatrix[i][j]
+            try:
+                vmatrix[i][j] /= wmatrix[i][j]
+            except ZeroDivisionError:
+                vmatrix[i][j] = float('nan')
     return vmatrix
 
 
