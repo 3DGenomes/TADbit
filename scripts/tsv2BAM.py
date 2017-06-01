@@ -24,9 +24,11 @@ Gets the *_both_filled_map.tsv contacts from TADbit (and the corresponding filte
 Each pair of contacts produces two lines in the output BAM
 """
 
-from argparse     import ArgumentParser
-
-from pysam        import AlignedSegment, AlignmentFile
+from argparse    import ArgumentParser
+from collections import OrderedDict
+from subprocess  import Popen, PIPE
+import sys
+import os
 
 def _map2sam_short(line, flag):
     """
@@ -152,7 +154,7 @@ def generate_BAM(infile, valid, ncpus, outbam, frmt):
     filter_keys['over-represented']   = 2 ** 7
     filter_keys['duplicated']         = 2 ** 8
     filter_keys['random-breaks']      = 2 ** 9
-    filter_keys['trans']              = 2 ** 10
+    filter_keys['trans-chromosomic']  = 2 ** 10
 
     output = ''
 

@@ -9,46 +9,23 @@ genomic distance, and an array of columns with poor_bins signal.
 import sys
 import os
 import multiprocessing  as mu
-import datetime
-from collections                  import OrderedDict
-from cPickle                      import dump, load
-from time                         import sleep, time
-from argparse                     import ArgumentParser, SUPPRESS
-from scipy.optimize               import curve_fit
+from collections                     import OrderedDict
+from cPickle                         import dump, load
+from argparse                        import ArgumentParser, SUPPRESS
+
+from scipy.optimize                  import curve_fit
+from pysam                           import AlignmentFile
 import numpy as np
-import pysam
-from pytadbit.utils.file_handling import mkdir
-from pytadbit.utils.extraviews    import nicer
 
-
-MASKED = {1 : {'name': 'self-circle'       },
-          2 : {'name': 'dangling-end'      },
-          3 : {'name': 'error'             },
-          4 : {'name': 'extra dangling-end'},
-          5 : {'name': 'too close from RES'},
-          6 : {'name': 'too short'         },
-          7 : {'name': 'too large'         },
-          8 : {'name': 'over-represented'  },
-          9 : {'name': 'duplicated'        },
-          10: {'name': 'random breaks'     },
-          11: {'name': 'trans-chromosomic' }}
-
-
-def filters_to_bin(filters):
-    return sum((k in filters) * 2**(k-1) for k in MASKED)
-
-
-def printime(msg):
-    print (msg +
-           (' ' * (79 - len(msg.replace('\n', '')))) +
-           '[' +
-           str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
-           ']')
+from pytadbit.utils.file_handling    import mkdir
+from pytadbit.utils.extraviews       import nicer
+from pytadbit.mapping.filter         import MASKED
+from pytadbit.parsers.hic_bam_parser import printime, print_progress
 
 
 def read_bam_frag(inbam, filter_exclude, sections,
                   resolution, outdir, region, start, end):
-    bamfile = pysam.AlignmentFile(inbam, 'rb')
+    bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     try:
         dico = {}
@@ -89,27 +66,9 @@ def read_bam_frag(inbam, filter_exclude, sections,
     return sumcol
 
 
-def print_progress(procs):
-    sys.stdout.write('     ')
-    prev_done = done = i = 0
-    while done < len(procs):
-        sleep(2)
-        done = sum(p.ready() for p in procs)
-        for i in range(prev_done, done):
-            if not i % 10 and i:
-                sys.stdout.write(' ')
-            if not i % 50 and i:
-                sys.stdout.write(' %9s\n     ' % ('%s/%s' % (i , len(procs))))
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        prev_done = done
-    print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
-                        '%s/%s' % (len(procs),len(procs)))
-
-
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              ncpus=8, factor=1, outdir='.', check_sum=False):
-    bamfile = pysam.AlignmentFile(inbam, 'rb')
+    bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
     total = 0
@@ -402,6 +361,10 @@ def get_options():
     opts.filter = filters_to_bin(opts.filter)
 
     return opts
+
+
+def filters_to_bin(filters):
+    return sum((k in filters) * 2**(k-1) for k in MASKED)
 
 
 if __name__=='__main__':
