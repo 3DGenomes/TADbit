@@ -11,6 +11,7 @@ from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
 from StringIO                     import StringIO
+from warnings                     import warn
 import datetime
 from sys                          import stdout, stderr, exc_info
 import os
@@ -313,10 +314,12 @@ def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
                    resolution, tmpdir, region, start, end, half=False):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
+    bam_start = start - 2
+    bam_start = max(0, bam_start)
     try:
         dico = {}
         for r in bamfile.fetch(region=region,
-                               start=start - (1 if start else 0), end=end,  # coords starts at 0
+                               start=bam_start, end=end,  # coords starts at 0
                                multiple_iterators=True):
             if r.flag & filter_exclude:
                 continue
@@ -595,6 +598,13 @@ def write_matrix(inbam, resolution, biases, outdir,
                  region1=None, start1=None, end1=None,
                  region2=None, start2=None, end2=None,
                  tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
+
+    if start1 is not None and end1:
+        if end1 - start1 < resolution:
+            raise Exception('ERROR: region1 should be at least as big as resolution')
+    if start2 is not None and end2:
+        if end2 - start2 < resolution:
+            raise Exception('ERROR: region2 should be at least as big as resolution')
 
     if not isinstance(filter_exclude, int):
         filter_exclude = filters_to_bin(filter_exclude)

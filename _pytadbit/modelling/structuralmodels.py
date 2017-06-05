@@ -1,6 +1,32 @@
 """
 19 Jul 2013
 """
+from cPickle                          import load, dump
+from subprocess                       import Popen, PIPE
+from math                             import acos, degrees, pi, sqrt
+from warnings                         import warn
+from string                           import uppercase as uc, lowercase as lc
+from random                           import random
+from os.path                          import exists
+from itertools                        import combinations
+from uuid                             import uuid5, UUID
+from hashlib                          import md5
+
+from numpy                            import exp as np_exp
+from numpy                            import median as np_median
+from numpy                            import mean as np_mean
+from numpy                            import std as np_std, log2
+from numpy                            import array, cross, dot, ma, isnan
+from numpy                            import histogram, linspace
+from numpy.linalg                     import norm
+
+from scipy.optimize                   import curve_fit
+from scipy.stats                      import spearmanr, pearsonr, chisquare
+from scipy.stats                      import linregress
+from scipy.stats                      import normaltest, norm as sc_norm
+from scipy.cluster.hierarchy          import linkage, fcluster
+
+from pytadbit                         import get_dependencies_version
 from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
@@ -16,28 +42,6 @@ from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
 from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
-from cPickle                          import load, dump
-from subprocess                       import Popen, PIPE
-from math                             import acos, degrees, pi, sqrt
-from numpy                            import exp as np_exp
-from numpy                            import median as np_median
-from numpy                            import mean as np_mean
-from numpy                            import std as np_std, log2
-from numpy                            import array, cross, dot, ma, isnan
-from numpy                            import histogram, linspace
-from scipy.optimize                   import curve_fit
-from numpy.linalg                     import norm
-from scipy.cluster.hierarchy          import linkage, fcluster
-from scipy.stats                      import spearmanr, pearsonr, chisquare
-from scipy.stats                      import linregress
-from scipy.stats                      import normaltest, norm as sc_norm
-from warnings                         import warn
-from string                           import uppercase as uc, lowercase as lc
-from random                           import random
-from os.path                          import exists
-from pytadbit                         import get_dependencies_version
-from itertools                        import combinations
-import uuid
 
 try:
     from matplotlib import pyplot as plt
@@ -50,25 +54,25 @@ def R2_vs_L(L, P):
     """
     Calculates the persistence length (Lp) of given section of the model.
     Persistence length is calculated according to [Bystricky2004]_ :
-    
+
     .. math::
-    
+
     <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
-    
+
     with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
     the genomic dstance in bp and :math:`c` the linear mass density of the
     chromatin (in bp/nm).
-    
+
     :returns: persistence length, or 2 times the Kuhn length
     """
     return 2.0 * P * ( L - P * ( 1.0 - np_exp( - L / P ) ) )
-    
+
 def load_structuralmodels(path_f):
     """
     Loads :class:`pytadbit.modelling.structuralmodels.StructuralModels` from a file
     (generated with
     :class:`pytadbit.modelling.structuralmodels.StructuralModels.save_models`).
-    
+
     :param path: to the pickled StructuralModels object.
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
@@ -196,7 +200,7 @@ class StructuralModels(object):
                      reference_model=None, **kwargs):
         """
         Three-dimensional aligner for structural models.
-        
+
         :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -267,7 +271,7 @@ class StructuralModels(object):
     def centroid_model(self, models=None, cluster=None, verbose=False):
         """
         Estimates and returns the centroid model of a given group of models.
-        
+
         :param None models: if None (default) the centroid model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -353,7 +357,7 @@ class StructuralModels(object):
         calculated as:
 
        .. math::
-                                     
+
          score_i = eqvs_i \\times \\frac{dRMSD_i / max(dRMSD)}
                                          {RMSD_i / max(RMSD)}
 
@@ -557,16 +561,16 @@ class StructuralModels(object):
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
 
-        :param None models: if None (default) the contact matrix will be 
-           computed using all the models. A list of numbers corresponding to a 
+        :param None models: if None (default) the contact matrix will be
+           computed using all the models. A list of numbers corresponding to a
            given set of models can be passed
         :param None cluster: compute the contact matrix only for the models in
            the cluster number 'cluster'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
-           Cutoff can also be a list of values, in wich case the returned object 
+           Cutoff can also be a list of values, in wich case the returned object
            will be a dictionnary of matrices (keys being square cutoffs)
-        :param False distance: returns the distance matrix of all_angles against 
+        :param False distance: returns the distance matrix of all_angles against
            all_angles particles instead of a contact_map matrix using the cutoff
 
         :returns: matrix frequency of interaction
@@ -592,7 +596,7 @@ class StructuralModels(object):
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
-        
+
         for model in models:
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
@@ -827,7 +831,7 @@ class StructuralModels(object):
                                          for m in clusters[i + 1]],
                                  tool='plot', axe=ax, **kwargs)
                 for item in [ax]:
-                    item.patch.set_visible(False)                
+                    item.patch.set_visible(False)
             for i in range(n_best_clusters - 1):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
@@ -839,7 +843,7 @@ class StructuralModels(object):
                              fontsize='large', color='red', position=(1, .5),
                              va='center', ha='left')
                 for item in [ax]:
-                    item.patch.set_visible(False)                
+                    item.patch.set_visible(False)
             axes[0, n_best_clusters - 1].set_visible(False)
         if savefig:
             tadbit_savefig(savefig)
@@ -941,7 +945,7 @@ class StructuralModels(object):
         cylinders around edges joining particles (no overlap is allowed between
         sphere and cylinders or cylinder and cylinder when they are
         consecutive).
-        
+
         If we want that all dots of the mesh representing the surface of the
         chromatin, corresponds to an equal area (:math:`a`)
 
@@ -964,7 +968,7 @@ class StructuralModels(object):
         .. math::
 
           2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
-        
+
         It is fair to state the number of dots represented along a circle as:
 
         .. math::
@@ -981,7 +985,7 @@ class StructuralModels(object):
            occupied by an object of the given radius *2-* the total number of
            dots in the mesh *3-* the estimated area of the mesh (in square
            micrometers) *4-* the area of the mesh of a virtually straight strand
-           of chromatin defined as 
+           of chromatin defined as
            :math:`contour\\times 2\pi r + 4\pi r^2` (also in
            micrometers) *5-* a list of number of (accessibles, inaccessible) for
            each particle (percentage burried can be infered afterwards by
@@ -1102,7 +1106,7 @@ class StructuralModels(object):
                                                  average=False)
 
         # write consistencies to file
-        if savedata:      
+        if savedata:
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([
                 str(c) + '\t' + '2*stddev(%d)' % c for c in steps])))
@@ -1175,7 +1179,7 @@ class StructuralModels(object):
         """
         if isinstance(steps, int):
             steps = (steps, )
-        
+
         models = self._get_models(models, cluster)
 
         interactions = self._get_interactions(models, cutoff)
@@ -1239,7 +1243,7 @@ class StructuralModels(object):
         """
         models = self._get_models(models, cluster)
         models = [self.__models[m] for m in models]
-        
+
         if not cutoffs:
             cutoffs = (int(0.5 * self.resolution * self._config['scale']),
                        int(1.0 * self.resolution * self._config['scale']),
@@ -1330,7 +1334,7 @@ class StructuralModels(object):
         :param False error: represent the error of the estimates
         :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
-           generated (1 column per step + 1 for particle number).                
+           generated (1 column per step + 1 for particle number).
 
 
         ::
@@ -1354,7 +1358,7 @@ class StructuralModels(object):
             raise ValueError('ERROR: first element of span should be negative')
         if span[-1] < 0:
             raise ValueError('ERROR: last element of span should be negative')
-        
+
         rads = [[None] * len(models)] * (-span[0])
         for res in xrange(-span[0], self.nloci - span[-1]):
             subrad = self.dihedral_angle(res + span[0], res + span[1],
@@ -1372,7 +1376,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, radsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
-        
+
         if savedata:
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([
@@ -1423,7 +1427,7 @@ class StructuralModels(object):
            of the file name will determine the desired format).
         :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
-           generated (1 column per step + 1 for particle number).                
+           generated (1 column per step + 1 for particle number).
 
 
         ::
@@ -1577,7 +1581,7 @@ class StructuralModels(object):
                              if beg < self._config['lowfreq'] else end,
                              color=(
                                  blue if beg < self._config['lowfreq'] else
-                                 red if end > self._config['upfreq'] 
+                                 red if end > self._config['upfreq']
                                  else 'w'))
             if end > self._config['lowfreq' ] and beg < self._config['lowfreq']:
                 height1 = thispatch.get_height()
@@ -1740,7 +1744,7 @@ class StructuralModels(object):
                     'Log p' if log_corr else 'P'))
             ax.set_ylabel('%sormalized Hi-C count for a particle pair' % (
                 'Log n' if log_corr else 'N'))
-            cbaxes = fig.add_axes([0.41, 0.42, 0.005, 0.45]) 
+            cbaxes = fig.add_axes([0.41, 0.42, 0.005, 0.45])
             cbar = plt.colorbar(hb, cax=cbaxes)  # orientation='horizontal')
             cbar.set_label('Number of particle pairs')
         elif midplot == 'triple':
@@ -1756,7 +1760,7 @@ class StructuralModels(object):
             axleft.yaxis.set_ticks_position('left')
             axleft.set_ylabel('Normalized Hi-C count for a particle pair')
             axleft.patch.set_visible(False)
-            axbott = fig.add_axes([0.44, 0.13, 0.17, 0.5]) 
+            axbott = fig.add_axes([0.44, 0.13, 0.17, 0.5])
             axbott.spines['left'].set_color('none')
             axbott.spines['top'].set_color('none')
             axbott.spines['left'].set_smart_bounds(True)
@@ -1898,7 +1902,7 @@ class StructuralModels(object):
            :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
            to pass to this function. See also coloring function
 
-           
+
         """
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
@@ -2005,7 +2009,7 @@ class StructuralModels(object):
                                   radian=False, all_angles=False):
         """
         Calculates the angle between 3 particles.
-        
+
 
         Given three particles A, B and C, the angle g (angle ACB, shown below):
 
@@ -2057,7 +2061,7 @@ class StructuralModels(object):
                                              cluster=cluster))
         a = a2**0.5
         c = c2**0.5
-        
+
         try:
             g = acos((a2 - b2 + c2) / (2 * a * c))
         except ValueError:
@@ -2079,7 +2083,7 @@ class StructuralModels(object):
     def particle_coordinates(self, part, models=None, cluster=None):
         """
         Returns the mean coordinate of a given particle in a group of models.
-        
+
         :param part: the index number of a particle
         :param None models:  if None (default) the angle will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -2113,7 +2117,7 @@ class StructuralModels(object):
         """
         Calculates the dihedral angle between 2 planes formed by 5 particles
            (one common to both planes).
-        
+
         :param None models:  if None (default) the angle will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -2197,7 +2201,7 @@ class StructuralModels(object):
                 (mdl['y'][part1] - mdl['y'][part2])**2 +
                 (mdl['z'][part1] - mdl['z'][part2])**2
                 for mdl in models]
-    
+
     def __fast_square_3d_dist(self, part1, part2, models):
         """
         same as median_3d_dist, but return the square of the distance instead
@@ -2425,8 +2429,9 @@ class StructuralModels(object):
                                          model['z'][i])
                      for i in xrange(len(model['x']))]) + ']}')
         fil['xyz'] = ',\n'.join(fil['xyz'])
-        fil['sha'] = str(uuid.uuid5(uuid.UUID(
-            versions['  TADbit'].encode('hex').zfill(32)), fil['xyz']))
+        # creates a UUID for this particular set of coordinates AND for TADbit version
+        fil['sha'] = str(uuid5(UUID(md5(versions['  TADbit']).hexdigest()),
+                               fil['xyz']))
         try:
             fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
                 k[0], k[1], self._restraints[k][0], self._restraints[k][2])
@@ -2442,9 +2447,9 @@ class StructuralModels(object):
         try:
             fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']*self.resolution),
                                     str(self.experiment.tads[tad]['end']*self.resolution),
-                                    str(self.experiment.tads[tad]['score'])])+']' 
-                                       for i,tad in enumerate(self.experiment.tads) 
-                                        if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0] 
+                                    str(self.experiment.tads[tad]['score'])])+']'
+                                       for i,tad in enumerate(self.experiment.tads)
+                                        if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0]
                                             and self.experiment.tads[tad]['end']*self.resolution <= my_descr['chrom_end'][0]])
         except:
             fil['tad_def'] = ''
@@ -2530,16 +2535,16 @@ class StructuralModels(object):
         """
         if not end:
             end = self.nloci
-            
+
         wloci = [i for i in xrange(self.nloci)]
-        
+
         # Maximum genomic distance
         max_gen_dist=end-begin
         # Quantities for all models
         R2_all  = [0]*max_gen_dist
         R4_all  = [0]*max_gen_dist
         cnt_all = [0]*max_gen_dist
-        
+
         for model in xrange(len(self.__models)):
 
             # Quantities within each model
@@ -2561,7 +2566,7 @@ class StructuralModels(object):
                 R2[abs(i-j)]  += squared_distance_matrix[i][j]
                 R4[abs(i-j)]  += (squared_distance_matrix[i][j]*squared_distance_matrix[i][j])
                 cnt[abs(i-j)] += 1
-                
+
             for i in xrange(max_gen_dist):
                 if cnt[i] != 0:
                     R2[i] = R2[i] / cnt[i]
@@ -2574,7 +2579,7 @@ class StructuralModels(object):
                 R2_all[i]  += R2[i]
                 R4_all[i]  += R4[i]
                 cnt_all[i] += 1
-                
+
         avgs     = []
         std_devs = []
         for i in xrange(max_gen_dist):
@@ -2587,7 +2592,7 @@ class StructuralModels(object):
             else:
                 avgs.append(0)
                 std_devs.append(0)
-                
+
         x = linspace(0.0 , float(max_gen_dist), num=max_gen_dist, endpoint=False)
         persistence_length, pcov = curve_fit(R2_vs_L, x, avgs)
 
@@ -2640,7 +2645,7 @@ class StructuralModels(object):
 
         :param False minimal: do not save info about log_objfun decay nor
            zscores
-        
+
         :returns: this dictionary
         """
         to_save = {}
@@ -2777,7 +2782,7 @@ class StructuralModels(object):
                        for k in steps] + (
                 ['+/- 2 standard deviations'
                  for k in steps] if error else [] + ['particles with restraints',
-                                                     'particles without restraints']), 
+                                                     'particles without restraints']),
                 numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         if ylim:
