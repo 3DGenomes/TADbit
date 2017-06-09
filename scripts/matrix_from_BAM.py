@@ -75,28 +75,36 @@ def main():
     mkdir(tmpdir)
     if region1:
         if region1:
-            stdout.write('\nExtraction of %s' % (region1))
+            if not opts.quiet:
+                stdout.write('\nExtraction of %s' % (region1))
             if start1:
-                stdout.write(':%s-%s' % (start1, end1))
+                if not opts.quiet:
+                    stdout.write(':%s-%s' % (start1, end1))
             else:
-                stdout.write(' (full chromosome)')
+                if not opts.quiet:
+                    stdout.write(' (full chromosome)')
             if region2:
-                stdout.write(' intersection with %s' % (region2))
+                if not opts.quiet:
+                    stdout.write(' intersection with %s' % (region2))
                 if start2:
-                    stdout.write(':%s-%s\n' % (start2, end2))
+                    if not opts.quiet:
+                        stdout.write(':%s-%s\n' % (start2, end2))
                 else:
-                    stdout.write(' (full chromosome)\n')
+                    if not opts.quiet:
+                        stdout.write(' (full chromosome)\n')
             else:
-                stdout.write('\n')
+                if not opts.quiet:
+                    stdout.write('\n')
     else:
-        stdout.write('\nExtraction of full genome\n')
+        if not opts.quiet:
+            stdout.write('\nExtraction of full genome\n')
 
     write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=filter_exclude,
                  normalizations=opts.matrices,
                  region1=region1, start1=start1, end1=end1,
                  region2=region2, start2=start2, end2=end2,
-                 ncpus=ncpus, tmpdir=tmpdir)
+                 ncpus=ncpus, tmpdir=tmpdir, verbose=not opts.quiet)
 
 
 def get_options():
@@ -136,6 +144,8 @@ def get_options():
     parser.add_argument('-f', '--format', dest='format', default='abc',
                         choices=['abc', 'mat'], required=False, help='''[%(default)s]
                         format in which to write the output matrix (choose from %(choices)s)''')
+    parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true',
+                        help='display no running information')
     parser.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
                         choices = range(1, 11),

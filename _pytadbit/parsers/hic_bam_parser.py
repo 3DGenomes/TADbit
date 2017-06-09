@@ -309,6 +309,9 @@ def get_filters(infile):
     return filter_line, filter_handler
 
 
+def _read_small_bam():
+    pass
+
 
 def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
                    resolution, tmpdir, region, start, end, half=False):
@@ -336,6 +339,9 @@ def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
                 dico[(pos1, pos2)] += 1
             except KeyError:
                 dico[(pos1, pos2)] = 1
+            # print '%-50s %5s %9s %5s %9s' % (r.query_name,
+            #                                  crm1, r.reference_start + 1,
+            #                                  crm2, r.mpos + 1)
         if half:
             for i, j in dico:
                 if i < j:
@@ -752,7 +758,7 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # pull all sub-matrices and write full matrix
     for j, k, v in _iter_matrix_frags(chunks, bads1, bads2,
-                                      tmpdir, rand_hash):
+                                      tmpdir, rand_hash, verbose=verbose):
         write(j, k, v)
 
     if append_to_tar:
