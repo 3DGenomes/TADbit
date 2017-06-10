@@ -90,7 +90,7 @@ def main():
                            'installation. Do you want to follow? [y/N]')
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
-    
+
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
@@ -152,7 +152,7 @@ def main():
     # try to use git to check if version number matches
     git_revision = git_version = None
     try:
-        git_revision, err = Popen(['git', 'describe'], stdout=PIPE,
+        git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
                                   stderr=PIPE).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
                                 stderr=PIPE).communicate()
