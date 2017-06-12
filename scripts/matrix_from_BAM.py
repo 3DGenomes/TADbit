@@ -16,6 +16,7 @@ from pytadbit.utils.file_handling    import mkdir
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.parsers.hic_bam_parser import filters_to_bin, write_matrix
 
+
 def main():
     opts          = get_options()
     inbam          = opts.inbam
@@ -104,6 +105,7 @@ def main():
                  normalizations=opts.matrices,
                  region1=region1, start1=start1, end1=end1,
                  region2=region2, start2=start2, end2=end2,
+                 append_to_tar=opts.tarfile,
                  ncpus=ncpus, tmpdir=tmpdir, verbose=not opts.quiet)
 
 
