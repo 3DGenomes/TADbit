@@ -285,7 +285,7 @@ def get_options():
                         help=("[%(default)s] output format, in terms of number "
                               "of extra tags (can be any of: %(choices)s)"))
     parser.add_argument('--cpus', dest='ncpus', metavar='',
-                        default=8,
+                        default=8, type=int,
                         help="Number of threads for compressing/sorting BAM")
     parser.add_argument('--valid', dest='valid', action='store_true',
                         default=False, help='input already filtered')

@@ -446,9 +446,16 @@ class IMPoptimizer(object):
             stderr.write('WARNING: no optimization done yet\n')
             return
         best = ((None, None, None, None), 0.0)
-        for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
-            if val > best[-1]:
-                best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+        kbending = 0
+        try:
+            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
+                if val > best[-1]:
+                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+        except ValueError:
+            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.iteritems():
+                if val > best[-1]:
+                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+
         if with_corr:
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),

@@ -108,32 +108,32 @@ def populate_args(parser):
     descro = parser.add_argument_group('Descriptive, optional arguments')
 
     glopts.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
-                      default=None, type=str,
-                      help='path to a configuration file with predefined ' +
-                      'parameters')
+                        default=None, type=str,
+                        help='path to a configuration file with predefined ' +
+                        'parameters')
 
     glopts.add_argument('--qc_plot', dest='quality_plot', action='store_true',
-                      default=False,
-                      help='generate a quality plot of FASTQ and exits')
+                        default=False,
+                        help='generate a quality plot of FASTQ and exits')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
                         help='path to an output folder.')
 
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
-                      default=None, type=str, required=True,
-                      help='path to a FASTQ files (can be compressed files)')
+                        default=None, type=str, required=True,
+                        help='path to a FASTQ files (can be compressed files)')
 
     glopts.add_argument('--index', dest='index', metavar="PATH",
                         type=str, required=True,
                         help='''paths to file(s) with indexed FASTA files of the
                         reference genome.''')
 
-    glopts.add_argument('--read', dest='read', metavar="INT", 
+    glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, required=True,
                         help='read number')
 
-    glopts.add_argument('--renz', dest='renz', metavar="STR", 
+    glopts.add_argument('--renz', dest='renz', metavar="STR",
                         type=str, required=True, nargs='+',
                         help='restriction enzyme name(s)')
 
@@ -143,9 +143,9 @@ def populate_args(parser):
                         same order as data.''')
 
     glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
-                      default=None, type=str,
-                      help='''path to a temporary directory (default next to
-                      "workdir" directory)''')
+                        default=None, type=str,
+                        help='''path to a temporary directory (default next to
+                        "workdir" directory)''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -170,23 +170,23 @@ def populate_args(parser):
     # mapper.add_argument('--mapping_only', dest='mapping_only', action='store_true',
     #                     help='only do the mapping does not parse results')
 
-    descro.add_argument('--species', dest='species', metavar="STR", 
+    descro.add_argument('--species', dest='species', metavar="STR",
                         type=str,
                         help='species name')
 
     descro.add_argument('--descr', dest='description', metavar="LIST", nargs='+',
                         type=str,
                         help='''extra descriptive fields each filed separated by
-                        coma, and inside each, name and value separated by column: 
+                        coma, and inside each, name and value separated by column:
                         --descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf''')
 
     glopts.add_argument('--skip', dest='skip', action='store_true',
-                      default=False,
-                      help='[DEBUG] in case already mapped.')
+                        default=False,
+                        help='[DEBUG] in case already mapped.')
 
     glopts.add_argument('--keep_tmp', dest='keep_tmp', action='store_true',
-                      default=False,
-                      help='[DEBUG] keep temporary files.')
+                        default=False,
+                        help='[DEBUG] keep temporary files.')
 
     mapper.add_argument("-C", "--cpu", dest="cpus", type=int,
                         default=0, help='''[%(default)s] Maximum number of CPU
@@ -195,7 +195,7 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
-    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR", 
+    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR",
                         type=str, default='gem-mapper',
                         help='[%(default)s] path to GEM mapper binary')
 
@@ -446,5 +446,3 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
-
-    
