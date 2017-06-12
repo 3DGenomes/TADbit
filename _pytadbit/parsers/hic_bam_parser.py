@@ -530,7 +530,7 @@ def get_biases_region(biases, bin_coords):
     # load biases and bad columns
     bias1  = dict((k - start_bin1, v)
                   for k, v in biases.get('biases', {}).iteritems()
-                  if start_bin2 <= k <= end_bin1)
+                  if start_bin1 <= k <= end_bin1)
     bads1  = dict((k - start_bin1, v)
                   for k, v in biases.get('badcol', {}).iteritems()
                   if start_bin1 <= k <= end_bin1)
