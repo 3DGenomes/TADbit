@@ -188,7 +188,7 @@ def populate_args(parser):
                         default=False,
                         help='[DEBUG] keep temporary files.')
 
-    mapper.add_argument("-C", "--cpu", dest="cpus", type=int,
+    mapper.add_argument("-C", "--cpus", dest="cpus", type=int,
                         default=0, help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading

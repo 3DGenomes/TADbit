@@ -6,21 +6,24 @@ information needed
 
 """
 
-from argparse                     import HelpFormatter
-from string                       import ascii_letters
-from random                       import random
-from os                           import path, remove
-from shutil                       import copyfile
+from argparse                        import HelpFormatter
+from string                          import ascii_letters
+from random                          import random
+from os                              import path, remove
+from shutil                          import copyfile
+from subprocess                      import Popen, PIPE
 
 import sqlite3 as lite
 import time
 
-from pytadbit.mapping             import get_intersection
-from pytadbit.utils.file_handling import mkdir
-from pytadbit.utils.sqlite_utils  import get_jobid, add_path, get_path_id, print_db
-from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
-from pytadbit.mapping.analyze     import insert_sizes
-from pytadbit.mapping.filter      import filter_reads, apply_filter
+from pytadbit.mapping                import get_intersection
+from pytadbit.utils.file_handling    import mkdir
+from pytadbit.utils.sqlite_utils     import get_jobid, add_path, get_path_id, print_db
+from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
+from pytadbit.mapping.analyze        import insert_sizes
+from pytadbit.mapping.filter         import filter_reads, apply_filter
+from pytadbit.parsers.hic_bam_parser import _map2sam_long, _map2sam_mid, _map2sam_short
+from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
 
 
 DESC = "Filter parsed Hi-C reads and get valid pair of reads to work with"
@@ -78,17 +81,22 @@ def run(opts):
                                  filters=opts.apply)
 
     # TODO: save to BAM, and compress/remove other files
-    
-    
+
+    outbam = path.join(opts.workdir, '03_filtered_reads',
+                       'intersection_%s' % param_hash)
+
+    bed2D_to_BAMhic(mreads, opts.valid, opts.cpus, outbam, opts.format, masked,
+                    samtools=opts.samtools)
+
     finish_time = time.localtime()
     print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
-               hist_path, median, max_f, mad, launch_time, finish_time)
+               outbam, hist_path, median, max_f, mad, launch_time, finish_time)
 
 
 def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
-               hist_path, median, max_f, mad, launch_time, finish_time):
+               outbam, hist_path, median, max_f, mad, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -144,6 +152,8 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         jobid = get_jobid(cur)
 
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
+        add_path(cur, outbam, 'HIC_BAM', jobid, opts.workdir)
+        add_path(cur, outbam + '.bai', 'HIC_BAI', jobid, opts.workdir)
         add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
         add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
         try:
@@ -291,7 +301,9 @@ def populate_args(parser):
     parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
                                                       max_help_position=27)
 
-    glopts = parser.add_argument_group('General options')
+    glopts  = parser.add_argument_group('General options')
+    output  = parser.add_argument_group('Storage options')
+    filter_ = parser.add_argument_group('Filtering options')
 
     glopts.add_argument('--force', dest='force', action='store_true',
                         default=False,
@@ -301,40 +313,47 @@ def populate_args(parser):
                         default=False,
                         help='use filters of previously run job')
 
-    glopts.add_argument('--apply', dest='apply', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
-                        choices = range(1, 11),
-                        help=("""[%(default)s] Use filters to define a set os valid pair of reads
-                        e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +
-                              "correspond to: %s" % (', '.join(
-                                  ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
+    filter_.add_argument('--apply', dest='apply', nargs='+',
+                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                         choices = range(1, 11),
+                         help=("""[%(default)s] Use filters to define a set os valid pair of reads
+                         e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +
+                               "correspond to: %s" % (', '.join(
+                                   ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-    glopts.add_argument('--over_represented', dest='over_represented', metavar="NUM",
-                        action='store', default=0.001, type=float,
-                        help='''[%(default)s%%] percentage of restriction-enzyme
-                        (RE) genomic fragments with more coverage to exclude
-                        (possible PCR artifact).''')
+    glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
+                        default=0, help='''[%(default)s] Maximum number of CPU
+                        cores  available in the execution host. If higher
+                        than 1, tasks with multi-threading
+                        capabilities will enabled (if 0 all available)
+                        cores will be used''')
 
-    glopts.add_argument('--max_frag_size', dest='max_frag_size', metavar="NUM",
-                        action='store', default=100000, type=int,
-                        help='''[%(default)s] to exclude large genomic RE
-                        fragments (probably resulting from gaps in the reference
-                        genome)''')
+    filter_.add_argument('--over_represented', dest='over_represented', metavar="NUM",
+                         action='store', default=0.001, type=float,
+                         help='''[%(default)s%%] percentage of restriction-enzyme
+                         (RE) genomic fragments with more coverage to exclude
+                         (possible PCR artifact).''')
 
-    glopts.add_argument('--min_frag_size', dest='min_frag_size', metavar="NUM",
-                        action='store', default=50, type=int,
-                        help='''[%(default)s] to exclude small genomic RE
-                        fragments (smaller than sequenced reads)''')
+    filter_.add_argument('--max_frag_size', dest='max_frag_size', metavar="NUM",
+                         action='store', default=100000, type=int,
+                         help='''[%(default)s] to exclude large genomic RE
+                         fragments (probably resulting from gaps in the reference
+                         genome)''')
 
-    glopts.add_argument('--re_proximity', dest='re_proximity', metavar="NUM",
-                        action='store', default=5, type=int,
-                        help='''[%(default)s] to exclude read-ends falling too
-                        close from RE site (pseudo-dangling-ends)''')
+    filter_.add_argument('--min_frag_size', dest='min_frag_size', metavar="NUM",
+                         action='store', default=50, type=int,
+                         help='''[%(default)s] to exclude small genomic RE
+                         fragments (smaller than sequenced reads)''')
+
+    filter_.add_argument('--re_proximity', dest='re_proximity', metavar="NUM",
+                         action='store', default=5, type=int,
+                         help ='''[%(default)s] to exclude read-ends falling too
+                         close from RE site (pseudo-dangling-ends)''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -347,6 +366,23 @@ def populate_args(parser):
                         pathids. Use tadbit describe to find out which.
                         Needs one PATHid per read, first for read 1,
                         second for read 2.''')
+    output.add_argument('--format', dest='format', default='mid',
+                        choices=['short', 'mid', 'long'],
+                        help='''[%(default)s] for compression into pseudo-BAM
+                        format. Short contains only positions of reads mapped,
+                        mid everything but restriction sites.''')
+    output.add_argument('--valid', dest='valid', default=False,
+                        action='store_true',
+                        help='''stores only valid-pairs discards filtered out
+                        reads.''')
+    output.add_argument('--clean', dest='clean', default=False,
+                        action='store_true',
+                        help='''remove intermediate files. WARNING: together
+                        with format "short" or valid options, this may results
+                        in losing data''')
+    glopts.add_argument('--samtools', dest='samtools', metavar="PATH",
+                        action='store', default='samtools', type=str,
+                        help='''path samtools binary''')
 
     parser.add_argument_group(glopts)
 

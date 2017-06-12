@@ -11,7 +11,6 @@ from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
 from StringIO                     import StringIO
-from warnings                     import warn
 import datetime
 from sys                          import stdout, stderr, exc_info
 import os
@@ -24,7 +23,7 @@ except ImportError:
 
 from pysam                        import view, AlignmentFile
 
-from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.file_handling import mkdir, which
 from pytadbit.utils.extraviews    import nicer
 from pytadbit.mapping.filter      import MASKED
 
@@ -171,7 +170,8 @@ def _map2sam_long(line, flag):
     return r1r2
 
 
-def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt):
+
+def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='samtools'):
     """
     function adapted from Enrique Vidal <enrique.vidal@crg.eu> scipt to convert
     2D beds into compressed BAM format.
@@ -195,6 +195,12 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt):
 
     Each pair of contacts produces two lines in the output BAM
     """
+    samtools = which(samtools)
+    if not samtools:
+        raise Exception('ERROR: samtools is needed to save a compressed '
+                        'version of the results. Check '
+                        'http://samtools.sourceforge.net/ \n')
+
     # define filter codes
     filter_keys = OrderedDict()
     for k in MASKED:
@@ -239,9 +245,9 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt):
 
     # open and init filter files
     if not valid:
-        filter_line, filter_handler = get_filters(infile)
+        filter_line, filter_handler = get_filters(infile,masked)
     fhandler.seek(pos_fh)
-    proc = Popen('samtools view -Shb -@ %d - | samtools sort -@ %d - %s' % (
+    proc = Popen(samtools + ' view -Shb -@ %d - | samtools sort -@ %d - %s' % (
         ncpus, ncpus, outbam),
                  shell=True, stdin=PIPE)
     proc.stdin.write(output)
@@ -275,7 +281,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt):
     proc.wait()
 
     # Index BAM
-    _ = Popen('samtools index %s.bam' % (outbam), shell=True).communicate()
+    _ = Popen(samtools + ' index %s.bam' % (outbam), shell=True).communicate()
 
     # close file handlers
     fhandler.close()
@@ -284,19 +290,28 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt):
             filter_handler[i].close()
 
 
-def get_filters(infile):
+def get_filters(infile, masked):
     """
     get all filters
     """
     basename = os.path.basename(infile)
     dirname = os.path.dirname(infile)
-
-    filter_files = {}
-    stderr.write('Using filter files:\n')
-    for fname in os.listdir(dirname):
-        if fname.startswith(basename + "_"):
-            key = fname.replace(basename + "_", "").replace(".tsv", "")
-            filter_files[key] = dirname + "/" + fname
+    if masked:  # if providedusemasked dictionary generate by filtering function
+        filter_files = {}
+        for i in masked:
+            try:
+                filter_files[masked[i]['name'].replace(' ', '_')] = masked[i]['fnam']
+            except KeyError:
+                if i != 11:  # error is expected for filter 11,which are trans reads.. a bit uggly... I know
+                    raise Exception()
+                continue
+    else:  # otherwise search in the directory for the files
+        filter_files = {}
+        stderr.write('Using filter files:\n')
+        for fname in os.listdir(dirname):
+            if fname.startswith(basename + "_"):
+                key = fname.replace(basename + "_", "").replace(".tsv", "")
+                filter_files[key] = dirname + "/" + fname
             stderr.write('   - %-20s %s\n' %(key, fname))
     filter_handler = {}
     filter_line = {}
