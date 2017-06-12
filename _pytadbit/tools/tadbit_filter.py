@@ -172,7 +172,10 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                                         for k in sorted(multiples)]),
                        median, mad, max_f))
         for f in masked:
-            add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
+            try:
+                add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
+            except KeyError:
+                continue
             try:
                 cur.execute("""
             insert into FILTER_OUTPUTs

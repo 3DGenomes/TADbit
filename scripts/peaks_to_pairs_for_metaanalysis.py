@@ -32,8 +32,12 @@ def main():
         pos2 = (int(e2) + int(b2)) / 2
         pos1, pos2 = sorted((pos1, pos2))
         beg1 = (pos1 / reso - left ) * reso
+        if beg1 < 0:
+            continue
         end1 = (pos1 / reso + right) * reso
         beg2 = (pos2 / reso - left ) * reso
+        if beg2 < 0:
+            continue
         end2 = (pos2 / reso + right) * reso
         if end1 > beg2:
             continue

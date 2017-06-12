@@ -4,14 +4,17 @@ from tarfile                   import open as taropen
 from itertools                 import imap
 from warnings                  import warn
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib                import pyplot as plt
 from mpl_toolkits.mplot3d      import Axes3D
 from scipy                     import ndimage
 from pytadbit.utils.extraviews import tadbit_savefig
 
 
-def write_mat(matrix, outfile):
+def write_mat(matrix, outfile, count):
     out = open(outfile, 'w')
+    out.write('# average of %d sub-matrices\n' % (count))
     for i in matrix:
         out.write('\t'.join('%f' % v for v in i) + '\n')
     out.close()
@@ -73,6 +76,7 @@ def parse_tar(tarfile, listfile, index, outlist, reso, kind, size):
     print ' - Extracting %s submatrices' % ('selected' if listfile else 'all')
     tarfh = open(tarfile, 'rb')
     outfh = open(outlist, 'w')
+    count = 0
     for k1, k2 in list_coords:
         try:
             beg, end = index['%s_%s_%s' % (kind, k1, k2)]
@@ -82,6 +86,7 @@ def parse_tar(tarfile, listfile, index, outlist, reso, kind, size):
                  '')
             outfh.write('%s\t%s\n' % (k1, k2))
             continue
+        count += 1
         tarfh.seek(beg)
         lines = tarfh.read(end).strip().split('\n')
         badrows = lines[1].strip()[9:]
@@ -111,7 +116,7 @@ def parse_tar(tarfile, listfile, index, outlist, reso, kind, size):
                 vmatrix[i][j] /= wmatrix[i][j]
             except ZeroDivisionError:
                 vmatrix[i][j] = float('nan')
-    return vmatrix
+    return vmatrix, count
 
 
 def main():
@@ -124,6 +129,7 @@ def main():
     size     = opts.size
     reso     = opts.reso
     kind     = opts.matrix
+    minmax   = opts.minmax
 
     if not opts.plot_only:
         print ' - Checking TAR index file'
@@ -131,34 +137,36 @@ def main():
 
         index = load_index(tarfile)
 
-        vmatrix = parse_tar(tarfile, listfile, index, outlist, reso, kind, size)
+        vmatrix, count = parse_tar(tarfile, listfile, index, outlist, reso, kind, size)
 
-        write_mat(vmatrix, outfile)
+        write_mat(vmatrix, outfile, count)
 
     if outplot:
         print ' - plotting'
-        do_3d_plot(outfile, outplot, sigma=opts.sigma, log=opts.log)
+        do_3d_plot(outfile, outplot, size, count, minmax, sigma=opts.sigma, log=opts.log)
 
     print 'Done.'
 
 
-def do_3d_plot(nam, outfile, sigma=0, log=False):
+def do_3d_plot(nam, outfile, size, count, minmax, sigma=0, log=False):
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1, 1, 1, projection='3d')
-    X = np.arange(-10, 10, 1)
-    Y = np.arange(-10, 10, 1)
+    beg = -size / 2
+    end =  size / 2
+    X = np.arange(beg, end, 1)
+    Y = np.arange(beg, end, 1)
     X, Y = np.meshgrid(X, Y)
-    Z = np.array([np.array([float(i) for i in l.split()]) for l in open(nam)])
-    plt.title(nam + '\nMean: %.3f, median: %.3f, standard-deviation: %.3f' % (np.mean(Z), np.median(Z), np.std(Z)))
+    Z = np.array([np.array([float(i) for i in l.split()]) for l in open(nam) if not l.startswith('#')])
+    plt.title(nam + '\nMean: %.3f, median: %.3f, standard-deviation: %.3f (N=%d)' % (np.mean(Z), np.median(Z), np.std(Z), count))
     if sigma:
         Z = ndimage.gaussian_filter(Z, sigma=sigma, order=0)
     if log:
         Z = np.log(Z)
-        zspan = np.max(np.abs(Z))
+        zspan = minmax if minmax else np.max(np.abs(Z))
         zmax =  zspan
         zmin = -zspan
     else:
-        zspan = np.max(np.abs(Z - 1))
+        zspan = minmax if minmax else np.max(np.abs(Z - 1))
         zmin = -zspan + 1
         zmax =  zspan + 1
     cmap = 'coolwarm'  # 'coolwarm'
@@ -208,6 +216,9 @@ def get_options():
     parser.add_argument('-p', '--outplot', dest='outplot', metavar='',
                         default=False,
                         help='output file to plot matrix.')
+    parser.add_argument('--minmax', dest='minmax', metavar='',
+                        type=float,
+                        help="to scale the Y axis.")
     parser.add_argument('--sigma', dest='sigma', type=float,
                         default=0.0,
                         help='[%(default)s] smoothing parameter for the plotting')
