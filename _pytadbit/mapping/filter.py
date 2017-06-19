@@ -336,6 +336,7 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                 if not '~' in read:
                     masked[5]["reads"] += 1
                     outfil[5].write(read + '\n')
+            # random breaks
             if (((diff11 > min_dist_to_re) and
                  (diff12 > min_dist_to_re)) or
                 ((diff21 > min_dist_to_re) and

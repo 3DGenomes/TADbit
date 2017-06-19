@@ -45,7 +45,7 @@ def print_progress(procs):
     stdout.write('     ')
     prev_done = done = i = 0
     while done < len(procs):
-        sleep(2)
+        sleep(0.1)
         done = sum(p.ready() for p in procs)
         for i in range(prev_done, done):
             if not i % 10 and i:
@@ -324,8 +324,308 @@ def get_filters(infile, masked):
     return filter_line, filter_handler
 
 
-def _read_small_bam():
-    pass
+def _write_small_matrix(inbam, resolution, biases, outdir,
+                        filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
+                        normalizations=('decay',),
+                        region1=None, start1=None, end1=None,
+                        region2=None, start2=None, end2=None,
+                        tmpdir='.', append_to_tar=None, verbose=True,
+                        samtools='samtools', ncpus=8,):
+    if start1 is not None and end1:
+        if end1 - start1 < resolution:
+            raise Exception('ERROR: region1 should be at least as big as resolution')
+    if start2 is not None and end2:
+        if end2 - start2 < resolution:
+            raise Exception('ERROR: region2 should be at least as big as resolution')
+    if not isinstance(filter_exclude, int):
+        filter_exclude = filters_to_bin(filter_exclude)
+    samtools = which(samtools)
+    if not samtools:
+        raise Exception('ERROR: samtools is needed to save a compressed '
+                        'version of the results. Check '
+                        'http://samtools.sourceforge.net/ \n')
+    bamfile = AlignmentFile(inbam, 'rb')
+    sections = OrderedDict(zip(bamfile.references,
+                               [x / resolution + 1 for x in bamfile.lengths]))
+    total = 0
+    section_pos = dict()
+    for crm in sections:
+        section_pos[crm] = (total, total + sections[crm])
+        total += sections[crm] + 1
+    bins = []
+    for crm in sections:
+        len_crm = sections[crm]
+        bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+    if len(bins) == 0:
+        raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
+    start_bin1 = 0
+    end_bin1   = len(bins) + 1
+    if region1:
+        if not region1 in section_pos:
+            raise Exception('ERROR: chromosome %s not found' % region1)
+        regions = [region1]
+    else:
+        regions = bamfile.references
+        total = len(bins)
+        if start1 or end1:
+            raise Exception('ERROR: Cannot use start/end1 without region')
+
+    if start1 is not None:
+        start_bin1 = section_pos[region1][0] + start1 / resolution
+    else:
+        start_bin1 = section_pos[region1][0]
+        start1 = 0
+    if end1 is not None:
+        end_bin1 = section_pos[region1][0] + end1 / resolution
+    else:
+        end_bin1 = section_pos[region1][1]
+        end1 = sections[region1] * resolution
+
+    # reduce dictionaries
+    bins = []
+    for crm in regions:
+        beg_crm = section_pos[crm][0]
+        if len(regions) == 1:
+            start = start_bin1 - beg_crm
+            end   = end_bin1   - beg_crm
+        else:
+            start = 0
+            end   = section_pos[crm][1] - section_pos[crm][0] + 1
+        bins.extend([(crm, i) for i in xrange(start, end)])
+    bins_dict1 = dict([(j, i) for i, j in enumerate(bins)])
+    if region2:
+        if not region2 in section_pos:
+            raise Exception('ERROR: chromosome %s not found' % region2)
+        bins = []
+        beg_crm = section_pos[region2][0]
+        if start2 is not None:
+            start_bin2 = section_pos[region2][0] + start2 / resolution
+        else:
+            start_bin2 = section_pos[region2][0]
+            start2 = 0
+        if end2 is not None:
+            end_bin2   = section_pos[region2][0] + end2   / resolution
+        else:
+            end_bin2   = section_pos[region2][1]
+            end2       = sections[region2] * resolution
+        start = start_bin2 - beg_crm
+        end   = end_bin2   - beg_crm
+        bins = [(region2, i) for i in xrange(start, end)]
+        bins_dict2 = dict([(j, i) for i, j in enumerate(bins)])
+    else:
+        start_bin2 = start_bin1
+        end_bin2 = end_bin1
+        bins_dict2 = bins_dict1
+
+    ## RUN!
+    if verbose:
+        printime('\n  - Parsing BAM')
+
+    # search in upper-left matrix
+    proc = Popen(samtools + ' view -@ %d %s %s:%s-%s' % (
+        ncpus, inbam, region1, start_bin1, end_bin1),
+                 shell=True, stdout=PIPE)
+
+    dico = {}
+    with proc.stdout:
+        for line in iter(proc.stdout.readline, b''):
+            _, _, crm1, pos1, _, _, crm2, pos2, _ = line.split('\t', 8)
+            pos1, pos2 = map(int, (pos1, pos2))
+            try:
+                pos1 = bins_dict1[(crm1, pos1 / resolution)]
+                pos2 = bins_dict2[(crm2, pos2 / resolution)]
+            except KeyError:
+                continue
+            try:
+                dico[(pos1, pos2)] += 1
+            except KeyError:
+                dico[(pos1, pos2)] = 1
+    proc.wait()
+    # search in lower-right matrix
+    proc = Popen(samtools + ' view -@ %d %s %s:%s-%s' % (
+        ncpus, inbam, region2, start_bin2, end_bin2),
+                 shell=True, stdout=PIPE)
+
+    dico = {}
+    with proc.stdout:
+        for line in iter(proc.stdout.readline, b''):
+            _, _, crm1, pos1, _, _, crm2, pos2, _ = line.split('\t', 8)
+            pos1, pos2 = map(int, (pos1, pos2))
+            try:
+                pos1 = bins_dict1[(crm1, pos1 / resolution)]
+                pos2 = bins_dict2[(crm2, pos2 / resolution)]
+            except KeyError:
+                continue
+            try:
+                dico[(pos1, pos2)] += 1
+            except KeyError:
+                dico[(pos1, pos2)] = 1
+    proc.wait()
+
+    bias1, bias2, decay, bads1, bads2 = get_biases_region(
+        biases, (start_bin1, end_bin1, start_bin2, end_bin2))
+
+    if verbose:
+        printime('  - Getting matrices')
+
+    if verbose:
+        printime('  - Writing matrices')
+
+    # define output file name
+    if len(regions) == 1:
+        if region2:
+            name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
+                                          region2, start2 / resolution, end2 / resolution)
+        elif start1 is not None:
+            name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
+        else:
+            name = '%s:%d-%d' % (region1, start_bin1, end_bin1)
+    else:
+        name = 'full'
+
+        # prepare file header
+    outfiles = []
+    if 'raw' in normalizations:
+        fnam = 'raw_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
+        if append_to_tar:
+            out_raw = StringIO()
+            outfiles.append((out_raw, fnam))
+        else:
+            out_raw = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_raw.write('# %s resolution:%d\n' % (name, resolution))
+        if region2:
+            out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+            out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+        else:
+            out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+
+    # write file header
+    if 'norm' in normalizations:
+        fnam = 'nrm_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
+        if append_to_tar:
+            out_nrm = StringIO()
+            outfiles.append((out_nrm, fnam))
+        else:
+            out_nrm = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_nrm.write('# %s resolution:%d\n' % (name, resolution))
+        if region2:
+            out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+            out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+        else:
+            out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+    if 'decay' in normalizations:
+        fnam = 'dec_%s_%s.abc' % (name,
+                                  nicer(resolution).replace(' ', ''))
+        if append_to_tar:
+            out_dec = StringIO()
+            outfiles.append((out_dec, fnam))
+        else:
+            out_dec = open(os.path.join(outdir, fnam), 'w')
+            outfiles.append((os.path.join(outdir, fnam), fnam))
+        out_dec.write('# %s resolution:%d\n' % (
+            name, resolution))
+        if region2:
+            out_dec.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+            out_dec.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+        else:
+            out_dec.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+
+    # functions to write lines of pairwise interactions
+    def write_raw(func=None):
+        def writer2(a, b, c):
+            func(a, b, c)
+            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
+        def writer(a, b, c):
+            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
+        return writer2 if func else writer
+
+    def write_bias(func=None):
+        def writer2(a, b, c):
+            func(a, b, c)
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        def writer(a, b, c):
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        return writer2 if func else writer
+
+    def write_expc(func=None):
+        def writer2(a, b, c):
+            func(a, b, c)
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+        def writer(a, b, c):
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+        return writer2 if func else writer
+
+    def write_expc_2reg(func=None):
+        def writer2(a, b, c):
+            func(a, b, c)
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin1) - (b + start_bin2))]))
+        def writer(a, b, c):
+            out_dec.write('%d\t%d\t%f\n' % (
+                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin1) - (b + start_bin2))]))
+        return writer2 if func else writer
+
+    def write_expc_err(func=None):
+        def writer2(a, b, c):
+            func(a, b, c)
+            try:
+                out_dec.write('%d\t%d\t%f\n' % (
+                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+            except KeyError:  # different chromosomes
+                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+        def writer(a, b, c):
+            try:
+                out_dec.write('%d\t%d\t%f\n' % (
+                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+            except KeyError:  # different chromosomes
+                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+        return writer2 if func else writer
+
+    write = None
+    if 'raw'   in normalizations:
+        write = write_raw(write)
+    if 'norm'  in normalizations:
+        write = write_bias(write)
+    if 'decay' in normalizations:
+        if len(regions) == 1:
+            if region2:
+                write = write_expc_2reg(write)
+            else:
+                write = write_expc(write)
+        else:
+            write = write_expc_err(write)
+
+    # pull all sub-matrices and write full matrix
+    for (j, k), v in dico.iteritems():
+        write(j, k, v)
+
+    if append_to_tar:
+        lock = LockFile(append_to_tar)
+        with lock:
+            archive = taropen(append_to_tar, "a:")
+            for fobj, fnam in outfiles:
+                fobj.seek(0)
+                info = archive.tarinfo(name=fnam)
+                info.size=len(fobj.buf)
+                archive.addfile(tarinfo=info, fileobj=fobj)
+            archive.close()
+    else:
+        if 'raw' in normalizations:
+            out_raw.close()
+        if 'norm' in normalizations:
+            out_nrm.close()
+        if 'decay' in normalizations:
+            out_dec.close()
+
+
+    if  verbose:
+        printime('\nDone.')
 
 
 def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
@@ -649,7 +949,7 @@ def write_matrix(inbam, resolution, biases, outdir,
         elif start1 is not None:
             name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
         else:
-            name = '%s' % (region1)
+            name = '%s:%d-%d' % (region1, bin_coords[0], bin_coords[1])
     else:
         name = 'full'
 

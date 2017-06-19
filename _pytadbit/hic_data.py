@@ -246,7 +246,7 @@ class HiC_data(dict):
                 continue
             if i in bads or j in bads:
                 continue
-            if valid(i, j): # diagonal thing
+            if valid(i, j):  # diagonal thing
                 intra += transform(v, i, j)
         try:
             return float(intra) / self.sum(bias=self.bias if normalized else None, bads=bads)
