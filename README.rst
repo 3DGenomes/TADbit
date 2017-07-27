@@ -16,7 +16,7 @@ files to obtain raw interaction binned matrices (Hi-C like matrices),
 normalize and correct interaction matrices, identify and compare the
 Topologically Associating Domains (TADs), build 3D models
 from the interaction matrices, and finally, extract structural
-properties from the models. TADbit is complemented by TADkit for
+properties from the models. TADbit is complemented by `TADkit for
 visualizing 3D models.
 
 Hi-C experiments generate genomic interaction between loci located in
@@ -46,26 +46,31 @@ If you have any question remaining, we would be happy to answer informally:
 
 Citation
 ********
-Serra, F., Baù, D., Filion, G., & Marti-Renom, M. A. (2016).
-**Structural features of the fly chromatin colors revealed by automatic three-dimensional modeling.**
-*bioRxiv*. `doi:10.1101/036764 <http://biorxiv.org/cgi/content/short/036764>`_
+Please, cite this article if you use TADbit.
 
-Methods implemented in TADbit that have been already published
---------------------------------------------------------------
+Serra, F., Baù, D., Goodstadt, M., Castillo, D. Filion, G., & Marti-Renom, M.A. (2017).
+**Automatic analysis and 3D-modelling of Hi-C data using TADbit reveals structural features of the fly chromatin colors.**
+*PLOS Comp Bio* 13(7) e1005665. `doi:10.1371/journal.pcbi.1005665 <https://doi.org/10.1371/journal.pcbi.1005665>`_
+
+Methods implemented in TADbit
+-----------------------------
+In addition to the general citation for the TADbit library, please cite these articles if you used TADbit for:
+
 - Mapping and read filtering [Imakaev2012]_ [Ay2015]_
-- 3D Model Building of the chromatin [BaùMarti-Renom2012]_
-- Normalization [Imakaev2012]_ [Rao2014]_
-- Compartment calling [Lieberman-Aiden2009]_
+- Hi-C normalization [Imakaev2012]_ [Rao2014]_
+- A/B compartment calling [Lieberman-Aiden2009]_
+- Model assessemnt [Trussart2015]_
+- Chromatin 3D Model Building [BaùMarti-Renom2012]_
 
 Applications
 ------------
-- [Trussart2015]_
-- [BaùMarti-Renom2011]_
-- [Baù2011]_
-- [Umbarger2011]_
-- [Le_Dily2014]_
-- [Belton2015]_
-- [Trussart2017]_
+TADbit has been previously used for modeling genomes and genomic domains. Here is the list of published articles 
+
+- Alpha-globin domain [Baù2011]_
+- *Caulobacter crescentus* genome [Umbarger2011]_
+- TADs as regulons [Le_Dily2014]_
+- Yeast chromosome III [Belton2015]_
+- *Mycoplasma pneumoniae* genome [Trussart2017]_
 
 
 TADbit training
