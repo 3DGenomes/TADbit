@@ -64,7 +64,7 @@ In addition to the general citation for the TADbit library, please cite these ar
 
 Applications
 ------------
-TADbit has been previously used for modeling genomes and genomic domains. Here is the list of published articles 
+TADbit has been previously used for modeling genomes and genomic domains. Here is the list of published articles:
 
 - Alpha-globin domain [Baù2011]_
 - *Caulobacter crescentus* genome [Umbarger2011]_
