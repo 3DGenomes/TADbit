@@ -4,15 +4,15 @@
 
 """
 
-from math            import fabs, pow as power
+from math            import fabs
 from cPickle         import load, dump
 from sys             import stdout
 from os.path         import exists
 import multiprocessing as mu
-from scipy           import polyfit
 
 from pytadbit.modelling.IMP_CONFIG       import CONFIG, NROUNDS, STEPS, LSTEPS
 from pytadbit.modelling.structuralmodels import StructuralModels
+from pytadbit.modelling.restraints import HiCBasedRestraints
 from pytadbit.modelling.impmodel         import IMPmodel
 
 #Local application/library specific imports
@@ -128,60 +128,38 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     """
 
+    
+    
     # Main config parameters
     global CONFIG
 
     # Setup CONFIG['container']
     try:
         CONFIG['container'] = {'shape' : container[0],
-                               'radius': container[1],
-                               'height': container[2],
+                               'radius': container[1]/ (float(resolution * CONFIG['scale'])),
+                               'height': container[2]/ (float(resolution * CONFIG['scale'])),
                                'cforce': container[3]}
     except:
         CONFIG['container'] = {'shape' : None,
                                'radius': None,
                                'height': None,
                                'cforce': None}
-
+    
     # Setup CONFIG
     if isinstance(config, dict):
         CONFIG.update(config)
     elif config:
         raise Exception('ERROR: "config" must be a dictionary')
 
+    global RADIUS
+ 
+    #RADIUS = float(resolution * CONFIG['scale']) / 2
+    RADIUS = 0.5
+    CONFIG['resolution'] = resolution
+    CONFIG['maxdist'] = CONFIG['maxdist'] / (float(resolution * CONFIG['scale']))
+    
     # print "Used",CONFIG,'\n'
     # print "Input",config,'\n'
-
-    # Particles initial radius
-    global RADIUS
-
-    RADIUS = float(resolution * CONFIG['scale']) / 2
-    CONFIG['lowrdist'] = RADIUS * 2.
-
-
-    if CONFIG['lowrdist'] > CONFIG['maxdist']:
-        raise TADbitModelingOutOfBound(
-            ('ERROR: we must prevent you from doing this for the safe of our' +
-             'universe...\nIn this case, maxdist must be higher than %s\n' +
-             '   -> resolution times scale -- %s*%s)') % (
-                CONFIG['lowrdist'], resolution, CONFIG['scale']))
-
-    # print CONFIG
-
-    # get SLOPE and regression for all particles of the z-score data
-    global SLOPE, INTERCEPT
-    zsc_vals = [zscores[i][j] for i in zscores for j in zscores[i]
-                if abs(int(i) - int(j)) > 1] # condition is to avoid
-                                             # taking into account selfies
-                                             # and neighbors
-    SLOPE, INTERCEPT   = polyfit([min(zsc_vals), max(zsc_vals)],
-                                 [CONFIG['maxdist'], CONFIG['lowrdist']], 1)
-    # get SLOPE and regression for neighbors of the z-score data
-    global NSLOPE, NINTERCEPT
-    xarray = [zscores[i][j] for i in zscores for j in zscores[i]
-              if abs(int(i) - int(j)) <= (close_bins + 1)]
-    yarray = [RADIUS * 2 for _ in xrange(len(xarray))]
-    NSLOPE, NINTERCEPT = polyfit(xarray, yarray, 1)
 
     global LOCI
     # if z-scores are generated outside TADbit they may not start at zero
@@ -189,10 +167,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         first = min([int(j) for i in zscores for j in zscores[i]] +
                     [int(i) for i in zscores])
     LOCI  = range(first, nloci + first)
-
-    # Z-scores
-    global PDIST
-    PDIST = zscores
+    
     # random inital number
     global START
     START = start
@@ -200,10 +175,13 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     global VERBOSE
     VERBOSE = verbose
     #VERBOSE = 3
-
+    
+    HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG,resolution,zscores,
+                 close_bins=close_bins,first=first, nnkforce=CONFIG['kforce'])
+    
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models, n_keep, keep_all, use_HiC=True,
-        use_confining_environment=True, use_excluded_volume=True)
+        n_cpus, n_models, n_keep, keep_all, HiCRestraints, use_HiC=use_HiC,
+        use_confining_environment=use_confining_environment, use_excluded_volume=use_excluded_volume)
 
     try:
         xpr = experiment
@@ -243,42 +221,10 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         return StructuralModels(
             len(LOCI), models, bad_models, resolution, original_data=values,
             zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros,
-            restraints=_get_restraints(),
+            restraints=HiCRestraints._get_restraints(),
             description=description)
 
-
-def _get_restraints():
-    """
-    Same function as addAllHarmonic but just to get restraints
-    """
-    restraint_names = {'None'               : None,
-                       'Harmonic'           : 'a',
-                       'NeighborHarmonic'   : 'n',
-                       'HarmonicUpperBound' : 'u',
-                       'NeighborHarmonicUpperBound' : 'u',
-                       'HarmonicLowerBound' : 'l'}
-
-    model = {'radius'     : IMP.FloatKey("radius"),
-             'model'      : Model(),
-             'restraints' : None, # 2.6.1 compat
-             'particles'  : None}
-
-    # set container
-    try:
-        model['restraints'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
-    except:
-        pass
-
-    model['particles'] = ListSingletonContainer(IMP.core.create_xyzr_particles(
-        model['model'], len(LOCI), RADIUS, 100000))
-
-    restraints = {}
-    for i, j, RestraintType, kforce, dist in get_hicbased_restraints(model, CONFIG['kforce']):
-        restraints[tuple(sorted((i, j)))] = restraint_names[RestraintType], dist, kforce
-    return restraints
-
-
-def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, use_HiC=True,
+def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestraints, use_HiC=True,
                                    use_confining_environment=True, use_excluded_volume=True):
     """
     Parallelize the
@@ -292,7 +238,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, use_HiC=T
     jobs = {}
     for rand_init in xrange(START, n_models + START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
-                                           args=(rand_init,use_HiC, use_confining_environment,
+                                           args=(rand_init,HiCRestraints,use_HiC, use_confining_environment,
                                                  use_excluded_volume))
 
     pool.close()
@@ -315,7 +261,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, use_HiC=T
 
 
 
-def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
+def generate_IMPmodel(rand_init, HiCRestraints, use_HiC=True, use_confining_environment=True,
                       use_excluded_volume=True):
     """
     Generates one IMP model
@@ -329,7 +275,6 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
     verbose = VERBOSE
     # Set the IMP.random_number_generator.seed to get a different reproducible model
     IMP.random_number_generator.seed(rand_init)
-    #print IMP.random_number_generator()
 
     log_energies = []
     model = {'radius'     : IMP.FloatKey("radius"),
@@ -337,8 +282,9 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
              'particles'  : None,
              'restraints' : None} # 2.6.1 compat
     model['particles'] = ListSingletonContainer(
-        IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000))  # last number is box size
-
+        IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/float(CONFIG['resolution'] * CONFIG['scale'])))  # last number is box size
+    #model['particles'] = ListSingletonContainer(
+    #    IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000))  # last number is box size
     try:
         model['restraints'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
     except:
@@ -350,12 +296,14 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
         p.set_name(str(LOCI[i]))
         #print p.get_name()
 
-    # Separated function for the confining environment restraint
+    # Separated function for the confining environment restraint:
+    # This function is specific for IMP
     if use_confining_environment:
         # print "\nEnforcing the confining environment restraint"
         add_confining_environment(model)
 
     # Separated function for the bending rigidity restraints
+    # This function is specific for IMP
     if CONFIG['kbending'] > 0.0:
         # print "\nEnforcing the bending rigidity restraint"
         theta0 = 0.0
@@ -364,13 +312,16 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
 
     # Separated function fot the HiC-based restraints
     if use_HiC:
-        # print "\nEnforcing the HiC-based Restraints"
-        HiCbasedRestraints = get_hicbased_restraints(model, CONFIG['kforce'])
+        # This function is general
+        HiCbasedRestraints = HiCRestraints.get_hicbased_restraints()
+        # print "\nEnforcing the HiC-based Restraints
+        # This function is specific for IMP
         add_hicbased_restraints(model, HiCbasedRestraints)
 
     # Separated function for the excluded volume restraint
     if use_excluded_volume:
         # print "\nEnforcing the excluded_volume_restraints"
+        # This function is specific for IMP
         excluded_volume_kforce = CONFIG['kforce']
         evr = add_excluded_volume_restraint(model, model['particles'], excluded_volume_kforce)
 
@@ -391,10 +342,6 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
 
     conjugate_gradient_optimization(model, log_energies)
 
-    #try:
-    #    log_energies.append(model['model'].evaluate(False))
-    #except:
-    #    log_energies.append(model['restraints'].evaluate(False)) # 2.6.1 compat
     if verbose >=1:
         if verbose >= 2 or not rand_init % 100:
             print 'Model %s IMP Objective Function: %s' % (
@@ -410,24 +357,27 @@ def generate_IMPmodel(rand_init, use_HiC=True, use_confining_environment=True,
                        'cluster'    : 'Singleton',
                        'rand_init'  : str(rand_init)})
     for part in model['particles'].get_particles():
-        result['x'].append(part.get_value(x))
-        result['y'].append(part.get_value(y))
-        result['z'].append(part.get_value(z))
+        result['x'].append(part.get_value(x)*float(CONFIG['resolution'] * CONFIG['scale']))
+        result['y'].append(part.get_value(y)*float(CONFIG['resolution'] * CONFIG['scale']))
+        result['z'].append(part.get_value(z)*float(CONFIG['resolution'] * CONFIG['scale']))
+#     for part in model['particles'].get_particles():
+#         result['x'].append(part.get_value(x))
+#         result['y'].append(part.get_value(y))
+#         result['z'].append(part.get_value(z))
         if verbose == 3:
             print (part.get_name(), part.get_value(x), part.get_value(y),
                    part.get_value(z), part.get_value(radius))
     # gets radius from last particle, assuming that all are the same
     # include in the loop when radius changes... should be a list then
-    result['radius'] = part.get_value(radius)
-    #for log_energy in log_energies:
-    #    print "%.30f" % log_energy
-    #print rand_init, log_energies[-1]
-    #stdout.flush()
+    #result['radius'] = part.get_value(radius)
+    #result['radius'] = RADIUS
+    result['radius'] = float(CONFIG['resolution'] * CONFIG['scale'])/2  
+
     return result # rand_init, result
 
 
 
-#Functions to add Centromeric, Connectivity, Hi-C-based, and Imaging-based restraints
+#Functions to add Centromeric, Connectivity, and Hi-C-based
 def add_excluded_volume_restraint(model, particle_list, kforce): #, restraints):
     evr = IMP.core.ExcludedVolumeRestraint(particle_list, kforce)
 
@@ -591,150 +541,6 @@ def add_harmonic_lowerbound_restraint(model, p1, p2, dist, kforce): #, restraint
         model['restraints'].add_restraint(hlbr) # 2.6.1 compat
     #restraints.append(hlbr)
 
-
-
-def get_hicbased_restraints(model, nnkforce):
-
-    # HiCbasedRestraints is a list of restraints returned by this function.
-    # Each entry of the list is a list of 5 elements describing the details of the restraint:
-    # 0 - particle_i
-    # 1 - particle_j
-    # 2 - type_of_restraint = Harmonic or HarmonicLowerBound or HarmonicUpperBound
-    # 3 - the kforce of the restraint
-    # 4 - the equilibrium (or maximum or minimum respectively) distance associated to the restraint
-
-    HiCbasedRestraints = []
-
-    for i in range(len(LOCI)):
-        for j in range(i + 1, len(LOCI)):
-            #if j >= len(LOCI):
-            #    continue
-
-            # Compute the sequence separation (in particles) depending on it the restraint changes
-            seqdist = abs(j - i)
-
-            # 1 - CASE OF TWO CONSECUTIVE LOCI (NEAREST NEIGHBOR PARTICLES)
-            if seqdist == 1:
-                RestraintType, dist = get_nearest_neighbors_restraint_distance(model, i, j)
-                kforce = nnkforce
-
-            # 2 - CASE OF 2 SECOND NEAREST NEIGHBORS SEQDIST = 2
-            if seqdist == 2:
-                RestraintType, dist = get_second_nearest_neighbors_restraint_distance(model, i, j)
-                kforce = nnkforce
-
-            # 3 - CASE OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
-            if seqdist >  2:
-
-                #CASES OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
-                RestraintType, kforce, dist = get_long_range_restraints_kforce_and_distance(i, j)
-                if RestraintType == "None":
-                    #print "No HiC-based restraint between particles %d and %d" % (i,j)
-                    continue
-
-            HiCbasedRestraints.append([i, j, RestraintType, kforce, dist])
-
-    return HiCbasedRestraints
-
-
-
-
-#Functions to add restraints: HarmonicRestraints , HarmonicUpperBoundRestraints , HarmonicLowerBoundRestraints
-#addNearestNeighborsRestraint , addSecondNearestNeighborsRestraint , addLongRangeRestraints
-def get_nearest_neighbors_restraint_distance(model, i, j):
-    x=str(i)
-    y=str(j)
-
-    if x in PDIST and y in PDIST[x] and PDIST[x][y] > CONFIG['upfreq']:
-        # When p1 and p2 have a contact propensity larger that upfreq
-        # their spatial proximity and a partial overlap between them is enforced
-        # The equilibrium distance of the spring is inferred from the 3C based Z-score
-        RestraintType = "NeighborHarmonic"
-        dist = distance(PDIST[x][y],NSLOPE,NINTERCEPT)
-        #print "Distance = ", dist
-    else:
-        # When p1 and p2 have a contact propensity lower than upfreq they are simply connected to each other
-        p1 = model['particles'].get_particle(i)
-        p2 = model['particles'].get_particle(j)
-        RestraintType = "NeighborHarmonicUpperBound"
-        dist = p1.get_value(model['radius']) + p2.get_value(model['radius'])
-    return RestraintType , dist
-
-
-
-def get_second_nearest_neighbors_restraint_distance(model, i, j):
-    # IMP COMMAND: Consider the particles i, j and the particle between i and j
-    p1      = model['particles'].get_particle(i)
-    p2      = model['particles'].get_particle(j)
-    pmiddle = model['particles'].get_particle(j-1)
-
-    # The equilibrium distance is the sum of the radii of particles p1 and p2, and of the diameter of particle pmiddle
-    RestraintType = "HarmonicUpperBound"
-    dist = p1.get_value(model['radius']) + p2.get_value(model['radius']) + 2.0 * pmiddle.get_value(model['radius'])
-    #print p1.get_value(model['radius']) , p2.get_value(model['radius']) , pmiddle.get_value(model['radius'])
-
-    #print RestraintType , dist
-    return RestraintType , dist
-
-
-
-def get_long_range_restraints_kforce_and_distance(i, j):
-    x = str(i)
-    y = str(j)
-
-    Zscore = float('nan')
-
-    # For non consecutive particles the kforce is a function of the *C based Zscore
-    # First we define the The kforce of the harmonic restraint. It is different for 3 scenarios...
-
-    RestraintType = "None"
-    kforce        = 0.0
-    dist          = 0.0
-
-    # 1 - If the Z-score between i and j is defined
-    if x in PDIST and y in PDIST[x]:
-        # Get the Zscore between particles p1 and p2
-        Zscore = PDIST[x][y]
-        kforce = k_force(Zscore)
-
-    # 2 - If the Z-score is defined only for particle i (In the Hi-C matrix you could encounter zero values next to very high entries)
-    elif x in PDIST:
-        prevy = str(j - 1)
-        posty = str(j + 1)
-        # The Zscore is compute as the average of the Z-scores of p2 nearest neighbor particles with p1
-        Zscore = (PDIST[x].get(prevy, PDIST[x].get(posty, float('nan'))) +
-                  PDIST[x].get(posty, PDIST[x].get(prevy, float('nan')))) / 2
-        kforce = 0.5 * k_force(Zscore)
-
-    # 3 - If the Z-score is defined only for particle j
-    else:
-        prevx = str(i - 1)
-        postx = str(i + 1)
-        prevx = prevx if prevx in PDIST else postx
-        postx = postx if postx in PDIST else prevx
-        try:
-            Zscore = (PDIST[prevx].get(y, PDIST[postx].get(y, float('nan'))) +
-                      PDIST[postx].get(y, PDIST[prevx].get(y, float('nan')))) / 2
-            # For non consecutive particles the kforce is a function of the *C based Zscore
-        except KeyError:
-            pass
-        kforce = 0.5 * k_force(Zscore)
-
-
-    # If the ZSCORE > UPFREQ the spatial proximity of particles p1 and p2 is favoured
-    if Zscore > CONFIG['upfreq']:
-        RestraintType = "Harmonic"
-        dist = distance(Zscore, SLOPE, INTERCEPT)
-
-    # If the ZSCORE < LOWFREQ the particles p1 and p2 are restrained to be far from each other.
-    elif Zscore < CONFIG['lowfreq']:
-        RestraintType = "HarmonicLowerBound"
-        dist = distance(Zscore, SLOPE, INTERCEPT)
-
-    return RestraintType, kforce, dist
-
-
-
 #Function to perform the scoring function optimization ConjugateGradient
 def conjugate_gradient_optimization(model, log_energies):
     restraints = []
@@ -769,7 +575,7 @@ def conjugate_gradient_optimization(model, log_energies):
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                            FloatKey("z"), FloatKey("radius"))
 
-    mov = IMP.core.NormalMover(ptmp, fk, 0.25)
+    mov = IMP.core.NormalMover(ptmp, fk, 0.25/float(CONFIG['resolution'] * CONFIG['scale']))
     o.add_mover(mov)
     # o.add_optimizer_state(log)
 
@@ -845,22 +651,3 @@ def conjugate_gradient_optimization(model, log_energies):
     #    e = o.optimize(steps)
     #    print str(i) + " " + str(e) + " " + str(o.get_kt())
 
-
-
-#Function to translate the Zscore value into distances and kforce values
-def distance(Zscore, slope, intercept):
-    """
-    Function mapping the Z-scores into distances for neighbor and non-neighbor fragments (slope, intercept) are different
-    """
-    return (slope * Zscore) + intercept
-
-def k_force(Zscore):
-    """
-    Function to assign to each restraint a force proportional to the underlying
-    experimental value.
-    """
-    return power(fabs(Zscore), 0.5)
-
-
-class TADbitModelingOutOfBound(Exception):
-    pass

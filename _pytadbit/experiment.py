@@ -901,6 +901,7 @@ class Experiment(object):
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
+                               kbending_range=0.0,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
                                maxdist_range=(400, 1400, 100),
@@ -976,6 +977,7 @@ class Experiment(object):
                                  n_models=n_models, close_bins=close_bins,
                                  container=container)
         optimizer.run_grid_search(maxdist_range=maxdist_range,
+                                  kbending_range=kbending_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range,

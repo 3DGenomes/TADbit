@@ -72,7 +72,7 @@ class IMPoptimizer(object):
 
     def run_grid_search(self,
                         scale_range=0.01,
-                        kbending_range=0.0,  # TODO: Choose values of kbending that should be explored by default!!!
+                        kbending_range=0.0,
                         maxdist_range=(400, 1500, 100),
                         lowfreq_range=(-1, 0, 0.1),
                         upfreq_range=(0, 1, 0.1),
@@ -228,6 +228,7 @@ class IMPoptimizer(object):
         if verbose:
             stderr.write('  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s\t%-11s\n' % (
                 "num","scale","kbending","maxdist","lowfreq","upfreq","dcutoff","correlation"))
+        #print scale_arange, kbending_arange, maxdist_arange, lowfreq_arange, upfreq_arange, dcutoff_arange
         parameters_sets = itertools.product([my_round(i) for i in scale_arange   ],
                                             [my_round(i) for i in kbending_arange],
                                             [my_round(i) for i in maxdist_arange ],
@@ -258,7 +259,8 @@ class IMPoptimizer(object):
             config_tmp = {'kforce'   : 5,
                           'scale'    : float(scale),
                           'kbending' : float(kbending),
-                          'lowrdist' : 100, # This parameters is fixed to XXX
+                          #'lowrdist' : 1.0, # This parameters is fixed to XXX
+                          'lowrdist' : 100,
                           'maxdist'  : int(maxdist),
                           'lowfreq'  : float(lowfreq),
                           'upfreq'   : float(upfreq)}
@@ -279,6 +281,7 @@ class IMPoptimizer(object):
 
                 matrices = tdm.get_contact_matrix(
                     cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
+                    #cutoff=[i for i in dcutoff_arange])
                 for m in matrices:
                     cut = int(m**0.5)
                     sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
@@ -288,6 +291,7 @@ class IMPoptimizer(object):
                     if result < sub_result:
                         result = sub_result
                         cutoff = my_round(float(cut) / self.resolution / float(scale))
+                        #cutoff = my_round(float(cut))
 
 
             except Exception, e:
@@ -428,9 +432,7 @@ class IMPoptimizer(object):
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
-
         self.dcutoff_range.sort(key=float)
-
 
 
     def get_best_parameters_dict(self, reference=None, with_corr=False):
@@ -446,16 +448,9 @@ class IMPoptimizer(object):
             stderr.write('WARNING: no optimization done yet\n')
             return
         best = ((None, None, None, None), 0.0)
-        kbending = 0
-        try:
-            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
-                if val > best[-1]:
-                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
-        except ValueError:
-            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.iteritems():
-                if val > best[-1]:
-                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
-
+        for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
+            if val > best[-1]:
+                best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
         if with_corr:
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),
@@ -501,7 +496,7 @@ class IMPoptimizer(object):
                                      results), axes=axes, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
-    def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'),
+    def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'), dcutoff=None,
                 show_best=0, skip=None, savefig=None,clim=None):
         """
         A grid of heatmaps representing the result of the optimization.
@@ -525,7 +520,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.maxdist_range],
                                       [float(i) for i in self.lowfreq_range],
                                       [float(i) for i in self.upfreq_range]),
-                                     results), axes=axes, show_best=show_best,
+                                     results), axes=axes, show_best=show_best,dcutoff=dcutoff,
                                     skip=skip, savefig=savefig,clim=clim)
 
 
@@ -581,19 +576,10 @@ class IMPoptimizer(object):
         # This auxiliary method organizes the results of the grid optimization in a
         # Numerical array to be passed to the plot_2d and plot_3d functions above
 
-        results = np.empty((len(self.scale_range),  len(self.kbending_range),  len(self.maxdist_range),
+        results = np.zeros((len(self.scale_range),  len(self.kbending_range),  len(self.maxdist_range),
                             len(self.lowfreq_range), len(self.upfreq_range)))
-
-        """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
-                            print "Correlation",self.scale_range[i],self.kbending_range[j],\
-                            self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
-                            results[i][j][k][l][m]
-        """
+        #print results
+        #print self.lowfreq_range
 
         for v, scale in enumerate(self.scale_range):
             for w, kbending in enumerate(self.kbending_range):
@@ -764,8 +750,8 @@ class IMPoptimizer(object):
             scale    = my_round(scale, val=5)
             kbending = my_round(kbending)
             maxdist  = my_round(maxdist)
-            lowfreq  = my_round(upfreq)
-            upfreq   = my_round(lowfreq)
+            lowfreq  = my_round(lowfreq)
+            upfreq   = my_round(upfreq)
             dcutoff  = my_round(dcutoff)
             self.results[(scale, kbending, maxdist, lowfreq, upfreq, dcutoff)] = float(result)
             if not scale in self.scale_range:

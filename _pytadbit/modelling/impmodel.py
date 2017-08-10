@@ -148,21 +148,21 @@ class IMPmodel(StructuralModel):
                     ' - random initial value: %s\n' +
                     ' - first coordinates:\n'+
                     '        X      Y      Z\n'+
-                    '  %7s%7s%7s\n'+
-                    '  %7s%7s%7s\n'+
-                    '  %7s%7s%7s\n') % (
+                    '  %7s %7s %7s\n'+
+                    '  %7s %7s %7s\n'+
+                    '  %7s %7s %7s\n') % (
                 self['index'] + 1,
                 len(self['x']), self['objfun'], self['rand_init'],
-                int(self['x'][0]), int(self['y'][0]), int(self['z'][0]),
-                int(self['x'][1]), int(self['y'][1]), int(self['z'][1]),
-                int(self['x'][2]), int(self['y'][2]), int(self['z'][2]))
+                self['x'][0], self['y'][0], self['z'][0],
+                self['x'][1], self['y'][1], self['z'][1],
+                self['x'][2], self['y'][2], self['z'][2])
         except IndexError:
             return ('IMP model of %s particles with: \n' +
                     ' - Final objective function value: %s\n' +
                     ' - random initial value: %s\n' +
                     ' - first coordinates:\n'+
                     '      X    Y    Z\n'+
-                    '  %5s%5s%5s\n') % (
+                    '  %5s %5s %5s\n') % (
                 len(self['x']), self['objfun'], self['rand_init'],
                 self['x'][0], self['y'][0], self['z'][0])
 

@@ -392,6 +392,7 @@ class StructuralModels(object):
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
+            #dcutoff = int(1.5) # * self.resolution * self._config['scale'])
         scores = calc_eqv_rmsd(self.__models, self.nloci, self._zeros, dcutoff,
                                what=what, normed=True)
         from distutils.spawn import find_executable
@@ -589,6 +590,7 @@ class StructuralModels(object):
         cutoff.sort(reverse=True)
         if not cutoff:
             cutoff = [int(2 * self.resolution * self._config['scale'])]
+            #cutoff = [int(2)] # * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
@@ -596,13 +598,16 @@ class StructuralModels(object):
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
+        #print "#Frac",frac
 
         for model in models:
+            #print model
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
 
             #print model, len(x), len(y), len(z)
             for c in cutoff:
+                #print "#Cutoff",c
                 for i, j in combinations(wloci, 2):
                     if squared_distance_matrix[i][j] <= c:
                         matrix[c][i][j] += frac  # * 100
