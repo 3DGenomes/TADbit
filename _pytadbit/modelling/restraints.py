@@ -66,13 +66,13 @@ class HiCBasedRestraints(object):
 
     """
     def __init__(self, nloci, particle_radius,CONFIG,resolution,zscores,
-                 close_bins=1,first=None, nnkforce=None, min_seqdist=0):
+                 close_bins=1,first=None, min_seqdist=0):
 
         self.particle_radius       = particle_radius
         self.nloci          = nloci
         self.CONFIG          = CONFIG
         self.resolution     = resolution
-        self.nnkforce       = nnkforce
+        self.nnkforce       = CONFIG['kforce']
         self.min_seqdist     = min_seqdist
         
         self.CONFIG['lowrdist'] = self.particle_radius * 2.

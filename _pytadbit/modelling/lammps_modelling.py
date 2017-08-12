@@ -7,6 +7,7 @@ from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
 from pytadbit.modelling.lammpsmodel import LAMMPSmodel
 #from pytadbit.modelling.imp_modelling import get_hicbased_restraints
 from pytadbit.modelling.structuralmodels import StructuralModels
+from pytadbit.modelling.restraints import HiCBasedRestraints
 from os.path import exists
 from random import randint, seed
 from cPickle import load, dump
@@ -254,17 +255,7 @@ def lammps_simulate(initial_conformation, run_time,
         models[i] = m
         nloci = len(m['x'])
         
-    if outfile:
-        if exists(outfile):
-            old_models = load(open(outfile))
-        else:
-            old_models = {}
-        models.update(old_models)
-        out = open(outfile, 'w')
-        dump((models), out)
-        out.close()
-    else:
-        return StructuralModels(
+    return StructuralModels(
             nloci, models, [], resolution,description=description, zeros=tuple([1 for i in xrange(nloci)]))
 
 
@@ -346,7 +337,7 @@ def run_lammps(kseed, initial_conformation, run_time,
                 neighbor=neighbor)
     
     lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
-    lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+    #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
     #######################################################
     # Set up fixes                                        #
@@ -368,20 +359,20 @@ def run_lammps(kseed, initial_conformation, run_time,
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   minimization_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         lmp.command("minimize 1.0e-4 1.0e-6 100000 100000")
         
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
 
     if compress_with_pbc:
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   compress_with_pbc_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         # Re-setting the initial timestep to 0
         lmp.command("reset_timestep 0")
@@ -417,13 +408,13 @@ def run_lammps(kseed, initial_conformation, run_time,
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
 
     if compress_without_pbc:
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   compress_without_pbc_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         # Re-setting the initial timestep to 0
         lmp.command("reset_timestep 0")
@@ -466,12 +457,17 @@ def run_lammps(kseed, initial_conformation, run_time,
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   steered_MD_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
-        for kincrease in xrange(1,steering_pairs['number_of_kincrease']):
+        if 'number_of_kincrease' in steering_pairs:
+            nbr_kincr = steering_pairs['number_of_kincrease']
+        else:
+            nbr_kincr = 1
+            
+        for kincrease in xrange(nbr_kincr):
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:
-            generate_colvars_list(steering_pairs, kincrease)
+            generate_colvars_list(steering_pairs, kincrease+1)
 
             # Adding the colvar option
             print "fix 4 all colvars %s" % steering_pairs['colvar_output']
@@ -487,7 +483,7 @@ def run_lammps(kseed, initial_conformation, run_time,
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   steered_MD_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
             lmp.command("reset_timestep 0")
             
         #print "# Getting the time dependent steering pairs!"        
@@ -561,7 +557,7 @@ def run_lammps(kseed, initial_conformation, run_time,
         if to_dump:
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   loop_extrusion_MD_*.XYZ  id  xu yu zu" % to_dump)
-            lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
+            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
         # List of target loops of the form [(loop1_start,loop1_stop),...,(loopN_start,loopN_stop)]
         target_loops  = read_target_loops_input(loop_extrusion_dynamics['target_loops_input'],
@@ -682,7 +678,7 @@ def linecount(filename):
 ##########
 
 def generate_colvars_list(steering_pairs,
-                          kincrease,
+                          kincrease=0,
                           colvars_header='# collective variable: monitor distances\n\ncolvarsTrajFrequency 1000 # output every 1000 steps\ncolvarsRestartFrequency 10000000\n',
                           colvars_template='''
 
@@ -701,10 +697,17 @@ colvar {
                             colvars_tail = '''
 
 harmonic {
-  name h_pot_%i
+  name h_pot_%s
   colvars %s
   centers %s
-  forceConstant %f # %f
+  forceConstant %f 
+}\n''',                     colvars_harmonic_lower_bound_tail = '''
+
+harmonicWalls {
+  name hlb_pot_%s
+  colvars %s
+  lowerWalls %s
+  forceConstant %f 
 }\n'''
                             ):
                             
@@ -720,50 +723,75 @@ harmonic {
     """
 
     # Getting the input
-    # XXXThe target_pairs_file could be also a list as the one in output of get_HiCbased_restraintsXXX
-    target_pairs_file            = steering_pairs['colvar_input'] 
+    # XXXThe target_pairs could be also a list as the one in output of get_HiCbased_restraintsXXX
+    target_pairs                 = steering_pairs['colvar_input'] 
     outfile                      = steering_pairs['colvar_output'] 
-    kappa_vs_genomic_distance    = steering_pairs['kappa_vs_genomic_distance']
-    chrlength                    = steering_pairs['chrlength']
-    copies                       = steering_pairs['copies']
+    if 'kappa_vs_genomic_distance' in steering_pairs:
+        kappa_vs_genomic_distance    = steering_pairs['kappa_vs_genomic_distance']
+    if 'chrlength' in steering_pairs:
+        chrlength                    = steering_pairs['chrlength']
+    else:
+        chrlength                    = 0
+    if 'copies' in steering_pairs:
+        copies                       = steering_pairs['copies']
+    else:
+        copies                       = ['A']
     kbin                         = 10000000
     binsize                      = steering_pairs['binsize']
-    percentage_enforced_contacts = steering_pairs['perc_enfor_contacts']
-
-    print target_pairs_file, outfile, kappa_vs_genomic_distance, chrlength, copies, kbin, binsize, percentage_enforced_contacts
-
-    totcolvars = linecount(target_pairs_file)
-    ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
-    
-    print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
-    rand_positions = random.sample(list(range(totcolvars)), ncolvars)
-    rand_positions = sorted(rand_positions)
-    rand_lines = []
+    if 'percentage_enforced_contacts' in steering_pairs:
+        percentage_enforced_contacts = steering_pairs['perc_enfor_contacts']
+    else:
+        percentage_enforced_contacts = 100
 
     # Here we extract from all the restraints only 
     # a random sub-sample of percentage_enforced_contacts/100*totcolvars
+    rand_lines = []
     i=0
     j=0
-    tfp = open(target_pairs_file)
-    with open(target_pairs_file) as f:
-        for line in f:
-            line = line.strip()
-            if j >= ncolvars:
-                break
-            if line.startswith('#'):
-                continue
-         
-            cols_vals = line.split()
-            # Avoid to enforce restraints between the same bin
-            if cols_vals[1] == cols_vals[2]:
-                continue
+    if isinstance(target_pairs, str):    
+        totcolvars = linecount(target_pairs)
+        ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
         
-            if i == rand_positions[j]:
-                rand_lines.append(line)
-                j += 1
-            i += 1
-    tfp.close()
-
+        print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        rand_positions = random.sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sorted(rand_positions)
+    
+        tfp = open(target_pairs)
+        with open(target_pairs) as f:
+            for line in f:
+                line = line.strip()
+                if j >= ncolvars:
+                    break
+                if line.startswith('#'):
+                    continue
+             
+                cols_vals = line.split()
+                # Avoid to enforce restraints between the same bin
+                if cols_vals[1] == cols_vals[2]:
+                    continue
+            
+                if i == rand_positions[j]:
+                    rand_lines.append(line)
+                    j += 1
+                i += 1
+        tfp.close()
+    elif isinstance(target_pairs, HiCBasedRestraints):
+        
+        rand_lines = target_pairs.get_hicbased_restraints()
+        totcolvars = len(rand_lines)
+        ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
+        
+        print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        rand_positions = random.sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sorted(rand_positions)
+        
+        
+    else:
+        print "Unknown target_pairs"
+        return    
+    
+        
+    
     #print rand_lines
 
     seqdists = {}
@@ -772,9 +800,16 @@ harmonic {
     outf.write(colvars_header)
     for copy_nbr in copies:
         i = 1
-        for line in rand_lines:   
-            cols_vals = line.split()
+        for line in rand_lines:
+            if isinstance(target_pairs, str):   
+                cols_vals = line.split()
+            else:
+                cols_vals = ['chr'] + line
+                
             #print cols_vals
+            
+            if isinstance(target_pairs, HiCBasedRestraints) and cols_vals[3] != "Harmonic" and cols_vals[3] != "HarmonicLowerBound":
+                continue
             
             part1_start = int(cols_vals[1])*binsize
             part1_end = (int(cols_vals[1])+1)*binsize
@@ -797,38 +832,85 @@ harmonic {
             seqdists[name] = seqdist
 
             outf.write(colvars_template % (name,region1,region2,seqdist,particle1,particle2))
+            
+            if isinstance(target_pairs, HiCBasedRestraints):
+                if cols_vals[4] == 0.0:
+                    continue
+                 
+                centre                 = cols_vals[5]
+                kappa                  = cols_vals[4]
+                 
+                if cols_vals[3] == "Harmonic":
+                    outf.write(colvars_tail % (name,name,centre,kappa))
+         
+                if cols_vals[3] == "HarmonicLowerBound":
+                    outf.write(colvars_harmonic_lower_bound_tail % (name,name,centre,kappa)) 
+            
             i += 1
         poffset += chrlength
             
     outf.flush()
     
-    kappa_values = {}
-    with open(kappa_vs_genomic_distance) as kgd:
-        for line in kgd:
-            line_vals = line.split()
-            kappa_values[int(line_vals[0])] = float(line_vals[1])
-        
-    for seqd in set(seqdists.values()):
-        kappa = 0
-        if seqd in kappa_values:
-            kappa = kappa_values[seqd]*kincrease
-        else:
-            for kappa_key in sorted(kappa_values, key=int):
-                if int(kappa_key) > seqd:
-                    break
-                kappa = kappa_values[kappa_key]*kincrease
-        centres=''
-        names=''
-        for seq_name in seqdists:
-            if seqdists[seq_name] == seqd:
-                centres += ' 1.0'
-                names += ' '+seq_name
-      
-        outf.write(colvars_tail % (seqd,names,centres,kappa,kappa))  
-        
+    #===========================================================================
+    # if isinstance(target_pairs, HiCBasedRestraints):
+    #     for copy_nbr in copies:
+    #         i = 1
+    #         for line in rand_lines:
+    #             cols_vals = line
+    #                             
+    #             if cols_vals[3] == 0.0:
+    #                 continue
+    #             
+    #             name = str(i)+copy_nbr 
+    #             
+    #             centre                 = cols_vals[4]
+    #             kappa                  = cols_vals[3]
+    #             
+    #             if cols_vals[2] == "Harmonic":
+    #                 outf.write(colvars_tail % (name,name,centre,kappa))
+    #     
+    #             elif cols_vals[2] == "HarmonicLowerBound":
+    #                 outf.write(colvars_harmonic_lower_bound_tail % (name,name,centre,kappa))
+    #             
+    #                  
+    #             
+    #             i += 1
+    #         poffset += chrlength
+    #             
+    #     outf.flush()
+    #===========================================================================
+    
+    if 'kappa_vs_genomic_distance' in steering_pairs:   
+            
+        kappa_values = {}
+        with open(kappa_vs_genomic_distance) as kgd:
+            for line in kgd:
+                line_vals = line.split()
+                kappa_values[int(line_vals[0])] = float(line_vals[1])
+            
+        for seqd in set(seqdists.values()):
+            kappa = 0
+            if seqd in kappa_values:
+                kappa = kappa_values[seqd]*kincrease
+            else:
+                for kappa_key in sorted(kappa_values, key=int):
+                    if int(kappa_key) > seqd:
+                        break
+                    kappa = kappa_values[kappa_key]*kincrease
+            centres=''
+            names=''
+            for seq_name in seqdists:
+                if seqdists[seq_name] == seqd:
+                    centres += ' 1.0'
+                    names += ' '+seq_name
+          
+            outf.write(colvars_tail % (str(seqd),names,centres,kappa))
+                    
     outf.flush()
     
     outf.close()
+        
+    
 
 ##########
 

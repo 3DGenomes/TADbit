@@ -177,7 +177,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
     
     HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG,resolution,zscores,
-                 close_bins=close_bins,first=first, nnkforce=CONFIG['kforce'])
+                 close_bins=close_bins,first=first)
     
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, HiCRestraints, use_HiC=use_HiC,
