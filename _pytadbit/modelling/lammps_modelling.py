@@ -3,16 +3,16 @@
 
 
 """
+from string                           import uppercase as uc, lowercase as lc
 from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
 from pytadbit.modelling.lammpsmodel import LAMMPSmodel
 #from pytadbit.modelling.imp_modelling import get_hicbased_restraints
 from pytadbit.modelling.structuralmodels import StructuralModels
 from pytadbit.modelling.restraints import HiCBasedRestraints
 from os.path import exists
-from random import randint, seed
+from random import randint, seed, random, sample, shuffle
 from cPickle import load, dump
 import multiprocessing as mu
-import random 
 from math import atan2
 import numpy as np
 import sys
@@ -25,7 +25,196 @@ from lammps import lammps
 
 import os
 
+def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
+                       n_keep=1000, close_bins=1, n_cpus=1, 
+                       verbose=0, outfile=None, config=None,
+                       values=None, experiment=None, coords=None, zeros=None,
+                       first=None, container=None,tmp_folder=None):
+    """
+    This function generates three-dimensional models starting from Hi-C data.
+    The final analysis will be performed on the n_keep top models.
 
+    :param zscores: the dictionary of the Z-score values calculated from the
+       Hi-C pairwise interactions
+    :param resolution:  number of nucleotides per Hi-C bin. This will be the
+       number of nucleotides in each model's particle
+    :param nloci: number of particles to model (may not all be present in
+       zscores)
+    :param None experiment: experiment from which to do the modelling (used only
+       for descriptive purpose)
+    :param None coords: a dictionary like:
+       ::
+
+         {'crm'  : '19',
+          'start': 14637,
+          'end'  : 15689}
+
+    :param 5000 n_models: number of models to generate
+    :param 1000 n_keep: number of models used in the final analysis (usually
+       the top 20% of the generated models). The models are ranked according to
+       their objective function value (the lower the better)
+    :param 1 close_bins: number of particles away (i.e. the bin number
+       difference) a particle pair must be in order to be considered as
+       neighbors (e.g. 1 means consecutive particles)
+    :param n_cpus: number of CPUs to use
+    :param False verbose: if set to True, information about the distance, force
+       and Z-score between particles will be printed. If verbose is 0.5 than
+       constraints will be printed only for the first model calculated.
+    :param None values: the normalized Hi-C data in a list of lists (equivalent
+       to a square matrix)
+    :param None config: a dictionary containing the standard
+       parameters used to generate the models. The dictionary should contain
+       the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
+       seen by doing:
+
+       ::
+
+         from pytadbit.modelling.CONFIG import CONFIG
+
+         where CONFIG is a dictionary of dictionaries to be passed to this function:
+
+       ::
+
+         CONFIG = {
+          'dmel_01': {
+              # Paramaters for the Hi-C dataset from:
+              'reference' : 'victor corces dataset 2013',
+
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
+
+              # Space occupied by a nucleotide (nm)
+              'scale'     : 0.005
+
+              # Strength of the bending interaction
+              'kbending'     : 0.0, # OPTIMIZATION:
+
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
+
+              # Minimum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+
+              # Maximum threshold used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values greater than upfreq
+              # and less than lowfreq will be included, while all the others will be rejected
+              'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
+
+              }
+          }
+    :param None first: particle number at which model should start (0 should be
+       used inside TADbit)
+    :param None container: restrains particle to be within a given object. Can
+       only be a 'cylinder', which is, in fact a cylinder of a given height to
+       which are added hemispherical ends. This cylinder is defined by a radius,
+       its height (with a height of 0 the cylinder becomes a sphere) and the
+       force applied to the restraint. E.g. for modeling E. coli genome (2
+       micrometers length and 0.5 micrometer of width), these values could be
+       used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
+       (6 micrometers diameter): ['cylinder', 3000, 0, 50]
+    :param None tmp_folder: path to a temporary file created during
+           the clustering computation. Default will be created in /tmp/ folder
+         
+
+    :returns: a StructuralModels object
+
+    """
+    
+    if not tmp_folder:
+        tmp_folder = '/tmp/tadbit_tmp_%s/' % (
+            ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
+    if not os.path.exists(tmp_folder):
+        os.makedirs(tmp_folder)
+    
+    # Setup CONFIG
+    if isinstance(config, dict):
+        CONFIG.HiC.update(config)
+    elif config:
+        raise Exception('ERROR: "config" must be a dictionary')
+
+    global RADIUS
+ 
+    #RADIUS = float(resolution * CONFIG['scale']) / 2
+    RADIUS = 0.5
+    CONFIG.HiC['resolution'] = resolution
+    CONFIG.HiC['maxdist'] = CONFIG.HiC['maxdist'] / (float(resolution * CONFIG.HiC['scale']))
+
+    global LOCI
+    # if z-scores are generated outside TADbit they may not start at zero
+    if first == None:
+        first = min([int(j) for i in zscores for j in zscores[i]] +
+                    [int(i) for i in zscores])
+    LOCI  = range(first, nloci + first)
+    
+    # random inital number
+    global START
+    START = start
+    # verbose
+    global VERBOSE
+    VERBOSE = verbose
+    #VERBOSE = 3
+    
+    HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution,zscores,
+                 close_bins=close_bins,first=first)
+    
+    
+    initial_conformation = tmp_folder+'initial_conformation.dat'
+    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation)
+    
+    colvars = tmp_folder+'colvars.dat'
+    steering_pairs = {       
+        'colvar_input': HiCRestraints,
+        'colvar_output': colvars,
+        'binsize': resolution,
+        'timesteps_per_k'           : 10000,
+        'timesteps_relaxation'      : 100000
+    }
+    
+    run_time = 1000
+    ini_seed = randint(1,99999)
+    models = lammps_simulate(initial_conformation, run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
+
+    try:
+        xpr = experiment
+        crm = xpr.crm
+        description = {'identifier'        : xpr.identifier,
+                       'chromosome'        : coords['crm'],
+                       'start'             : xpr.resolution * coords['start'],
+                       'end'               : xpr.resolution * coords['end'],
+                       'species'           : crm.species,
+                       'restriction enzyme': xpr.enzyme,
+                       'cell type'         : xpr.cell_type,
+                       'experiment type'   : xpr.exp_type,
+                       'resolution'        : xpr.resolution,
+                       'assembly'          : crm.assembly}
+        for desc in xpr.description:
+            description[desc] = xpr.description[desc]
+        for desc in crm.description:
+            description[desc] = xpr.description[desc]
+        for i, m in enumerate(models.values()):
+            m['index'] = i
+            m['description'] = description
+    except AttributeError: # case we are doing optimization
+        description = None
+        for i, m in enumerate(models.values()):
+            m['index'] = i
+    if outfile:
+        if exists(outfile):
+            old_models, old_bad_models = load(open(outfile))
+        else:
+            old_models, old_bad_models = {}, {}
+        models.update(old_models)
+        out = open(outfile, 'w')
+        dump((models), out)
+        out.close()
+    else:
+        return StructuralModels(
+            len(LOCI), models, {}, resolution, original_data=values,
+            zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
+            restraints=HiCRestraints._get_restraints(),
+            description=description)
 # Initialize the lammps simulation with standard polymer physics based
 # interactions: chain connectivity (FENE) ; excluded volume (WLC) ; and
 # bending rigidity (KP)
@@ -137,7 +326,7 @@ def init_lammps_run(lmp, initial_conformation,
     
 # This splits the lammps calculations on different processors:
 def lammps_simulate(initial_conformation, run_time,
-                    initial_seed=None, n_models=500,
+                    initial_seed=None, n_models=500, n_keep=100,
                     resolution=10000, description=None,
                     neighbor=CONFIG.neighbor, tethering=False, 
                     minimize=True, compress_with_pbc=False,
@@ -251,14 +440,14 @@ def lammps_simulate(initial_conformation, run_time,
     nloci = 0
     models = {}
     for i, (_, m) in enumerate(
-        sorted(results, key=lambda x: x[1]['objfun'])):
+        sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
         models[i] = m
         nloci = len(m['x'])
         
-    return StructuralModels(
-            nloci, models, [], resolution,description=description, zeros=tuple([1 for i in xrange(nloci)]))
+    return models
 
-
+    
+    
 # This performs the dynamics: I should add here: The steered dynamics (Irene and Hi-C based) ; 
 # The loop extrusion dynamics ; the binders based dynamics (Marenduzzo and Nicodemi)...etc...
 def run_lammps(kseed, initial_conformation, run_time,
@@ -635,16 +824,16 @@ def run_lammps(kseed, initial_conformation, run_time,
                           'z'          : [],
                           'cluster'    : 'Singleton',
                           'objfun'     : 0,
-                          'radius'     : 0.5,
+                          'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
                           'rand_init'  : str(kseed)})
     
     if pbc:
         store_conformation_with_pbc(xc, result, confining_environment)    
     else:        
         for i in xrange(0,len(xc),3):
-            result['x'].append(xc[i])
-            result['y'].append(xc[i+1])
-            result['z'].append(xc[i+2])
+            result['x'].append(xc[i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+            result['y'].append(xc[i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+            result['z'].append(xc[i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
 
     return result
 
@@ -753,7 +942,7 @@ harmonicWalls {
         ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
         
         print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
-        rand_positions = random.sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sample(list(range(totcolvars)), ncolvars)
         rand_positions = sorted(rand_positions)
     
         tfp = open(target_pairs)
@@ -782,7 +971,7 @@ harmonicWalls {
         ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
         
         print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
-        rand_positions = random.sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sample(list(range(totcolvars)), ncolvars)
         rand_positions = sorted(rand_positions)
         
         
@@ -1080,7 +1269,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
     :param outfile: file where to store resulting initial conformation file
 
     """
-    random.seed(seed_of_the_random_number_generator)
+    seed(seed_of_the_random_number_generator)
     
     # This allows to organize the largest chromosomes first.
     # This is to get a better acceptance of the chromosome positioning.
@@ -1127,7 +1316,7 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
     :param outfile: file where to store resulting initial conformation file
 
     """
-    random.seed(seed_of_the_random_number_generator)
+    seed(seed_of_the_random_number_generator)
     
     # This allows to organize the largest chromosomes first.
     # This is to get a better acceptance of the chromosome positioning.
@@ -1226,7 +1415,7 @@ def generate_chromosome_rosettes_conformation_with_pbc ( chromosome_particle_num
     :param outfile: file where to store resulting initial conformation file
 
     """
-    random.seed(seed_of_the_random_number_generator)
+    seed(seed_of_the_random_number_generator)
     
     # This allows to organize the largest chromosomes first.
     # This is to get a better acceptance of the chromosome positioning.
@@ -1703,8 +1892,8 @@ def draw_second_extreme_of_a_segment_inside_the_confining_environment(x0, y0, z0
     inside = 0
     while inside == 0:
         particle = []
-        temp_theta  = arccos(2.0*random.random()-1.0)
-        temp_phi    = 2*pi*random.random()
+        temp_theta  = arccos(2.0*random()-1.0)
+        temp_phi    = 2*pi*random()
         particle.append(x0 + segment_length * cos(temp_phi) * sin(temp_theta))
         particle.append(y0 + segment_length * sin(temp_phi) * sin(temp_theta))
         particle.append(z0 + segment_length * cos(temp_theta))
@@ -1723,8 +1912,8 @@ def draw_second_extreme_of_a_segment(x0, y0, z0,
                                      segment_length, 
                                      object_radius):
     particle = []
-    temp_theta  = arccos(2.0*random.random()-1.0)
-    temp_phi    = 2*pi*random.random()
+    temp_theta  = arccos(2.0*random()-1.0)
+    temp_phi    = 2*pi*random()
     particle.append(x0 + segment_length * cos(temp_phi) * sin(temp_theta))
     particle.append(y0 + segment_length * sin(temp_phi) * sin(temp_theta))
     particle.append(z0 + segment_length * cos(temp_theta))
@@ -1773,9 +1962,9 @@ def draw_point_inside_the_confining_environment(confining_environment, object_ra
     inside = 0
     while inside == 0:
         particle = []
-        particle.append((2.0*random.random()-1.0)*(dimension_x - object_radius))
-        particle.append((2.0*random.random()-1.0)*(dimension_y - object_radius))
-        particle.append((2.0*random.random()-1.0)*(dimension_z - object_radius))
+        particle.append((2.0*random()-1.0)*(dimension_x - object_radius))
+        particle.append((2.0*random()-1.0)*(dimension_y - object_radius))
+        particle.append((2.0*random()-1.0)*(dimension_z - object_radius))
         # Check if the particle is inside the confining_environment
         inside = check_point_inside_the_confining_environment(particle[0],
                                                               particle[1],
@@ -2269,7 +2458,7 @@ def read_target_loops_input(input_filename, chromosome_length, percentage):
 
     #ntarget_loops = int(len(loops)*percentage/100.)    
     ntarget_loops = int(len(loops))    
-    random.shuffle(loops)
+    shuffle(loops)
     target_loops = loops[0:ntarget_loops]
 
     return target_loops

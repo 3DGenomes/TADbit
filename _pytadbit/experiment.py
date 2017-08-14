@@ -23,6 +23,7 @@ from pytadbit.modelling.structuralmodels import StructuralModels
 try:
     from pytadbit.modelling.impoptimizer  import IMPoptimizer
     from pytadbit.modelling.imp_modelling import generate_3d_models
+    from pytadbit.modelling.lammps_modelling import generate_lammps_models
 except ImportError:
     stderr.write('IMP not found, check PYTHONPATH\n')
 
@@ -808,7 +809,7 @@ class Experiment(object):
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
                      outfile=None, config=CONFIG['dmel_01'],
-                     container=None):
+                     container=None,tool='imp',tmp_folder=None):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -874,7 +875,9 @@ class Experiment(object):
                   'scale'     : 0.005
                   }
               }
-
+        :param None tmp_folder: for lammps simulation, path to a temporary file created during
+           the clustering computation. Default will be created in /tmp/ folder
+           
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
@@ -891,12 +894,20 @@ class Experiment(object):
         nloci = end - start + 1
         if verbose:
             stderr.write('Preparing to model %s particles\n' % nloci)
-        return generate_3d_models(zscores, self.resolution, nloci,
-                                  values=values, n_models=n_models,
-                                  outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
-                                  verbose=verbose, keep_all=keep_all, first=0,
-                                  close_bins=close_bins, config=config, container=container,
-                                  experiment=self, coords=coords, zeros=zeros)
+        if tool=='imp':
+            return generate_3d_models(zscores, self.resolution, nloci,
+                                      values=values, n_models=n_models,
+                                      outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
+                                      verbose=verbose, keep_all=keep_all, first=0,
+                                      close_bins=close_bins, config=config, container=container,
+                                      experiment=self, coords=coords, zeros=zeros)
+        elif tool=='lammps':
+            return generate_lammps_models(zscores, self.resolution, nloci,
+                                      values=values, n_models=n_models,
+                                      outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
+                                      verbose=verbose, first=0,
+                                      close_bins=close_bins, config=config, container=container,
+                                      experiment=self, coords=coords, zeros=zeros,tmp_folder=tmp_folder)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
