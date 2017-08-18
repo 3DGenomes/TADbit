@@ -468,9 +468,6 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
     if verbose:
         printime('  - Getting matrices')
 
-    if verbose:
-        printime('  - Writing matrices')
-
     # define output file name
     if len(regions) == 1:
         if region2:
@@ -628,8 +625,9 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
         printime('\nDone.')
 
 
-def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
-                   resolution, tmpdir, region, start, end, half=False):
+def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
+                   rand_hash, resolution, tmpdir, region, start, end,
+                   half=False, sum_columns=False):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     bam_start = start - 2
@@ -665,6 +663,19 @@ def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
                                 '%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
         out.close()
+        if sum_columns:
+            sumcol = {}
+            cisprc = {}
+            for (i, j), v in dico.iteritems():
+                # out.write('%d\t%d\t%d\n' % (i, j, v))
+                try:
+                    sumcol[i] += v
+                    cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
+                except KeyError:
+                    sumcol[i]  = v
+                    cisprc[i]  = [0, 0]
+                    cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
+            return sumcol, cisprc
     except Exception, e:
         exc_type, exc_obj, exc_tb = exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -675,7 +686,7 @@ def _read_bam_frag(inbam, filter_exclude, sections1, sections2, rand_hash,
 def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
              region2=None, start2=None, end2=None,
-             tmpdir='.', verbose=True):
+             tmpdir='.', verbose=True, normalize=False):
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
@@ -744,7 +755,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     ends[-1] += 1  # last nucleotide included
 
     # reduce dictionaries
-    bins = []
+    all_bins = []
     for crm in regions:
         beg_crm = section_pos[crm][0]
         if len(regions) == 1:
@@ -753,8 +764,8 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         else:
             start = 0
             end   = section_pos[crm][1] - section_pos[crm][0] + 1
-        bins.extend([(crm, i) for i in xrange(start, end)])
-    bins_dict1 = dict([(j, i) for i, j in enumerate(bins)])
+        all_bins.extend([(crm, i) for i in xrange(start, end)])
+    bins_dict1 = dict([(j, i) for i, j in enumerate(all_bins)])
     if region2:
         if not region2 in section_pos:
             raise Exception('ERROR: chromosome %s not found' % region2)
@@ -786,15 +797,18 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     if verbose:
         printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
     mkdir(os.path.join(tmpdir, '_tmp_%s' % (rand_hash)))
+    # empty all_bins array if we are not going to normalize
+    if not normalize:
+        all_bins = []
     procs = []
     for i, (region, b, e) in enumerate(zip(regs, begs, ends)):
         if ncpus == 1:
-            _read_bam_frag(inbam, filter_exclude,
+            _read_bam_frag(inbam, filter_exclude, all_bins,
                            bins_dict1, bins_dict2, rand_hash,
                            resolution, tmpdir, region, b, e,)
         else:
             procs.append(pool.apply_async(
-                _read_bam_frag, args=(inbam, filter_exclude,
+                _read_bam_frag, args=(inbam, filter_exclude, all_bins,
                                       bins_dict1, bins_dict2, rand_hash,
                                       resolution, tmpdir, region, b, e,)))
     pool.close()

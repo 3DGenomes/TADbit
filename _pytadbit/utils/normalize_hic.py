@@ -7,42 +7,42 @@ Schematic flow chart for five iterations (it = 0->5) starting from the symmetric
 matrix W of size N:
 
    +---------->  Wij
-   |    
+   |
    |              |
    |              v
    |             __
    |             \
    |        Si = /_    Wij
    |            j=0->N
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                   _
    |        DBi = Si / S
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |        Bi = Bi x DBi             ---> keep track, used as expected value
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                 Wij
    |       Wij = -----------
-   |              DBi x DBj  
-   |    
+   |              DBi x DBj
+   |
    |              |
    |        it<5 / \ it=5
-   |____________/   \_________   TADbit          _           
+   |____________/   \_________   TADbit          _
     it++                     \`----------> Wij / S    meaning that: Si = O(1)
                              |                        ('Si' tends towards one
                              |                         when 'it' -> infinite)
                              |Strict Imakaev
                              |
                              v
-                             
+
                             Wij
                           -------  meaning that: Si = 1
                            ___
@@ -95,7 +95,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False, **kwargs):
     """
     Implementation of iterative correction Imakaev 2012
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param None remove: columns not to consider
@@ -149,14 +149,14 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param 0.05 signal_to_noise: to calculate expected interaction counts,
        if not enough reads are observed at a given distance the observations
        of the distance+1 are summed. a signal to noise ratio of < 0.05
        corresponds to > 400 reads.
-    
+
     :returns: a vector of biases (length equal to the size of the matrix)
     """
     min_n = signal_to_noise ** -2. # equals 400 when default

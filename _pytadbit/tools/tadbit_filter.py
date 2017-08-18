@@ -80,8 +80,6 @@ def run(opts):
     n_valid_pairs = apply_filter(reads, mreads, masked,
                                  filters=opts.apply)
 
-    # TODO: save to BAM, and compress/remove other files
-
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s' % param_hash)
 
@@ -92,7 +90,7 @@ def run(opts):
     print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
-               outbam, hist_path, median, max_f, mad, launch_time, finish_time)
+               outbam + '.bam', hist_path, median, max_f, mad, launch_time, finish_time)
 
 
 def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,

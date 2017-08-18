@@ -807,7 +807,7 @@ class Experiment(object):
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG['dmel_01'],
+                     outfile=None, config=CONFIG,
                      container=None):
         """
         Generates of three-dimensional models using IMP, for a given segment of
@@ -838,7 +838,7 @@ class Experiment(object):
            micrometers length and 0.5 micrometer of width), these values could be
            used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
            (6 micrometers diameter): ['cylinder', 3000, 0, 50]
-        :param CONFIG['dmel_01'] config: a dictionary containing the standard
+        :param CONFIG config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
@@ -853,26 +853,24 @@ class Experiment(object):
            ::
 
              CONFIG = {
-              'dmel_01': {
-                  # use these paramaters with the Hi-C data from:
-                  'reference' : 'victor corces dataset 2013',
+              # use these paramaters with the Hi-C data from:
+              'reference' : 'victor corces dataset 2013',
 
-                  # Force applied to the restraints inferred to neighbor particles
-                  'kforce'    : 5,
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
 
-                  # Maximum experimental contact distance
-                  'maxdist'   : 600, # OPTIMIZATION: 500-1200
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
-                  # Minimum and maximum thresholds used to decide which experimental values have to be
-                  # included in the computation of restraints. Z-score values bigger than upfreq
-                  # and less that lowfreq will be include, whereas all the others will be rejected
-                  'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+              # Minimum and maximum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
-                  'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
-                  # How much space (radius in nm) ocupies a nucleotide
-                  'scale'     : 0.005
-                  }
+              # How much space (radius in nm) ocupies a nucleotide
+              'scale'     : 0.005
               }
 
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.

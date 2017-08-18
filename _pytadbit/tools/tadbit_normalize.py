@@ -100,7 +100,6 @@ def run(opts):
                        + '\n')
         out_bias.close()
 
-
     # pickle the HiC-data object
     print ' - Saving genomic matrix pickle'
     pickle_path = path.join(opts.workdir, '04_normalization',

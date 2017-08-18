@@ -70,7 +70,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
     # max number of reads per intermediate files for sorting
     max_size = 1000000
-    
+
     windows = {}
     multis  = {}
     procs   = []
@@ -141,7 +141,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         if verbose:
             stdout.write('\n')
         tmp_name = tmp_files[0]
-        
+
         if verbose:
             print 'Getting Multiple contacts'
         reads_fh = open(outfiles[read], 'w')
