@@ -471,8 +471,11 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
     # define output file name
     if len(regions) == 1:
         if region2:
-            name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
-                                          region2, start2 / resolution, end2 / resolution)
+            try:
+                name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
+                                              region2, start2 / resolution, end2 / resolution)
+            except TypeError: # all chromosomes
+                name = '%s_%s' % (region1, region2)
         elif start1 is not None:
             name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
         else:
@@ -958,8 +961,11 @@ def write_matrix(inbam, resolution, biases, outdir,
     # define output file name
     if len(regions) == 1:
         if region2:
-            name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
-                                          region2, start2 / resolution, end2 / resolution)
+            try:
+                name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
+                                              region2, start2 / resolution, end2 / resolution)
+            except TypeError: # all chromosomes
+                name = '%s_%s' % (region1, region2)
         elif start1 is not None:
             name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
         else:

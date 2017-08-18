@@ -174,11 +174,11 @@ def optimize(results, opts, name):
     tmp = open('_tmp_results_' + tmp_name, 'w')
     dump(results, tmp)
     tmp.close()
-    
+
     tmp = open('_tmp_opts_' + tmp_name, 'w')
     dump(opts, tmp)
     tmp.close()
-    
+
     tmp = open('_tmp_optim_' + tmp_name + '.py', 'w')
     tmp.write('''
 from cPickle import load, dump
@@ -388,7 +388,7 @@ def main():
     ############################################################################
     if opts.tad and not opts.analyze_only:
         search_tads(opts, crm, name)
-        
+
     # Save the chromosome
     # Chromosomes can later on be loaded to avoid re-reading the original
     # matrices. See function "load_chromosome".
@@ -430,13 +430,15 @@ def main():
 
     if not opts.analyze_only:
         results = load_optimal_imp_parameters(opts, name, exp)
-        
+
     ############################################################################
     #########################  OPTIMIZE IMP PARAMETERS #########################
     ############################################################################
 
     if not opts.analyze_only:
         optpar = optimize(results, opts, name)
+        if opts.optimize_only:
+            exit()
 
     ############################################################################
     ##############################  MODEL REGION ###############################
@@ -466,7 +468,7 @@ def main():
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################
-    
+
     if "correlation real/models" in opts.analyze:
         # Calculate the correlation coefficient between a set of kept models and
         # the original HiC matrix
@@ -610,7 +612,7 @@ def main():
         models.objective_function_model(
             0, log=True, smooth=False,
             savefig=os.path.join(opts.outdir, name, name + '_obj-func.pdf'))
-        
+
     if "centroid" in opts.analyze:
         # Get the centroid model of cluster #1
         logging.info("\tGetting centroid...")
@@ -672,7 +674,7 @@ def main():
         nump   = 30   # number of particles (resolution)
         logging.info("\tGetting accessibility data (this can take long)...")
         models.accessibility(radius, nump=nump,
-            error=True, 
+            error=True,
             savefig =os.path.join(opts.outdir, name, name + '_accessibility.pdf'),
             savedata=os.path.join(opts.outdir, name, name + '_accessibility.dat'))
 
