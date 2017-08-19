@@ -13,6 +13,7 @@ from tarfile                      import open as taropen
 from StringIO                     import StringIO
 import datetime
 from sys                          import stdout, stderr, exc_info
+from distutils.version            import LooseVersion
 import os
 import multiprocessing as mu
 
@@ -247,8 +248,14 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     if not valid:
         filter_line, filter_handler = get_filters(infile,masked)
     fhandler.seek(pos_fh)
-    proc = Popen(samtools + ' view -Shb -@ %d - | samtools sort -@ %d - %s' % (
-        ncpus, ncpus, outbam),
+    # check samtools version number and modify command line
+    version = LooseVersion([l.split()[1]
+                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            if 'Version' in l][0])
+    pre = '-o' if version >= LooseVersion('1.3') else ''
+
+    proc = Popen(samtools + ' view -Shb -@ %d - | samtools sort -@ %d - %s %s' % (
+        ncpus, ncpus, pre,outbam),
                  shell=True, stdin=PIPE)
     proc.stdin.write(output)
     if frmt == 'mid':
