@@ -364,11 +364,14 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='MAPPED_INPUTs'""")
         if not cur.fetchall():
-            cur.execute("""
-            create table PATHs
-               (Id integer primary key,
+            try:
+                cur.execute("""
+                create table PATHs
+                (Id integer primary key,
                 JOBid int, Path text, Type text,
                 unique (Path))""")
+            except lite.OperationalError:
+                pass  # may append when mapped files cleaned
             cur.execute("""
             create table JOBs
                (Id integer primary key,
