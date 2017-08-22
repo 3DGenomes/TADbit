@@ -56,6 +56,7 @@ try:
     from rpy2.rinterface          import RRuntimeError
     try:
         dryhic = importr('dryhic')
+        from numpy import float64
     except RRuntimeError:
         print ('WARNING: dryhic (https://github.com/qenvio/dryhic) not '
                'installed, OneD normalization not available')
@@ -91,7 +92,7 @@ def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
                                    for k in kwargs))
 
-    return list(dryhic.oned(info, form))
+    return map(float64, dryhic.oned(info, form))
 
 
 def _update_S(W):

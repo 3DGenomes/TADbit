@@ -6,6 +6,9 @@ from __future__ import absolute_import
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+import matplotlib
+matplotlib.use('Agg')
+
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse

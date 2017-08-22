@@ -15,11 +15,12 @@ from collections                          import OrderedDict
 from cPickle                              import dump, load
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
+
 import sqlite3 as lite
 import time
 
 from pysam                                import AlignmentFile
-from numpy                                import nanmean, mean
+from numpy                                import nanmean, isnan, nansum
 
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
@@ -30,7 +31,6 @@ from pytadbit.parsers.hic_bam_parser      import printime, print_progress
 from pytadbit.utils.extraviews            import nicer
 from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
-from pytadbit.mapping.restriction_enzymes import map_re_sites_nochunk
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta
 
@@ -63,13 +63,15 @@ def run(opts):
         refs = bamfile.references
         bamfile.close()
 
+        # get genome sequence ~1 min
+        printime('  - parsing FASTA')
         genome = parse_fasta(opts.fasta, verbose=False)
         genome_lengths = {refs[0] : 0}
         total = len(genome[refs[0]]) / opts.reso + 1
         for crm in refs[1:]:
             genome_lengths[crm] = total + len(genome[crm]) / opts.reso + 1
 
-        # get mappability
+        # get mappability ~2 min
         printime('  - Parsing mappability')
         fh = open(opts.mappability)
         mappability = []
@@ -126,8 +128,7 @@ def run(opts):
                 seq = genome[crm][pos-200:pos + opts.reso + 200]
                 n_rsites.append(seq.count(re_site))
 
-    printime('  - computing biases')
-    biases, decay, badcol, cisprc = read_bam(
+    biases, decay, badcol, raw_cisprc, norm_cisprc = read_bam(
         mreads, filter_exclude, opts.reso, min_count=opts.min_count, sigma=2,
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
@@ -139,11 +140,14 @@ def run(opts):
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
                                 'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
                                     opts.reso, param_hash))
+
+    # get and plot decay
+    printime('  - Computing decay')
     (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
         mreads, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
         savefig=inter_vs_gcoord, biases=biases)
 
-    print 'Decay slope 0.7-10 Mb\t%s' % a2
+    print ('    -> Decay slope 0.7-10 Mb\t%s' % a2)
 
     printime('  - Saving biases and badcol columns')
     # biases
@@ -159,14 +163,14 @@ def run(opts):
 
     finish_time = time.localtime()
 
-    save_to_db(opts, bias_file, mreads, bad_col_image,
-               len(badcol), len(biases), cisprc,
+    save_to_db(opts, bias_file, opts.bam, bad_col_image,
+               len(badcol), len(biases), raw_cisprc, norm_cisprc,
                inter_vs_gcoord, a2,
                launch_time, finish_time)
 
 
 def save_to_db(opts, bias_file, mreads, bad_col_image,
-               nbad_columns, ncolumns, cisprc,
+               nbad_columns, ncolumns, raw_cisprc, norm_cisprc,
                inter_vs_gcoord, a2,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
@@ -189,6 +193,7 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='NORMALIZE_OUTPUTs'""")
         if not cur.fetchall():
+            print 'NEWWWW!!!!'
             cur.execute("""
             create table NORMALIZE_OUTPUTs
                (Id integer primary key,
@@ -196,9 +201,11 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
                 Input int,
                 N_columns int,
                 N_filtered int,
-                Cis_percentage real,
+                Cis_percentage_Raw real,
+                Cis_percentage_Norm real,
                 Slope_700kb_10Mb real,
                 Resolution int,
+                Normalization text,
                 Factor int,
                 unique (JOBid))""")
         try:
@@ -218,26 +225,32 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
         add_path(cur, bad_col_image   , 'FIGURE'     , jobid, opts.workdir)
         add_path(cur, inter_vs_gcoord , 'FIGURE'     , jobid, opts.workdir)
-        add_path(cur, mreads          , '2D_BED'     , jobid, opts.workdir)
+        if opts.bam:
+            add_path(cur, path.realpath(opts.bam), 'EXT_2D_BAM' , jobid, opts.workdir)
+        if opts.mappability:
+            add_path(cur, path.realpath(opts.mappability), 'EXT_MAPPABILITY' , jobid, opts.workdir)
+        if opts.fasta:
+            add_path(cur, path.realpath(opts.fasta), 'EXT_FASTA' , jobid, opts.workdir)
         # get pathid of input
         cur.execute("select id from paths where path = '%s'" % (path.relpath(mreads, opts.workdir)))
         input_bed = cur.fetchall()[0][0]
 
+        a2 = 0 if isnan(a2) else a2
         try:
             cur.execute("""
             insert into NORMALIZE_OUTPUTs
-            (Id  , JOBid,     Input, N_columns,   N_filtered, Cis_percentage, Slope_700kb_10Mb,   Resolution,      Factor)
+            (Id  , JOBid,     Input, N_columns,   N_filtered, Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization,      Factor)
             values
-            (NULL,    %d,        %d,        %d,           %d,             %f,               %f,           %d,          %f)
-            """ % (jobid, input_bed,  ncolumns, nbad_columns,         cisprc,               a2,    opts.reso, opts.factor))
+            (NULL,    %d,        %d,        %d,           %d,                 %f,                  %f,               %f,           %d,               '%s',          %f)
+            """ % (jobid, input_bed,  ncolumns, nbad_columns,         raw_cisprc,         norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
         except lite.OperationalError:
             try:
                 cur.execute("""
                 insert into NORMALIZE_OUTPUTs
-                (Id  , JOBid,     Input, N_columns,   N_filtered,  Cis_percentage, Slope_700kb_10Mb,   Resolution,      Factor)
+                (Id  , JOBid,     Input, N_columns,   N_filtered,      Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization, Factor)
                 values
-                (NULL,    %d,        %d,        %d,           %d,              %f,               %f,           %d,          %f)
-                """ % (jobid, input_bed,  ncolumns, nbad_columns,          cisprc,               a2,    opts.reso, opts.factor))
+                (NULL,    %d,        %d,        %d,           %d,                      %f,                  %f,               %f,           %d,               '%s',     %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns,              raw_cisprc,          norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
             except lite.OperationalError:
                 print 'WANRING: Normalized table not written!!!'
 
@@ -297,7 +310,8 @@ def load_parameters_fromdb(opts, what='bam'):
             select distinct path from paths
             where paths.type = 'HIC_BAM' and paths.jobid = %s
             """ % parse_jobid)
-        return cur.fetchall()[0][0]
+        bam = cur.fetchall()[0][0]
+        return bam
 
 
 def populate_args(parser):
@@ -573,7 +587,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     ends[-1] += 1  # last nucleotide included
 
     # print '\n'.join(['%s %d %d' % (a, b, c) for a, b, c in zip(regs, begs, ends)])
-    printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
+    printime('  - Parsing BAM (%d chunks)' % (len(regs)))
     bins_dict = dict([(j, i) for i, j in enumerate(bins)])
     pool = mu.Pool(ncpus)
     procs = []
@@ -586,34 +600,33 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     print_progress(procs)
     pool.join()
     ## COLLECT RESULTS
-    verbose = True
     cisprc = {}
+    printime('  - Collecting cis and total interactions per bin (%d chunks)' % (len(regs)))
+    stdout.write('     ')
     for countbin, (region, start, end) in enumerate(zip(regs, begs, ends)):
-        if verbose:
-            if not countbin % 10 and countbin:
-                stdout.write(' ')
-            if not countbin % 50 and countbin:
-                stdout.write(' %9s\n     ' % ('%s/%s' % (countbin , len(regs))))
-            stdout.write('.')
-            stdout.flush()
+        if not countbin % 10 and countbin:
+            stdout.write(' ')
+        if not countbin % 50 and countbin:
+            stdout.write(' %9s\n     ' % ('%s/%s' % (countbin , len(regs))))
+        stdout.write('.')
+        stdout.flush()
 
         fname = path.join(outdir,
                           'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
         tmp_cisprc = load(open(fname))
         system('rm -f %s' % fname)
         cisprc.update(tmp_cisprc)
-    if verbose:
-        print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
-                            '%s/%s' % (len(regs),len(regs)))
+    print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
+                        '%s/%s' % (len(regs),len(regs)))
 
-    print '  - Removing columns with too few or too much interactions'
+    printime('  - Removing columns with too few or too much interactions')
     if len(bamfile.references) == 1 and not min_count:
         raise Exception("ERROR: only one chromosome can't filter by "
                         "cis-percentage, set min_count instead")
     elif not min_count and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True,
-            savefig=path.join(outdir + 'filtered_bins_%s_%s.png' % (
+            savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
                 nicer(resolution).replace(' ', ''), extra_out)))
     else:
         print '      -> too few  interactions defined as less than %9d interactions' % (
@@ -630,8 +643,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
             len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
 
-    av_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
-                    for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
+    raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
+                     for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
 
     printime('  - Rescaling biases')
     size = len(bins)
@@ -640,14 +653,14 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     if normalization=='Vanilla':
         mean_col = nanmean(biases)
-        biases = dict([(k, b / mean_col * mean_col**0.5)
-                   for k, b in enumerate(biases)])
+        biases   = dict((k, b / mean_col * mean_col**0.5)
+                        for k, b in enumerate(biases))
     elif normalization=='oneD':
-        biases = oneD(tot=biases,
-                      map=mappability,
-                      res=n_rsites,
-                      cg=cg_content)
-        biases = [biases[k] for k in xrange(size)]
+        printime('    - oneD normalization')
+        if len(set([len(biases), len(mappability), len(n_rsites), len(cg_content)])) > 1:
+            raise Exception('Error: not all arrays have the same size')
+        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        biases = dict((k, b) for k, b in enumerate(biases))
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
@@ -655,11 +668,14 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     # collect subset-matrices and write genomic one
     # out = open(os.path.join(outdir,
     #                         'hicdata_%s.abc' % (nicer(resolution).replace(' ', ''))), 'w')
+    printime('  - Getting sum of normalized bins')
     pool = mu.Pool(ncpus)
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
-        fname = path.join(outdir, 'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
-        procs.append(pool.apply_async(sum_nrm_matrix, args=(fname, biases, )))
+        fname = path.join(outdir,
+                          'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
+        procs.append(pool.apply_async(sum_nrm_matrix,
+                                      args=(fname, biases,)))
     pool.close()
     print_progress(procs)
     pool.join()
@@ -669,6 +685,30 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
+
+    printime('  - Computing Cis percentage')
+    # normalize decay by size of the diagonal, and by Vanilla correction
+    # (all cells must still be equals to 1 in average)
+
+    pool = mu.Pool(ncpus)
+    procs = []
+    for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+        fname = path.join(outdir,
+                          'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
+        procs.append(pool.apply_async(get_cis_perc,
+                                      args=(fname, biases, badcol, bins)))
+    pool.close()
+    print_progress(procs)
+    pool.join()
+
+    # collect results
+    cis = total = 0
+    for proc in procs:
+        c, t = proc.get()
+        cis += c
+        total += t
+    norm_cisprc = float(cis) / total
+    print '    * Cis-percentage: %.1f%%' % (norm_cisprc * 100)
 
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction
@@ -729,7 +769,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         except ZeroDivisionError:  # all columns at this distance are "bad"
             pass
 
-    return biases, sumdec, badcol, av_cisprc
+    return biases, sumdec, badcol, raw_cisprc, norm_cisprc
 
 
 def sum_dec_matrix(fname, biases, badcol, bins):
@@ -753,8 +793,24 @@ def sum_dec_matrix(fname, biases, badcol, bins):
     return sumdec
 
 
+def get_cis_perc(fname, biases, badcol, bins):
+    dico = load(open(fname))
+    cis = total = 0
+    for (i, j), v in dico.iteritems():
+        if i <= j:
+            continue
+        if i in badcol or j in badcol:
+            continue
+        val = v / biases[i] / biases[j]
+        # same chromosome
+        if bins[i][0] == bins[j][0]:
+            cis += val
+        total += val
+    return cis, total
+
+
 def sum_nrm_matrix(fname, biases):
     dico = load(open(fname))
-    sumnrm = sum(v / biases[i] / biases[j]
-                 for (i, j), v in dico.iteritems())
+    sumnrm = nansum([v / biases[i] / biases[j]
+                     for (i, j), v in dico.iteritems()])
     return sumnrm

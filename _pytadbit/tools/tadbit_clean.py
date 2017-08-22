@@ -6,14 +6,15 @@ information needed
 
 """
 
-from argparse                    import HelpFormatter
-from pytadbit.utils.sqlite_utils import delete_entries
-from pytadbit.utils.sqlite_utils import update_wordir_path
-import sqlite3 as lite
 from os                          import path, system, remove
 from string                      import ascii_letters
 from random                      import random
 from shutil                      import copyfile
+from argparse                    import HelpFormatter
+import sqlite3 as lite
+
+from pytadbit.utils.sqlite_utils import delete_entries
+from pytadbit.utils.sqlite_utils import update_wordir_path
 
 DESC = "Delete jobs and results of a given list of jobids in a given directories"
 
@@ -50,7 +51,7 @@ def run(opts):
         if opts.delete:
             print 'deleting %d files' % len(paths)
             for _, lpath, typ in paths:
-                if typ in protected_types:
+                if typ in protected_types or typ.startswith('EXT_'):
                     continue
                 print '  x ' + path.join(opts.workdir, lpath)
                 system('rm -rf ' + path.join(opts.workdir, lpath))
@@ -65,7 +66,7 @@ def run(opts):
                 else:
                     col = 'JOBid'
                 delete_entries(cur, table, col, jobid)
-                    
+
             for cpath, _, _ in paths:
                 if table.lower() == 'mapped_outputs':
                     elt = 'BEDid'

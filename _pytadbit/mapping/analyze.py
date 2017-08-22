@@ -416,14 +416,16 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
             diff = abs(ps1 - ps2)
             if max_diff > diff >= min_diff:
                 try:
-                    dist_intr[diff][ps1] += norm(ps1, ps2)
+                    dist_intr[diff][ps1].append(norm(ps1, ps2))
                 except KeyError:
-                    dist_intr[diff][ps1] = norm(ps1, ps2)
+                    dist_intr[diff][ps1] = [norm(ps1, ps2)]
         bamfile.close()
         for diff in dist_intr:
             if not len(dist_intr[diff]):
                 dist_intr[diff] = [float('nan')]
                 continue
+            dist_intr[diff] = dict((k, np.nansum(l))
+                                   for k, l in dist_intr[diff].iteritems())
             dist_intr[diff] = [dist_intr[diff].get(k, 0)
                                for k in xrange(max(dist_intr[diff]) - diff)]
     elif isinstance(data, basestring):
