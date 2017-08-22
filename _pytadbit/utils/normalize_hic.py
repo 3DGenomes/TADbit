@@ -50,6 +50,49 @@ matrix W of size N:
                            /__ Wi
 
 """
+try:
+    import rpy2.robjects as robjects
+    from rpy2.robjects.packages   import importr
+    from rpy2.rinterface          import RRuntimeError
+    try:
+        dryhic = importr('dryhic')
+    except RRuntimeError:
+        print ('WARNING: dryhic (https://github.com/qenvio/dryhic) not '
+               'installed, OneD normalization not available')
+except ImportError:
+    print 'WARNING: RPY2 not installed, OneD normalization not available'
+
+
+
+def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
+    """
+    Normalizes according to oneD normalization that takes into account the GC
+    content, mappability and the number of restriction sites per bin.
+
+    Vidal, E., le Dily, F., Quilez, J., Stadhouders, R., Cuartero, Y., Graf, T., Marti-Renom, Marc A., Beato, M., Filion, G. (2017).
+    OneD: increasing reproducibility of Hi-C Samples with abnormal karyotypes.
+    bioRxiv. http://doi.org/10.1101/148254
+
+    :param form: string representing an R Formulae
+    :param kwargs: dictionary with keys present in the formula and values being
+       lists of equal length.
+       for example:
+           oneD(tot=[1,2,3...],
+                map=[1,2,3...],
+                res=[1,2,3...],
+                cg =[1,2,3...])
+
+
+
+    :returns: list of biases to use to normalize the raw matrix of interactions
+    """
+    form = robjects.Formula(form)
+
+    info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
+                                   for k in kwargs))
+
+    return list(dryhic.oned(info, form))
+
 
 def _update_S(W):
     S = {}

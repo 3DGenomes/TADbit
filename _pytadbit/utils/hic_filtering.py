@@ -484,20 +484,18 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         plt.close('all')
 
 
-    for k in cisprc:
-        cisprc[k] = cisprc[k][1]
     badcol = {}
     countL = 0
     countZ = 0
     countU = 0
     for c in xrange(size):
-        if cisprc.get(c, 0) < min_count:
-            badcol[c] = cisprc.get(c, 0)
+        if cisprc.get(c, [0, 0])[1] < min_count:
+            badcol[c] = cisprc.get(c, [0, 0])[1]
             countL += 1
             if not c in cisprc:
                 countZ += 1
-        elif cisprc[c] > max_count:  # don't need get here, already cought in previous condition
-            badcol[c] = cisprc.get(c, 0)
+        elif cisprc[c][1] > max_count:  # don't need get here, already cought in previous condition
+            badcol[c] = cisprc.get(c, [0, 0])[1]
             countU += 1
     print '      -> removed %d columns (%d/%d/%d null/low/high counts) of %d (%.1f%%)' % (
         len(badcol), countZ, countL, countU, size, float(len(badcol)) / size * 100)

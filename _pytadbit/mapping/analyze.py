@@ -2,15 +2,10 @@
 18 Nov 2014
 """
 
-from pytadbit                     import HiC_data
-from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
-from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
-from pytadbit.utils.tadmaths      import right_double_mad as mad
 from warnings                     import warn
 from collections                  import OrderedDict
-from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
-from pytadbit.utils.extraviews    import nicer
-from pytadbit.utils.file_handling import mkdir
+
+from pysam                        import AlignmentFile
 from scipy.stats                  import norm as sc_norm, skew, kurtosis
 from scipy.stats                  import pearsonr, spearmanr, linregress
 from numpy.linalg                 import eigh
@@ -23,6 +18,15 @@ try:
     from matplotlib.colors import LinearSegmentedColormap
 except ImportError:
     warn('matplotlib not found\n')
+
+
+from pytadbit                     import HiC_data
+from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
+from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
+from pytadbit.utils.tadmaths      import right_double_mad as mad
+from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
+from pytadbit.utils.extraviews    import nicer
+from pytadbit.utils.file_handling import mkdir
 
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
@@ -369,14 +373,15 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
 def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
                                   savefig=None, normalized=False,
-                                  plot_each_cell=False):
+                                  plot_each_cell=False, biases=None):
     """
     Plot the number of interactions observed versus the genomic distance between
     the mapped ends of the read. The slope is expected to be around -1, in
     logarithmic scale and between 700 kb and 10 Mb (according to the prediction
     of the fractal globule model).
 
-    :param data: input file name, or HiC_data object or list of lists
+    :param data: input file name (either tsv or TADbit generated BAM), or
+       HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
@@ -392,7 +397,36 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
-    if isinstance(data, str):
+    if isinstance(data, basestring) and (data.endswith('.bam') or data.endswith('.BAM')):
+        dist_intr = dict([(i, {})
+                          for i in xrange(min_diff, max_diff)])
+        bamfile = AlignmentFile(data, 'rb')
+        refs = bamfile.references
+        if biases:
+            norm = lambda x, y: 1. / biases[x] / biases[y]
+        else:
+            norm = lambda x, y: 1.
+        for r in bamfile:
+            cr1 = r.reference_name
+            cr2 = refs[r.mrnm]
+            if cr1 != cr2:
+                continue
+            ps1 = int(r.reference_start + 1) / resolution
+            ps2 = int(r.mpos + 1) / resolution
+            diff = abs(ps1 - ps2)
+            if max_diff > diff >= min_diff:
+                try:
+                    dist_intr[diff][ps1] += norm(ps1, ps2)
+                except KeyError:
+                    dist_intr[diff][ps1] = norm(ps1, ps2)
+        bamfile.close()
+        for diff in dist_intr:
+            if not len(dist_intr[diff]):
+                dist_intr[diff] = [float('nan')]
+                continue
+            dist_intr[diff] = [dist_intr[diff].get(k, 0)
+                               for k in xrange(max(dist_intr[diff]) - diff)]
+    elif isinstance(data, basestring):
         dist_intr = dict([(i, {})
                           for i in xrange(min_diff, max_diff)])
         fhandler = open(data)
