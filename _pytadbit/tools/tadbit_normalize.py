@@ -366,7 +366,7 @@ def populate_args(parser):
 
     glopts.add_argument('--max_njobs', dest='max_njobs', metavar="INT",
                         action='store', default=100, type=int,
-                        help='''[%(defaults)s] Define maximum number of jobs
+                        help='''[%(default)s] Define maximum number of jobs
                         for reading BAM file (set to higher numbers for large files
                         and low RAM memory).''')
 
