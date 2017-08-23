@@ -34,7 +34,7 @@ from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta
 
-DESC = 'normalize Hi-C data and write results to file as matrices'
+DESC = 'normalize Hi-C data and generates array of biases'
 
 def run(opts):
     check_options(opts)
@@ -66,10 +66,26 @@ def run(opts):
         # get genome sequence ~1 min
         printime('  - parsing FASTA')
         genome = parse_fasta(opts.fasta, verbose=False)
+
+        fas = set(genome.keys())
+        bam = set(refs)
+        if fas - bam:
+            print 'WARNING: %d extra chromsomes in FASTA (removing them)' % (len(fas - bam))
+            if len(fas - bam) <= 50:
+                print '\n'.join([('  - ' + c) for c in (fas - bam)])
+        if bam - fas:
+            txt = ('\n'.join([('  - ' + c) for c in (bam - fas)])
+                   if len(bam - fas) <= 50 else '')
+            raise Exception('ERROR: %d extra chromsomes in BAM (remove them):\n%s\n' % (
+                len(bam - fas), txt))
+        refs = [crm for crm in refs if crm in genome]
+        if len(refs) == 0:
+            raise Exception("ERROR: chromsomes in FASTA different the ones in BAM")
         genome_lengths = {refs[0] : 0}
         total = len(genome[refs[0]]) / opts.reso + 1
-        for crm in refs[1:]:
-            genome_lengths[crm] = total + len(genome[crm]) / opts.reso + 1
+        if len(refs) > 1:
+            for crm in refs[1:]:
+                genome_lengths[crm] = total + len(genome[crm]) / opts.reso + 1
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
@@ -132,22 +148,26 @@ def run(opts):
         mreads, filter_exclude, opts.reso, min_count=opts.min_count, sigma=2,
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
-        cg_content=gc_content, n_rsites=n_rsites)
+        cg_content=gc_content, n_rsites=n_rsites,
+        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs)
 
-    bad_col_image = outdir + 'filtered_bins_%s_%s.png' % (
-        nicer(opts.reso).replace(' ', ''), param_hash)
+    bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
+        nicer(opts.reso).replace(' ', ''), param_hash))
 
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
                                 'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
                                     opts.reso, param_hash))
 
     # get and plot decay
-    printime('  - Computing decay')
-    (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
-        mreads, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
-        savefig=inter_vs_gcoord, biases=biases)
+    if not opts.normalize_only:
+        printime('  - Computing interaction decay vs genomic distance')
+        (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
+            decay, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
+            savefig=inter_vs_gcoord)
 
-    print ('    -> Decay slope 0.7-10 Mb\t%s' % a2)
+        print ('    -> Decay slope 0.7-10 Mb\t%s' % a2)
+    else:
+        a2 = 0.
 
     printime('  - Saving biases and badcol columns')
     # biases
@@ -193,7 +213,6 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='NORMALIZE_OUTPUTs'""")
         if not cur.fetchall():
-            print 'NEWWWW!!!!'
             cur.execute("""
             create table NORMALIZE_OUTPUTs
                (Id integer primary key,
@@ -242,15 +261,15 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
             (Id  , JOBid,     Input, N_columns,   N_filtered, Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization,      Factor)
             values
             (NULL,    %d,        %d,        %d,           %d,                 %f,                  %f,               %f,           %d,               '%s',          %f)
-            """ % (jobid, input_bed,  ncolumns, nbad_columns,         raw_cisprc,         norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
+            """ % (jobid, input_bed,  ncolumns, nbad_columns,   100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
         except lite.OperationalError:
             try:
                 cur.execute("""
                 insert into NORMALIZE_OUTPUTs
-                (Id  , JOBid,     Input, N_columns,   N_filtered,      Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization, Factor)
+                (Id  , JOBid,     Input, N_columns,   N_filtered,      Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,     Normalization,       Factor)
                 values
-                (NULL,    %d,        %d,        %d,           %d,                      %f,                  %f,               %f,           %d,               '%s',     %f)
-                """ % (jobid, input_bed,  ncolumns, nbad_columns,              raw_cisprc,          norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
+                (NULL,    %d,        %d,        %d,           %d,                      %f,                  %f,               %f,           %d,               '%s',          %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns,        100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
             except lite.OperationalError:
                 print 'WANRING: Normalized table not written!!!'
 
@@ -274,7 +293,6 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         remove(path.join(opts.workdir, '__lock_db'))
     except OSError:
         pass
-
 
 def load_parameters_fromdb(opts, what='bam'):
     if 'tmpdb' in opts and opts.tmpdb:
@@ -313,7 +331,6 @@ def load_parameters_fromdb(opts, what='bam'):
         bam = cur.fetchall()[0][0]
         return bam
 
-
 def populate_args(parser):
     """
     parse option from call
@@ -326,7 +343,6 @@ def populate_args(parser):
     bfiltr = parser.add_argument_group('Bin filtering options')
     rfiltr = parser.add_argument_group('Read filtering options')
     normpt = parser.add_argument_group('Normalization options')
-    outopt = parser.add_argument_group('Output options')
 
     oblopt.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
@@ -348,6 +364,12 @@ def populate_args(parser):
                         help='''Use as input data generated by a job with a given
                         jobid. Use tadbit describe to find out which.''')
 
+    glopts.add_argument('--max_njobs', dest='max_njobs', metavar="INT",
+                        action='store', default=100, type=int,
+                        help='''[%(defaults)s] Define maximum number of jobs
+                        for reading BAM file (set to higher numbers for large files
+                        and low RAM memory).''')
+
     glopts.add_argument('--force', dest='force', action='store_true',
                         default=False,
                         help='overwrite previously run job')
@@ -363,6 +385,10 @@ def populate_args(parser):
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
+
+    glopts.add_argument('--normalize_only', dest='normalize_only', action='store_true',
+                        default=False,
+                        help='skip calculation of Cis-percentage and decay')
 
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='Vanilla', type=str,
@@ -391,18 +417,6 @@ def populate_args(parser):
                         help='''[%(default)s] target mean value of a cell after
                         normalization (can be used to weight experiments before
                         merging)''')
-
-    outopt.add_argument('--keep', dest='keep', action='store',
-                        default=['intra', 'genome'], nargs='+',
-                        choices = ['intra', 'inter', 'genome', 'none'],
-                        help='''%(default)s Matrices to save, choices are
-                        "intra" to keep intra-chromosomal matrices, "inter" to
-                        keep inter-chromosomal matrices and "genome", to keep
-                        genomic matrices.''')
-
-    outopt.add_argument('--only_txt', dest='only_txt', action='store_true',
-                        default=False,
-                        help='Save only text file for matrices, not images')
 
     bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float,
@@ -434,6 +448,11 @@ def populate_args(parser):
                               "correspond to: %s" % (', '.join(
                                   ['%2d: %15s' % (k, MASKED[k]['name'])
                                    for k in MASKED]))))
+
+    rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
+                        default=False,
+                        help='input BAM file contains only valid pairs (already filtered).')
+
 
 
 def filters_to_bin(filters):
@@ -482,9 +501,57 @@ def nice(reso):
 ################################################################################
 ## TODO: This should be handled in the hic bam parser
 
-
-def read_bam_frag(inbam, filter_exclude, all_bins, sections,
+def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                   resolution, outdir, extra_out,region, start, end):
+    bamfile = AlignmentFile(inbam, 'rb')
+    refs = bamfile.references
+    try:
+        dico = {}
+        for r in bamfile.fetch(region=region,
+                               start=start - (1 if start else 0), end=end,  # coords starts at 0
+                               multiple_iterators=True):
+            crm1 = r.reference_name
+            pos1 = r.reference_start + 1
+            crm2 = refs[r.mrnm]
+            pos2 = r.mpos + 1
+            try:
+                pos1 = sections[(crm1, pos1 / resolution)]
+                pos2 = sections[(crm2, pos2 / resolution)]
+            except KeyError:
+                continue  # not in the subset matrix we want
+            try:
+                dico[(pos1, pos2)] += 1
+            except KeyError:
+                dico[(pos1, pos2)] = 1
+        cisprc = {}
+        for (i, j), v in dico.iteritems():
+            # out.write('%d\t%d\t%d\n' % (i, j, v))
+            try:
+                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][0] += v
+                cisprc[i][1] += v
+            except KeyError:
+                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i] = [v, v]
+                else:
+                    cisprc[i] = [0, v]
+        out = open(path.join(outdir,
+                             'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
+        dump(dico, out)
+        out.close()
+        out = open(path.join(outdir,
+                             'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
+        dump(cisprc, out)
+        out.close()
+    except Exception, e:
+        exc_type, exc_obj, exc_tb = exc_info()
+        fname = path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print e
+        print(exc_type, fname, exc_tb.tb_lineno)
+
+
+def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
+                         resolution, outdir, extra_out,region, start, end):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     try:
@@ -537,7 +604,8 @@ def read_bam_frag(inbam, filter_exclude, all_bins, sections,
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
-             extra_out=''):
+             extra_out='', only_valid=False, normalize_only=False,
+             max_njobs=100):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -559,7 +627,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     regs = []
     begs = []
     ends = []
-    njobs = min(total, 100) + 1
+    njobs = min(total, max_njobs) + 1
     nbins = total / njobs + 1
     for i in range(start_bin, end_bin, nbins):
         if i + nbins > end_bin:  # make sure that we stop
@@ -591,6 +659,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     bins_dict = dict([(j, i) for i, j in enumerate(bins)])
     pool = mu.Pool(ncpus)
     procs = []
+    read_bam_frag = read_bam_frag_valid if only_valid else read_bam_frag_filter
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         procs.append(pool.apply_async(
             read_bam_frag, args=(inbam, filter_exclude, bins, bins_dict,
@@ -686,29 +755,31 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
 
-    printime('  - Computing Cis percentage')
-    # normalize decay by size of the diagonal, and by Vanilla correction
-    # (all cells must still be equals to 1 in average)
+    if not normalize_only:
+        printime('  - Computing Cis percentage')
+        # Calculate Cis percentage
 
-    pool = mu.Pool(ncpus)
-    procs = []
-    for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
-        fname = path.join(outdir,
-                          'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
-        procs.append(pool.apply_async(get_cis_perc,
-                                      args=(fname, biases, badcol, bins)))
-    pool.close()
-    print_progress(procs)
-    pool.join()
+        pool = mu.Pool(ncpus)
+        procs = []
+        for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+            fname = path.join(outdir,
+                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
+            procs.append(pool.apply_async(get_cis_perc,
+                                          args=(fname, biases, badcol, bins)))
+        pool.close()
+        print_progress(procs)
+        pool.join()
 
-    # collect results
-    cis = total = 0
-    for proc in procs:
-        c, t = proc.get()
-        cis += c
-        total += t
-    norm_cisprc = float(cis) / total
-    print '    * Cis-percentage: %.1f%%' % (norm_cisprc * 100)
+        # collect results
+        cis = total = 0
+        for proc in procs:
+            c, t = proc.get()
+            cis += c
+            total += t
+        norm_cisprc = float(cis) / total
+        print '    * Cis-percentage: %.1f%%' % (norm_cisprc * 100)
+    else:
+        norm_cisprc = 0.
 
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction

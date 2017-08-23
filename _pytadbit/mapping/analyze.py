@@ -373,7 +373,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
 def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
                                   savefig=None, normalized=False,
-                                  plot_each_cell=False, biases=None):
+                                  plot_each_cell=False):
     """
     Plot the number of interactions observed versus the genomic distance between
     the mapped ends of the read. The slope is expected to be around -1, in
@@ -397,37 +397,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
-    if isinstance(data, basestring) and (data.endswith('.bam') or data.endswith('.BAM')):
-        dist_intr = dict([(i, {})
-                          for i in xrange(min_diff, max_diff)])
-        bamfile = AlignmentFile(data, 'rb')
-        refs = bamfile.references
-        if biases:
-            norm = lambda x, y: 1. / biases[x] / biases[y]
-        else:
-            norm = lambda x, y: 1.
-        for r in bamfile:
-            cr1 = r.reference_name
-            cr2 = refs[r.mrnm]
-            if cr1 != cr2:
-                continue
-            ps1 = int(r.reference_start + 1) / resolution
-            ps2 = int(r.mpos + 1) / resolution
-            diff = abs(ps1 - ps2)
-            if max_diff > diff >= min_diff:
-                try:
-                    dist_intr[diff][ps1].append(norm(ps1, ps2))
-                except KeyError:
-                    dist_intr[diff][ps1] = [norm(ps1, ps2)]
-        bamfile.close()
-        for diff in dist_intr:
-            if not len(dist_intr[diff]):
-                dist_intr[diff] = [float('nan')]
-                continue
-            dist_intr[diff] = dict((k, np.nansum(l))
-                                   for k, l in dist_intr[diff].iteritems())
-            dist_intr[diff] = [dist_intr[diff].get(k, 0)
-                               for k in xrange(max(dist_intr[diff]) - diff)]
+    if isinstance(data, dict):
+        dist_intr = dict([(d, [data[d]]) for d in data
+                          if max_diff > d >= min_diff])
     elif isinstance(data, basestring):
         dist_intr = dict([(i, {})
                           for i in xrange(min_diff, max_diff)])
@@ -620,10 +592,11 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
-    elif show==True:
+    elif show:
         plt.show()
         plt.close('all')
     return (a1, b1, r21), (a2, b2, r22), (a3, b3, r23)
+
 
 def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=None):
     """
