@@ -114,16 +114,6 @@ def run(opts):
                     continue
                 mappability.append(tmp / opts.reso)
 
-        ## CHECK TO BE REMOVED
-        # out = open('tmp_mappability.txt', 'w')
-        # i = 0
-        # for crm in refs:
-        #     for pos in xrange(len(genome[crm]) / opts.reso + 1):
-        #         out.write('%s\t%d\t%d\t%f\n' % (crm, pos * opts.reso, pos * opts.reso + opts.reso, mappability[i]))
-        #         i += 1
-        # out.close()
-        # compute GC content ~30 sec
-        # TODO: read from DB
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content  = []
         for crm in refs:
@@ -140,10 +130,20 @@ def run(opts):
         n_rsites  = []
         re_site = RESTRICTION_ENZYMES[opts.renz].replace('|', '')
         for crm in refs:
-            for pos in xrange(200, len(genome[crm]) + opts.reso, opts.reso):
+            for pos in xrange(200, len(genome[crm]) + opts.reso + 200, opts.reso):
                 seq = genome[crm][pos-200:pos + opts.reso + 200]
                 n_rsites.append(seq.count(re_site))
 
+        ## CHECK TO BE REMOVED
+        # out = open('tmp_mappability.txt', 'w')
+        # i = 0
+        # for crm in refs:
+        #     for pos in xrange(len(genome[crm]) / opts.reso + 1):
+        #         out.write('%s\t%d\t%d\t%f\n' % (crm, pos * opts.reso, pos * opts.reso + opts.reso, mappability[i]))
+        #         i += 1
+        # out.close()
+        # compute GC content ~30 sec
+        # TODO: read from DB
     biases, decay, badcol, raw_cisprc, norm_cisprc = read_bam(
         mreads, filter_exclude, opts.reso, min_count=opts.min_count, sigma=2,
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
@@ -727,6 +727,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     elif normalization=='oneD':
         printime('    - oneD normalization')
         if len(set([len(biases), len(mappability), len(n_rsites), len(cg_content)])) > 1:
+            print "biases", "mappability", "n_rsites", "cg_content"
+            print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
         biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
