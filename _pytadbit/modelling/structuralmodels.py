@@ -1646,6 +1646,7 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
+
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
@@ -1674,7 +1675,6 @@ class StructuralModels(object):
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
-
         """
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
@@ -1687,7 +1687,7 @@ class StructuralModels(object):
         moddata = []
         for i in xrange(len(self._original_data)):
             for j in xrange(i + off_diag, len(self._original_data)):
-                if not self._original_data[i][j] > 0:
+                if not model_matrix[i][j] > 0 or not self._original_data[i][j] > 0:
                     continue
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
@@ -1714,8 +1714,19 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        self.contact_map(models, cluster, cutoff, axe=ax)
-        # correlation
+        cmap = plt.get_cmap('jet')
+        cmap.set_bad('darkgrey', 1)
+        ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
+                         vmin=0, vmax=1, cmap=cmap,
+                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+        ax.set_ylabel('Particle')
+        ax.set_xlabel('Particle')
+        cbar = ax.figure.colorbar(ims)
+        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                           '%s nm' % (cutoff))
+        ax.set_title('Contact map')        # correlation
+
         ax = fig.add_subplot(132)
         try:
             if log_corr:
@@ -1804,6 +1815,7 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
         return corr
+
 
     def view_centroid(self, **kwargs):
         """
