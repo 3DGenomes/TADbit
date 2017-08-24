@@ -6,6 +6,14 @@ information needed
 
 """
 from argparse                     import HelpFormatter
+from os                           import path, remove
+from string                       import ascii_letters
+from random                       import random
+from shutil                       import copyfile
+from warnings                     import warn
+import sqlite3 as lite
+import time
+
 from pytadbit                     import load_hic_data_from_reads
 from pytadbit.mapping.analyze     import correlate_matrices
 from pytadbit.mapping             import merge_2d_beds
@@ -14,13 +22,7 @@ from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.sqlite_utils  import get_path_id
 from pytadbit.utils.file_handling import mkdir
-from os                           import path, remove
-from string                       import ascii_letters
-from random                       import random
-from shutil                       import copyfile
-from warnings                     import warn
-import sqlite3 as lite
-import time
+
 
 DESC = ('load two working directories with different Hi-C data samples and ' +
         'merges them into a new working directory generating some statistics')
@@ -96,7 +98,7 @@ def run(opts):
         decay_corr_fig = 'None'
         eigen_corr_dat = 'None'
         eigen_corr_fig = 'None'
-        
+
     # if opts.norm:
         # has bias file
 
@@ -243,7 +245,7 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             biasid1 = 0
             badsid2 = 0
             biasid2 = 0
-        
+
         cur.execute("select id from paths where path = '%s'" % (
             path.relpath(mreads1, opts.workdir)))
         bed1 = cur.fetchall()[0][0]
@@ -279,14 +281,14 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         (NULL,    %d,        %d,        %d,       %d,       %d,        %d)
         """ % (jobid,    w1path,    w2path,     bed1,     bed2,  outbedid))
 
-        if not opts.skip_comparison:    
+        if not opts.skip_comparison:
             cur.execute("""
             insert into MERGE_STATs
             (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bads1Path, bias2Path, bads2Path)
             values
             (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d,        %d,        %d)
             """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   badsid1,   biasid2,   badsid2))
-                
+
         masked1 = {'valid-pairs': {'count': nreads}}
         if opts.workdir1:
             if 'tmpdb' in opts and opts.tmpdb:
@@ -464,10 +466,9 @@ def populate_args(parser):
                         help='''path to a new output folder''')
 
     glopts.add_argument('-w1', '--workdir1', dest='workdir1', metavar="PATH",
-                        action='store', default=None, type=str, 
+                        action='store', default=None, type=str,
                         help='''path to working directory of the first HiC data
                         sample to merge''')
-
 
     glopts.add_argument('-w2', '--workdir2', dest='workdir2', metavar="PATH",
                         action='store', default=None, type=str,
@@ -475,19 +476,19 @@ def populate_args(parser):
                         sample to merge''')
 
     glopts.add_argument('--bed1', dest='bed1', metavar="PATH",
-                        action='store', default=None, type=str, 
+                        action='store', default=None, type=str,
                         help='''path to the first TADbit-generated BED file with
                         filtered reads (other wise the tool will guess from the
                         working directory database)''')
 
     glopts.add_argument('--bed2', dest='bed2', metavar="PATH",
-                        action='store', default=None, type=str, 
+                        action='store', default=None, type=str,
                         help='''path to the second TADbit-generated BED file with
                         filtered reads (other wise the tool will guess from the
                         working directory database)''')
 
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
-                        action='store', default=None, type=int, 
+                        action='store', default=None, type=int,
                         help='''resolution at which to do the comparison,
                         and generate the matrices.''')
 
@@ -500,7 +501,7 @@ def populate_args(parser):
                         help='''skip the merge of replicates (faster).''')
 
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
-                        action='store', default=95, type=float, 
+                        action='store', default=95, type=float,
                         help=('[%(default)s%%] maximum percentage of zeroes '
                               'allowed per column.'))
 
@@ -518,12 +519,12 @@ def populate_args(parser):
     glopts.add_argument('--jobid1', dest='jobid1', metavar="INT",
                         action='store', default=None, type=int,
                         help='''Use as input data generated by a job with a given
-                        jobid. Use tadbit describe to find out which.''')    
+                        jobid. Use tadbit describe to find out which.''')
 
     glopts.add_argument('--jobid2', dest='jobid2', metavar="INT",
                         action='store', default=None, type=int,
                         help='''Use as input data generated by a job with a given
-                        jobid. Use tadbit describe to find out which.''')    
+                        jobid. Use tadbit describe to find out which.''')
 
     glopts.add_argument('--force', dest='force', action='store_true',
                       default=False,
@@ -609,5 +610,3 @@ def nice(reso):
     if reso >= 1000000:
         return '%dMb' % (reso / 1000000)
     return '%dkb' % (reso / 1000)
-
-

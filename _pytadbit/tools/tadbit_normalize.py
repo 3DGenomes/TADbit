@@ -13,14 +13,14 @@ from random                               import random
 from shutil                               import copyfile
 from collections                          import OrderedDict
 from cPickle                              import dump, load
+from warnings                             import filterwarnings
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
-
 import sqlite3 as lite
 import time
 
 from pysam                                import AlignmentFile
-from numpy                                import nanmean, isnan, nansum
+from numpy                                import nanmean, isnan, nansum, seterr
 
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
@@ -33,6 +33,10 @@ from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta
+
+# removes annoying message when normalizing...
+seterr(invalid='ignore')
+
 
 DESC = 'normalize Hi-C data and generates array of biases'
 
@@ -211,6 +215,23 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='JOBs'""")
+        if not cur.fetchall():
+            cur.execute("""
+            create table PATHs
+               (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
+        cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='NORMALIZE_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
@@ -276,13 +297,14 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         print_db(cur, 'PATHs')
         print_db(cur, 'JOBs')
         try:
+            print_db(cur, 'FILTER_OUTPUTs')
             print_db(cur, 'INTERSECTION_OUTPUTs')
             print_db(cur, 'MAPPED_INPUTs')
             print_db(cur, 'MAPPED_OUTPUTs')
             print_db(cur, 'PARSED_OUTPUTs')
+            print_db(cur, 'FILTER_OUTPUTs')
         except lite.OperationalError:
             pass
-        print_db(cur, 'FILTER_OUTPUTs')
         print_db(cur, 'NORMALIZE_OUTPUTs')
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
@@ -460,6 +482,7 @@ def filters_to_bin(filters):
 
 
 def check_options(opts):
+    mkdir(opts.workdir)
 
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
@@ -715,17 +738,18 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
                      for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
 
-    printime('  - Rescaling biases')
+    printime('  - Rescaling sum of interactions per bins')
     size = len(bins)
     biases = [float('nan') if k in badcol else cisprc.get(k, [0, 1.])[1]
               for k in xrange(size)]
 
     if normalization=='Vanilla':
+        printime('  - Vanilla normalization')
         mean_col = nanmean(biases)
         biases   = dict((k, b / mean_col * mean_col**0.5)
                         for k, b in enumerate(biases))
     elif normalization=='oneD':
-        printime('    - oneD normalization')
+        printime('  - oneD normalization')
         if len(set([len(biases), len(mappability), len(n_rsites), len(cg_content)])) > 1:
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
