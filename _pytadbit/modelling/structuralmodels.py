@@ -2523,6 +2523,48 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
+    def write_xyz_babel(self, directory, model_num=None, models=None, cluster=None,
+                        get_path=False, rndname=True):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model using a file format compatible with babel
+        (http://openbabel.org/wiki/XYZ_%28format%29).
+        .. note::
+          If none of model_num, models or cluster parameter are set,
+          ALL the models will be written.
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        """
+        if model_num > -1:
+            models = [model_num]
+        elif models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1 and len(self.clusters) > 0:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        for model_num in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            path_f = model.write_xyz_babel(directory, model_num=model_num,
+                                           get_path=get_path, rndname=rndname)
+        if get_path:
+            return path_f
+    
     def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
                                plot=True):
         """
