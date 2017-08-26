@@ -832,7 +832,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
 
 
 def _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
-                       verbose=True):
+                       clean=False, verbose=True):
     if verbose:
         stdout.write('     ')
     countbin = 0
@@ -847,11 +847,14 @@ def _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
 
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.pickle' % (region, start, end))
-        dico = load(open(fname))
+        with open(fname) as fh:
+            dico = load(fh)
         for (j, k), v in dico.iteritems():
             if j in bads1 or k in bads2:
                 continue
             yield j, k, v
+        if clean:
+            os.system('rm -f %s' % fname)
     if verbose:
         print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
                             '%s/%s' % (len(chunks[0]),len(chunks[0])))
@@ -887,10 +890,10 @@ def get_biases_region(biases, bin_coords):
     return bias1, bias2, decay, bads1, bads2
 
 
-def get_matrix(inbam, resolution, biases,
+def get_matrix(inbam, resolution, biases=None,
                filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                region1=None, start1=None, end1=None,
-               region2=None, start2=None, end2=None,
+               region2=None, start2=None, end2=None, dico=None,
                tmpdir='.', normalization='raw', ncpus=8, verbose=False):
 
     if not isinstance(filter_exclude, int):
@@ -902,8 +905,10 @@ def get_matrix(inbam, resolution, biases,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, verbose=verbose)
 
-    bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
-
+    if biases:
+        bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
+    elif normalization != 'raw':
+        raise Exception('ERROR: should provide path to file with biases (pickle).')
     start_bin1, start_bin2 = bin_coords[::2]
 
     if verbose:
@@ -928,14 +933,18 @@ def get_matrix(inbam, resolution, biases,
         else:
             transform_value = transform_value_decay_2reg
 
-    dico = {}
+    if dico is None:
+        return_something = True
+        dico = {}
+    populate_dico = lambda x, y, v: dico.__setitem__((x, y), v)
     # pull all sub-matrices and write full matrix
     for i, j, v in _iter_matrix_frags(chunks, bads1, bads2,
                                       tmpdir, rand_hash, verbose=verbose):
-        dico[(i, j)] = transform_value(i, j, v)
+        populate_dico(i, j, transform_value(i, j, v))
     if  verbose:
         printime('\nDone.')
-    return dico
+    if return_something:
+        return dico
 
 
 def write_matrix(inbam, resolution, biases, outdir,
