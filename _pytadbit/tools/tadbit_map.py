@@ -18,7 +18,16 @@ mapping strategy
 
 """
 
+from os                                   import path, remove
+from string                               import ascii_letters
+from random                               import random
+from shutil                               import copyfile
+from multiprocessing                      import cpu_count
 from argparse                             import HelpFormatter
+import logging
+import sqlite3 as lite
+import time
+
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.utils.file_handling         import which, mkdir
@@ -26,14 +35,6 @@ from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
-from os                                   import system, path, remove
-from string                               import ascii_letters
-from random                               import random
-from shutil                               import copyfile
-from multiprocessing                      import cpu_count
-import logging
-import sqlite3 as lite
-import time
 
 DESC = "Map Hi-C reads and organize results in an output working directory"
 
@@ -53,8 +54,11 @@ def run(opts):
                                               savefig=path.join(
                                                   opts.workdir,
                                                   path.split(opts.fastq)[-1] + '.pdf'))
-        logging.info('  - Dangling-ends (sensu-stricto): %.3f%%', dangling_ends)
-        logging.info('  - Ligation sites: %.3f%%', ligated)
+        print dangling_ends, ligated
+        for renz in dangling_ends:
+            logging.info('  - Dangling-ends (sensu-stricto): %.3f%%', dangling_ends[renz])
+        for renz in ligated:
+            logging.info('  - Ligation sites: %.3f%%', ligated[renz])
         return
 
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)

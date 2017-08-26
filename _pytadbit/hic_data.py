@@ -3,6 +3,22 @@ December 12, 2014.
 
 """
 
+import os
+from collections                    import OrderedDict
+from warnings                       import warn
+from bisect                         import bisect_right as bisect
+
+from numpy.linalg                   import LinAlgError
+from numpy                          import corrcoef, nansum, array, isnan, mean
+from numpy                          import meshgrid, asarray, exp, linspace, std
+from numpy                          import nanpercentile as npperc, log as nplog
+from numpy                          import nanmax
+from scipy.stats                    import ttest_ind
+from scipy.special                  import gammaincc
+from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
+from scipy.sparse.linalg            import eigsh
+from scipy.sparse                   import csr_matrix
+
 from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.extraviews      import plot_compartments_summary
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
@@ -11,21 +27,7 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.hmm             import gaussian_prob, best_path, train
-from numpy.linalg                   import LinAlgError
-from numpy                          import corrcoef, nansum, array, isnan, mean
-from numpy                          import meshgrid, asarray, exp, linspace, std
-from numpy                          import nanpercentile as npperc, log as nplog
-from numpy                          import nanmax
-from scipy.special                  import gammaincc
-from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
-from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
-from scipy.stats                    import ttest_ind
-from collections                    import OrderedDict
-from warnings                       import warn
-from bisect                         import bisect_right as bisect
-from scipy.sparse                   import csr_matrix
-import os
 
 
 class HiC_data(dict):
@@ -619,7 +621,7 @@ class HiC_data(dict):
         :param 'ratio' how: ratio divide by column, subratio divide by
            compartment, diagonal only uses diagonal
         :param False'show_compartment_labels': if True draw A and B compartment blocks.
-           
+
 
         TODO: this is really slow...
 
@@ -822,7 +824,7 @@ class HiC_data(dict):
                     sec, first, cmprts, matrix, show,
                     savefig + '/chr' + str(sec) + suffix + '.pdf' if savefig else None,
                     vmin=vmin, vmax=vmax, whichpc=ev_num,showAB=show_compartment_labels)
-		
+
 		if label_compartments == 'cluster' or label_compartments == 'hmm':
 		  plot_compartments_summary(
                     sec, cmprts, show,

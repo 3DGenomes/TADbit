@@ -6,7 +6,7 @@ information needed
 
 """
 from argparse                     import HelpFormatter
-from os                           import path, remove
+from os                           import path, remove, system
 from string                       import ascii_letters
 from random                       import random
 from shutil                       import copyfile
@@ -14,14 +14,15 @@ from warnings                     import warn
 import sqlite3 as lite
 import time
 
-from pytadbit                     import load_hic_data_from_reads
+from pytadbit                     import load_hic_data_from_bam
 from pytadbit.mapping.analyze     import correlate_matrices
 from pytadbit.mapping             import merge_2d_beds
 from pytadbit.mapping.analyze     import eig_correlate_matrices
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.sqlite_utils  import get_path_id
-from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.file_handling import mkdir, which
+from pytadbit.mapping.filter      import MASKED
 
 
 DESC = ('load two working directories with different Hi-C data samples and ' +
@@ -29,63 +30,50 @@ DESC = ('load two working directories with different Hi-C data samples and ' +
 
 def run(opts):
     check_options(opts)
+    samtools = which(opts.samtools)
     launch_time = time.localtime()
 
     param_hash = digest_parameters(opts)
 
     reso1 = reso2 = None
-    if opts.bed1:
-        mreads1 = path.realpath(opts.bed1)
+    if opts.bam1:
+        mreads1 = path.realpath(opts.bam1)
         bad_co1 = opts.bad_co1
         biases1 = opts.biases1
+        filter_exclude1 = opts.filter1
     else:
         bad_co1, biases1, mreads1, reso1 = load_parameters_fromdb(
-                opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
+            opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
         mreads1 = path.join(opts.workdir1, mreads1)
 
-    if opts.bed2:
-        mreads2 = path.realpath(opts.bed2)
+    if opts.bam2:
+        mreads2 = path.realpath(opts.bam2)
         bad_co2 = opts.bad_co2
         biases2 = opts.biases2
+        filter_exclude2 = opts.filter2
     else:
         bad_co2, biases2, mreads2, reso2 = load_parameters_fromdb(
-                opts.workdir2, opts.jobid2, opts, opts.tmpdb2)
+            opts.workdir2, opts.jobid2, opts, opts.tmpdb2)
         mreads2 = path.join(opts.workdir2, mreads2)
 
     if reso1 != reso2:
         raise Exception('ERROR: differing resolutions between experiments to '
                         'be merged')
 
-
     mkdir(path.join(opts.workdir, '00_merge'))
 
     if not opts.skip_comparison:
         print 'Comparison'
         print ' - loading first sample', mreads1
-        hic_data1 = load_hic_data_from_reads(mreads1, opts.reso)
+        hic_data1 = load_hic_data_from_bam(mreads1, opts.reso, biases=biases1,
+                                           tmpdir=path.join(opts.workdir, '00_merge'),
+                                           filter_exclude=filter_exclude1)
 
         print ' - loading second sample', mreads2
-        hic_data2 = load_hic_data_from_reads(mreads2, opts.reso)
-
-        if opts.norm and biases1:
-            bad_co1 = path.join(opts.workdir1, bad_co1)
-            print ' - loading bad columns from first sample', bad_co1
-            hic_data1.bads = dict((int(l.strip()), True) for l in open(bad_co1))
-            biases1 = path.join(opts.workdir1, biases1)
-            print ' - loading biases from first sample', biases1
-            hic_data1.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                                  for l in open(biases1))
-        elif opts.norm:
-            raise Exception('ERROR: biases or filtered-columns not found')
-        if opts.norm and biases2:
-            bad_co2 = path.join(opts.workdir2, bad_co2)
-            print ' - loading bad columns from second sample', bad_co2
-            hic_data2.bads = dict((int(l.strip()), True) for l in open(bad_co2))
-            biases2 = path.join(opts.workdir2, biases2)
-            print ' - loading biases from second sample', biases2
-            hic_data2.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                                  for l in open(biases2))
-        elif opts.norm:
+        hic_data2 = load_hic_data_from_bam(mreads2, opts.reso, biases=biases2,
+                                           tmpdir=path.join(opts.workdir, '00_merge'),
+                                           filter_exclude=filter_exclude2)
+        if opts.norm:
             raise Exception('ERROR: biases or filtered-columns not found')
         decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
@@ -123,6 +111,7 @@ def run(opts):
         param_hash))
 
     print '\nMergeing...'
+    system(samtools  + ' merge %s %s %s' % (mreads, mreads1, mreads2))
     nreads = merge_2d_beds(mreads1, mreads2, outbed)
 
     finish_time = time.localtime()
@@ -131,6 +120,7 @@ def run(opts):
                 eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,
                 biases1, bad_co1, biases2, bad_co2, launch_time, finish_time)
     print '\n\nDone.'
+
 
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                nbad_columns, ncolumns, nreads,
@@ -475,16 +465,16 @@ def populate_args(parser):
                         help='''path to working directory of the second HiC data
                         sample to merge''')
 
-    glopts.add_argument('--bed1', dest='bed1', metavar="PATH",
+    glopts.add_argument('--bam1', dest='bam1', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='''path to the first TADbit-generated BED file with
-                        filtered reads (other wise the tool will guess from the
+                        help='''path to the first TADbit-generated BAM file with
+                        all reads (other wise the tool will guess from the
                         working directory database)''')
 
-    glopts.add_argument('--bed2', dest='bed2', metavar="PATH",
+    glopts.add_argument('--bam2', dest='bam2', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='''path to the second TADbit-generated BED file with
-                        filtered reads (other wise the tool will guess from the
+                        help='''path to the second TADbit-generated BAM file with
+                        all reads (other wise the tool will guess from the
                         working directory database)''')
 
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
@@ -551,6 +541,30 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to file with precalculated biases by
                         columns''')
+
+    glopts.add_argument('--filter1', dest='filter1', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
+
+    glopts.add_argument('--filter2', dest='filter2', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
+
+    glopts.add_argument('--samtools', dest='samtools', metavar="PATH",
+                        action='store', default='samtools', type=str,
+                        help='''path samtools binary''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,

@@ -4,15 +4,16 @@
 
 from warnings                             import warn
 from gzip                                 import open as gopen
-from pytadbit.utils.extraviews            import tadbit_savefig
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from pytadbit.mapping.restriction_enzymes import religateds, repaired
 from os                                   import SEEK_END
-from numpy                                import std, mean
 from random                               import random
 from subprocess                           import Popen, PIPE
 import re
-import numpy as np
+
+from numpy                                import std, mean, linspace, nansum
+
+from pytadbit.utils.extraviews            import tadbit_savefig
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import religateds, repaired
 
 try:
     from matplotlib import pyplot as plt
@@ -51,7 +52,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             if k.lower() == r_enz[i].lower():
                 r_enz[i] = k
     # else let it as None
-    
+
     quals = []
     henes = []
     sites = {}
@@ -142,8 +143,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     if not nreads:
         nreads = len(quals)
     quals = zip(*quals)
-    meanquals = [np.mean(q) for q in quals]
-    errorquals = [np.std(q) for q in quals]
+    meanquals = [mean(q) for q in quals]
+    errorquals = [std(q) for q in quals]
 
     if axe:
         ax = axe
@@ -248,7 +249,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 liges[k][len(line) / 2 - site_len:
                          len(line) / 2] = [float('nan')] * site_len
         # plot undigested cut-sites
-        color = iter(plt.cm.Reds(np.linspace(0.3, 0.95, len(r_enzs))))
+        color = iter(plt.cm.Reds(linspace(0.3, 0.95, len(r_enzs))))
         for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
@@ -262,9 +263,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         ax2.tick_params(axis='y', colors='darkred', **tkw)
 
         lines, labels = ax2.get_legend_handles_labels()
-        
+
         ax3 = ax2.twinx()
-        color = iter(plt.cm.Blues(np.linspace(0.3, 0.95, len(liges))))
+        color = iter(plt.cm.Blues(linspace(0.3, 0.95, len(liges))))
         for r1, r2 in liges:
             # print 'ligated', r1, r2
             # print liges[(r1, r2)][:20]
@@ -278,8 +279,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         tmp_lines, tmp_labels = ax3.get_legend_handles_labels()
         lines.extend(tmp_lines)
         labels.extend(tmp_labels)
-        
-        color = iter(plt.cm.Greens(np.linspace(0.3, 0.95, len(r_enzs))))
+
+        color = iter(plt.cm.Greens(linspace(0.3, 0.95, len(r_enzs))))
         for i, r_enz in enumerate(r_enzs):
             if any([f > 0 for f in fixes[r_enz]]):
                 ax4 = ax2.twinx()
@@ -303,12 +304,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         # Count ligation sites
         lig_cnt = {}
         for k in liges:
-            lig_cnt[k] = (np.nansum(liges[k]) - liges[k][0] -
+            lig_cnt[k] = (nansum(liges[k]) - liges[k][0] -
                               liges[k][len(line) / 2])
         # Count undigested sites
         sit_cnt = {}
         for r_enz in r_enzs:
-            sit_cnt[r_enz] = (np.nansum(sites[r_enz]) - sites[r_enz][0] -
+            sit_cnt[r_enz] = (nansum(sites[r_enz]) - sites[r_enz][0] -
                               sites[r_enz][len(line) / 2])
         # Count Dangling-Ends
         des = {}
@@ -355,7 +356,7 @@ def make_patch_spines_invisible(ax):
     for sp in ax.spines.itervalues():
         sp.set_visible(False)
 
-        
+
 def count_reads(fnam):
     """
     Count the number of reads in a FASTQ file (can be slow on big files, try
@@ -406,7 +407,7 @@ def count_reads_approx(fnam, samples=1000, verbose=True):
             samples-=1
     mean_len = float(mean(values))
     nreads = flen / mean_len
-    
+
     if verbose:
         dev = std(values) / samples**.5 * 2
         nreads_sup = flen / (mean_len - dev)

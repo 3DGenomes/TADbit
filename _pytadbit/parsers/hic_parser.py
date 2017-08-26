@@ -3,11 +3,17 @@ November 7, 2013.
 
 """
 
-from warnings                import warn
-from math                    import sqrt, isnan
-from pytadbit.parsers.gzopen import gzopen
-from collections             import OrderedDict
-from pytadbit                import HiC_data
+from collections                     import OrderedDict
+from warnings                        import warn
+from math                            import sqrt, isnan
+from cPickle                         import load
+
+from pysam                           import AlignmentFile
+
+from pytadbit.parsers.gzopen         import gzopen
+from pytadbit                        import HiC_data
+from pytadbit.parsers.hic_bam_parser import get_matrix
+
 
 HIC_DATA = True
 
@@ -100,7 +106,7 @@ def optimal_reader(f, normalized=False, resolution=1):
     f.seek(pos)
 
     ncol = len(header)
-    
+
     # Get the numeric values and remove extra columns
     num = float if normalized else int
     chromosomes, sections, resolution = _header_to_section(header, resolution)
@@ -148,9 +154,9 @@ def optimal_reader(f, normalized=False, resolution=1):
 def autoreader(f):
     """
     Auto-detect matrix format of HiC data file.
-    
+
     :param f: an iterable (typically an open file).
-    
+
     :returns: A tuple with integer values and the dimension of
        the matrix.
     """
@@ -177,7 +183,7 @@ def autoreader(f):
 
     # free little memory
     del(S)
-    
+
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
@@ -223,7 +229,7 @@ def autoreader(f):
         if not HIC_DATA:
             raise AutoReadFail('ERROR: non numeric values')
         try:
-            # Dekker data 2009, uses integer but puts a comma... 
+            # Dekker data 2009, uses integer but puts a comma...
             items = [[int(float(a)+.5) for a in line[trim:]] for line in items]
             warn('WARNING: non integer values')
         except ValueError:
@@ -282,6 +288,7 @@ def _header_to_section(header, resolution):
             chromosomes[h[0]] += 1
     return chromosomes, sections, resolution
 
+
 def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     """
     Read and checks a matrix from a file (using
@@ -293,7 +300,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
        representing the data matrix,
        with this file example.tsv:
        ::
-       
+
          chrT_001	chrT_002	chrT_003	chrT_004
          chrT_001	629	164	88	105
          chrT_002	86	612	175	110
@@ -382,6 +389,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     else:
         return matrices
 
+
 def load_hic_data_from_reads(fnam, resolution, **kwargs):
     """
     :param fnam: tsv file with reads1 and reads2
@@ -428,3 +436,51 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
     imx.symmetricized = True
     return imx
 
+
+def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
+                           filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10)):
+    """
+    :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
+    :param resolution: the resolution of the experiment (size of a bin in
+       bases)
+    :param None biases: path to pickle file where are stored the biases. Keys
+       in this file should be: 'biases', 'badcol', 'decay' and 'resolution'
+    :param '.' tmpdir: path to folder where to create temporary files
+    :param 8 ncpus:
+    :param (1, 2, 3, 4, 6, 7, 8, 9, 10) filter exclude: filters to define the
+       set of valid pair of reads.
+
+    :returns: HiC_data object
+    """
+    bam = AlignmentFile(fnam)
+    genome_seq = OrderedDict(zip(bam.references, [x / resolution + 1
+                                                  for x in bam.lengths]))
+
+    section_sizes = {}
+    sections = []
+    for crm in genome_seq:
+        len_crm = genome_seq[crm]
+        section_sizes[(crm,)] = len_crm
+        sections.extend([(crm, i) for i in xrange(len_crm)])
+
+    size = sum(genome_seq.values())
+
+    dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+    imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
+
+    if biases:
+        biases = load(open(biases))
+        if biases['resolution'] != resolution:
+            raise Exception('ERROR: resolution of biases do not match to the '
+                            'one wanted (%d vs %d)' % (
+                                biases['resolution'], resolution))
+        imx.bads     = biases['badcol']
+        imx.bias     = biases['biases']
+        imx.expected = biases['decay']
+
+    get_matrix(bam, resolution, biases=None, filter_exclude=filter_exclude,
+               normalization='raw', tmpdir=tmpdir, clean=True,
+               ncpus=ncpus, dico=imx)
+    imx.symmetricized = True
+
+    return imx

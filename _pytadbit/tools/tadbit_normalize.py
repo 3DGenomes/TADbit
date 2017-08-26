@@ -353,6 +353,7 @@ def load_parameters_fromdb(opts, what='bam'):
         bam = cur.fetchall()[0][0]
         return bam
 
+
 def populate_args(parser):
     """
     parse option from call
