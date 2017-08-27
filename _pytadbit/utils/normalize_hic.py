@@ -56,13 +56,12 @@ try:
     from rpy2.rinterface          import RRuntimeError
     try:
         dryhic = importr('dryhic')
-        from numpy import float64
+        from numpy import float64, isnan
     except RRuntimeError:
         print ('WARNING: dryhic (https://github.com/qenvio/dryhic) not '
                'installed, OneD normalization not available')
 except ImportError:
     print 'WARNING: RPY2 not installed, OneD normalization not available'
-
 
 
 def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
@@ -84,15 +83,14 @@ def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
                 cg =[1,2,3...])
 
 
-
     :returns: list of biases to use to normalize the raw matrix of interactions
     """
     form = robjects.Formula(form)
 
     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
                                    for k in kwargs))
-
-    return map(float64, dryhic.oned(info, form))
+    b = [float64(v) for v in dryhic.oned(info, form)]
+    return [v if isnan(v) else 1. for v in b]
 
 
 def _update_S(W):
@@ -104,12 +102,14 @@ def _update_S(W):
     meanS /= len(W)
     return S, meanS
 
+
 def _updateDB(S, meanS, B):
     DB = {}
     for bin1 in S:
         DB[bin1] = float(S[bin1]) / meanS
         B[bin1] *= DB[bin1]
     return DB
+
 
 def _update_W(W, DB):
     for bin1 in W:
@@ -120,6 +120,7 @@ def _update_W(W, DB):
                 W1[bin2] /= DBbin1 * DB[bin2]
             except ZeroDivisionError: # whole row is empty
                 continue
+
 
 def copy_matrix(hic_data, bads):
     W = {}
@@ -134,6 +135,7 @@ def copy_matrix(hic_data, bads):
             W[i] = {}
             W[i][j] = v
     return W
+
 
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False, **kwargs):
@@ -224,6 +226,7 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
         for dist in range(dist, new_dist + 1):
             expc[dist] = val
     return expc
+
 
 def _meandiag(hic_data, dist, diag, min_n, size, bads):
     if hic_data.section_pos:

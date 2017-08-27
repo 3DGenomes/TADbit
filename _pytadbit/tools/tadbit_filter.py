@@ -76,14 +76,18 @@ def run(opts):
                               min_frag_size=opts.min_frag_size,
                               re_proximity=opts.re_proximity,
                               min_dist_to_re=min_dist, fast=True)
+        print masked
 
-    n_valid_pairs = apply_filter(reads, mreads, masked,
-                                 filters=opts.apply)
+    n_valid_pairs = apply_filter(reads, mreads, masked, filters=opts.apply)
 
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s' % param_hash)
 
-    bed2D_to_BAMhic(mreads, opts.valid, opts.cpus, outbam, opts.format, masked,
+    if opts.valid:
+        infile = mreads
+    else:
+        infile = reads
+    bed2D_to_BAMhic(infile, opts.valid, opts.cpus, outbam, opts.format, masked,
                     samtools=opts.samtools)
 
     finish_time = time.localtime()
@@ -312,7 +316,7 @@ def populate_args(parser):
                         help='use filters of previously run job')
 
     filter_.add_argument('--apply', dest='apply', nargs='+',
-                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                          choices = range(1, 11),
                          help=("""[%(default)s] Use filters to define a set os valid pair of reads
                          e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +

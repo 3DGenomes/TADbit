@@ -411,11 +411,9 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             genome_seq[crm] = int(clen) / resolution + 1
             size += genome_seq[crm]
         line = fhandler.next()
-    section_sizes = {}
     if kwargs.get('get_sections', True):
         for crm in genome_seq:
             len_crm = genome_seq[crm]
-            section_sizes[(crm,)] = len_crm
             sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
@@ -455,15 +453,14 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     bam = AlignmentFile(fnam)
     genome_seq = OrderedDict(zip(bam.references, [x / resolution + 1
                                                   for x in bam.lengths]))
+    bam.close()
 
-    section_sizes = {}
     sections = []
     for crm in genome_seq:
         len_crm = genome_seq[crm]
-        section_sizes[(crm,)] = len_crm
         sections.extend([(crm, i) for i in xrange(len_crm)])
 
-    size = sum(genome_seq.values())
+    size = sum(genome_seq.values()) + len(genome_seq)
 
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
@@ -478,7 +475,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
         imx.bias     = biases['biases']
         imx.expected = biases['decay']
 
-    get_matrix(bam, resolution, biases=None, filter_exclude=filter_exclude,
+    get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=True,
                ncpus=ncpus, dico=imx)
     imx.symmetricized = True

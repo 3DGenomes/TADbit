@@ -211,7 +211,6 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
 
     # write header
     output += ("\t".join(("@HD" ,"VN:1.5", "SO:queryname")) + '\n')
-
     fhandler = open(infile)
     line = fhandler.next()
     # chromosome lengths
@@ -246,7 +245,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
 
     # open and init filter files
     if not valid:
-        filter_line, filter_handler = get_filters(infile,masked)
+        filter_line, filter_handler = get_filters(infile, masked)
     fhandler.seek(pos_fh)
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
@@ -728,13 +727,20 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     if start1 is not None:
         start_bin1 = section_pos[region1][0] + start1 / resolution
     else:
-        start_bin1 = section_pos[region1][0]
+        if region1:
+            start_bin1 = section_pos[region1][0]
+        else:
+            start_bin1 = 0
         start1 = 0
     if end1 is not None:
         end_bin1 = section_pos[region1][0] + end1 / resolution
     else:
-        end_bin1 = section_pos[region1][1]
-        end1 = sections[region1] * resolution
+        if region1:
+            end_bin1 = section_pos[region1][1]
+            end1 = sections[region1] * resolution
+        else:
+            end_bin1 = total
+            end1 = total * resolution
 
     # define chunks, using at most 100 sub-divisions of region1
     total = end_bin1 - start_bin1 + 1
@@ -893,7 +899,7 @@ def get_biases_region(biases, bin_coords):
 def get_matrix(inbam, resolution, biases=None,
                filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                region1=None, start1=None, end1=None,
-               region2=None, start2=None, end2=None, dico=None,
+               region2=None, start2=None, end2=None, dico=None, clean=False,
                tmpdir='.', normalization='raw', ncpus=8, verbose=False):
 
     if not isinstance(filter_exclude, int):
@@ -909,6 +915,8 @@ def get_matrix(inbam, resolution, biases=None,
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
     elif normalization != 'raw':
         raise Exception('ERROR: should provide path to file with biases (pickle).')
+    else:
+        bads1 = bads2 = {}
     start_bin1, start_bin2 = bin_coords[::2]
 
     if verbose:
@@ -933,13 +941,14 @@ def get_matrix(inbam, resolution, biases=None,
         else:
             transform_value = transform_value_decay_2reg
 
+    return_something = False
     if dico is None:
         return_something = True
         dico = {}
     populate_dico = lambda x, y, v: dico.__setitem__((x, y), v)
     # pull all sub-matrices and write full matrix
-    for i, j, v in _iter_matrix_frags(chunks, bads1, bads2,
-                                      tmpdir, rand_hash, verbose=verbose):
+    for i, j, v in _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
+                                      clean=clean, verbose=verbose):
         populate_dico(i, j, transform_value(i, j, v))
     if  verbose:
         printime('\nDone.')

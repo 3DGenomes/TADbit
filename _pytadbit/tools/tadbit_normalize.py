@@ -13,7 +13,7 @@ from random                               import random
 from shutil                               import copyfile
 from collections                          import OrderedDict
 from cPickle                              import dump, load
-from warnings                             import filterwarnings
+# from warnings                             import filterwarnings
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
 import sqlite3 as lite
@@ -35,7 +35,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta
 
 # removes annoying message when normalizing...
-seterr(invalid='ignore')
+# seterr(invalid='ignore')
 
 
 DESC = 'normalize Hi-C data and generates array of biases'
@@ -463,7 +463,7 @@ def populate_args(parser):
                         count or minimum count of reads''')
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                         choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
@@ -475,7 +475,6 @@ def populate_args(parser):
     rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
                         default=False,
                         help='input BAM file contains only valid pairs (already filtered).')
-
 
 
 def filters_to_bin(filters):
@@ -755,8 +754,9 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
-        biases = dict((k, b) for k, b in enumerate(biases))
+        biases = dict((k, b) for k, b in
+                      enumerate(oneD(tot=biases, map=mappability,
+                                     res=n_rsites, cg=cg_content)))
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)

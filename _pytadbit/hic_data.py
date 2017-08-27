@@ -93,6 +93,7 @@ class HiC_data(dict):
             row, col = row_col
             pos = row * self.__size + col
             if pos > self._size2:
+                print row, col, pos
                 raise IndexError(
                     'ERROR: row or column larger than %s' % self.__size)
             super(HiC_data, self).__setitem__(pos, val)
