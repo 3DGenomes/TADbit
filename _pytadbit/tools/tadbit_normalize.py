@@ -35,7 +35,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta
 
 # removes annoying message when normalizing...
-# seterr(invalid='ignore')
+seterr(invalid='ignore')
 
 
 DESC = 'normalize Hi-C data and generates array of biases'
@@ -754,9 +754,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        biases = dict((k, b) for k, b in
-                      enumerate(oneD(tot=biases, map=mappability,
-                                     res=n_rsites, cg=cg_content)))
+        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        biases = dict((k, b) for k, b in enumerate(biases))
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
