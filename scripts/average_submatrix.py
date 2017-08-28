@@ -33,7 +33,7 @@ def check_tar_index(tarfile):
 
 
 def index_tar(tarfile):
-    tarh = taropen(tarfile)
+    tarh = taropen(tarfile, ignore_zeros=True)
     tarsize = check_tar_index(tarfile)
     if tarsize:  # index not created yet
         print '   * TAR index file not found, creating it...'
