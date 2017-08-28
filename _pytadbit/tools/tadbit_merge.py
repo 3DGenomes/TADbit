@@ -11,11 +11,8 @@ from string                          import ascii_letters
 from random                          import random
 from shutil                          import copyfile
 from warnings                        import warn
-from subprocess                      import Popen, PIPE
 import sqlite3 as lite
 import time
-
-from pysam                           import idxstats
 
 from pytadbit                        import load_hic_data_from_bam
 from pytadbit.mapping.analyze        import correlate_matrices
@@ -25,7 +22,7 @@ from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.sqlite_utils     import get_path_id
 from pytadbit.utils.file_handling    import mkdir, which
 from pytadbit.mapping.filter         import MASKED
-from pytadbit.parsers.hic_bam_parser import filters_to_bin
+from pytadbit.parsers.hic_bam_parser import printime
 
 
 DESC = ('load two working directories with different Hi-C data samples and ' +
@@ -41,21 +38,21 @@ def run(opts):
     reso1 = reso2 = None
     if opts.bam1:
         mreads1 = path.realpath(opts.bam1)
-        bad_co1 = opts.bad_co1
         biases1 = opts.biases1
     else:
-        bad_co1, biases1, mreads1, reso1 = load_parameters_fromdb(
+        biases1, mreads1, reso1 = load_parameters_fromdb(
             opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
         mreads1 = path.join(opts.workdir1, mreads1)
+        biases1 = path.join(opts.workdir1, biases1)
 
     if opts.bam2:
         mreads2 = path.realpath(opts.bam2)
-        bad_co2 = opts.bad_co2
         biases2 = opts.biases2
     else:
-        bad_co2, biases2, mreads2, reso2 = load_parameters_fromdb(
+        biases2, mreads2, reso2 = load_parameters_fromdb(
             opts.workdir2, opts.jobid2, opts, opts.tmpdb2)
         mreads2 = path.join(opts.workdir2, mreads2)
+        biases2 = path.join(opts.workdir2, biases2)
 
     filter_exclude = opts.filter
 
@@ -66,34 +63,23 @@ def run(opts):
     mkdir(path.join(opts.workdir, '00_merge'))
 
     if not opts.skip_comparison:
-        print '  - loading first sample', mreads1
+        printime('  - loading first sample %s' % (mreads1))
         hic_data1 = load_hic_data_from_bam(mreads1, opts.reso, biases=biases1,
                                            tmpdir=path.join(opts.workdir, '00_merge'),
+                                           ncpus=opts.cpus,
                                            filter_exclude=filter_exclude)
 
-        print '  - loading second sample', mreads2
+        printime('  - loading second sample %s' % (mreads2))
         hic_data2 = load_hic_data_from_bam(mreads2, opts.reso, biases=biases2,
                                            tmpdir=path.join(opts.workdir, '00_merge'),
+                                           ncpus=opts.cpus,
                                            filter_exclude=filter_exclude)
-        if opts.norm:
-            raise Exception('ERROR: biases or filtered-columns not found')
         decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
         eigen_corr_dat = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
-    else:
-        hic_data1 = {}
-        hic_data2 = {}
-        decay_corr_dat = 'None'
-        decay_corr_fig = 'None'
-        eigen_corr_dat = 'None'
-        eigen_corr_fig = 'None'
 
-    # if opts.norm:
-        # has bias file
-
-    if not opts.skip_comparison:
-        print '  - comparing experiments'
+        printime('  - comparing experiments')
         print '    => correlation between equidistant loci'
         corr, _, bads = correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                            remove_bad_columns=True,
@@ -104,7 +90,14 @@ def run(opts):
                                           remove_bad_columns=True, nvect=6,
                                           savefig=eigen_corr_fig,
                                           savedata=eigen_corr_dat)
+        ncols = len(hic_data1)
     else:
+        ncols = 0
+        decay_corr_dat = 'None'
+        decay_corr_fig = 'None'
+        eigen_corr_dat = 'None'
+        eigen_corr_fig = 'None'
+
         corr = eig_corr = 0
         bads = {}
 
@@ -113,23 +106,23 @@ def run(opts):
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s.bam' % (param_hash))
 
-    print '  - Mergeing experiments'
+    printime('  - Mergeing experiments')
     system(samtools  + ' merge -@ %d %s %s %s' % (opts.cpus, outbam, mreads1, mreads2))
-    print '  - Indexing new BAM file'
+    printime('  - Indexing new BAM file')
     system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
-                len(bads.keys()), len(hic_data1),
+                len(bads.keys()), ncols,
                 eigen_corr_dat, eigen_corr_fig, outbam, corr, eig_corr,
-                biases1, bad_co1, biases2, bad_co2, launch_time, finish_time)
-    print '\nDone.'
+                biases1, biases2, launch_time, finish_time)
+    printime('\nDone.')
 
 
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                nbad_columns, ncolumns,
                eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,
-               biases1, bad_co1, biases2, bad_co2, launch_time, finish_time):
+               biases1, biases2, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -193,9 +186,7 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                 N_filtered int,
                 Resolution int,
                 bias1Path int,
-                bads1Path int,
                 bias2Path int,
-                bads2Path int,
                 unique (JOBid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -226,18 +217,12 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
 
         if opts.norm:
             add_path(cur, biases1      , 'BIASES'     , jobid, opts.workdir)
-            add_path(cur, bad_co1      , 'BAD_COLUMNS', jobid, opts.workdir)
             add_path(cur, biases2      , 'BIASES'     , jobid, opts.workdir)
-            add_path(cur, bad_co2      , 'BAD_COLUMNS', jobid, opts.workdir)
 
-            badsid1 = get_path_id(cur, bad_co1, opts.workdir)
             biasid1 = get_path_id(cur, biases1, opts.workdir)
-            badsid2 = get_path_id(cur, bad_co2, opts.workdir)
             biasid2 = get_path_id(cur, biases2, opts.workdir)
         else:
-            badsid1 = 0
             biasid1 = 0
-            badsid2 = 0
             biasid2 = 0
 
         cur.execute("select id from paths where path = '%s'" % (
@@ -278,10 +263,10 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         if not opts.skip_comparison:
             cur.execute("""
             insert into MERGE_STATs
-            (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bads1Path, bias2Path, bads2Path)
+            (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bias2Path)
             values
-            (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d,        %d,        %d)
-            """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   badsid1,   biasid2,   badsid2))
+            (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d)
+            """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   biasid2))
 
         masked1 = {'valid-pairs': {'count': 0}}
         if opts.workdir1:
@@ -330,7 +315,7 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             if f  != 'valid-pairs':
                 outmask = path.join(opts.workdir, '03_filtered_reads',
                                     'all_r1-r2_intersection_%s.tsv_%s.tsv' % (
-                    param_hash, f))
+                                        param_hash, f))
                 out = open(outmask, 'w')
                 for line in open(path.join(opts.workdir1, masked1[f]['path'])):
                     out.write(line)
@@ -392,14 +377,29 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
                 except IndexError:
                     parse_jobid = 1
             if len(jobids) > 1:
-                raise Exception('ERROR: more than one possible input found, use'
-                                '"tadbit describe" and select corresponding '
-                                'jobid with --jobid')
+                found = False
+                if opts.norm:
+                    cur.execute("""
+                    select distinct JOBid from NORMALIZE_OUTPUTs
+                    where Resolution = %d
+                    """ % (opts.reso))
+                    jobs = cur.fetchall()
+                    try:
+                        parse_jobid = jobs[0][0]
+                        found = True
+                    except IndexError:
+                        found = False
+                    if len(jobs ) > 1:
+                        found = False
+                if not found:
+                    raise Exception('ERROR: more than one possible input found, use'
+                                    '"tadbit describe" and select corresponding '
+                                    'jobid with --jobid')
         else:
             parse_jobid = jobid
         # fetch path to parsed BED files
         # try:
-        bad_co = biases = mreads = reso = None
+        biases = mreads = reso = None
         if opts.norm:
             try:
                 cur.execute("""
@@ -438,7 +438,7 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
             where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
             """ % parse_jobid)
             mreads = cur.fetchall()[0][0]
-        return bad_co, biases, mreads, reso
+        return biases, mreads, reso
 
 
 def populate_args(parser):
@@ -496,17 +496,6 @@ def populate_args(parser):
                         action='store_true', default=False,
                         help='''skip the merge of replicates (faster).''')
 
-    glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
-                        action='store', default=95, type=float,
-                        help=('[%(default)s%%] maximum percentage of zeroes '
-                              'allowed per column.'))
-
-    glopts.add_argument('--normalization', dest='resolution', metavar="STR",
-                        action='store', default='ICE', nargs='+', type=str,
-                        choices=['ICE', 'EXP'],
-                        help='''[%(default)s] normalization(s) to apply.
-                        Order matters.''')
-
     glopts.add_argument('--save', dest='save', metavar="STR",
                         action='store', default='genome', nargs='+', type=str,
                         choices=['genome', 'chromosomes'],
@@ -523,25 +512,17 @@ def populate_args(parser):
                         jobid. Use tadbit describe to find out which.''')
 
     glopts.add_argument('--force', dest='force', action='store_true',
-                      default=False,
-                      help='overwrite previously run job')
+                        default=False,
+                        help='overwrite previously run job')
 
     glopts.add_argument('--norm', dest='norm', action='store_true',
-                      default=False,
-                      help='compare normalized matrices')
-
-    glopts.add_argument('--bad_cols1', dest='bad_co1', metavar="PATH",
-                        action='store', default=None, type=str,
-                        help='''path to file with bad columns''')
+                        default=False,
+                        help='compare normalized matrices')
 
     glopts.add_argument('--biases1',   dest='biases1', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path to file with precalculated biases by
                         columns''')
-
-    glopts.add_argument('--bad_cols2', dest='bad_co2', metavar="PATH",
-                        action='store', default=None, type=str,
-                        help='''path to file with bad columns''')
 
     glopts.add_argument('--biases2',   dest='biases2', metavar="PATH",
                         action='store', default=None, type=str,
@@ -607,7 +588,7 @@ def check_options(opts):
         opts.tmpdb2 = path.join(opts.workdir2, 'trace.db')
 
     # resolution needed to compare
-    if not opts.skip_comparison and not opts.resolution:
+    if not opts.skip_comparison and not opts.reso:
         raise Exception('ERROR: need to define resolution at which to compare')
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
