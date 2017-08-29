@@ -6,16 +6,73 @@ information needed
 
 """
 from argparse                             import HelpFormatter
-
+from os import path
+import time
+import sqlite3 as lite
 
 from pytadbit.mapping.filter              import MASKED
+from pytadbit.utils.file_handling         import mkdir
 
 
 
 DESC = 'bin Hi-C data into matrices'
 
 def run(opts):
+    check_options(opts)
+    launch_time = time.localtime()
+
+    if opts.bam:
+        mreads = path.realpath(opts.bam)
+    else:
+        mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
+
+    
+
+
+    finish_time = time.localtime()
+
+    save_to_db(opts,
+               launch_time, finish_time)
+
+def save_to_db(opts,
+               launch_time, finish_time):
     pass
+
+
+def check_options(opts):
+    mkdir(opts.workdir)
+
+    # transform filtering reads option
+    opts.filter = filters_to_bin(opts.filter)
+
+    # check resume
+    if not path.exists(opts.workdir):
+        raise IOError('ERROR: workdir not found.')
+
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
+    # number of cpus
+    if opts.cpus == 0:
+        opts.cpus = cpu_count()
+    else:
+        opts.cpus = min(opts.cpus, cpu_count())
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
+        exit('WARNING: exact same job already computed, see JOBs table above')
+
 
 def populate_args(parser):
     """
@@ -142,3 +199,40 @@ def populate_args(parser):
                         default=False,
                         help='input BAM file contains only valid pairs (already filtered).')
 
+
+def load_parameters_fromdb(opts, what='bam'):
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
+    with con:
+        cur = con.cursor()
+        if not opts.jobid:
+            # get the JOBid of the parsing job
+            cur.execute("""
+            select distinct Id from JOBs
+            where Type = 'Filter' or Type = 'Merge'
+            """)
+            jobids = cur.fetchall()
+            if len(jobids) > 1:
+                raise Exception('ERROR: more than one possible input found, use'
+                                '"tadbit describe" and select corresponding '
+                                'jobid with --jobid')
+            parse_jobid = jobids[0][0]
+        else:
+            parse_jobid = opts.jobid
+        # fetch path to parsed BED files
+        if what == 'bed':
+            cur.execute("""
+            select distinct path from paths
+            inner join filter_outputs on filter_outputs.pathid = paths.id
+            where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
+            """ % parse_jobid)
+        elif what == 'bam':
+            cur.execute("""
+            select distinct path from paths
+            where paths.type = 'HIC_BAM' and paths.jobid = %s
+            """ % parse_jobid)
+        bam = cur.fetchall()[0][0]
+        return bam

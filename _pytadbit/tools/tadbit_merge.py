@@ -217,9 +217,9 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         add_path(cur, opts.workdir , 'WORKDIR'    , jobid)
         add_path(cur, opts.workdir1, 'WORKDIR1'   , jobid, opts.workdir)
         add_path(cur, opts.workdir2, 'WORKDIR2'   , jobid, opts.workdir)
-        add_path(cur, mreads1      , 'HIC_BAM'     , jobid, opts.workdir)
-        add_path(cur, mreads2      , 'HIC_BAM'     , jobid, opts.workdir)
-        add_path(cur, outbed       , 'HIC_BAM'     , jobid, opts.workdir)
+        add_path(cur, mreads1      , 'EXT_HIC_BAM', jobid, opts.workdir)
+        add_path(cur, mreads2      , 'EXT_HIC_BAM', jobid, opts.workdir)
+        add_path(cur, outbed       , 'HIC_BAM'    , jobid, opts.workdir)
 
         if opts.norm:
             add_path(cur, biases1      , 'BIASES'     , jobid, opts.workdir)
@@ -355,6 +355,7 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
     except OSError:
         pass
 
+
 def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
     if tmpdb:
         dbfile = tmpdb
@@ -443,6 +444,9 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
             inner join filter_outputs on paths.type = 'HIC_BAM'
             where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
             """ % parse_jobid)
+            fetched = cur.fetchall()
+            if len(fetched) > 1:
+                raise Exception('ERROR: more than one item in the database')
             mreads = cur.fetchall()[0][0]
         return biases, mreads, reso
 

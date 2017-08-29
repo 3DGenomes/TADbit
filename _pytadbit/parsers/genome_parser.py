@@ -5,7 +5,6 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
 
 from collections import OrderedDict
-from cPickle import load, dump
 from os import path
 import re
 
@@ -23,7 +22,8 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
        are passed, then chromosome names will be inferred from fasta headers
     :param None chr_filter: use only chromosome in the input list
     :param None chr_regexp: use only chromosome matching
-    :param True save_cache: save a cached version of this file for faster loadings
+    :param True save_cache: save a cached version of this file for faster
+       loadings (~4 times faster)
     :param False reload_cache: reload cached genome
 
     :returns: a sorted dictionary with chromosome names as keys, and sequences
@@ -33,13 +33,19 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
         f_names = [f_names]
 
     if len(f_names) == 1:
-        fname = f_names[0] + '_genome_TADbit.pickle'
+        fname = f_names[0] + '_genome.TADbit'
     else:
-        fname = path.join(path.commonprefix(f_names), 'genome_TADbit.pickle')
+        fname = path.join(path.commonprefix(f_names), 'genome.TADbit')
     if path.exists(fname) and not reload_cache:
         if verbose:
             print 'Loading cached genome'
-        return load(open(fname))
+        genome_seq = {}
+        for line in open(fname):
+            if line.startswith('>'):
+                c = line[1:].strip()
+            else:
+                genome_seq[c] = line.strip()
+        return genome_seq
 
     if isinstance(chr_names, str):
         chr_names = [chr_names]
@@ -107,10 +113,11 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
         if verbose:
             print 'saving genome in cache'
         if len(f_names) == 1:
-            fname = f_names[0] + '_genome_TADbit.pickle'
+            fname = f_names[0] + '_genome.TADbit'
         else:
-            fname = path.join(path.commonprefix(f_names), 'genome_TADbit.pickle')
+            fname = path.join(path.commonprefix(f_names), 'genome.TADbit')
         out = open(fname, 'w')
-        dump(genome_seq, out)
+        for c in genome_seq:
+            out.write('>%s\n%s\n' % (c, genome_seq[c]))
         out.close()
     return genome_seq
