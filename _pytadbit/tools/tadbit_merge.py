@@ -43,7 +43,10 @@ def run(opts):
         biases1, mreads1, reso1 = load_parameters_fromdb(
             opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
         mreads1 = path.join(opts.workdir1, mreads1)
-        biases1 = path.join(opts.workdir1, biases1)
+        try:
+            biases1 = path.join(opts.workdir1, biases1)
+        except AttributeError:
+            biases1 = None
 
     if opts.bam2:
         mreads2 = path.realpath(opts.bam2)
@@ -52,7 +55,10 @@ def run(opts):
         biases2, mreads2, reso2 = load_parameters_fromdb(
             opts.workdir2, opts.jobid2, opts, opts.tmpdb2)
         mreads2 = path.join(opts.workdir2, mreads2)
-        biases2 = path.join(opts.workdir2, biases2)
+        try:
+            biases2 = path.join(opts.workdir2, biases2)
+        except AttributeError:
+            biases2 = None
 
     filter_exclude = opts.filter
 
@@ -211,9 +217,9 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         add_path(cur, opts.workdir , 'WORKDIR'    , jobid)
         add_path(cur, opts.workdir1, 'WORKDIR1'   , jobid, opts.workdir)
         add_path(cur, opts.workdir2, 'WORKDIR2'   , jobid, opts.workdir)
-        add_path(cur, mreads1      , '2D_BED'     , jobid, opts.workdir)
-        add_path(cur, mreads2      , '2D_BED'     , jobid, opts.workdir)
-        add_path(cur, outbed       , '2D_BED'     , jobid, opts.workdir)
+        add_path(cur, mreads1      , 'HIC_BAM'     , jobid, opts.workdir)
+        add_path(cur, mreads2      , 'HIC_BAM'     , jobid, opts.workdir)
+        add_path(cur, outbed       , 'HIC_BAM'     , jobid, opts.workdir)
 
         if opts.norm:
             add_path(cur, biases1      , 'BIASES'     , jobid, opts.workdir)
