@@ -22,6 +22,7 @@ from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.parsers.tad_parser  import parse_tads
+from pytadbit.mapping.filter      import MASKED
 
 
 DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
@@ -47,7 +48,8 @@ def run(opts):
     mkdir(path.join(opts.workdir, '06_segmentation'))
 
     print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
-    hic_data = load_hic_data_from_bam(mreads, reso, biases=biases, ncpus=opts.cpus)
+    hic_data = load_hic_data_from_bam(mreads, reso, biases=biases, ncpus=opts.cpus,
+                                      filter_exclude=opts.filter)
 
     # compartments
     cmp_result = {}
@@ -324,6 +326,16 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to a matrix file with raw read
                         counts''')
+
+    glopts.add_argument('-F', '--filter', dest='filter', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
 
     glopts.add_argument('--rich_in_A', dest='rich_in_A', metavar="PATH",
                         action='store', default=None, type=str,
