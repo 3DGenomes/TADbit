@@ -10,7 +10,7 @@ def digest_parameters(opts, get_md5=True, extra=None):
     """
     digestion is truncated at 10 characters. More than a 1000 runs are not
     expected on a same sample (usually ~10).
-    
+
     :param None extra: extra parameter to remove from digestion
     """
     extra = extra or []
@@ -39,7 +39,6 @@ def update_wordir_path(cur, new_path):
     cur.execute("update paths set path='%s' where type='WORKDIR'" % (
         new_path))
 
-    
 def delete_entries(cur, table, col, val):
     try:
         cur.execute("select %s from %s where %s.%s = %d" % (

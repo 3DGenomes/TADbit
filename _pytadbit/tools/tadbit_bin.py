@@ -5,20 +5,23 @@ information needed
  - path working directory with parsed reads
 
 """
-from argparse                             import HelpFormatter
-from os import path, remove
+from argparse                        import HelpFormatter
+from os                              import path, rmdir, remove
+from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
 from random                          import random
-from warnings import warn
-from multiprocessing                      import cpu_count
+from cPickle                         import load
+from warnings                        import warn
+from multiprocessing                 import cpu_count
 import time
 import sqlite3 as lite
 
-from pytadbit.mapping.filter              import MASKED
-from pytadbit.utils.file_handling         import mkdir
+from pytadbit.mapping.filter         import MASKED
+from pytadbit.utils.file_handling    import mkdir
 from pytadbit.parsers.hic_bam_parser import filters_to_bin, write_matrix
-from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
+from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
+from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 
 
 DESC = 'bin Hi-C data into matrices'
@@ -27,6 +30,7 @@ DESC = 'bin Hi-C data into matrices'
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
+    param_hash = digest_parameters(opts)
 
     if opts.bam:
         mreads = path.realpath(opts.bam)
@@ -34,20 +38,138 @@ def run(opts):
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
 
-    print biases
-    print mreads
-    
-    outdir = ''
+    coord1         = opts.coord1
+    coord2         = opts.coord2
 
-    write_matrix(mreads, opts.reso, biases, outdir, filter_exclude=opts.filter)
+    if coord2 and not coord1:
+        coord1, coord2 = coord2, coord1
+
+    if not coord1:
+        region1 = None
+        start1  = None
+        end1    = None
+        region2 = None
+        start2  = None
+        end2    = None
+    else:
+        try:
+            crm1, pos1   = coord1.split(':')
+            start1, end1 = pos1.split('-')
+            region1 = crm1
+            start1  = int(start1)
+            end1    = int(end1)
+        except ValueError:
+            region1 = coord1
+            start1  = None
+            end1    = None
+        if coord2:
+            try:
+                crm2, pos2   = coord2.split(':')
+                start2, end2 = pos2.split('-')
+                region2 = crm2
+                start2  = int(start2)
+                end2    = int(end2)
+            except ValueError:
+                region2 = coord2
+                start2  = None
+                end2    = None
+        else:
+            region2 = None
+            start2  = None
+            end2    = None
+
+    outdir = path.join(opts.workdir, '05_sub-matrices')
+    mkdir(outdir)
+    tmpdir = path.join(opts.workdir, '05_sub-matrices', '_tmp_sub-matrices')
+    mkdir(tmpdir)
+
+    if region1:
+        if region1:
+            if not opts.quiet:
+                stdout.write('\nExtraction of %s' % (region1))
+            if start1:
+                if not opts.quiet:
+                    stdout.write(':%s-%s' % (start1, end1))
+            else:
+                if not opts.quiet:
+                    stdout.write(' (full chromosome)')
+            if region2:
+                if not opts.quiet:
+                    stdout.write(' intersection with %s' % (region2))
+                if start2:
+                    if not opts.quiet:
+                        stdout.write(':%s-%s\n' % (start2, end2))
+                else:
+                    if not opts.quiet:
+                        stdout.write(' (full chromosome)\n')
+            else:
+                if not opts.quiet:
+                    stdout.write('\n')
+    else:
+        if not opts.quiet:
+            stdout.write('\nExtraction of full genome\n')
+
+    out_files = write_matrix(mreads, opts.reso,
+                             load(open(path.join(opts.workdir, biases))) if biases else None,
+                             outdir, filter_exclude=opts.filter,
+                             normalizations=opts.normalizations,
+                             region1=region1, start1=start1, end1=end1,
+                             region2=region2, start2=start2, end2=end2,
+                             tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
+                             verbose=not opts.quiet, extra=param_hash)
 
     finish_time = time.localtime()
+    rmdir(tmpdir)
 
-    save_to_db(opts, launch_time, finish_time)
+    save_to_db(opts, launch_time, finish_time, out_files)
 
 
-def save_to_db(opts, launch_time, finish_time):
-    pass
+def save_to_db(opts, launch_time, finish_time, out_files):
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
+    with con:
+        cur = con.cursor()
+        try:
+            parameters = digest_parameters(opts, get_md5=False, extra=['quiet'])
+            param_hash = digest_parameters(opts, get_md5=True , extra=['quiet'])
+            cur.execute("""
+            insert into JOBs
+            (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
+            values
+            (NULL,       '%s',        '%s',        '%s', 'Bin',           '%s')
+            """ % (parameters,
+                   time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+                   time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
+        except lite.IntegrityError:
+            pass
+        jobid = get_jobid(cur)
+        for fnam in out_files:
+            add_path(cur, out_files[fnam], fnam + '_MATRIX', jobid, opts.workdir)
+        if not opts.quiet:
+            print_db(cur, 'JOBs')
+            print_db(cur, 'PATHs')
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 
 def check_options(opts):
@@ -122,6 +244,10 @@ def populate_args(parser):
                         default=False,
                         help='overwrite previously run job')
 
+    glopts.add_argument('-q', '--quiet', dest='quiet', action='store_true',
+                        default=False,
+                        help='remove all messages')
+
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
@@ -134,9 +260,20 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
-    normpt.add_argument('--normalization', dest='normalization', metavar="STR",
-                        action='store', default='None', type=str,
-                        choices=['Vanilla', 'oneD', 'None'],
+    outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
+                        default=None, help='''Coordinate of the region to
+                        retrieve. By default all genome, arguments can be
+                        either one chromosome name, or the coordinate in
+                        the form: "-c chr3:110000000-120000000"''')
+
+    outopt.add_argument('-c2', '--coord2', dest='coord2',  metavar='',
+                        default=None, help='''Coordinate of a second region to
+                        retrieve the matrix in the intersection with the first
+                        region.''')
+
+    normpt.add_argument('--norm', dest='normalizations', metavar="STR",
+                        action='store', default=['raw'], type=str, nargs='+',
+                        choices=['norm', 'decay', 'raw'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
 
@@ -181,7 +318,7 @@ def load_parameters_fromdb(opts):
                 cur.execute("""
                 select distinct Id from JOBs
                 where Type = '%s'
-                """ % ('Normalize' if opts.normalization != 'None' else 'Filter'))
+                """ % ('Normalize' if opts.normalizations != ('raw', ) else 'Filter'))
                 jobids = cur.fetchall()
                 parse_jobid = jobids[0][0]
             except IndexError:
@@ -196,7 +333,7 @@ def load_parameters_fromdb(opts):
                     parse_jobid = 1
             if len(jobids) > 1:
                 found = False
-                if opts.normalization != 'None':
+                if opts.normalizations != ('raw', ):
                     cur.execute("""
                     select distinct JOBid from NORMALIZE_OUTPUTs
                     where Resolution = %d
@@ -218,7 +355,7 @@ def load_parameters_fromdb(opts):
         # fetch path to parsed BED files
         # try:
         biases = mreads = reso = None
-        if opts.normalization != 'None':
+        if opts.normalizations != ('raw', ):
             try:
                 cur.execute("""
                 select distinct Path from PATHs
@@ -258,7 +395,5 @@ def load_parameters_fromdb(opts):
             fetched = cur.fetchall()
             if len(fetched) > 1:
                 raise Exception('ERROR: more than one item in the database')
-            print parse_jobid
-            print fetched
             mreads = fetched[0][0]
         return biases, mreads

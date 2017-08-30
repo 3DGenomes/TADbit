@@ -960,7 +960,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None,
-                 region2=None, start2=None, end2=None,
+                 region2=None, start2=None, end2=None, extra='',
                  tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
 
     if start1 is not None and end1:
@@ -969,6 +969,11 @@ def write_matrix(inbam, resolution, biases, outdir,
     if start2 is not None and end2:
         if end2 - start2 < resolution:
             raise Exception('ERROR: region2 should be at least as big as resolution')
+
+    if isinstance(normalizations, list):
+        normalizations = tuple(normalizations)
+    elif isinstance(normalizations, str):
+        normalizations = tuple([normalizations])
 
     if not isinstance(filter_exclude, int):
         filter_exclude = filters_to_bin(filter_exclude)
@@ -979,7 +984,12 @@ def write_matrix(inbam, resolution, biases, outdir,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, verbose=verbose)
 
-    bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
+    if biases:
+        bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
+    elif normalizations != ('raw', ):
+        raise Exception('ERROR: should provide path to file with biases (pickle).')
+    else:
+        bads1 = bads2 = {}
 
     start_bin1, start_bin2 = bin_coords[::2]
     if verbose:
@@ -1002,8 +1012,9 @@ def write_matrix(inbam, resolution, biases, outdir,
     # prepare file header
     outfiles = []
     if 'raw' in normalizations:
-        fnam = 'raw_%s_%s.abc' % (name,
-                                  nicer(resolution).replace(' ', ''))
+        fnam = 'raw_%s_%s%s.abc' % (name,
+                                    nicer(resolution).replace(' ', ''),
+                                    ('_' + extra) if extra else '')
         if append_to_tar:
             out_raw = StringIO()
             outfiles.append((out_raw, fnam))
@@ -1019,8 +1030,9 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # write file header
     if 'norm' in normalizations:
-        fnam = 'nrm_%s_%s.abc' % (name,
-                                  nicer(resolution).replace(' ', ''))
+        fnam = 'nrm_%s_%s%s.abc' % (name,
+                                    nicer(resolution).replace(' ', ''),
+                                    ('_' + extra) if extra else '')
         if append_to_tar:
             out_nrm = StringIO()
             outfiles.append((out_nrm, fnam))
@@ -1034,8 +1046,9 @@ def write_matrix(inbam, resolution, biases, outdir,
         else:
             out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
     if 'decay' in normalizations:
-        fnam = 'dec_%s_%s.abc' % (name,
-                                  nicer(resolution).replace(' ', ''))
+        fnam = 'dec_%s_%s%s.abc' % (name,
+                                    nicer(resolution).replace(' ', ''),
+                                    ('_' + extra) if extra else '')
         if append_to_tar:
             out_dec = StringIO()
             outfiles.append((out_dec, fnam))
@@ -1122,6 +1135,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                                       tmpdir, rand_hash, verbose=verbose):
         write(j, k, v)
 
+    fnames = {}
     if append_to_tar:
         lock = LockFile(append_to_tar)
         with lock:
@@ -1135,13 +1149,18 @@ def write_matrix(inbam, resolution, biases, outdir,
     else:
         if 'raw' in normalizations:
             out_raw.close()
+            fnames['RAW'] = out_raw.name
         if 'norm' in normalizations:
             out_nrm.close()
+            fnames['NRM'] = out_nrm.name
         if 'decay' in normalizations:
             out_dec.close()
+            fnames['DEC'] = out_dec.name
 
     # this is the last thing we do in case something goes wrong
     os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
 
     if  verbose:
         printime('\nDone.')
+
+    return fnames
