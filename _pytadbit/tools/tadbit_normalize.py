@@ -28,6 +28,7 @@ from pytadbit.utils.file_handling         import mkdir
 from pytadbit.mapping.analyze             import plot_distance_vs_interactions
 from pytadbit.mapping.filter              import MASKED
 from pytadbit.parsers.hic_bam_parser      import printime, print_progress
+from pytadbit.parsers.hic_bam_parser      import filters_to_bin
 from pytadbit.utils.extraviews            import nicer
 from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
@@ -189,13 +190,13 @@ def run(opts):
 
     save_to_db(opts, bias_file, opts.bam, bad_col_image,
                len(badcol), len(biases), raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2,
+               inter_vs_gcoord, a2, filters_to_bin(opts.filters),
                launch_time, finish_time)
 
 
 def save_to_db(opts, bias_file, mreads, bad_col_image,
                nbad_columns, ncolumns, raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2,
+               inter_vs_gcoord, a2, bam_filter,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
@@ -241,6 +242,7 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
                 Input int,
                 N_columns int,
                 N_filtered int,
+                BAM_filter int,
                 Cis_percentage_Raw real,
                 Cis_percentage_Norm real,
                 Slope_700kb_10Mb real,
@@ -279,18 +281,18 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
         try:
             cur.execute("""
             insert into NORMALIZE_OUTPUTs
-            (Id  , JOBid,     Input, N_columns,   N_filtered, Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization,      Factor)
+            (Id  , JOBid,     Input, N_columns,   N_filtered, BAM_filter, Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization,      Factor)
             values
-            (NULL,    %d,        %d,        %d,           %d,                 %f,                  %f,               %f,           %d,               '%s',          %f)
-            """ % (jobid, input_bed,  ncolumns, nbad_columns,   100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
+            (NULL,    %d,        %d,        %d,           %d,         %d,                 %f,                  %f,               %f,           %d,               '%s',          %f)
+            """ % (jobid, input_bed,  ncolumns, nbad_columns, bam_filter,   100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
         except lite.OperationalError:
             try:
                 cur.execute("""
                 insert into NORMALIZE_OUTPUTs
-                (Id  , JOBid,     Input, N_columns,   N_filtered,      Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,     Normalization,       Factor)
+                (Id  , JOBid,     Input, N_columns,   N_filtered, BAM_filter,      Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,     Normalization,       Factor)
                 values
-                (NULL,    %d,        %d,        %d,           %d,                      %f,                  %f,               %f,           %d,               '%s',          %f)
-                """ % (jobid, input_bed,  ncolumns, nbad_columns,        100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
+                (NULL,    %d,        %d,        %d,           %d,         %d,                      %f,                  %f,               %f,           %d,               '%s',          %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns, bam_filter,        100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
             except lite.OperationalError:
                 print 'WANRING: Normalized table not written!!!'
 

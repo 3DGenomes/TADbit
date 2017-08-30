@@ -6,16 +6,23 @@ information needed
 
 """
 from argparse                             import HelpFormatter
-from os import path
+from os import path, remove
+from shutil                          import copyfile
+from string                          import ascii_letters
+from random                          import random
+from warnings import warn
+from multiprocessing                      import cpu_count
 import time
 import sqlite3 as lite
 
 from pytadbit.mapping.filter              import MASKED
 from pytadbit.utils.file_handling         import mkdir
-
+from pytadbit.parsers.hic_bam_parser import filters_to_bin, write_matrix
+from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 
 
 DESC = 'bin Hi-C data into matrices'
+
 
 def run(opts):
     check_options(opts)
@@ -24,18 +31,19 @@ def run(opts):
     if opts.bam:
         mreads = path.realpath(opts.bam)
     else:
-        mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
+        biases, mreads = load_parameters_fromdb(opts)
+        mreads = path.join(opts.workdir, mreads)
 
-    
+    outdir = ''
 
+    write_matrix(mreads, opts.reso, biases, outdir, filter_exclude=opts.filter)
 
     finish_time = time.localtime()
 
-    save_to_db(opts,
-               launch_time, finish_time)
+    save_to_db(opts, launch_time, finish_time)
 
-def save_to_db(opts,
-               launch_time, finish_time):
+
+def save_to_db(opts, launch_time, finish_time):
     pass
 
 
@@ -125,32 +133,10 @@ def populate_args(parser):
                         cores will be used''')
 
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
-                        action='store', default='Vanilla', type=str,
-                        choices=['Vanilla', 'oneD'],
+                        action='store', default='None', type=str,
+                        choices=['Vanilla', 'oneD', 'None'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
-
-    normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
-                        metavar='PATH', type=str,
-                        help='''Path to file with mappability, required for oneD
-                        normalization''')
-
-    normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
-                        metavar='PATH', type=str,
-                        help='''Path to fasta file with genome sequence, to compute
-                        GC content and number of restriction sites per bin.
-                        Required for oneD normalization''')
-
-    normpt.add_argument('--renz', dest='renz', metavar="STR",
-                        type=str, required=False,
-                        help='''restriction enzyme name(s). Required for oneD
-                        normalization''')
-
-    normpt.add_argument('--factor', dest='factor', metavar="NUM",
-                        action='store', default=1, type=float,
-                        help='''[%(default)s] target mean value of a cell after
-                        normalization (can be used to weight experiments before
-                        merging)''')
 
     outopt.add_argument('--keep', dest='keep', action='store',
                         default=['intra', 'genome'], nargs='+',
@@ -164,44 +150,13 @@ def populate_args(parser):
                         default=False,
                         help='Save only text file for matrices, not images')
 
-    bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
-                        action='store', default=95, type=float,
-                        help=('[%(default)s%%] maximum percentage of zeroes '
-                              'allowed per column.'))
-
-    bfiltr.add_argument('--min_count', dest='min_count', metavar="INT",
-                        action='store', default=None, type=float,
-                        help=('''[%(default)s] minimum number of reads mapped to
-                        a bin (recommended value could be 2500). If set this
-                        option overrides the perc_zero filtering... This option is
-                        slightly slower.'''))
-
-    bfiltr.add_argument('--filter_only', dest='filter_only', action='store_true',
-                        default=False,
-                        help='skip normalization')
-
-    bfiltr.add_argument('--fast_filter', dest='fast_filter', action='store_true',
-                        default=False,
-                        help='''only filter according to the percentage of zero
-                        count or minimum count of reads''')
-
-    rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
-                        choices = range(1, 11),
-                        help=("""[%(default)s] Use filters to define a set os
-                        valid pair of reads e.g.:
-                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
-                              "correspond to: %s" % (', '.join(
-                                  ['%2d: %15s' % (k, MASKED[k]['name'])
-                                   for k in MASKED]))))
-
     rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
                         default=False,
                         help='input BAM file contains only valid pairs (already filtered).')
 
 
-def load_parameters_fromdb(opts, what='bam'):
-    if 'tmpdb' in opts and opts.tmpdb:
+def load_parameters_fromdb(opts):
+    if opts.tmpdb:
         dbfile = opts.tmpdb
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
@@ -210,29 +165,86 @@ def load_parameters_fromdb(opts, what='bam'):
         cur = con.cursor()
         if not opts.jobid:
             # get the JOBid of the parsing job
-            cur.execute("""
-            select distinct Id from JOBs
-            where Type = 'Filter' or Type = 'Merge'
-            """)
-            jobids = cur.fetchall()
+            try:
+                cur.execute("""
+                select distinct Id from JOBs
+                where Type = '%s'
+                """ % ('Normalize' if opts.norm else 'Filter'))
+                jobids = cur.fetchall()
+                parse_jobid = jobids[0][0]
+            except IndexError:
+                cur.execute("""
+                select distinct Id from JOBs
+                where Type = '%s'
+                """ % ('Filter'))
+                jobids = cur.fetchall()
+                try:
+                    parse_jobid = jobids[0][0]
+                except IndexError:
+                    parse_jobid = 1
             if len(jobids) > 1:
-                raise Exception('ERROR: more than one possible input found, use'
-                                '"tadbit describe" and select corresponding '
-                                'jobid with --jobid')
-            parse_jobid = jobids[0][0]
+                found = False
+                if opts.norm:
+                    cur.execute("""
+                    select distinct JOBid from NORMALIZE_OUTPUTs
+                    where Resolution = %d
+                    """ % (opts.reso))
+                    jobs = cur.fetchall()
+                    try:
+                        parse_jobid = jobs[0][0]
+                        found = True
+                    except IndexError:
+                        found = False
+                    if len(jobs ) > 1:
+                        found = False
+                if not found:
+                    raise Exception('ERROR: more than one possible input found, use'
+                                    '"tadbit describe" and select corresponding '
+                                    'jobid with --jobid')
         else:
-            parse_jobid = opts.jobid
+            parse_jobid = jobid
         # fetch path to parsed BED files
-        if what == 'bed':
+        # try:
+        biases = mreads = reso = None
+        if opts.norm:
+            try:
+                cur.execute("""
+                select distinct Path from PATHs
+                where paths.jobid = %s and paths.Type = 'BIASES'
+                """ % parse_jobid)
+                biases = cur.fetchall()[0][0]
+
+                cur.execute("""
+                select distinct Path from PATHs
+                inner join NORMALIZE_OUTPUTs on PATHs.Id = NORMALIZE_OUTPUTs.Input
+                where NORMALIZE_OUTPUTs.JOBid = %d;
+                """ % parse_jobid)
+                mreads = cur.fetchall()[0][0]
+
+                cur.execute("""
+                select distinct Resolution from NORMALIZE_OUTPUTs
+                where NORMALIZE_OUTPUTs.JOBid = %d;
+                """ % parse_jobid)
+                reso = int(cur.fetchall()[0][0])
+                if reso != opts.reso:
+                    warn('WARNING: input resolution does not match '
+                         'the one of the precomputed normalization')
+            except IndexError:
+                warn('WARNING: normalization not found')
+                cur.execute("""
+                select distinct path from paths
+                inner join filter_outputs on filter_outputs.pathid = paths.id
+                where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
+                """ % parse_jobid)
+                mreads = cur.fetchall()[0][0]
+        else:
             cur.execute("""
             select distinct path from paths
-            inner join filter_outputs on filter_outputs.pathid = paths.id
+            inner join filter_outputs on paths.type = 'HIC_BAM'
             where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
             """ % parse_jobid)
-        elif what == 'bam':
-            cur.execute("""
-            select distinct path from paths
-            where paths.type = 'HIC_BAM' and paths.jobid = %s
-            """ % parse_jobid)
-        bam = cur.fetchall()[0][0]
-        return bam
+            fetched = cur.fetchall()
+            if len(fetched) > 1:
+                raise Exception('ERROR: more than one item in the database')
+            mreads = cur.fetchall()[0][0]
+        return biases, mreads
