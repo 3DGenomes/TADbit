@@ -80,7 +80,8 @@ def run(opts):
 
     outdir = path.join(opts.workdir, '05_sub-matrices')
     mkdir(outdir)
-    tmpdir = path.join(opts.workdir, '05_sub-matrices', '_tmp_sub-matrices')
+    tmpdir = path.join(opts.workdir, '05_sub-matrices',
+                       '_tmp_sub-matrices_%s' % param_hash)
     mkdir(tmpdir)
 
     if region1:
@@ -118,8 +119,8 @@ def run(opts):
                              tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
                              verbose=not opts.quiet, extra=param_hash)
 
-    finish_time = time.localtime()
     rmdir(tmpdir)
+    finish_time = time.localtime()
 
     save_to_db(opts, launch_time, finish_time, out_files)
 
