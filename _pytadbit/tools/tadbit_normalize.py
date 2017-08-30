@@ -190,7 +190,7 @@ def run(opts):
 
     save_to_db(opts, bias_file, opts.bam, bad_col_image,
                len(badcol), len(biases), raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2, filters_to_bin(opts.filters),
+               inter_vs_gcoord, a2, filters_to_bin(opts.filter),
                launch_time, finish_time)
 
 

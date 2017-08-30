@@ -34,6 +34,9 @@ def run(opts):
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
 
+    print biases
+    print mreads
+    
     outdir = ''
 
     write_matrix(mreads, opts.reso, biases, outdir, filter_exclude=opts.filter)
