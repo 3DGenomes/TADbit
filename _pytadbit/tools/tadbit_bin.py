@@ -94,7 +94,6 @@ def populate_args(parser):
 
     oblopt = parser.add_argument_group('Required options')
     glopts = parser.add_argument_group('General options')
-    bfiltr = parser.add_argument_group('Bin filtering options')
     rfiltr = parser.add_argument_group('Read filtering options')
     normpt = parser.add_argument_group('Normalization options')
     outopt = parser.add_argument_group('Output options')
@@ -149,6 +148,16 @@ def populate_args(parser):
                         keep inter-chromosomal matrices and "genome", to keep
                         genomic matrices.''')
 
+    rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
+                        choices = range(1, 11),
+                        help=("""[%(default)s] Use filters to define a set os
+                        valid pair of reads e.g.:
+                        '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
+                              "correspond to: %s" % (', '.join(
+                                  ['%2d: %15s' % (k, MASKED[k]['name'])
+                                   for k in MASKED]))))
+
     outopt.add_argument('--only_txt', dest='only_txt', action='store_true',
                         default=False,
                         help='Save only text file for matrices, not images')
@@ -172,7 +181,7 @@ def load_parameters_fromdb(opts):
                 cur.execute("""
                 select distinct Id from JOBs
                 where Type = '%s'
-                """ % ('Normalize' if opts.norm else 'Filter'))
+                """ % ('Normalize' if opts.normalization != 'None' else 'Filter'))
                 jobids = cur.fetchall()
                 parse_jobid = jobids[0][0]
             except IndexError:
@@ -187,7 +196,7 @@ def load_parameters_fromdb(opts):
                     parse_jobid = 1
             if len(jobids) > 1:
                 found = False
-                if opts.norm:
+                if opts.normalization != 'None':
                     cur.execute("""
                     select distinct JOBid from NORMALIZE_OUTPUTs
                     where Resolution = %d
@@ -205,11 +214,11 @@ def load_parameters_fromdb(opts):
                                     '"tadbit describe" and select corresponding '
                                     'jobid with --jobid')
         else:
-            parse_jobid = jobid
+            parse_jobid = opts.jobid
         # fetch path to parsed BED files
         # try:
         biases = mreads = reso = None
-        if opts.norm:
+        if opts.normalization != 'None':
             try:
                 cur.execute("""
                 select distinct Path from PATHs
@@ -249,5 +258,7 @@ def load_parameters_fromdb(opts):
             fetched = cur.fetchall()
             if len(fetched) > 1:
                 raise Exception('ERROR: more than one item in the database')
-            mreads = cur.fetchall()[0][0]
+            print parse_jobid
+            print fetched
+            mreads = fetched[0][0]
         return biases, mreads

@@ -190,7 +190,7 @@ def run(opts):
 
     save_to_db(opts, bias_file, opts.bam, bad_col_image,
                len(badcol), len(biases), raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2, filters_to_bin(opts.filter),
+               inter_vs_gcoord, a2, opts.filter,
                launch_time, finish_time)
 
 
@@ -477,10 +477,6 @@ def populate_args(parser):
     rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
                         default=False,
                         help='input BAM file contains only valid pairs (already filtered).')
-
-
-def filters_to_bin(filters):
-    return sum((k in filters) * 2**(k-1) for k in MASKED)
 
 
 def check_options(opts):
