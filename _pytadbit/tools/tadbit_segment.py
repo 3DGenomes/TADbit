@@ -12,6 +12,7 @@ from string                       import ascii_letters
 from random                       import random
 from warnings                     import warn
 from cPickle                      import load
+from multiprocessing              import cpu_count
 import sqlite3 as lite
 import time
 
@@ -43,22 +44,10 @@ def run(opts):
     mreads = path.join(opts.workdir, mreads)
     biases = path.join(opts.workdir, biases)
 
-    biases = load(open(biases))
-
     mkdir(path.join(opts.workdir, '06_segmentation'))
 
     print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
-    hic_data = load_hic_data_from_bam(mreads, reso)
-    hic_data.bads = biases['badcol']
-
-    print '  - loading filtered columns'
-    print '    * with %d of %d filtered out columns' % (len(hic_data.bads),
-                                                        len(hic_data))
-    try:
-        hic_data.bias = biases['biases']
-    except IOError:
-        if not opts.only_tads:
-            raise Exception('ERROR: data should be normalized to get compartments')
+    hic_data = load_hic_data_from_bam(mreads, reso, biases=biases, ncpus=opts.cpus)
 
     # compartments
     cmp_result = {}
@@ -256,7 +245,7 @@ def load_parameters_fromdb(opts):
                                     '"tadbit describe" and select corresponding '
                                     'jobid with --jobid')
 
-        # fetch path to parsed BED files
+        # fetch path to BAM files
         # try:
         biases = mreads = reso = None
         try:
@@ -389,11 +378,18 @@ def populate_args(parser):
 
     parser.add_argument_group(glopts)
 
+
 def check_options(opts):
 
     # check resume
     if not path.exists(opts.workdir):
         raise IOError('ERROR: %s does not exists' % opts.workdir)
+
+    # number of cpus
+    if opts.cpus == 0:
+        opts.cpus = cpu_count()
+    else:
+        opts.cpus = min(opts.cpus, cpu_count())
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
@@ -408,10 +404,12 @@ def check_options(opts):
             remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
+
 def nice(reso):
     if reso >= 1000000:
         return '%dMb' % (reso / 1000000)
     return '%dkb' % (reso / 1000)
+
 
 def load_tad_height(tad_def, size, beg, end, hic_data):
     bias, zeros = hic_data.bias, hic_data.bads
