@@ -6,19 +6,22 @@ information needed
 
 """
 from argparse                     import HelpFormatter
-from pytadbit                     import load_hic_data_from_reads
+from os                           import path, remove
+from shutil                       import copyfile
+from string                       import ascii_letters
+from random                       import random
+from warnings                     import warn
+from cPickle                      import load
+import sqlite3 as lite
+import time
+
+from pytadbit                     import load_hic_data_from_bam
 from pytadbit                     import tadbit
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.parsers.tad_parser  import parse_tads
-from os                           import path, remove
-from time                         import sleep
-from shutil                       import copyfile
-from string                       import ascii_letters
-from random                       import random
-import sqlite3 as lite
-import time
+
 
 DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
 
@@ -28,32 +31,31 @@ def run(opts):
     param_hash = digest_parameters(opts)
 
     if opts.nosql:
-        bad_co = opts.bad_co
         biases = opts.biases
         mreads = opts.mreads
-        reso   = opts.reso
         inputs = []
     else:
-        (bad_co, bad_co_id, biases, biases_id,
-         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+        biases, mreads, biases_id, mreads_id = load_parameters_fromdb(opts)
+        inputs = [biases_id, mreads_id]
         # store path ids to be saved in database
-        inputs = bad_co_id, biases_id, mreads_id
 
+    reso   = opts.reso
     mreads = path.join(opts.workdir, mreads)
-    bad_co = path.join(opts.workdir, bad_co)
     biases = path.join(opts.workdir, biases)
 
-    mkdir(path.join(opts.workdir, '05_segmentation'))
+    biases = load(open(biases))
+
+    mkdir(path.join(opts.workdir, '06_segmentation'))
 
     print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
-    hic_data = load_hic_data_from_reads(mreads, reso)
-    hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
-    print 'loading filtered columns %s' % (bad_co)
-    print '    with %d of %d filtered out columns' % (len(hic_data.bads),
-                                                      len(hic_data))
+    hic_data = load_hic_data_from_bam(mreads, reso)
+    hic_data.bads = biases['badcol']
+
+    print '  - loading filtered columns'
+    print '    * with %d of %d filtered out columns' % (len(hic_data.bads),
+                                                        len(hic_data))
     try:
-        hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                             for l in open(biases))
+        hic_data.bias = biases['biases']
     except IOError:
         if not opts.only_tads:
             raise Exception('ERROR: data should be normalized to get compartments')
@@ -62,7 +64,7 @@ def run(opts):
     cmp_result = {}
     if not opts.only_tads:
         print 'Searching compartments'
-        cmprt_dir = path.join(opts.workdir, '05_segmentation',
+        cmprt_dir = path.join(opts.workdir, '06_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
         firsts = hic_data.find_compartments(crms=opts.crms,
@@ -92,7 +94,7 @@ def run(opts):
     tad_result = {}
     if not opts.only_compartments:
         print 'Searching TADs'
-        tad_dir = path.join(opts.workdir, '05_segmentation',
+        tad_dir = path.join(opts.workdir, '06_segmentation',
                              'tads_%s' % (nice(reso)))
         mkdir(tad_dir)
         for crm in hic_data.chromosomes:
@@ -134,12 +136,13 @@ def run(opts):
         save_to_db(opts, cmp_result, tad_result, reso, inputs,
                    launch_time, finish_time)
 
+
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
-            sleep(0.5)
+            time.sleep(0.5)
         # close lock
         open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
@@ -206,6 +209,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         # release lock
         remove(path.join(opts.workdir, '__lock_db'))
 
+
 def load_parameters_fromdb(opts):
     if 'tmpdb' in opts and opts.tmpdb:
         dbfile = opts.tmpdb
@@ -216,42 +220,71 @@ def load_parameters_fromdb(opts):
         cur = con.cursor()
         if not opts.jobid:
             # get the JOBid of the parsing job
-            cur.execute("""
-            select distinct Id from JOBs
-            where Type = 'Normalize'
-            """)
-            jobids = cur.fetchall()
+            try:
+                cur.execute("""
+                select distinct Id from JOBs
+                where Type = 'Normalize'
+                """)
+                jobids = cur.fetchall()
+                parse_jobid = jobids[0][0]
+            except IndexError:
+                cur.execute("""
+                select distinct Id from JOBs
+                where Type = '%s'
+                """ % ('Filter'))
+                jobids = cur.fetchall()
+                try:
+                    parse_jobid = jobids[0][0]
+                except IndexError:
+                    parse_jobid = 1
             if len(jobids) > 1:
-                raise Exception('ERROR: more than one possible input found, use'
-                                '"tadbit describe" and select corresponding '
-                                'jobid with --jobid')
-            parse_jobid = jobids[0][0]
-        else:
-            parse_jobid = opts.jobid
+                found = False
+                cur.execute("""
+                select distinct JOBid from NORMALIZE_OUTPUTs
+                where Resolution = %d
+                """ % (opts.reso))
+                jobs = cur.fetchall()
+                try:
+                    parse_jobid = jobs[0][0]
+                    found = True
+                except IndexError:
+                    found = False
+                if len(jobs ) > 1:
+                    found = False
+                if not found:
+                    raise Exception('ERROR: more than one possible input found, use'
+                                    '"tadbit describe" and select corresponding '
+                                    'jobid with --jobid')
+
         # fetch path to parsed BED files
-        cur.execute("""
-        select distinct Path, PATHs.Id from PATHs
-        where paths.jobid = %s and paths.Type = 'BAD_COLUMNS'
-        """ % parse_jobid)
-        bad_co, bad_co_id  = cur.fetchall()[0]
-        cur.execute("""
-        select distinct Path, PATHs.Id from PATHs
-        where paths.jobid = %s and paths.Type = 'BIASES'
-        """ % parse_jobid)
-        biases, biases_id = cur.fetchall()[0]
-        cur.execute("""
-        select distinct Path, PATHs.Id from PATHs
-        inner join NORMALIZE_OUTPUTs on PATHs.Id = NORMALIZE_OUTPUTs.Input
-        where NORMALIZE_OUTPUTs.JOBid = %d;
-        """ % parse_jobid)
-        mreads, mreads_id = cur.fetchall()[0]
-        cur.execute("""
-        select distinct Resolution from NORMALIZE_OUTPUTs
-        where NORMALIZE_OUTPUTs.JOBid = %d;
-        """ % parse_jobid)
-        reso = int(cur.fetchall()[0][0])
-        return (bad_co, bad_co_id, biases, biases_id,
-                mreads, mreads_id, reso)
+        # try:
+        biases = mreads = reso = None
+        try:
+            cur.execute("""
+            select distinct Path, PATHs.id from PATHs
+            where paths.jobid = %s and paths.Type = 'BIASES'
+            """ % parse_jobid)
+            biases, biases_id = cur.fetchall()[0]
+
+            cur.execute("""
+            select distinct Path, PATHs.id from PATHs
+            inner join NORMALIZE_OUTPUTs on PATHs.Id = NORMALIZE_OUTPUTs.Input
+            where NORMALIZE_OUTPUTs.JOBid = %d;
+            """ % parse_jobid)
+            mreads, mreads_id = cur.fetchall()[0]
+
+            cur.execute("""
+            select distinct Resolution from NORMALIZE_OUTPUTs
+            where NORMALIZE_OUTPUTs.JOBid = %d;
+            """ % parse_jobid)
+            reso = int(cur.fetchall()[0][0])
+            if reso != opts.reso:
+                warn('WARNING: input resolution does not match '
+                     'the one of the precomputed normalization')
+        except IndexError:
+            raise Exception('ERROR: normalization not found')
+        return biases, mreads, biases_id, mreads_id
+
 
 def populate_args(parser):
     """
@@ -290,7 +323,7 @@ def populate_args(parser):
                         columns''')
 
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
-                        action='store', default=None, type=int,
+                        action='store', default=None, type=int, required=True,
                         help='''resolution at which to output matrices''')
 
     glopts.add_argument('--norm_matrix', dest='norm_matrix', metavar="PATH",
