@@ -11,7 +11,7 @@ import re
 from pytadbit.utils.file_handling import magic_open
 
 def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
-                verbose=True, save_cache=True, reload_cache=False):
+                verbose=True, save_cache=True, reload_cache=False, only_length=False):
     """
     Parse a list of fasta files, or just one fasta.
 
@@ -25,6 +25,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
     :param True save_cache: save a cached version of this file for faster
        loadings (~4 times faster)
     :param False reload_cache: reload cached genome
+    :param False only_length: returns dictionary with length of genome,not sequence
 
     :returns: a sorted dictionary with chromosome names as keys, and sequences
        as values (sequence in upper case)
@@ -39,12 +40,15 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
     if path.exists(fname) and not reload_cache:
         if verbose:
             print 'Loading cached genome'
-        genome_seq = {}
+        genome_seq = OrderedDict()
         for line in open(fname):
             if line.startswith('>'):
                 c = line[1:].strip()
             else:
-                genome_seq[c] = line.strip()
+                if only_length:
+                    genome_seq[c] = len(line.strip())
+                else:
+                    genome_seq[c] = line.strip()
         return genome_seq
 
     if isinstance(chr_names, str):
@@ -81,7 +85,10 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                 seq = []
                 continue
             seq.append(line.rstrip())
-        genome_seq[header] = ''.join(seq).upper()
+        if only_length:
+            genome_seq[header] = len(seq)
+        else:
+            genome_seq[header] = ''.join(seq).upper()
         if 'UNWANTED' in genome_seq:
             del(genome_seq['UNWANTED'])
     else:
@@ -106,10 +113,13 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                         break
             except StopIteration:
                 raise Exception('No crocodiles found, is it fasta?')
-            genome_seq[header] = ''.join([l.rstrip() for l in fhandler]).upper()
+            if only_length:
+                genome_seq[header] = sum(len(l.rstrip()) for l in fhandler)
+            else:
+                genome_seq[header] = ''.join([l.rstrip() for l in fhandler]).upper()
         if 'UNWANTED' in genome_seq:
             del(genome_seq['UNWANTED'])
-    if save_cache:
+    if save_cache and not only_length:
         if verbose:
             print 'saving genome in cache'
         if len(f_names) == 1:
