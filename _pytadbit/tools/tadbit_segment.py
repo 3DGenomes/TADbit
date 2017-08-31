@@ -40,15 +40,15 @@ def run(opts):
         biases, mreads, biases_id, mreads_id = load_parameters_fromdb(opts)
         inputs = [biases_id, mreads_id]
         # store path ids to be saved in database
+        mreads = path.join(opts.workdir, mreads)
 
     reso   = opts.reso
-    mreads = path.join(opts.workdir, mreads)
-    biases = path.join(opts.workdir, biases)
 
     mkdir(path.join(opts.workdir, '06_segmentation'))
 
     print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
-    hic_data = load_hic_data_from_bam(mreads, reso, biases=biases, ncpus=opts.cpus,
+    hic_data = load_hic_data_from_bam(mreads, reso, ncpus=opts.cpus,
+                                      biases=None if opts.all_bins else biases,
                                       filter_exclude=opts.filter)
 
     # compartments
@@ -106,6 +106,13 @@ def run(opts):
                             n_cpus=opts.cpus, verbose=opts.verbose,
                             max_tad_size=max_tad_size,
                             no_heuristic=False)
+            if opts.all_bins:
+                if opts.nosql:
+                    biases = load(open(biases))
+                else:
+                    biases = load(open(path.join(opts.workdir, biases)))
+                hic_data.bads = biases['badcol']
+                hic_data.bias = biases['biases']
             tads = load_tad_height(result, size, beg, end, hic_data)
             table = ''
             table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
@@ -300,6 +307,10 @@ def populate_args(parser):
                         action='store_true', default=False,
                         help='do not load/store data from/in sqlite database')
 
+    glopts.add_argument('--all_bins', dest='all_bins',
+                        action='store_true', default=False,
+                        help='skip the filtering of bins for detection of TADs')
+
     glopts.add_argument('--mreads', dest='mreads', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path valid-pairs file''')
@@ -425,6 +436,7 @@ def nice(reso):
 
 def load_tad_height(tad_def, size, beg, end, hic_data):
     bias, zeros = hic_data.bias, hic_data.bads
+    print 'ZEROS', zeros
     tads, _ = parse_tads(tad_def)
     diags = []
     for k in xrange(1, size):

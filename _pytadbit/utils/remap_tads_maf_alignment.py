@@ -135,13 +135,15 @@ def filter_non_syntenic_alignments(synteny_file, synteny_reso=0):
     for num in xrange(len(ALIGNMENTS) - 1, -1, -1):
         if not num in goods:
             ALIGNMENTS.pop(num)
-                
+
 
 def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
-                   clean_all=False):
+                   clean_all=False, breaker='i'):
     """
     From a MAF file extract alignment of a pair of species. Also extends
     the alignment taking advantage of missing species.
+    :param 'i' breaker: first character of the lines thata marks the end of the
+       sequence. Use '\n' for pairwise alignments
     """
     # get alignments
     pre_alignments = []
@@ -180,7 +182,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
                 else:
                     pos = int(clen) - int(pos)
                     strand = -1
-            elif line.startswith('i'):
+            elif line.startswith(breaker):
                 if not GOOD_CRM.match(crm):
                     continue
                 ali[spe] = (crm, pos, slen, strand, line.endswith('C 0 C 0\n'))
@@ -241,7 +243,8 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
         ALIGNMENTS.pop(i)
     print '      Filtering alignment'
     # remove alignments that are not inside syntenic regions
-    filter_non_syntenic_alignments(synteny_file, synteny_reso)
+    if synteny_file:
+        filter_non_syntenic_alignments(synteny_file, synteny_reso)
 
     print 'Dumping alignment to file', pick_path
     out = open(pick_path, 'w')
@@ -262,6 +265,41 @@ def syntenic_segment(crm, beg, end):
             if val == end - beg:
                 break
     return max(matching)[1] # take alignment only, not val
+
+
+def map_bin(crm, pos, resolution, trace=None):
+    """
+    Converts coordinates of 1 TAD border in a given chromosome. Convertion in
+    terms of change in assembly version, or in terms of syntenic regions between
+    species (or both).
+    """
+    beg = int(pos       * resolution)
+    end = int((pos + 1) * resolution)
+    ## keep trace
+    try:
+        trace.setdefault(crm, {})
+    except AttributeError:
+        trace = {crm: {}}
+    if not end in trace[crm]:
+        trace[crm][end] = {'from': {'crm': crm, 'beg': beg, 'end': end}}
+    coords = {}
+    try:
+        coords = syntenic_segment(crm, beg, end)
+        if not coords: # found nothing
+            return coords
+        diff_beg = beg - coords['from']['beg']
+        diff_end = end - coords['from']['end']
+        if coords['targ']['std'] == 1:
+            coords['targ']['beg'] += diff_beg
+            coords['targ']['end'] += diff_end
+        else:
+            coords['targ']['beg'] -= diff_end # use diff end it's all reverted
+            coords['targ']['end'] -= diff_beg
+    except Exception, e:
+        print e
+        raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
+    trace[crm][end]['syntenic at'] = coords['targ']
+    return coords['targ']
 
 
 def map_tad(tad, crm, resolution, trace=None):
@@ -421,7 +459,7 @@ def remap_genome(seed_species, target_species, maf_path, genome, synteny_file=No
                     'None',
                     ))
     if write_log:
-        log.close()        
+        log.close()
     return new_genome, trace
 
 
@@ -474,5 +512,3 @@ def save_new_genome(genome, trace, check=False, rootdir='./'):
                 os.mkdir(rootdir)
             exp.write_tad_borders(density=False,
                                   savedata=os.path.join(rootdir, new_crm.name + '.tsv'))
-    
-
