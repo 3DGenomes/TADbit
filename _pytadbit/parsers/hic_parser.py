@@ -436,7 +436,8 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
 
 
 def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
-                           filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10)):
+                           filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
+                           verbose=True):
     """
     :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -463,10 +464,12 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     size = sum(genome_seq.values()) + len(genome_seq)
 
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
-    imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
+    imx = HiC_data((), size, chromosomes=genome_seq, dict_sec=dict_sec,
+                   resolution=resolution)
 
     if biases:
-        biases = load(open(biases))
+        if isinstance(biases, str):
+            biases = load(open(biases))
         if biases['resolution'] != resolution:
             raise Exception('ERROR: resolution of biases do not match to the '
                             'one wanted (%d vs %d)' % (
@@ -477,7 +480,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
 
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=True,
-               ncpus=ncpus, dico=imx)
+               ncpus=ncpus, dico=imx, verbose=verbose)
     imx.symmetricized = True
 
     return imx
