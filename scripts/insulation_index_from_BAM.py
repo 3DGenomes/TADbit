@@ -26,19 +26,19 @@ def main():
         size = end - dist
         if not opts.quiet:
             print ' - computing insulation in band %d-%d' % (dist, end)
-        insidx[dist] = {}
+        insidx[(dist, end)] = {}
         for crm in hic_data.chromosomes:
             for pos in range(hic_data.section_pos[crm][0] + size + dist,
                              hic_data.section_pos[crm][1] - size - dist):
-                insidx[dist][pos + dist / 2] = sum(
-                    hic_data[i, j] / bias[i] / bias[j] / decay[abs(j-1)]
+                insidx[(dist, end)][pos + dist / 2] = sum(
+                    hic_data[i, j] / bias[i] / bias[j] / decay[abs(j-i)]
                     for i in range(pos, pos + size)
                     if not i in bads
                     for j in range(pos + dist, pos + end)
                     if not j in bads)
     out = open(opts.outfile, 'w')
-    out.write('# CRM\tbin\t' + '\t'.join(['Ins.Index (dist: %d )' % (dist)
-                                          for dist in opts.dists]) +
+    out.write('# CRM\tbin\t' + '\t'.join(['Ins.Index (dist: %d-%d )' % (d1, d2)
+                                          for d1, d2 in opts.dists]) +
               '\n')
 
     for crm in hic_data.section_pos:
@@ -56,7 +56,7 @@ def get_options():
     parser.add_argument('-i', '--infile', dest='inbam', metavar='',
                         required=True, default=False, help='input HiC-BAM file.')
     parser.add_argument('-l', '--list_dists', dest='dists', metavar='INT',
-                        default='2,3, 4,6 8,12 14,20', nargs='+', type=str,
+                        default=['2,3', '4,6', '8,12', '14,20'], nargs='+', type=str,
                         help='''[%(default)s] list of pairs of distances at
                         which to compute the insulation index''')
     parser.add_argument('-o', '--outfile', dest='outfile', metavar='',
@@ -83,7 +83,7 @@ def get_options():
                                    for k in MASKED]))))
 
     opts = parser.parse_args()
-    opts.dists = [map(int, d.split(',')) for d in opts.dists]
+    opts.dists = [tuple(map(int, d.split(','))) for d in opts.dists]
     if not all([len(d) == 2 for d in opts.dists]):
         raise Exception('ERROR: distance should be input by pairs.')
     return opts

@@ -670,8 +670,9 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                 if i < j:
                     del dico[(i,j)]
         out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
-                                '%s:%d-%d.pickle' % (region, start, end)), 'w')
-        dump(dico, out)
+                                '%s:%d-%d.tsv' % (region, start, end)), 'w')
+        out.write(''.join('%d\t%d\t%d\n' % (a, b, c)
+                          for (a, b), c in dico.iteritems()))
         out.close()
         if sum_columns:
             sumcol = {}
@@ -852,13 +853,9 @@ def _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
             stdout.flush()
 
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
-                             '%s:%d-%d.pickle' % (region, start, end))
-        with open(fname) as fh:
-            dico = load(fh)
-        for (j, k), v in dico.iteritems():
-            if j in bads1 or k in bads2:
-                continue
-            yield j, k, v
+                             '%s:%d-%d.tsv' % (region, start, end))
+        for l in open(fname):
+            yield map(int, l.split())
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
@@ -944,12 +941,15 @@ def get_matrix(inbam, resolution, biases=None,
     return_something = False
     if dico is None:
         return_something = True
-        dico = {}
-    populate_dico = lambda x, y, v: dico.__setitem__((x, y), v)
-    # pull all sub-matrices and write full matrix
-    for i, j, v in _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
-                                      clean=clean, verbose=verbose):
-        populate_dico(i, j, transform_value(i, j, v))
+        dico = dict(((i, j), v) for i, j, v in _iter_matrix_frags(
+            chunks, bads1, bads2, tmpdir, rand_hash, clean=clean, verbose=verbose))
+        # pull all sub-matrices and write full matrix
+    else: # dico probably an HiC data object
+        for i, j, v in _iter_matrix_frags(
+                chunks, bads1, bads2, tmpdir, rand_hash,
+                clean=clean, verbose=verbose):
+            dico[i, j] = v
+
     if  verbose:
         printime('\nDone.')
     if return_something:
