@@ -23,16 +23,15 @@ def main():
     bads = hic_data.bads
     decay = hic_data.expected
     for dist, end in opts.dists:
-        size = end - dist
         if not opts.quiet:
             print ' - computing insulation in band %d-%d' % (dist, end)
         insidx[(dist, end)] = {}
         for crm in hic_data.chromosomes:
-            for pos in range(hic_data.section_pos[crm][0] + size + dist,
-                             hic_data.section_pos[crm][1] - size - dist):
-                insidx[(dist, end)][pos + dist / 2] = sum(
+            for pos in range(hic_data.section_pos[crm][0] + end - 1,
+                             hic_data.section_pos[crm][1] - end + 1):
+                insidx[(dist, end)][pos] = sum(
                     hic_data[i, j] / bias[i] / bias[j] / decay[abs(j-i)]
-                    for i in range(pos, pos + size)
+                    for i in range(pos - end + 1, pos - dist + 1)
                     if not i in bads
                     for j in range(pos + dist, pos + end)
                     if not j in bads)

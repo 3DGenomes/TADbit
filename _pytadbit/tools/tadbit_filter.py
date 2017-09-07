@@ -11,7 +11,6 @@ from string                          import ascii_letters
 from random                          import random
 from os                              import path, remove
 from shutil                          import copyfile
-from subprocess                      import Popen, PIPE
 
 import sqlite3 as lite
 import time
@@ -22,7 +21,6 @@ from pytadbit.utils.sqlite_utils     import get_jobid, add_path, get_path_id, pr
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.mapping.analyze        import insert_sizes
 from pytadbit.mapping.filter         import filter_reads, apply_filter
-from pytadbit.parsers.hic_bam_parser import _map2sam_long, _map2sam_mid, _map2sam_short
 from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
 
 
@@ -76,7 +74,6 @@ def run(opts):
                               min_frag_size=opts.min_frag_size,
                               re_proximity=opts.re_proximity,
                               min_dist_to_re=min_dist, fast=True)
-        print masked
 
     n_valid_pairs = apply_filter(reads, mreads, masked, filters=opts.apply)
 

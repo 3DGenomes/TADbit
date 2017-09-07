@@ -2,7 +2,6 @@
 from argparse                        import ArgumentParser
 from cPickle                         import load
 from pytadbit.parsers.hic_bam_parser import filters_to_bin, write_matrix
-from pytadbit.parsers.hic_bam_parser import _write_small_matrix
 from pytadbit.mapping.filter         import MASKED
 
 
