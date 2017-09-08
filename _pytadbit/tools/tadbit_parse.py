@@ -209,6 +209,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                                             for n in multis[count] if n])))
             except lite.IntegrityError:
                 print 'WARNING: already parsed (PARSED_OUTPUTs)'
+
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
