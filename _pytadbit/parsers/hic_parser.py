@@ -468,7 +468,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                    resolution=resolution)
 
     if biases:
-        if isinstance(biases, str):
+        if isinstance(biases, basestring):
             biases = load(open(biases))
         if biases['resolution'] != resolution:
             raise Exception('ERROR: resolution of biases do not match to the '
