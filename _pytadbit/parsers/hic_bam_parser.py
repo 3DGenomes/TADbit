@@ -240,8 +240,8 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     output += ("\t".join(("@CO" ,"E2:i", "Position of the right RE site of 1st read-end\n")))
     output += ("\t".join(("@CO" ,"E3:i", "Position of the left RE site of 2nd read-end\n")))
     output += ("\t".join(("@CO" ,"E4:i", "Position of the right RE site of 2nd read-end\n")))
-    output += ("\t".join(("@CO" ,"S1:i", "Strand of the 1st read-end (1: positive, 0: negative)")))
-    output += ("\t".join(("@CO" ,"S2:i", "Strand of the 2nd read-end  (1: positive, 0: negative)")))
+    output += ("\t".join(("@CO" ,"S1:i", "Strand of the 1st read-end (1: positive, 0: negative)\n")))
+    output += ("\t".join(("@CO" ,"S2:i", "Strand of the 2nd read-end  (1: positive, 0: negative)\n")))
 
     # open and init filter files
     if not valid:
@@ -1035,7 +1035,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                                     ('_' + extra) if extra else '')
         if append_to_tar:
             out_nrm = StringIO()
-            outfiles.append((out_nrm, fnam))
+            outfiles.append((out_nrm,3 fnam))
         else:
             out_nrm = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
