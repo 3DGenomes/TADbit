@@ -1035,7 +1035,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                                     ('_' + extra) if extra else '')
         if append_to_tar:
             out_nrm = StringIO()
-            outfiles.append((out_nrm,3 fnam))
+            outfiles.append((out_nrm, fnam))
         else:
             out_nrm = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))

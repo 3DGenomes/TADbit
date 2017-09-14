@@ -393,20 +393,20 @@ class Experiment(object):
         if not xpr.size:
             xpr.size = len(xpr.norm[0])
 
-        
-            
+
+
         def __merge(own, fgn):
             "internal function to merge descriptions"
             if own == fgn:
                 return own
             return '%s+%s' % (own , fgn)
-        
+
         xpr.identifier  = __merge(self.identifier , other.identifier )
         xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
         xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
         xpr.description = __merge(self.description, other.description)
         xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
-        
+
         for des in self.description:
             if not des in other.description:
                 continue
@@ -415,7 +415,7 @@ class Experiment(object):
         return xpr
 
 
-    
+
     def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for the resolution. Copy the original data into
@@ -702,6 +702,7 @@ class Experiment(object):
             except ZeroDivisionError:
                 height = 0.
             tads[tad]['height'] = height
+
 
     def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
                       rowsums=None):
