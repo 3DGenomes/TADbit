@@ -206,7 +206,8 @@ def generate_BAM(infile, valid, ncpus, outbam, frmt):
                             if 'Version' in l][0])
     pre = '-o' if version >= LooseVersion('1.3') else ''
     proc = Popen('samtools view -Shb -@ %d - | samtools sort -@ %d - %s %s' % (
-        ncpus, ncpus, pre, outbam),
+        ncpus, ncpus, pre,
+        outbam + '.bam' if  version >= LooseVersion('1.3') else ''),  # in new version '.bam' is no longer added
                  shell=True, stdin=PIPE)
     proc.stdin.write(output)
     if frmt == 'mid':
