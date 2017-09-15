@@ -838,8 +838,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     return regions, rand_hash, bin_coords, chunks
 
 
-def _iter_matrix_frags(chunks, bads1, bads2, tmpdir, rand_hash,
-                       clean=False, verbose=True):
+def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
     if verbose:
         stdout.write('     ')
     countbin = 0
@@ -919,7 +918,7 @@ def get_matrix(inbam, resolution, biases=None,
     if verbose:
         printime('  - Getting matrices')
 
-    def transform_value_raw(a, b, c):
+    def transform_value_raw(_, __, c):
         return c
     def transform_value_norm(a, b, c):
         return c / bias1[a] / bias2[b]
@@ -941,14 +940,17 @@ def get_matrix(inbam, resolution, biases=None,
     return_something = False
     if dico is None:
         return_something = True
-        dico = dict(((i, j), v) for i, j, v in _iter_matrix_frags(
-            chunks, bads1, bads2, tmpdir, rand_hash, clean=clean, verbose=verbose))
+        dico = dict(((i, j), transform_value(i, j, v))
+                    for i, j, v in _iter_matrix_frags(
+            chunks, tmpdir, rand_hash, clean=clean, verbose=verbose)
+                    if i not in bads1 and j not in bads2)
         # pull all sub-matrices and write full matrix
     else: # dico probably an HiC data object
         for i, j, v in _iter_matrix_frags(
-                chunks, bads1, bads2, tmpdir, rand_hash,
+                chunks, tmpdir, rand_hash,
                 clean=clean, verbose=verbose):
-            dico[i, j] = v
+            if i not in bads1 and j not in bads2:
+                dico[i, j] = v
 
     if  verbose:
         printime('\nDone.')
@@ -1131,9 +1133,10 @@ def write_matrix(inbam, resolution, biases, outdir,
             write = write_expc_err(write)
 
     # pull all sub-matrices and write full matrix
-    for j, k, v in _iter_matrix_frags(chunks, bads1, bads2,
-                                      tmpdir, rand_hash, verbose=verbose):
-        write(j, k, v)
+    for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                      verbose=verbose):
+        if j not in bads1 and k not in bads2:
+            write(j, k, v)
 
     fnames = {}
     if append_to_tar:
