@@ -143,27 +143,22 @@ def main():
     kurtness = kurtosis(zdata)
 
     if opts.plot:
-	os.system('mkdir -p %s' % opts.outdir)
+        os.system('mkdir -p %s' % opts.outdir)
         # matrix plot
-        fig = plt.figure(figsize=(14, 8))
-	gs = gridspec.GridSpec(7, 5, wspace=0.5, hspace=1.5)
-	ax1 = plt.subplot(gs[:   , 0:3])
-	ax2 = plt.subplot(gs[1:5 , 3: ])
-	ax3 = plt.subplot(gs[5:7 , 3: ])
+        _ = plt.figure(figsize=(14, 8))
+    gs = gridspec.GridSpec(7, 5, wspace=0.5, hspace=1.5)
+    ax1 = plt.subplot(gs[:   , 0:3])
+    ax2 = plt.subplot(gs[1:5 , 3: ])
+    ax3 = plt.subplot(gs[5:7 , 3: ])
         img = ax2.imshow(log2(data), interpolation='none')
         plt.colorbar(img, ax=ax2)
         #plt.subplots_adjust(right=0.8, left=0.6, hspace=0.3)
 
-    zdata = sorted(log2([data[i][j] for i in xrange(len(data))
-                         for j in xrange(i, len(data)) if data[i][j]]))
-    skewness = skew(zdata)
-    kurtness = kurtosis(zdata)
-
     if opts.plot:
         ax2.set_title('Original matrix', size=12)
         ax2.tick_params(axis='both', which='major', labelsize=10)
-	ax2.set_xlabel('Bin')
-	ax2.set_ylabel('Bin')
+        ax2.set_xlabel('Bin')
+        ax2.set_ylabel('Bin')
 
         normfit = sc_norm.pdf(zdata, mean(zdata), std(zdata))
         normplot = ax3.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4,
@@ -171,8 +166,8 @@ def main():
         ax3.tick_params(axis='both', which='major', labelsize=10)
 
         ax3.hist(zdata, bins=20, normed=True, alpha=0.7, color='r')
-	ax3.set_xlabel('Z-score')
-	ax3.set_ylabel('Frequency')
+        ax3.set_xlabel('Z-score')
+        ax3.set_ylabel('Frequency')
         rcParams['xtick.direction'] = 'out'
         rcParams['ytick.direction'] = 'out'
         rcParams['axes.axisbelow']  = True
