@@ -153,7 +153,7 @@ def run(opts):
         mreads, filter_exclude, opts.reso, min_count=opts.min_count, sigma=2,
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
-        cg_content=gc_content, n_rsites=n_rsites,
+        cg_content=gc_content, n_rsites=n_rsites, min_perc=opts.min_perc, max_perc=opts.max_perc,
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
@@ -455,6 +455,16 @@ def populate_args(parser):
                         option overrides the perc_zero filtering... This option is
                         slightly slower.'''))
 
+    bfiltr.add_argument('--min_perc', dest='min_perc', metavar="INT",
+                        action='store', default=None, type=float,
+                        help=('''[%(default)s] lower percentile from which
+                        consider bins as good.'''))
+
+    bfiltr.add_argument('--max_perc', dest='max_perc', metavar="INT",
+                        action='store', default=None, type=float,
+                        help=('''[%(default)s] upper percentile until which
+                        consider bins as good.'''))
+
     bfiltr.add_argument('--filter_only', dest='filter_only', action='store_true',
                         default=False,
                         help='skip normalization')
@@ -626,7 +636,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
              extra_out='', only_valid=False, normalize_only=False,
-             max_njobs=100):
+             max_njobs=100, min_perc=None, max_perc=None):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -715,7 +725,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                         "cis-percentage, set min_count instead")
     elif not min_count and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
-            cisprc, sigma=sigma, verbose=True,
+            cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
             savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
                 nicer(resolution).replace(' ', ''), extra_out)))
     else:

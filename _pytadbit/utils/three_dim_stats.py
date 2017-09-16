@@ -728,7 +728,6 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
     if minv == 0.5:
         minv = 1./(len(data)**2)
 
-    print skewness, kurtness, sev
     mmp = -0.0002 * size + 0.0335 * skewness - 0.0229 * kurtness + 0.0069 * sev + 0.8126
 
     if verbose:

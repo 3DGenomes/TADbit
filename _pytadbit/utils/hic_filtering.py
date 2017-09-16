@@ -325,7 +325,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
 
 
 def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
-                             savefig=None):
+                             min_perc=None, max_perc=None, savefig=None):
     """
     Define artifactual columns with either too low or too high counts of
     interactions by compraing their percentage of cis interactions
@@ -414,6 +414,10 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         raise Exception('ERROR: right cutoff not found!!!')
     cutoffR += consecutive  # rescale, we asked for XX consecutive
 
+    if min_perc:
+        cutoffL = min_perc / 100. * size
+    if max_perc:
+        cutoffR = max_perc / 100. * size
 
     min_count = sorted_sum[int(cutoffL)]
     max_count = sorted_sum[int(cutoffR)]
@@ -476,8 +480,12 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         labs  = [l.get_label() for l in lns]
         ax2.legend(lns, labs, loc=0, bbox_to_anchor=(0, 0), frameon=False)
 
-        plt.title('Keeping from %.2f%% to %.2f%%' % (100 * float(cutoffL) / size,
-                                                     100 * float(cutoffR) / size))
+        if min_perc:
+            plt.title('Setting from %.2f%% to %.2f%%' % (100 * float(cutoffL) / size,
+                                                         100 * float(cutoffR) / size))
+        else:
+            plt.title('Keeping from %.2f%% to %.2f%%' % (100 * float(cutoffL) / size,
+                                                         100 * float(cutoffR) / size))
         plt.xlim(0, size)
 
         tadbit_savefig(savefig)
