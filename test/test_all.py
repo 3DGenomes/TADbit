@@ -758,11 +758,11 @@ class TestTadbit(unittest.TestCase):
         # slowest part of the all test:
         hic_data2 = read_matrix("lala-map.tsv~", resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
-        vals = plot_distance_vs_interactions(hic_data1)
+        # vals = plot_distance_vs_interactions(hic_data1)
 
-        self.assertEqual([round(i, 2) if str(i)!="nan" else 0.0 for i in
-                          reduce(lambda x, y: x + y, vals)],
-                         [-1.68, -2.08, 0.02, 2.76, -8.99, 0.0, 0.82, -6.8, 0.0])
+        # self.assertEqual([round(i, 2) if str(i)!="nan" else 0.0 for i in
+        #                   reduce(lambda x, y: x + y, vals)],
+        #                  [-1.68, -2.08, 0.02, 2.76, -8.99, 0.0, 0.82, -6.8, 0.0])
 
         a, b = insert_sizes("lala-map~")
         self.assertEqual([int(a),int(b)], [43, 1033])
