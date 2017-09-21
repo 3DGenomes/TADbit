@@ -2394,7 +2394,7 @@ class StructuralModels(object):
             if not 'start' in my_descr:
                 my_descr['start'] = 0
             if not 'end' in my_descr:
-                my_descr['end'  ] = self.nloci}
+                my_descr['end'  ] = self.nloci
             my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
