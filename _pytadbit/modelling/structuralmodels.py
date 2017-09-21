@@ -2391,9 +2391,9 @@ class StructuralModels(object):
                 my_descr = dict(self.description)
             except TypeError:
                 my_descr = {}
-            if not 'start' in my_descr:
+            if not my_descr.get('start', 0):
                 my_descr['start'] = 0
-            if not 'end' in my_descr:
+            if not my_descr.get('end', 0):
                 my_descr['end'  ] = self.nloci
             my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
