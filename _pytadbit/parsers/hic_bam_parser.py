@@ -985,6 +985,10 @@ def write_matrix(inbam, resolution, biases, outdir,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, verbose=verbose)
+    
+    bamfile = AlignmentFile(inbam, 'rb')
+    sections = OrderedDict(zip(bamfile.references,
+                               [x for x in bamfile.lengths]))
 
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
@@ -998,6 +1002,8 @@ def write_matrix(inbam, resolution, biases, outdir,
         printime('  - Writing matrices')
     # define output file name
     if len(regions) == 1:
+        if not region1:
+            region1 = regions[0]
         if region2:
             try:
                 name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
@@ -1023,6 +1029,9 @@ def write_matrix(inbam, resolution, biases, outdir,
         else:
             out_raw = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
+        for reg in regions:
+            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            
         out_raw.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -1041,6 +1050,9 @@ def write_matrix(inbam, resolution, biases, outdir,
         else:
             out_nrm = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
+        for reg in regions:
+            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -1057,6 +1069,9 @@ def write_matrix(inbam, resolution, biases, outdir,
         else:
             out_dec = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
+        for reg in regions:
+            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            
         out_dec.write('# %s resolution:%d\n' % (
             name, resolution))
         if region2:

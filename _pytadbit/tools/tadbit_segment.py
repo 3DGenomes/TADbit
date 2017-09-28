@@ -436,13 +436,17 @@ def nice(reso):
 
 def load_tad_height(tad_def, size, beg, end, hic_data):
     bias, zeros = hic_data.bias, hic_data.bads
+    if bias:
+        norm = lambda i, j: bias[i] * bias[j]
+    else:
+        norm = lambda i, j: 1 # Non-normalized height, keep in mind! 
     print 'ZEROS', zeros
     tads, _ = parse_tads(tad_def)
     diags = []
     for k in xrange(1, size):
         try:
             diags.append(sum(
-                hic_data[i, i + k] / bias[i + k] / bias[i]
+                hic_data[i, i + k] / norm(i + k, i)
                 for i in xrange(beg, end - k) if not i in zeros and not i + k in zeros
                 ) / float(sum(1 for i in range(beg, end - k)
                               if not i in zeros and not i + k in zeros)))
@@ -452,7 +456,7 @@ def load_tad_height(tad_def, size, beg, end, hic_data):
         start, final = (int(tads[tad]['start']) + 1,
                         int(tads[tad]['end']) + 1)
         matrix = sum(
-            hic_data[i, j] / bias[j] / bias[i]
+            hic_data[i, j] / norm(j, i)
             for i in xrange(beg + start - 1, beg + final - 1) if not i in zeros
             for j in xrange(i + 1          , beg + final - 1) if not j in zeros)
         try:
