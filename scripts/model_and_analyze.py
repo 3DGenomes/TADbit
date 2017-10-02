@@ -40,12 +40,15 @@ belongs the message.
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
 from pytadbit.modelling.structuralmodels import load_structuralmodels
+from pytadbit                     import load_hic_data_from_bam
+from pytadbit                            import HiC_data
 import os, sys
 import logging
 from cPickle import load, dump
 from random import random
 from string import ascii_letters as letters
 from subprocess import check_call
+import numpy as np
 
 def search_tads(opts, crm, name):
     """
@@ -99,15 +102,40 @@ def load_hic_data(opts, xnames):
     # Data obtained from Hou et al (2012) Molecular Cell.
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
-    for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
+    for xnam, xpath, xnorm, xbias in zip(xnames, opts.data, opts.norm, opts.biases):
+        hic_raw = xpath
+        file_name, file_extension = os.path.splitext(xpath)
+        if file_extension == '.bam':
+            hic_raw = load_hic_data_from_bam(xpath, opts.res, biases=xbias if xbias else None, ncpus=int(opts.ncpus))
         crm.add_experiment(
             xnam, exp_type='Hi-C', enzyme=opts.enzyme,
             cell_type=opts.cell,
             identifier=opts.identifier, # general descriptive fields
             project=opts.project, # user descriptions
             resolution=opts.res,
-            hic_data=xpath,
+            hic_data=hic_raw,
             norm_data=xnorm)
+        if xbias:
+            bias_ = load(open(xbias))
+            bias = bias_['biases']
+            bads = bias_['badcol']
+            if bias_['resolution'] != opts.res:
+                raise Exception('ERROR: resolution of biases do not match to the '
+                                'one wanted (%d vs %d)' % (
+                                    bias_['resolution'], opts.res))
+            
+            def transform_value_norm(a, b, c):
+                return c / bias[a] / bias[b]
+            size = crm.experiments[-1].size
+            xnorm = [HiC_data([(i + j * size, float(hic_raw[i, j]) /
+                                    bias[i] /
+                                    bias[j] * size)
+                                   for i in bias for j in bias if i not in bads and j not in bads], size)]
+            crm.experiments[xnam]._normalization = 'visibility_factor:1'
+            factor = sum(xnorm[0].values()) / (size * size)
+            for n in xnorm[0]:
+                xnorm[0][n] = xnorm[0][n] / factor
+            crm.experiments[xnam].norm = xnorm
         if not xnorm:
             crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
             logging.info("\tNormalizing HiC data of %s...", xnam)
@@ -780,6 +808,10 @@ def get_options():
                         help='''path to file(s) with Hi-C data matrix. If many,
                         experiments will be summed up. I.e.: --data
                         replicate_1.txt replicate_2.txt''')
+    glopts.add_argument('--biases', dest='biases', metavar="PATH", nargs='+',
+                        type=str,
+                        help='''path to pickle file(s) with Hi-C data matrix biases. Use same order
+                        as data. If data are bam files use these biases to skip normalization''')
     glopts.add_argument('--xname', dest='xname', metavar="STR", nargs='+',
                         default=[], type=str,
                         help='''[file name] experiment name(s). Use same order
@@ -948,7 +980,7 @@ def get_options():
                 value = True
             elif value == 'False':
                 value = False
-            elif key in ['data', 'norm', 'xname', 'group', 'analyze']:
+            elif key in ['data', 'biases', 'norm', 'xname', 'group', 'analyze']:
                 new_opts.setdefault(key, []).extend(value.split())
                 continue
             new_opts[key] = value
