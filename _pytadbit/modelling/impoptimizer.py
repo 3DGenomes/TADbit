@@ -525,7 +525,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.maxdist_range],
                                       [float(i) for i in self.lowfreq_range],
                                       [float(i) for i in self.upfreq_range]),
-                                     results), dcutoff=dcutoff, axes=axes, show_best=show_best,
+                                     results), dcutoff=self.dcutoff_range, axes=axes, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
 
