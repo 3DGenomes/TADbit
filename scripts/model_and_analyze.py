@@ -103,40 +103,40 @@ def load_hic_data(opts, xnames):
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
     for xnam, xpath, xnorm, xbias in zip(xnames, opts.data, opts.norm, opts.biases):
+        hic_raw = xpath
         if xpath:
-            hic_raw = xpath
             file_name, file_extension = os.path.splitext(xpath)
             if file_extension == '.bam' or file_extension == '.BAM':
                 hic_raw = load_hic_data_from_bam(xpath, opts.res, biases=xbias if xbias else None, ncpus=int(opts.ncpus))
-            crm.add_experiment(
-                xnam, exp_type='Hi-C', enzyme=opts.enzyme,
-                cell_type=opts.cell,
-                identifier=opts.identifier, # general descriptive fields
-                project=opts.project, # user descriptions
-                resolution=opts.res,
-                hic_data=hic_raw,
-                norm_data=xnorm)
-            if xbias:
-                bias_ = load(open(xbias))
-                bias = bias_['biases']
-                bads = bias_['badcol']
-                if bias_['resolution'] != opts.res:
-                    raise Exception('ERROR: resolution of biases do not match to the '
-                                    'one wanted (%d vs %d)' % (
-                                        bias_['resolution'], opts.res))
+        crm.add_experiment(
+            xnam, exp_type='Hi-C', enzyme=opts.enzyme,
+            cell_type=opts.cell,
+            identifier=opts.identifier, # general descriptive fields
+            project=opts.project, # user descriptions
+            resolution=opts.res,
+            hic_data=hic_raw,
+            norm_data=xnorm)
+        if xbias:
+            bias_ = load(open(xbias))
+            bias = bias_['biases']
+            bads = bias_['badcol']
+            if bias_['resolution'] != opts.res:
+                raise Exception('ERROR: resolution of biases do not match to the '
+                                'one wanted (%d vs %d)' % (
+                                    bias_['resolution'], opts.res))
 
-                def transform_value_norm(a, b, c):
-                    return c / bias[a] / bias[b]
-                size = crm.experiments[-1].size
-                xnorm = [HiC_data([(i + j * size, float(hic_raw[i, j]) /
-                                        bias[i] /
-                                        bias[j] * size)
-                                       for i in bias for j in bias if i not in bads and j not in bads], size)]
-                crm.experiments[xnam]._normalization = 'visibility_factor:1'
-                factor = sum(xnorm[0].values()) / (size * size)
-                for n in xnorm[0]:
-                    xnorm[0][n] = xnorm[0][n] / factor
-                crm.experiments[xnam].norm = xnorm
+            def transform_value_norm(a, b, c):
+                return c / bias[a] / bias[b]
+            size = crm.experiments[-1].size
+            xnorm = [HiC_data([(i + j * size, float(hic_raw[i, j]) /
+                                    bias[i] /
+                                    bias[j] * size)
+                                   for i in bias for j in bias if i not in bads and j not in bads], size)]
+            crm.experiments[xnam]._normalization = 'visibility_factor:1'
+            factor = sum(xnorm[0].values()) / (size * size)
+            for n in xnorm[0]:
+                xnorm[0][n] = xnorm[0][n] / factor
+            crm.experiments[xnam].norm = xnorm
         if not xnorm:
             crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
             logging.info("\tNormalizing HiC data of %s...", xnam)
