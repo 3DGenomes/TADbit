@@ -840,7 +840,7 @@ def plot_2d_optimization_result(result,
     title += 'Best: %s=%%s, %s=%%s, %s=%%s\n%s=%%s, %s=%%s %s=%%s' % (
         axes[0], axes[1], axes[2], axes[3], axes[4], 'dcutoff')    
     heatmap.suptitle(title % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
-                                   [str(dcutoff)]),
+                                   [str(d) for d in dcutoff if dcutoff]),
                      size=12)
     #plt.tight_layout()
     if savefig:

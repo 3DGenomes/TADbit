@@ -160,7 +160,7 @@ def run(opts):
         nicer(opts.reso).replace(' ', ''), param_hash))
 
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
-                                'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
+                                'interactions_vs_genomic-coords.png_%s_%s.png' % (
                                     opts.reso, param_hash))
 
     # get and plot decay
