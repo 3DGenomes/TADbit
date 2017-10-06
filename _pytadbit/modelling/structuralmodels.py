@@ -1804,8 +1804,8 @@ class StructuralModels(object):
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest", cmap=cmap,
                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        ax.set_ylabel('Particles')
-        ax.set_xlabel('Particles')
+        ax.set_ylabel('Genomic bin')
+        ax.set_xlabel('Genomic bin')
         ax.set_title('Normalized Hi-C count')
         cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')

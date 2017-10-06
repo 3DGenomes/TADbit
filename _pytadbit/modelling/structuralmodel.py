@@ -116,9 +116,9 @@ class StructuralModel(dict):
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
-        rog = sqrt(sum([self._square_distance_to(i,
-                                                 (com['x'], com['y'], com['z']))
-                        for i in xrange(len(self))]) / len(self))
+        rog = sqrt(sum(self._square_distance_to(i,
+                                                (com['x'], com['y'], com['z']))
+                       for i in xrange(len(self))) / len(self))
         return rog
 
 
@@ -672,7 +672,7 @@ class StructuralModel(dict):
       	            "centroid":[%(centroid)s],
 	            "restraints": [[][]],
 		    "chromatinColor" : [ ]
-		}    
+		}
 	}
 }
 '''
@@ -793,7 +793,7 @@ class StructuralModel(dict):
         out += str(len(self['x']))
         # Write comment as type of molecule
         out += "\nDNA\n"
-        
+
         form = "%s\t%.3f\t%.3f\t%.3f\n"
         # TODO: do not use resolution directly -> specific to Hi-C
         for i in xrange(len(self['x'])):
@@ -811,7 +811,7 @@ class StructuralModel(dict):
             return path_f
         else:
             return None
-                                                                                                            
+
     def view_model(self, tool='chimera', savefig=None, cmd=None,
                    center_of_mass=False, gyradius=False, color='index',
                    **kwargs):
