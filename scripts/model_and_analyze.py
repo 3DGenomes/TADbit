@@ -105,7 +105,7 @@ def load_hic_data(opts, xnames):
     for xnam, xpath, xnorm, xbias in zip(xnames, opts.data, opts.norm, opts.biases):
         hic_raw = xpath
         file_name, file_extension = os.path.splitext(xpath)
-        if file_extension == '.bam':
+        if file_extension == '.bam' or file_extension == '.BAM':
             hic_raw = load_hic_data_from_bam(xpath, opts.res, biases=xbias if xbias else None, ncpus=int(opts.ncpus))
         crm.add_experiment(
             xnam, exp_type='Hi-C', enzyme=opts.enzyme,
@@ -809,7 +809,7 @@ def get_options():
                         experiments will be summed up. I.e.: --data
                         replicate_1.txt replicate_2.txt''')
     glopts.add_argument('--biases', dest='biases', metavar="PATH", nargs='+',
-                        type=str,
+                        default=[],type=str,
                         help='''path to pickle file(s) with Hi-C data matrix biases. Use same order
                         as data. If data are bam files use these biases to skip normalization''')
     glopts.add_argument('--xname', dest='xname', metavar="STR", nargs='+',
@@ -1041,6 +1041,8 @@ def get_options():
         opts.data = [None] * len(opts.norm)
     else:
         opts.norm = [None] * len(opts.data)
+    if not opts.biases:
+        opts.biases = [None] * len(opts.data)
     if not opts.group:
         opts.group = [len(opts.data)]
     else:
