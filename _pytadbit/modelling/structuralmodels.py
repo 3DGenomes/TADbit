@@ -2358,6 +2358,7 @@ class StructuralModels(object):
         "object": {\n%(descr)s
                    "uuid": "%(sha)s",
                    "title": "%(title)s",
+                   "bp_per_nm": %(scale)s,
                    "datatype": "xyz",
                    "components": 3,
                    "source": "local",
@@ -2375,6 +2376,7 @@ class StructuralModels(object):
 '''
         fil = {}
         fil['title']   = title or "Sample TADbit data"
+        fil['scale']   = str(self._config['scale'])
         versions = get_dependencies_version(dico=True)
         fil['dep'] = str(dict([(k.strip(), v.strip()) for k, v in versions.items()
                                if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
