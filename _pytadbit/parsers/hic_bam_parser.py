@@ -1051,7 +1051,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_nrm = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
         for reg in regions:
-            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            out_nrm.write('# CRM %s\t%d\n' % (reg, sections[reg]))
 
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
@@ -1070,7 +1070,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_dec = open(os.path.join(outdir, fnam), 'w')
             outfiles.append((os.path.join(outdir, fnam), fnam))
         for reg in regions:
-            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            out_dec.write('# CRM %s\t%d\n' % (reg, sections[reg]))
 
         out_dec.write('# %s resolution:%d\n' % (
             name, resolution))
