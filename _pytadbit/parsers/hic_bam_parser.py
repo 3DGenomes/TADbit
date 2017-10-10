@@ -961,7 +961,7 @@ def get_matrix(inbam, resolution, biases=None,
 def write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                  normalizations=('decay',),
-                 region1=None, start1=None, end1=None,
+                 region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
                  tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
 
@@ -985,7 +985,7 @@ def write_matrix(inbam, resolution, biases, outdir,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, verbose=verbose)
-    
+
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x for x in bamfile.lengths]))
@@ -1031,7 +1031,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             outfiles.append((os.path.join(outdir, fnam), fnam))
         for reg in regions:
             out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
-            
+
         out_raw.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -1052,7 +1052,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             outfiles.append((os.path.join(outdir, fnam), fnam))
         for reg in regions:
             out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
-            
+
         out_nrm.write('# %s resolution:%d\n' % (name, resolution))
         if region2:
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
@@ -1071,7 +1071,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             outfiles.append((os.path.join(outdir, fnam), fnam))
         for reg in regions:
             out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
-            
+
         out_dec.write('# %s resolution:%d\n' % (
             name, resolution))
         if region2:
@@ -1149,7 +1149,7 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # pull all sub-matrices and write full matrix
     for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                      verbose=verbose):
+                                      verbose=verbose, clean=clean):
         if j not in bads1 and k not in bads2:
             write(j, k, v)
 
