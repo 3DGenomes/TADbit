@@ -2389,17 +2389,16 @@ class StructuralModels(object):
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
-                warn("WARNING: chrom_start variable wasn't set, setting it to" +
-                     " the position in the experiment matrix " +
-                     " times the resolution (%d*%d)" % (
-                         my_descr['start'], self.resolution))
-                my_descr['chrom_start'] = my_descr['start'] * self.resolution + 1
+                warn("WARNING: chrom_start variable wasn't set, setting it to 0") 
+                my_descr['chrom_start'] = 0
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix " +
                      " times the resolution (%d*%d)" % (
-                         my_descr['end'], self.resolution))
-                my_descr['chrom_end'] = (1 + my_descr['end']) * self.resolution
+                         self.nloci, self.resolution))
+                my_descr['chrom_end'] = self.nloci * self.resolution
+            if not my_descr['species']:
+                warn("WARNING: species wasn't set, The resulting JSON will not work properly in TADkit.")
             # coordinates inside an array in case different models
             # from different places in the genome
             my_descr['chrom_start'] = [my_descr['chrom_start']]
@@ -2408,7 +2407,7 @@ class StructuralModels(object):
             fil['descr']   = ',\n'.join([
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
-                                            if not (isinstance(v, int) or
+                                            if not ((isinstance(v, int) and not isinstance(v, bool)) or
                                                     isinstance(v, list) or
                                                     isinstance(v, float))
                                             else str(v).replace("'", '"'))

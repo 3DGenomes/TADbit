@@ -177,7 +177,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
     
     HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG,resolution,zscores,
-                 close_bins=close_bins,first=first)
+                 chromosomes=coords, close_bins=close_bins,first=first)
     
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, HiCRestraints, use_HiC=use_HiC,
@@ -187,9 +187,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         xpr = experiment
         crm = xpr.crm
         description = {'identifier'        : xpr.identifier,
-                       'chromosome'        : coords['crm'],
-                       'start'             : xpr.resolution * coords['start'],
-                       'end'               : xpr.resolution * coords['end'],
+                       'chromosome'        : coords['crm'] if 'crm' in coords else ','.join(coords.keys()),
+                       'start'             : xpr.resolution * coords['start'] if 'crm' in coords else xpr.resolution*coords.values()[0],
+                       'end'               : xpr.resolution * coords['end'] if 'crm' in coords else xpr.resolution*coords.values()[-1],
                        'species'           : crm.species,
                        'restriction enzyme': xpr.enzyme,
                        'cell type'         : xpr.cell_type,
@@ -261,7 +261,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
 
 
 
-def generate_IMPmodel(rand_init, HiCRestraints, use_HiC=True, use_confining_environment=True,
+def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_environment=True,
                       use_excluded_volume=True):
     """
     Generates one IMP model

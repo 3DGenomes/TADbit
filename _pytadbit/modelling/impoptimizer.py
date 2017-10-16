@@ -4,6 +4,7 @@
 
 """
 from pytadbit.modelling.imp_modelling    import generate_3d_models
+from pytadbit.modelling.lammps_modelling import generate_lammps_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
 from pytadbit.modelling.structuralmodels import StructuralModels
@@ -43,7 +44,7 @@ class IMPoptimizer(object):
        container = ['cylinder', 3000, 0, 50]
     """
     def __init__(self, experiment, start, end, n_models=500,
-                 n_keep=100, close_bins=1, container=None):
+                 n_keep=100, close_bins=1, container=None, tool='imp',tmp_folder=None):
 
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end)
@@ -55,6 +56,12 @@ class IMPoptimizer(object):
         self.n_models   = n_models
         self.n_keep     = n_keep
         self.close_bins = close_bins
+        self.chromosomes = None
+        if experiment.hic_data and experiment.hic_data[0].chromosomes:
+            self.chromosomes = experiment.hic_data[0].chromosomes
+
+        self.tool = tool
+        self.tmp_folder = tmp_folder
 
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
@@ -267,15 +274,25 @@ class IMPoptimizer(object):
 
             try:
                 count += 1
-                tdm = generate_3d_models(
-                    self.zscores, self.resolution,
-                    self.nloci, n_models=self.n_models,
-                    n_keep=self.n_keep, config=config_tmp,
-                    n_cpus=n_cpus, first=0,
-                    values=self.values, container=self.container,
-                    close_bins=self.close_bins, zeros=self.zeros,
-                    use_HiC=use_HiC, use_confining_environment=use_confining_environment,
-                    use_excluded_volume=use_excluded_volume)
+                if self.tool=='imp':
+                    tdm = generate_3d_models(
+                        self.zscores, self.resolution,
+                        self.nloci, n_models=self.n_models,
+                        n_keep=self.n_keep, config=config_tmp,
+                        n_cpus=n_cpus, first=0,
+                        values=self.values, container=self.container,
+                        coords = self.chromosomes,
+                        close_bins=self.close_bins, zeros=self.zeros,
+                        use_HiC=use_HiC, use_confining_environment=use_confining_environment,
+                        use_excluded_volume=use_excluded_volume)
+                elif self.tool=='lammps':
+                    tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
+                                      values=self.values, n_models=self.n_models,
+                                      n_keep=self.n_keep,
+                                      n_cpus=n_cpus,
+                                      verbose=verbose, first=0,coords = self.chromosomes,
+                                      close_bins=self.close_bins, config=config_tmp, container=self.container,
+                                      zeros=self.zeros,tmp_folder=self.tmp_folder)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 

@@ -7,42 +7,42 @@ Schematic flow chart for five iterations (it = 0->5) starting from the symmetric
 matrix W of size N:
 
    +---------->  Wij
-   |    
+   |
    |              |
    |              v
    |             __
    |             \
    |        Si = /_    Wij
    |            j=0->N
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                   _
    |        DBi = Si / S
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |        Bi = Bi x DBi             ---> keep track, used as expected value
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                 Wij
    |       Wij = -----------
-   |              DBi x DBj  
-   |    
+   |              DBi x DBj
+   |
    |              |
    |        it<5 / \ it=5
-   |____________/   \_________   TADbit          _           
+   |____________/   \_________   TADbit          _
     it++                     \`----------> Wij / S    meaning that: Si = O(1)
                              |                        ('Si' tends towards one
                              |                         when 'it' -> infinite)
                              |Strict Imakaev
                              |
                              v
-                             
+
                             Wij
                           -------  meaning that: Si = 1
                            ___
@@ -50,6 +50,48 @@ matrix W of size N:
                            /__ Wi
 
 """
+try:
+    import rpy2.robjects as robjects
+    from rpy2.robjects.packages   import importr
+    from rpy2.rinterface          import RRuntimeError
+    try:
+        dryhic = importr('dryhic')
+        from numpy import float64
+    except RRuntimeError:
+        print ('WARNING: dryhic (https://github.com/qenvio/dryhic) not '
+               'installed, OneD normalization not available')
+except ImportError:
+    print 'WARNING: RPY2 not installed, OneD normalization not available'
+
+
+def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
+    """
+    Normalizes according to oneD normalization that takes into account the GC
+    content, mappability and the number of restriction sites per bin.
+
+    Vidal, E., le Dily, F., Quilez, J., Stadhouders, R., Cuartero, Y., Graf, T., Marti-Renom, Marc A., Beato, M., Filion, G. (2017).
+    OneD: increasing reproducibility of Hi-C Samples with abnormal karyotypes.
+    bioRxiv. http://doi.org/10.1101/148254
+
+    :param form: string representing an R Formulae
+    :param kwargs: dictionary with keys present in the formula and values being
+       lists of equal length.
+       for example:
+           oneD(tot=[1,2,3...],
+                map=[1,2,3...],
+                res=[1,2,3...],
+                cg =[1,2,3...])
+
+
+    :returns: list of biases to use to normalize the raw matrix of interactions
+    """
+    form = robjects.Formula(form)
+
+    info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
+                                   for k in kwargs))
+
+    return map(float64, dryhic.oned(info, form))
+
 
 def _update_S(W):
     S = {}
@@ -60,12 +102,14 @@ def _update_S(W):
     meanS /= len(W)
     return S, meanS
 
+
 def _updateDB(S, meanS, B):
     DB = {}
     for bin1 in S:
         DB[bin1] = float(S[bin1]) / meanS
         B[bin1] *= DB[bin1]
     return DB
+
 
 def _update_W(W, DB):
     for bin1 in W:
@@ -76,6 +120,7 @@ def _update_W(W, DB):
                 W1[bin2] /= DBbin1 * DB[bin2]
             except ZeroDivisionError: # whole row is empty
                 continue
+
 
 def copy_matrix(hic_data, bads):
     W = {}
@@ -91,11 +136,12 @@ def copy_matrix(hic_data, bads):
             W[i][j] = v
     return W
 
+
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False, **kwargs):
     """
     Implementation of iterative correction Imakaev 2012
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param None remove: columns not to consider
@@ -149,14 +195,14 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param 0.05 signal_to_noise: to calculate expected interaction counts,
        if not enough reads are observed at a given distance the observations
        of the distance+1 are summed. a signal to noise ratio of < 0.05
        corresponds to > 400 reads.
-    
+
     :returns: a vector of biases (length equal to the size of the matrix)
     """
     min_n = signal_to_noise ** -2. # equals 400 when default
@@ -180,6 +226,7 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
         for dist in range(dist, new_dist + 1):
             expc[dist] = val
     return expc
+
 
 def _meandiag(hic_data, dist, diag, min_n, size, bads):
     if hic_data.section_pos:

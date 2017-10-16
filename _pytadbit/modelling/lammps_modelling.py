@@ -519,7 +519,7 @@ def run_lammps(kseed, initial_conformation, run_time,
 
     """
     
-    lmp = lammps()
+    lmp = lammps(cmdargs=['-screen','none','-log',str(kseed)+'_log.lammps'])
         
     
     init_lammps_run(lmp, initial_conformation,
@@ -652,7 +652,8 @@ def run_lammps(kseed, initial_conformation, run_time,
             nbr_kincr = steering_pairs['number_of_kincrease']
         else:
             nbr_kincr = 1
-            
+        
+        steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
         for kincrease in xrange(nbr_kincr):
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:

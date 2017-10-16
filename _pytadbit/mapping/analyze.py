@@ -2,15 +2,10 @@
 18 Nov 2014
 """
 
-from pytadbit                     import HiC_data
-from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
-from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
-from pytadbit.utils.tadmaths      import right_double_mad as mad
 from warnings                     import warn
 from collections                  import OrderedDict
-from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
-from pytadbit.utils.extraviews    import nicer
-from pytadbit.utils.file_handling import mkdir
+
+from pysam                        import AlignmentFile
 from scipy.stats                  import norm as sc_norm, skew, kurtosis
 from scipy.stats                  import pearsonr, spearmanr, linregress
 from numpy.linalg                 import eigh
@@ -23,6 +18,15 @@ try:
     from matplotlib.colors import LinearSegmentedColormap
 except ImportError:
     warn('matplotlib not found\n')
+
+
+from pytadbit                     import HiC_data
+from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
+from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
+from pytadbit.utils.tadmaths      import right_double_mad as mad
+from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
+from pytadbit.utils.extraviews    import nicer
+from pytadbit.utils.file_handling import mkdir
 
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
@@ -376,7 +380,8 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     logarithmic scale and between 700 kb and 10 Mb (according to the prediction
     of the fractal globule model).
 
-    :param data: input file name, or HiC_data object or list of lists
+    :param data: input file name (either tsv or TADbit generated BAM), or
+       HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
@@ -392,7 +397,10 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
-    if isinstance(data, str):
+    if isinstance(data, dict):
+        dist_intr = dict([(d, [data[d]]) for d in data
+                          if max_diff > d >= min_diff])
+    elif isinstance(data, basestring):
         dist_intr = dict([(i, {})
                           for i in xrange(min_diff, max_diff)])
         fhandler = open(data)
@@ -584,10 +592,11 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
-    elif show==True:
+    elif show:
         plt.show()
         plt.close('all')
     return (a1, b1, r21), (a2, b2, r22), (a3, b3, r23)
+
 
 def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=None):
     """

@@ -887,9 +887,12 @@ class Experiment(object):
         if not end:
             end = self.size
         zscores, values, zeros = self._sub_experiment_zscore(start, end)
-        coords = {'crm'  : self.crm.name,
-                  'start': start,
-                  'end'  : end}
+        if self.hic_data and self.hic_data[0].chromosomes:
+            coords = self.hic_data[0].chromosomes
+        else:
+            coords = {'crm'  : self.crm.name,
+                      'start': start,
+                      'end'  : end}
         zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         nloci = end - start + 1
         if verbose:

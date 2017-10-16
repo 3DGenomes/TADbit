@@ -1,5 +1,6 @@
 from math            import fabs, pow as power
 from scipy           import polyfit
+from collections             import OrderedDict
 
 class HiCBasedRestraints(object):
     
@@ -66,7 +67,7 @@ class HiCBasedRestraints(object):
 
     """
     def __init__(self, nloci, particle_radius,CONFIG,resolution,zscores,
-                 close_bins=1,first=None, min_seqdist=0):
+                 chromosomes, close_bins=1,first=None, min_seqdist=0):
 
         self.particle_radius       = particle_radius
         self.nloci          = nloci
@@ -74,6 +75,19 @@ class HiCBasedRestraints(object):
         self.resolution     = resolution
         self.nnkforce       = CONFIG['kforce']
         self.min_seqdist     = min_seqdist
+        self.chromosomes     = OrderedDict()
+        if chromosomes:
+            if 'crm' in chromosomes:
+                self.chromosomes[chromosomes['crm']] = chromosomes['end'] - chromosomes['start'] + 1
+            else:
+                tot = 0
+                for k, v in chromosomes.iteritems():
+                    tot += v
+                    self.chromosomes[k] = tot
+        else:
+            self.chromosomes['UNKNOWN'] = nloci
+             
+        
         
         self.CONFIG['lowrdist'] = self.particle_radius * 2.
     
@@ -127,18 +141,23 @@ class HiCBasedRestraints(object):
         HiCbasedRestraints = []
     
         for i in range(self.nloci):
+            chr1 = min(k for k,v in self.chromosomes.items() if v > i)
             for j in range(i+1,self.nloci):
-    
+                chr2 = min(k for k,v in self.chromosomes.items() if v > j)
                 # Compute the sequence separation (in particles) depending on it the restraint changes
-                seqdist = abs(j - i)            
+                seqdist = abs(j - i)          
     
                 # 1 - CASE OF TWO CONSECUTIVE LOCI (NEAREST NEIGHBOR PARTICLES)
                 if seqdist == 1 and seqdist > self.min_seqdist:
+                    if chr1 != chr2:
+                        continue
                     RestraintType, dist = self.get_nearest_neighbors_restraint_distance(self.particle_radius, i, j)
                     kforce = self.nnkforce
     
                 # 2 - CASE OF 2 SECOND NEAREST NEIGHBORS SEQDIST = 2
                 if seqdist == 2 and seqdist > self.min_seqdist:
+                    if chr1 != chr2:
+                        continue
                     RestraintType, dist = self.get_second_nearest_neighbors_restraint_distance(self.particle_radius, i, j)
                     kforce = self.nnkforce
     
