@@ -4,9 +4,10 @@
 
 """
 from warnings import warn
+from subprocess import Popen
+from itertools import product
+
 import numpy as np
-from subprocess import Popen, PIPE
-import itertools
 
 try:
     from matplotlib.ticker import MultipleLocator
@@ -14,6 +15,7 @@ try:
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
     warn('matplotlib not found\n')
+
 
 NTH = {
     1 : "First",
@@ -29,6 +31,7 @@ NTH = {
     11: "Eleventh",
     12: "Twelfth"
 }
+
 
 def setup_plot(axe, figsize=None):
     if axe:
@@ -50,6 +53,7 @@ def setup_plot(axe, figsize=None):
                        left=False, bottom=False, which='minor')
     return ax
 
+
 def tadbit_savefig(savefig):
     try:
         form = savefig[-4:].split('.')[1]
@@ -61,19 +65,20 @@ def tadbit_savefig(savefig):
             ['png', 'pdf', 'ps', 'eps', 'svg']))
     plt.savefig(savefig, format=form)
 
-def nicer(res):
+
+def nicer(res, sep=' '):
     """
     writes resolution number for human beings.
     """
     if not res % 1000000000:
-        return str(res)[:-9] + ' Gb'
+        return str(res)[:-9] + sep + 'Gb'
     if not res % 1000000:
-        return str(res)[:-6] + ' Mb'
+        return str(res)[:-6] + sep + 'Mb'
     if not res % 1000:
-        return str(res)[:-3] + ' kb'
+        return str(res)[:-3] + sep + 'kb'
     if res == 1:
         return 'bin'
-    return str(res) + ' b'
+    return str(res) + sep + 'b'
 
 
 COLOR = {None: '\033[31m', # red
@@ -90,6 +95,7 @@ COLOR = {None: '\033[31m', # red
          10  : '\033[31m'  # red
          }
 
+
 COLORHTML = {None: '<span style="color:red;">'       , # red
              0   : '<span>'                          , # blue
              1   : '<span style="color:blue;">'      , # blue
@@ -104,6 +110,7 @@ COLORHTML = {None: '<span style="color:red;">'       , # red
              10  : '<span style="color:red;">'         # red
              }
 
+
 def colorize(string, num, ftype='ansi'):
     """
     Colorize with ANSII colors a string for printing in shell. this acording to
@@ -117,6 +124,7 @@ def colorize(string, num, ftype='ansi'):
     color = COLOR if ftype=='ansi' else COLORHTML
     return '%s%s%s' % (color[num], string,
                        '\033[m' if ftype=='ansi' else '</span>')
+
 
 def color_residues(x, **kwargs):
     """
@@ -652,7 +660,7 @@ def plot_2d_optimization_result(result,
         tmp_result     = np.empty((len_scale_range  , len_kbending_range, len_maxdist_range,
                                    len_lowfreq_range, len_upfreq_range))
 
-        indeces_sets = itertools.product(range(len(axes_range[0])),
+        indeces_sets = product(range(len(axes_range[0])),
                                          range(len(axes_range[1])),
                                          range(len(axes_range[2])),
                                          range(len(axes_range[3])))
@@ -703,7 +711,7 @@ def plot_2d_optimization_result(result,
     zax_range = range(len(zax))       # maxdist
     yax_range = range(len(yax))       # lowfreq
     xax_range = range(len(xax))       # upfreq
-    indeces_sets = itertools.product(vax_range, wax_range,
+    indeces_sets = product(vax_range, wax_range,
                                      zax_range, yax_range,
                                      xax_range)
 
@@ -760,7 +768,7 @@ def plot_2d_optimization_result(result,
     cell = ncols
     used = []
 
-    for row in itertools.product(vax_range,wax_range):
+    for row in product(vax_range,wax_range):
         cell+=1
 
         for column in zax_range:
@@ -1130,6 +1138,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
+
 
 def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
 

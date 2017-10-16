@@ -41,6 +41,7 @@ def run(opts):
         inputs = [biases_id, mreads_id]
         # store path ids to be saved in database
         mreads = path.join(opts.workdir, mreads)
+        biases = path.join(opts.workdir, biases)
 
     reso   = opts.reso
 
