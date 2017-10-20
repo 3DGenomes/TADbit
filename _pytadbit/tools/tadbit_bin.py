@@ -34,9 +34,16 @@ def run(opts):
 
     if opts.bam:
         mreads = path.realpath(opts.bam)
+        if not opts.biases:
+            raise Exception('ERROR: external BAM input, should provide path to'
+                            ' biases file.')
+        biases = opts.biases
     else:
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
+        biases = path.join(opts.workdir, biases)
+    if opts.biases:
+        biases = opts.biases
 
     coord1         = opts.coord1
     coord2         = opts.coord2
@@ -111,7 +118,7 @@ def run(opts):
             stdout.write('\nExtraction of full genome\n')
 
     out_files = write_matrix(mreads, opts.reso,
-                             load(open(path.join(opts.workdir, biases))) if biases else None,
+                             load(open(biases)) if biases else None,
                              outdir, filter_exclude=opts.filter,
                              normalizations=opts.normalizations,
                              region1=region1, start1=start1, end1=end1,
@@ -271,6 +278,11 @@ def populate_args(parser):
                         default=None, help='''Coordinate of a second region to
                         retrieve the matrix in the intersection with the first
                         region.''')
+
+    normpt.add_argument('--biases',   dest='biases', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''path to file with precalculated biases by
+                        columns''')
 
     normpt.add_argument('--norm', dest='normalizations', metavar="STR",
                         action='store', default=['raw'], type=str, nargs='+',
