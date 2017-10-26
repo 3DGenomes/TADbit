@@ -188,7 +188,7 @@ def run(opts):
 
     finish_time = time.localtime()
 
-    save_to_db(opts, bias_file, opts.bam, bad_col_image,
+    save_to_db(opts, bias_file, mreads, bad_col_image,
                len(badcol), len(biases), raw_cisprc, norm_cisprc,
                inter_vs_gcoord, a2, opts.filter,
                launch_time, finish_time)
