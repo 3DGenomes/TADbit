@@ -420,7 +420,10 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         cutoffR = max_perc / 100. * size
 
     min_count = sorted_sum[int(cutoffL)]
-    max_count = sorted_sum[int(cutoffR)]
+    try:
+        max_count = sorted_sum[int(cutoffR)]
+    except IndexError:  # all good
+        max_count = sorted_sum[-1] + 1
 
     if verbose:
         print '        * Lower cutoff applied until bin number: %d' % (cutoffL)
