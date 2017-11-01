@@ -445,7 +445,7 @@ class IMPoptimizer(object):
         if not self.results:
             stderr.write('WARNING: no optimization done yet\n')
             return
-        best = ((None, None, None, None), 0.0)
+        best = ((float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')), 0.0)
         kbending = 0
         try:
             for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
@@ -457,6 +457,7 @@ class IMPoptimizer(object):
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
 
         if with_corr:
+            print best
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),
                           ('maxdist'  , float(best[0][2])),

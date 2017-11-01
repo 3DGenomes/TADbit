@@ -164,11 +164,23 @@ def autoreader(f):
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
     masked = {}
+    chromosomes = OrderedDict()
+
     for line in f:
         if line[0] != '#':
             break
         if line.startswith('# MASKED'):
             masked = dict([(int(n), True) for n in line.split()[2:]])
+        elif line.startswith('# CRM'):
+            _, _, crm, size = line.split()
+            chromosomes[crm] = int(size)
+        elif 'resolution:' in line:
+            _, coords, reso = line.split()
+            try:
+                crm = coords.split(':')[0]
+            except:
+                crm = coords
+            reso = int(reso.split(':')[1])
     items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
@@ -261,7 +273,6 @@ def _header_to_section(header, resolution):
     converts row-names of the form 'chr12\t1000-2000' into sections, suitable
     to create HiC_data objects. Also creates chromosomes, from the reads
     """
-    chromosomes = OrderedDict()
     sections = {}
     sections = {}
     chromosomes = None
@@ -330,6 +341,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             matrices.append(thing)
         elif isinstance(thing, file):
             matrix, size, header, masked, sym = parser(thing)
+            print header
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)

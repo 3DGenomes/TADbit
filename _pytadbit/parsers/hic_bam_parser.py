@@ -1013,7 +1013,7 @@ def write_matrix(inbam, resolution, biases, outdir,
         elif start1 is not None:
             name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
         else:
-            name = '%s:%d-%d' % (region1, bin_coords[0], bin_coords[1])
+            name = region1
     else:
         name = 'full'
 

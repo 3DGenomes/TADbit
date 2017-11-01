@@ -34,7 +34,7 @@ def run(opts):
 
     if opts.bam:
         mreads = path.realpath(opts.bam)
-        if not opts.biases:
+        if not opts.biases and all(v !='raw' for v in opts.normalizations):
             raise Exception('ERROR: external BAM input, should provide path to'
                             ' biases file.')
         biases = opts.biases
