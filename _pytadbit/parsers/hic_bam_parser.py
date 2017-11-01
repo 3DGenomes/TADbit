@@ -962,7 +962,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None, clean=True,
-                 region2=None, start2=None, end2=None, extra='',
+                 region2=None, start2=None, end2=None, extra='', half_matrix=True,
                  tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
 
     if start1 is not None and end1:
@@ -1148,10 +1148,18 @@ def write_matrix(inbam, resolution, biases, outdir,
             write = write_expc_err(write)
 
     # pull all sub-matrices and write full matrix
-    for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                      verbose=verbose, clean=clean):
-        if j not in bads1 and k not in bads2:
-            write(j, k, v)
+    if half_matrix:
+        for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                          verbose=verbose, clean=clean):
+            if k < j:
+                continue
+            if j not in bads1 and k not in bads2:
+                write(j, k, v)
+    else:
+        for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                          verbose=verbose, clean=clean):
+            if j not in bads1 and k not in bads2:
+                write(j, k, v)
 
     fnames = {}
     if append_to_tar:
