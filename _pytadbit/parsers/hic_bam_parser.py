@@ -506,7 +506,7 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_raw.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
     # write file header
     if 'norm' in normalizations:
@@ -523,7 +523,7 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
     if 'decay' in normalizations:
         fnam = 'dec_%s_%s.abc' % (name,
                                   nicer(resolution).replace(' ', ''))
@@ -539,7 +539,7 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
             out_dec.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_dec.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_dec.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_dec.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
     # functions to write lines of pairwise interactions
     def write_raw(func=None):
@@ -1037,7 +1037,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_raw.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_raw.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
     # write file header
     if 'norm' in normalizations:
@@ -1058,7 +1058,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_nrm.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
     if 'decay' in normalizations:
         fnam = 'dec_%s_%s%s.abc' % (name,
                                     nicer(resolution).replace(' ', ''),
@@ -1078,7 +1078,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_dec.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
             out_dec.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
-            out_dec.write('# BADS %s\n' % (','.join([str(b) for b in bads1])))
+            out_dec.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
     # functions to write lines of pairwise interactions
     def write_raw(func=None):
