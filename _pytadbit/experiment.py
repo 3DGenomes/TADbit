@@ -999,7 +999,7 @@ class Experiment(object):
 
         :returns: z-score, raw values and zzeros of the experiment
         """
-        if not self._normalization.startswith('visibility'):
+        if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
             self.normalize_hic()
         from pytadbit import Chromosome
