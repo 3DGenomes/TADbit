@@ -151,6 +151,76 @@ def optimal_reader(f, normalized=False, resolution=1):
     return hic
 
 
+def __read_file_header(f):
+    """
+    Read file header, inside first commented lines of a file
+
+    :returns masked dict, chromsomes orderedDict, crm, beg, end, resolution:
+    """
+    masked = {}
+    chromosomes = OrderedDict()
+    crm, beg, end, reso = None, None, None, None
+    fpos = f.tell()
+    for line in f:
+        if line[0] != '#':
+            break
+        fpos += len(line)
+        if line.startswith('# MASKED'):
+            masked = dict([(int(n), True) for n in line.split()[2:]])
+        elif line.startswith('# CRM'):
+            _, _, crm, size = line.split()
+            chromosomes[crm] = int(size)
+        elif 'resolution:' in line:
+            _, coords, reso = line.split()
+            try:
+                crm, pos = coords.split(':')
+                beg, end = pos.split('-')
+            except ValueError:
+                crm = coords
+                beg, end = None, None
+            reso = int(reso.split(':')[1])
+    f.seek(fpos)
+    if crm == 'full':
+        crm = None
+    return masked, chromosomes, crm, beg, end, reso
+
+
+def abc_reader(f):
+    """
+    Read matrix stored in 3 column format (bin1, bin2, value)
+
+    :param f: an iterable (typically an open file).
+
+    :returns: A tuple with integer values and the dimension of
+       the matrix.
+    """
+    masked, chromosomes, crm, beg, end, reso = __read_file_header(f)[0]  # TODO rest of it not used here
+    sections = {}
+    total = 0
+    for c in chromosomes:
+        sections[c] = total
+        total += chromosomes[c] / reso + 1
+    if beg:
+        header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for l in xrange(beg, end)]
+    else:
+        header = [(c, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for c in chromosomes
+                  for l in xrange(sections[c], sections[c] + chromosomes[c] / reso + 1)]
+    ncol = len(header)
+    items = []
+    fpos = f.tell()
+    line = f.next()
+    f.seek(fpos)
+    if line.split()[-1].isdigit():
+        num = int
+    else:
+        num = float
+    for line in f:
+        a, b, v = line.split()
+        items.append((int(a) + int(b) * ncol, num(v)))
+
+    return items, ncol, header, masked, False
+
+
 def autoreader(f):
     """
     Auto-detect matrix format of HiC data file.
@@ -160,27 +230,11 @@ def autoreader(f):
     :returns: A tuple with integer values and the dimension of
        the matrix.
     """
+    masked = __read_file_header(f)[0]  # TODO rest of it not used here
 
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
-    masked = {}
-    chromosomes = OrderedDict()
-
-    for line in f:
-        if line[0] != '#':
-            break
-        if line.startswith('# MASKED'):
-            masked = dict([(int(n), True) for n in line.split()[2:]])
-        elif line.startswith('# CRM'):
-            _, _, crm, size = line.split()
-            chromosomes[crm] = int(size)
-        elif 'resolution:' in line:
-            _, coords, reso = line.split()
-            try:
-                crm = coords.split(':')[0]
-            except:
-                crm = coords
-            reso = int(reso.split(':')[1])
+    line = f.next()
     items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
@@ -265,7 +319,9 @@ def autoreader(f):
         warn('WARNING: matrix not symmetric: summing cell_ij with cell_ji')
         symmetrize(items)
         symmetricized = True
-    return tuple([a for line in items for a in line]), ncol, header, masked, symmetricized
+    return ([(i + j * ncol, a) for i, line in enumerate(items)
+             for j, a in enumerate(line) if a],
+            ncol, header, masked, symmetricized)
 
 
 def _header_to_section(header, resolution):
@@ -345,8 +401,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size, dict_sec=sections,
+            matrices.append(HiC_data(matrix, size, dict_sec=sections,
                                      chromosomes=chromosomes,
                                      resolution=resolution,
                                      symmetricized=sym, masked=masked))
@@ -361,19 +416,17 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             sections = dict([(h, i) for i, h in enumerate(header)])
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size, dict_sec=sections,
+            matrices.append(HiC_data(matrix, size, dict_sec=sections,
                                      chromosomes=chromosomes, masked=masked,
                                      resolution=resolution,
                                      symmetricized=sym))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
-                matrix  = [v for l in thing for v in l]
                 size = len(thing)
+                matrix  = [(i + j * size, v) for i, l in enumerate(thing) for j, v in enumerate(l) if v]
             else:
                 raise Exception('must be list of lists, all with same length.')
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         elif isinstance(thing, tuple):
             # case we know what we are doing and passing directly list of tuples
             matrix = thing
@@ -381,8 +434,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             if int(siz) != siz:
                 raise AttributeError('ERROR: matrix should be square.\n')
             size = int(siz)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         elif 'matrix' in str(type(thing)):
             try:
                 row, col = thing.shape
@@ -392,8 +444,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                 size = row
             except Exception as exc:
                 print 'Error found:', exc
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         else:
             raise Exception('Unable to read this file or whatever it is :)')
     if one:
