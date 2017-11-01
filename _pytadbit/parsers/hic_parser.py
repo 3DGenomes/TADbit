@@ -194,7 +194,7 @@ def abc_reader(f):
     :returns: A tuple with integer values and the dimension of
        the matrix.
     """
-    masked, chromosomes, crm, beg, end, reso = __read_file_header(f)[0]  # TODO rest of it not used here
+    masked, chromosomes, crm, beg, end, reso = __read_file_header(f)  # TODO rest of it not used here
     sections = {}
     total = 0
     for c in chromosomes:
@@ -219,6 +219,26 @@ def abc_reader(f):
         items.append((int(a) + int(b) * ncol, num(v)))
 
     return items, ncol, header, masked, False
+
+
+def __is_abc(f):
+    """
+    Only works for matrices with more than 3 bins
+    """
+    fpos = f.tell()
+    count = 0
+    for line in f:
+        if line.startswith('#'):
+            continue
+        count += 1
+        if len(line.split()) != 3:
+            f.seek(fpos)
+            return False
+        if count > 3:
+            f.seek(fpos)
+            return True
+    f.seek(fpos)
+    return False
 
 
 def autoreader(f):
@@ -388,7 +408,6 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     one = kwargs.get('one', True)
     global HIC_DATA
     HIC_DATA = hic
-    parser = parser or autoreader
     if not isinstance(things, list):
         things = [things]
     matrices = []
@@ -396,6 +415,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         if isinstance(thing, HiC_data):
             matrices.append(thing)
         elif isinstance(thing, file):
+            parser = parser or (abc_reader if __is_abc(thing) else autoreader)
             matrix, size, header, masked, sym = parser(thing)
             print header
             thing.close()
@@ -407,9 +427,11 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                      symmetricized=sym, masked=masked))
         elif isinstance(thing, str):
             try:
+                parser = parser or (abc_reader if __is_abc(gzopen(thing)) else autoreader)
                 matrix, size, header, masked, sym = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
+                    parser = parser or (abc_reader if __is_abc(thing.split('\n')) else autoreader)
                     matrix, size, header, masked, sym = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
