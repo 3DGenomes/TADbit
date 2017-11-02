@@ -191,26 +191,29 @@ def abc_reader(f):
 
     :param f: an iterable (typically an open file).
 
-    :returns: A tuple with integer values and the dimension of
-       the matrix.
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
     """
-    masked, chromosomes, crm, beg, end, reso = __read_file_header(f)  # TODO rest of it not used here
+    masked, chroms, crm, beg, end, reso = __read_file_header(f)  # TODO rest of it not used here
     sections = {}
     size = 0
-    for c in chromosomes:
+    for c in chroms:
         sections[c] = size
-        size += chromosomes[c] / reso + 1
+        size += chroms[c] / reso + 1
     if beg:
-        header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for l in xrange(beg, end)]
+        header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso))
+                  for l in xrange(beg, end)]
     else:
-        header = [(c, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for c in chromosomes
-                  for l in xrange(sections[c], sections[c] + chromosomes[c] / reso + 1)]
+        header = [(c, '%d-%d' % (l * reso + 1, (l + 1) * reso))
+                  for c in chroms
+                  for l in xrange(sections[c], sections[c] + chroms[c] / reso + 1)]
     num = int if HIC_DATA else float
     offset = (beg or 0) * (1 + size)
     def _disect(x):
         a, b, v = x.split()
         return (int(a) + int(b) * size + offset, num(v))
-    items = [_disect(line) for line in f]
+    items = (_disect(line) for line in f)
     return items, size, header, masked, False
 
 
@@ -240,7 +243,9 @@ def autoreader(f):
 
     :param f: an iterable (typically an open file).
 
-    :returns: A List to be converted in dictionary.
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
     """
     masked = __read_file_header(f)[0]  # TODO rest of it not used here
 
@@ -331,8 +336,8 @@ def autoreader(f):
         warn('WARNING: matrix not symmetric: summing cell_ij with cell_ji')
         symmetrize(items)
         symmetricized = True
-    return ([(i + j * ncol, a) for i, line in enumerate(items)
-             for j, a in enumerate(line) if a],
+    return (((i + j * ncol, a) for i, line in enumerate(items)
+             for j, a in enumerate(line) if a),
             ncol, header, masked, symmetricized)
 
 
