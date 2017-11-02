@@ -166,7 +166,10 @@ def __read_file_header(f):
             break
         fpos += len(line)
         if line.startswith('# MASKED'):
-            masked = dict([(int(n), True) for n in line.split()[-1].split(',')])
+            try:
+                masked = dict([(int(n), True) for n in line.split()[-1].split(',')])
+            except ValueError:  # nothing here
+                pass
         elif line.startswith('# CRM'):
             _, _, crm, size = line.split()
             chromosomes[crm] = int(size)
