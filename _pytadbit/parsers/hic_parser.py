@@ -174,7 +174,7 @@ def __read_file_header(f):
             _, coords, reso = line.split()
             try:
                 crm, pos = coords.split(':')
-                beg, end = pos.split('-')
+                beg, end = map(int, pos.split('-'))
             except ValueError:
                 crm = coords
                 beg, end = None, None
