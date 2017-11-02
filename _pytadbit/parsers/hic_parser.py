@@ -196,29 +196,22 @@ def abc_reader(f):
     """
     masked, chromosomes, crm, beg, end, reso = __read_file_header(f)  # TODO rest of it not used here
     sections = {}
-    total = 0
+    size = 0
     for c in chromosomes:
-        sections[c] = total
-        total += chromosomes[c] / reso + 1
+        sections[c] = size
+        size += chromosomes[c] / reso + 1
     if beg:
         header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for l in xrange(beg, end)]
     else:
         header = [(c, '%d-%d' % (l * reso + 1, (l + 1) * reso)) for c in chromosomes
                   for l in xrange(sections[c], sections[c] + chromosomes[c] / reso + 1)]
-    ncol = len(header)
-    items = []
-    fpos = f.tell()
-    line = f.next()
-    f.seek(fpos)
-    if line.split()[-1].isdigit():
-        num = int
-    else:
-        num = float
-    for line in f:
-        a, b, v = line.split()
-        items.append((int(a) + int(b) * ncol, num(v)))
-
-    return items, ncol, header, masked, False
+    num = int if HIC_DATA else float
+    offset = (beg or 0) * (1 + size)
+    def _disect(x):
+        a, b, v = x.split()
+        return (int(a) + int(b) * size + offset, num(v))
+    items = [_disect(line) for line in f]
+    return items, size, header, masked, False
 
 
 def __is_abc(f):
@@ -247,8 +240,7 @@ def autoreader(f):
 
     :param f: an iterable (typically an open file).
 
-    :returns: A tuple with integer values and the dimension of
-       the matrix.
+    :returns: A List to be converted in dictionary.
     """
     masked = __read_file_header(f)[0]  # TODO rest of it not used here
 
