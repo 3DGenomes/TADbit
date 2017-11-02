@@ -68,7 +68,8 @@ class HiC_data(dict):
 
     def _symmetricize(self):
         """
-        Make matrix symmetric
+        Check if matrix is symmetric (check first 10 non-zero values) and,
+        if not, make it symmetric
          - if matrix is half empty, copy values on one side to the other side
          - if matrix is asymetric, sum non-diagonal values
         """

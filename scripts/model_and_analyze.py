@@ -74,13 +74,13 @@ def search_tads(opts, crm, name):
         if len(opts.group) > 1:
             ali = crm.align_experiments(aligned)
             ali.draw(savefig=os.path.join(opts.outdir, name,
-                                          name + '_tad_alignment.'+opts.fig_format))
+                                          name + '_tad_alignment.' + opts.fig_format))
         else:
             crm.tad_density_plot(crm.experiments[-1].name, savefig=os.path.join(
-                opts.outdir, name, name + '_tad_alignment.'+opts.fig_format))
+                opts.outdir, name, name + '_tad_alignment.' + opts.fig_format))
     if "TAD borders" in  opts.analyze:
         crm.visualize(aligned, paint_tads=True, savefig=os.path.join(
-            opts.outdir, name, name + '_tad_matrices.'+opts.fig_format),
+            opts.outdir, name, name + '_tad_matrices.' + opts.fig_format),
                       normalized=True)
         for exp in aligned:
             crm.experiments[exp].write_tad_borders(os.path.join(
@@ -452,7 +452,7 @@ def main():
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
-                               name + '_column_filtering.'+opts.fig_format),
+                               name + '_column_filtering.' + opts.fig_format),
                            diagonal=not opts.nodiag)
     if (not opts.tad_only and "column filtering" in opts.analyze
         and not opts.analyze_only):
@@ -521,7 +521,7 @@ def main():
         rho, pval = models.correlate_with_real_data(
             cutoff=dcutoff,
             savefig=os.path.join(opts.outdir, name,
-                                 name + '_corre_real.'+opts.fig_format),
+                                 name + '_corre_real.' + opts.fig_format),
             plot=True)
         logging.info("\t Correlation coefficient: %s [p-value: %s]", rho, pval)
 
@@ -529,7 +529,7 @@ def main():
         # zscore plots
         logging.info("\tZ-score plot...")
         models.zscore_plot(
-            savefig=os.path.join(opts.outdir, name, name + '_zscores.'+opts.fig_format))
+            savefig=os.path.join(opts.outdir, name, name + '_zscores.' + opts.fig_format))
 
     # Cluster models based on structural similarity
     logging.info("\tClustering all models into sets of structurally similar" +
@@ -555,7 +555,7 @@ def main():
     try:
         models.cluster_analysis_dendrogram(
             color=True, savefig=os.path.join(
-                opts.outdir, name, name + '_clusters.'+opts.fig_format))
+                opts.outdir, name, name + '_clusters.' + opts.fig_format))
     except:
         logging.info("\t\tWARNING: plot for clusters could not be made...")
 
@@ -656,7 +656,7 @@ def main():
         logging.info("\tPlotting objective function decay for vbest model...")
         models.objective_function_model(
             0, log=True, smooth=False,
-            savefig=os.path.join(opts.outdir, name, name + '_obj-func.'+opts.fig_format))
+            savefig=os.path.join(opts.outdir, name, name + '_obj-func.' + opts.fig_format))
 
     if "centroid" in opts.analyze:
         # Get the centroid model of cluster #1
@@ -671,7 +671,7 @@ def main():
         models.model_consistency(
             cluster=1, cutoffs=range(50, dcutoff + 50, 50),
             savefig =os.path.join(opts.outdir, name,
-                                  name + '_consistency.'+opts.fig_format),
+                                  name + '_consistency.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name,
                                   name + '_consistency.dat'))
 
@@ -680,7 +680,7 @@ def main():
         logging.info("\tGetting density data...")
         models.density_plot(
             error=True, steps=(1,3,5,7),
-            savefig =os.path.join(opts.outdir, name, name + '_density.'+opts.fig_format),
+            savefig =os.path.join(opts.outdir, name, name + '_density.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name, name + '_density.dat'))
 
     if "contact map" in opts.analyze:
@@ -695,7 +695,7 @@ def main():
         logging.info("\tGetting angle data...")
         models.walking_angle(
             cluster=1, steps=(1,5),
-            savefig = os.path.join(opts.outdir, name, name + '_wang.'+opts.fig_format),
+            savefig = os.path.join(opts.outdir, name, name + '_wang.' + opts.fig_format),
             savedata= os.path.join(opts.outdir, name, name + '_wang.dat'))
 
     if "persistence length" in opts.analyze:
@@ -720,7 +720,7 @@ def main():
         logging.info("\tGetting accessibility data (this can take long)...")
         models.accessibility(radius, nump=nump,
             error=True,
-            savefig =os.path.join(opts.outdir, name, name + '_accessibility.'+opts.fig_format),
+            savefig =os.path.join(opts.outdir, name, name + '_accessibility.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name, name + '_accessibility.dat'))
 
     # if "accessibility" in opts.analyze:
@@ -751,7 +751,7 @@ def main():
         models.interactions(
             cutoff=dcutoff, steps=(1,3,5),
             savefig =os.path.join(opts.outdir, name,
-                                  name + '_interactions.'+opts.fig_format),
+                                  name + '_interactions.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name,
                                   name + '_interactions.dat'),
             error=True)
@@ -853,7 +853,8 @@ def get_options():
                         help='resolution of the Hi-C experiment')
     glopts.add_argument('--fig_format', dest='fig_format', metavar="STR",
                         default="pdf",
-                        help='extension for figures and plots')
+                        help='''file format and extension for figures and plots
+                        (can be any supported by matplotlib, png, eps...)''')
     glopts.add_argument('--outdir', dest='outdir', metavar="PATH",
                         default=None,
                         help='out directory for results')
