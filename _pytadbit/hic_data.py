@@ -30,6 +30,13 @@ from pytadbit.utils.hmm             import gaussian_prob, best_path, train
 from pytadbit.utils.tadmaths        import calinski_harabasz
 
 
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+    """
+    https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python/33024979#33024979
+    """
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+
 class HiC_data(dict):
     """
     This may also hold the print/write-to-file matrix functions
@@ -39,6 +46,7 @@ class HiC_data(dict):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
+        self._symmetricize()
         self.bias = None
         self.bads = masked or {}
         self.chromosomes = chromosomes
@@ -57,6 +65,42 @@ class HiC_data(dict):
             self.section_pos = {None: (0, self.__size)}
             self.sections = dict([((None, i), i)
                                   for i in xrange(0, self.__size)])
+
+    def _symmetricize(self):
+        """
+        Make matrix symmetric
+         - if matrix is half empty, copy values on one side to the other side
+         - if matrix is asymetric, sum non-diagonal values
+        """
+        to_sum = False
+        symmetric = True
+        count  = 0
+        for n in self:
+            i = n / self.__size
+            j = n % self.__size
+            if i == j or self[i, j] == self[i, j] == 0:
+                continue
+            if not isclose(self[i, j], self[j, i]):
+                if self[i, j] != 0 and self[i, j] != 0:
+                    to_sum = True
+                symmetric = False
+                break
+            if count > 10:
+                return
+            count += 1
+        if symmetric:  # may not reach 10 values
+            return
+        if to_sum:
+            for n in self:
+                i = n / self.__size
+                j = n % self.__size
+                if i != j:
+                    self[j, i] = self[i, j] = self[j, i] + self[i, j]
+        else:
+            for n in self:
+                i = n / self.__size
+                j = n % self.__size
+                self[j, i] = self[i, j] = self[n]
 
     def _update_size(self, size):
         self.__size +=  size
