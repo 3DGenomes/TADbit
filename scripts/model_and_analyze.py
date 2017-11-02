@@ -296,7 +296,7 @@ tmp.close()
     if "optimization plot" in opts.analyze:
         results.plot_2d(show_best=20,
                         savefig="%s/%s_optimal_params.%s" % (
-                            os.path.join(opts.outdir, name, opts.fig_format), name))
+                            os.path.join(opts.outdir, name), name, opts.fig_format))
     if opts.optimize_only:
         logging.info('Optimization done.')
         return
