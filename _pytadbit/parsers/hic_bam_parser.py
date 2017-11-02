@@ -781,7 +781,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             end   = end_bin1   - beg_crm
         else:
             start = 0
-            end   = section_pos[crm][1] - section_pos[crm][0] + 1
+            end   = section_pos[crm][1] - section_pos[crm][0]
         all_bins.extend([(crm, i) for i in xrange(start, end)])
     bins_dict1 = dict([(j, i) for i, j in enumerate(all_bins)])
     if region2:
