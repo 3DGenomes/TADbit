@@ -81,7 +81,7 @@ class HiC_data(dict):
             if i == j or self[i, j] == self[i, j] == 0:
                 continue
             if not isclose(self[i, j], self[j, i]):
-                if self[i, j] != 0 and self[i, j] != 0:
+                if self[i, j] != 0 and self[j, i] != 0:
                     to_sum = True
                 symmetric = False
                 break
@@ -91,13 +91,13 @@ class HiC_data(dict):
         if symmetric:  # may not reach 10 values
             return
         if to_sum:
-            for n in self:
+            for n in self.keys()[:]:
                 i = n / self.__size
                 j = n % self.__size
                 if i != j:
                     self[j, i] = self[i, j] = self[j, i] + self[i, j]
         else:
-            for n in self:
+            for n in self.keys()[:]:
                 i = n / self.__size
                 j = n % self.__size
                 self[j, i] = self[i, j] = self[n]
