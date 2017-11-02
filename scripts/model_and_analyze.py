@@ -263,9 +263,25 @@ tmp.close()
         return
 
     ## get best parameters
-    optpar, cc = results.get_best_parameters_dict(
-        reference='Optimized for %s' % (name), with_corr=True)
+    if opts.nmodels_opt == 0:
+        try:
+            optpar = {}
+            optpar['scale'    ] = float(scale)
+            optpar['kbending' ] = 0.0
+            optpar['maxdist'  ] = int(maxdist)
+            optpar['upfreq'   ] = float(upfreq)
+            optpar['lowfreq'  ] = float(lowfreq)
+            optpar['dcutoff'  ] = float(dcutoff)
+            optpar['reference'] = 'Optimized for %s' % (name)
+        except TypeError:
+            raise Exception(('ERROR: to skip optimization you should input '
+                             'single values for parameters, not ranges'))
+        cc = float('nan')
+    else:
+        optpar, cc = results.get_best_parameters_dict(
+            reference='Optimized for %s' % (name), with_corr=True)
 
+    print optpar
     sc = optpar['scale']
     md = optpar['maxdist']
     uf = optpar['upfreq']
