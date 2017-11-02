@@ -720,10 +720,10 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                         '%s/%s' % (len(regs),len(regs)))
 
     printime('  - Removing columns with too few or too much interactions')
-    if len(bamfile.references) == 1 and not min_count:
+    if len(bamfile.references) == 1 and min_count is None:
         raise Exception("ERROR: only one chromosome can't filter by "
                         "cis-percentage, set min_count instead")
-    elif not min_count and len(bamfile.references) > 1:
+    elif min_count is None and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
             savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
