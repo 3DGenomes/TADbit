@@ -58,10 +58,9 @@ try:
         dryhic = importr('dryhic')
         from numpy import float64
     except RRuntimeError:
-        print ('WARNING: dryhic (https://github.com/qenvio/dryhic) not '
-               'installed, OneD normalization not available')
+        pass
 except ImportError:
-    print 'WARNING: RPY2 not installed, OneD normalization not available'
+    pass
 
 
 def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
@@ -85,7 +84,11 @@ def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
 
     :returns: list of biases to use to normalize the raw matrix of interactions
     """
-    form = robjects.Formula(form)
+    try:
+        form = robjects.Formula(form)
+    except NameError:
+        raise Exception('ERROR: dryhic (https://github.com/qenvio/dryhic) not '
+                        'installed, OneD normalization not available')
 
     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
                                    for k in kwargs))
