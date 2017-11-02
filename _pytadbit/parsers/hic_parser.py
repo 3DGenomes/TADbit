@@ -563,6 +563,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=True,
                ncpus=ncpus, dico=imx, verbose=verbose)
+    imx._symmetricize()
     imx.symmetricized = True
 
     return imx
