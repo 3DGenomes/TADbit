@@ -157,7 +157,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
     
     HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution,zscores,
-                 close_bins=close_bins,first=first)
+                 chromosomes=coords, close_bins=close_bins,first=first)
     
     
     initial_conformation = tmp_folder+'initial_conformation.dat'
@@ -180,9 +180,9 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         xpr = experiment
         crm = xpr.crm
         description = {'identifier'        : xpr.identifier,
-                       'chromosome'        : coords['crm'],
-                       'start'             : xpr.resolution * coords['start'],
-                       'end'               : xpr.resolution * coords['end'],
+                       'chromosome'        : coords['crm'] if isinstance(coords,dict) else [c['crm'] for c in coords],
+                       'start'             : xpr.resolution * coords['start'] if isinstance(coords,dict) else [xpr.resolution*c['start'] for c in coords],
+                       'end'               : xpr.resolution * coords['end'] if isinstance(coords,dict) else [xpr.resolution*c['end'] for c in coords],
                        'species'           : crm.species,
                        'restriction enzyme': xpr.enzyme,
                        'cell type'         : xpr.cell_type,
@@ -898,6 +898,7 @@ harmonicWalls {
   colvars %s
   lowerWalls %s
   forceConstant %f 
+  lowerWallConstant 1.0
 }\n'''
                             ):
                             
@@ -1138,6 +1139,7 @@ harmonicWalls {
   colvars %s
   lowerWalls %s
   forceConstant %f # This is the force constant at time_point
+  lowerWallConstant 1.0
   targetForceConstant %f  # This is the force constant at time_point+1    
   targetNumSteps %d # This is the number of timesteps between time_point and time_point+1
 }\n''',

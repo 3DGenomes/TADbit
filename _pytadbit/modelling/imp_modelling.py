@@ -187,9 +187,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         xpr = experiment
         crm = xpr.crm
         description = {'identifier'        : xpr.identifier,
-                       'chromosome'        : coords['crm'] if 'crm' in coords else ','.join(coords.keys()),
-                       'start'             : xpr.resolution * coords['start'] if 'crm' in coords else xpr.resolution*coords.values()[0],
-                       'end'               : xpr.resolution * coords['end'] if 'crm' in coords else xpr.resolution*coords.values()[-1],
+                       'chromosome'        : coords['crm'] if isinstance(coords,dict) else [c['crm'] for c in coords],
+                       'start'             : xpr.resolution * coords['start'] if isinstance(coords,dict) else [xpr.resolution *c['start'] for c in coords],
+                       'end'               : xpr.resolution * coords['end'] if isinstance(coords,dict) else [xpr.resolution *c['end'] for c in coords],
                        'species'           : crm.species,
                        'restriction enzyme': xpr.enzyme,
                        'cell type'         : xpr.cell_type,

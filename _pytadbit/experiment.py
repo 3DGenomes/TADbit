@@ -19,6 +19,7 @@ from pytadbit.utils.normalize_hic        import iterative
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
 from pytadbit.modelling.structuralmodels import StructuralModels
+from collections import OrderedDict
 
 try:
     from pytadbit.modelling.impoptimizer  import IMPoptimizer
@@ -888,7 +889,29 @@ class Experiment(object):
             end = self.size
         zscores, values, zeros = self._sub_experiment_zscore(start, end)
         if self.hic_data and self.hic_data[0].chromosomes:
-            coords = self.hic_data[0].chromosomes
+            coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = 1
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            
+            for k in chrs:
+                coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : self.hic_data[0].chromosomes[k]})
+            coords[0]['start'] = chrom_offset_start
+            coords[-1]['end'] -= chrom_offset_end
+
         else:
             coords = {'crm'  : self.crm.name,
                       'start': start,

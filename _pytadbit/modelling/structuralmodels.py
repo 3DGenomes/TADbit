@@ -2385,24 +2385,29 @@ class StructuralModels(object):
             except TypeError:
                 my_descr = {'start'     : 0,
                             'end'       : self.nloci}
-            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
+            if isinstance(my_descr.get('chromosome', 'Chromosome'), list):
+                my_descr['chrom'] = my_descr.get('chromosome', 'Chromosome')
+            else:
+                my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
-                warn("WARNING: chrom_start variable wasn't set, setting it to 0") 
-                my_descr['chrom_start'] = 0
+                warn("WARNING: chrom_start variable wasn't set, setting it to" +
+                     " the position in the experiment matrix (%s)" % (
+                         str([m for m in my_descr['start']])))
+                my_descr['chrom_start'] = [m for m in my_descr['start']]
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
-                     " the position in the experiment matrix " +
-                     " times the resolution (%d*%d)" % (
-                         self.nloci, self.resolution))
-                my_descr['chrom_end'] = self.nloci * self.resolution
+                     " the position in the experiment matrix (%s)" % (
+                         str([m for m in my_descr['end']])))
+                my_descr['chrom_end'] = [m for m in my_descr['end']]
             if not my_descr['species']:
                 warn("WARNING: species wasn't set, The resulting JSON will not work properly in TADkit.")
             # coordinates inside an array in case different models
             # from different places in the genome
-            my_descr['chrom_start'] = [my_descr['chrom_start']]
-            my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
+            if not isinstance(my_descr['chrom_start'],list):
+                my_descr['chrom_start'] = [my_descr['chrom_start']]
+                my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
 
             fil['descr']   = ',\n'.join([
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),

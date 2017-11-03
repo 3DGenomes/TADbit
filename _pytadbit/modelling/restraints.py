@@ -77,13 +77,13 @@ class HiCBasedRestraints(object):
         self.min_seqdist     = min_seqdist
         self.chromosomes     = OrderedDict()
         if chromosomes:
-            if 'crm' in chromosomes:
+            if isinstance(chromosomes,dict):
                 self.chromosomes[chromosomes['crm']] = chromosomes['end'] - chromosomes['start'] + 1
             else:
                 tot = 0
-                for k, v in chromosomes.iteritems():
-                    tot += v
-                    self.chromosomes[k] = tot
+                for k in chromosomes:
+                    tot += k['end'] - k['start'] + 1
+                    self.chromosomes[k['crm']] = tot
         else:
             self.chromosomes['UNKNOWN'] = nloci
              
@@ -141,9 +141,9 @@ class HiCBasedRestraints(object):
         HiCbasedRestraints = []
     
         for i in range(self.nloci):
-            chr1 = min(k for k,v in self.chromosomes.items() if v > i)
+            chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
             for j in range(i+1,self.nloci):
-                chr2 = min(k for k,v in self.chromosomes.items() if v > j)
+                chr2 = [k for k,v in self.chromosomes.items() if v > j][0]
                 # Compute the sequence separation (in particles) depending on it the restraint changes
                 seqdist = abs(j - i)          
     
