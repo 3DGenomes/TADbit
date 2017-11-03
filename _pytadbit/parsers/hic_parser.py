@@ -546,7 +546,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
         len_crm = genome_seq[crm]
         sections.extend([(crm, i) for i in xrange(len_crm)])
 
-    size = sum(genome_seq.values()) + len(genome_seq)
+    size = sum(genome_seq.values())
 
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, chromosomes=genome_seq, dict_sec=dict_sec,

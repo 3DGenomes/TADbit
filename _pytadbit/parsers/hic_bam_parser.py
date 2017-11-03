@@ -358,7 +358,7 @@ def _write_small_matrix(inbam, resolution, biases, outdir,
     section_pos = dict()
     for crm in sections:
         section_pos[crm] = (total, total + sections[crm])
-        total += sections[crm] + 1
+        total += sections[crm]
     bins = []
     for crm in sections:
         len_crm = sections[crm]
@@ -706,7 +706,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     section_pos = dict()
     for crm in sections:
         section_pos[crm] = (total, total + sections[crm])
-        total += sections[crm] + 1
+        total += sections[crm]
     bins = []
     for crm in sections:
         len_crm = sections[crm]
@@ -744,7 +744,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             end1 = total * resolution
 
     # define chunks, using at most 100 sub-divisions of region1
-    total = end_bin1 - start_bin1 + 1
+    total = end_bin1 - start_bin1
     regs  = []
     begs  = []
     ends  = []

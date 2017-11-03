@@ -86,11 +86,6 @@ def run(opts):
         refs = [crm for crm in refs if crm in genome]
         if len(refs) == 0:
             raise Exception("ERROR: chromsomes in FASTA different the ones in BAM")
-        genome_lengths = {refs[0] : 0}
-        total = len(genome[refs[0]]) / opts.reso + 1
-        if len(refs) > 1:
-            for crm in refs[1:]:
-                genome_lengths[crm] = total + len(genome[crm]) / opts.reso + 1
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
@@ -98,7 +93,7 @@ def run(opts):
         mappability = []
         line = fh.next()
         for crm in refs:
-            for begB in xrange(0, len(genome[crm]) + opts.reso, opts.reso):
+            for begB in xrange(0, len(genome[crm]), opts.reso):
                 endB = begB + opts.reso
                 tmp = 0
                 try:
@@ -122,7 +117,7 @@ def run(opts):
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content  = []
         for crm in refs:
-            for pos in xrange(0, len(genome[crm]) + opts.reso, opts.reso):
+            for pos in xrange(0, len(genome[crm]), opts.reso):
                 seq = genome[crm][pos:pos + opts.reso]
                 try:
                     gc_content.append(float(seq.count('G') + seq.count('C')) /
@@ -135,7 +130,7 @@ def run(opts):
         n_rsites  = []
         re_site = RESTRICTION_ENZYMES[opts.renz].replace('|', '')
         for crm in refs:
-            for pos in xrange(200, len(genome[crm]) + opts.reso + 200, opts.reso):
+            for pos in xrange(200, len(genome[crm]) + 200, opts.reso):
                 seq = genome[crm][pos-200:pos + opts.reso + 200]
                 n_rsites.append(seq.count(re_site))
 
@@ -644,7 +639,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     section_pos = dict()
     for crm in sections:
         section_pos[crm] = (total, total + sections[crm])
-        total += sections[crm] + 1
+        total += sections[crm]
     bins = []
     for crm in sections:
         len_crm = sections[crm]
@@ -654,7 +649,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     end_bin   = len(bins) + 1
     total = len(bins)
 
-    total = end_bin - start_bin + 1
+    total = end_bin - start_bin
     regs = []
     begs = []
     ends = []
@@ -880,10 +875,10 @@ def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
     sumdec = {}
     for (i, j), v in dico.iteritems():
+        if i < j:
+            continue
         # different chromosome
         if bins[i][0] != bins[j][0]:
-            continue
-        if i < j:
             continue
         if i in badcol or j in badcol:
             continue
