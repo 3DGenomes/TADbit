@@ -648,7 +648,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+        bins.extend([(crm, i) for i in xrange(len_crm)])
 
     start_bin = 0
     end_bin   = len(bins) + 1
@@ -838,7 +838,6 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 sumdec[k] += v
             except KeyError:
                 sumdec[k]  = v
-
     # count the number of cells per diagonal
     # TODO: parallelize
     # find larget chromsome
