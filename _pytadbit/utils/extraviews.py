@@ -1048,14 +1048,17 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
             val = [c['dens'] for c in cmprts[crm] if c['start']==i][0]
         except IndexError:
             pass
+        except KeyError:
+           break
         heights.append(val-1)
 
-    maxheights = max([abs(f) for f in heights])
-    try:
-        heights = [f / maxheights for f in heights]
-    except ZeroDivisionError:
-        warn('WARNING: no able to plot chromosome %s' % crm)
-        return
+    if heights:
+        maxheights = max([abs(f) for f in heights])
+        try:
+            heights = [f / maxheights for f in heights]
+        except ZeroDivisionError:
+            warn('WARNING: no able to plot chromosome %s' % crm)
+            return
 
     # definitions for the axes
     left, width = 0.1, 0.75
@@ -1086,12 +1089,21 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     first = [f/mfirst for f in first]
 
     axex.plot(first, color='green', alpha=0.5)
-    axex.plot(heights, color='black', alpha=1, linewidth=2)
-    axex.plot(heights, color='orange', alpha=1, linewidth=1)
-    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
-                      where=np.array(first) > 0, color='olive', alpha=0.5)
-    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
-                      where=np.array(first) < 0, color='darkgreen', alpha=0.5)
+    if heights:
+        axex.plot(heights, color='black', alpha=1, linewidth=2)
+        axex.plot(heights, color='orange', alpha=1, linewidth=1)
+
+    div = 1000 / len(matrix) + 1
+    _div = float(div)
+    half_first = np.array([sum(first[(i + j) / div] for j in range(div)) / _div
+                           for i in xrange(len(first) * div - div + 1)])
+
+    axex.fill_between([i / _div for i in range(len(half_first))],
+                      [0] * len(half_first), half_first,
+                      where=half_first > 0, color='olive', alpha=0.5)
+    axex.fill_between([i / _div for i in range(len(half_first))],
+                      [0] * len(half_first), half_first,
+                      where=half_first < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
     axex.set_ylabel('%s PC (green)\ndensity (orange)' % (NTH[whichpc]))
     breaks = [0] + [i + 0.5 for i, (a, b) in
@@ -1099,27 +1111,27 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                     if a * b < 0] + [len(first)]
     # COMPARTMENTS A/B
     if showAB:
-      a_comp = []
-      b_comp = []
-      breaks = []
-      for cmprt in cmprts[crm]:
-	  breaks.append(cmprt['start'])
-	  try:
-	      if cmprt['type'] == 'A':
-		  a_comp.append((cmprt['start'], cmprt['end']))
-	      elif cmprt['type'] == 'B':
-		  b_comp.append((cmprt['start'], cmprt['end']))
-	  except KeyError:
-	      if cmprt['dens'] > 1:
-		  a_comp.append((cmprt['start'], cmprt['end']))
-	      else:
-		  b_comp.append((cmprt['start'], cmprt['end']))
-      a_comp.sort()
-      b_comp.sort()
-      axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
-                [a[1] for a in a_comp], color='red' , linewidth=6)
-      axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
-                [b[1] for b in b_comp], color='blue' , linewidth=6)
+        a_comp = []
+        b_comp = []
+        breaks = []
+        for cmprt in cmprts[crm]:
+            breaks.append(cmprt['start'])
+            try:
+                if cmprt['type'] == 'A':
+                    a_comp.append((cmprt['start'], cmprt['end']))
+                elif cmprt['type'] == 'B':
+                    b_comp.append((cmprt['start'], cmprt['end']))
+            except KeyError:
+                if cmprt['dens'] > 1:
+                    a_comp.append((cmprt['start'], cmprt['end']))
+                else:
+                    b_comp.append((cmprt['start'], cmprt['end']))
+        a_comp.sort()
+        b_comp.sort()
+        axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
+                    [a[1] for a in a_comp], color='red' , linewidth=6)
+        axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
+                    [b[1] for b in b_comp], color='blue' , linewidth=6)
 
     # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
     #             color='red' , linewidth=4, alpha=0.7)
@@ -1131,8 +1143,8 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axex.grid(b=True, which='minor')
     plt.setp(axex.get_xticklabels(), visible=False)
 
-    axex.set_xlim(0,len(matrix))
-    axim.set_ylim(0,len(matrix))
+    axex.set_xlim((-0.5, len(matrix) - 0.5))
+    axim.set_ylim((-0.5, len(matrix) - 0.5))
     if show:
         plt.show()
     if savefig:
