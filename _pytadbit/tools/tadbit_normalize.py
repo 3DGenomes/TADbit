@@ -835,7 +835,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 sumdec[k]  = v
     # count the number of cells per diagonal
     # TODO: parallelize
-    # find larget chromsome
+    # find largest chromosome
     len_big = max(section_pos[c][1] - section_pos[c][0] for c in section_pos)
     # initialize dictionary
     ndiags = dict((k, 0) for k in xrange(len_big))
@@ -862,9 +862,34 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         ndiags[0] += chr_size - len(thesebads)
 
     # normalize sum per diagonal by total number of cells in diagonal
-    for k in sumdec:
+    signal_to_noise = 0.05
+    min_n = signal_to_noise ** -2. # equals 400 when default
+    tmpdec = 0  # store count by diagonal
+    previous = [] # store diagonals to be summed in case not reaching the minimum
+    for k in ndiags:
+        tmpdec += sumdec.get(k, 0.)
+        previous.append(k)
+        if tmpdec > min_n:
+            ndiag = sum(ndiags[k] for k in previous)
+            val = tmpdec  # backup of tmpdec kept for last ones outside the loop
+            try:
+                ratio = val / ndiag
+                for k in previous:
+                    sumdec[k] = ratio
+            except ZeroDivisionError:  # all columns at this distance are "bad"
+                pass
+            previous = []
+            tmpdec = 0
+        else:
+            previous.append(k)
+    # last ones we average with previous result
+    if tmpdec < min_n:
+        ndiag += sum(ndiags[k] for k in previous)
+        val += tmpdec
         try:
-            sumdec[k] /= ndiags[k]
+            ratio = val / ndiag
+            for k in previous:
+                sumdec[k] = ratio
         except ZeroDivisionError:  # all columns at this distance are "bad"
             pass
 

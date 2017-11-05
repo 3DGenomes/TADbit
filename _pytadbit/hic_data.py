@@ -708,7 +708,7 @@ class HiC_data(dict):
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec
             # get chromosomal matrix
-            matrix = [[(float(self[i,j]) / self.expected.get(abs(j-i), 1.)
+            matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                        / self.bias[i] / self.bias[j])
                       for i in xrange(*self.section_pos[sec])
                        if not i in self.bads]
