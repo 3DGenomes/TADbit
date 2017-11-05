@@ -695,7 +695,8 @@ class HiC_data(dict):
             suffix = '_' + suffix
         # parse bed file
         if rich_in_A:
-            rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
+            if isinstance(rich_in_A, str):
+                rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
 
         cmprts = {}
         firsts = {}

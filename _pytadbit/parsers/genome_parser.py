@@ -5,6 +5,7 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
 
 from collections import OrderedDict
+import multiprocessing as mu
 from os import path
 import re
 
@@ -131,3 +132,45 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
             out.write('>%s\n%s\n' % (c, genome_seq[c]))
         out.close()
     return genome_seq
+
+
+def get_gc_content(genome, resolution, chromosomes=None, n_cpus=None, by_chrom=False):
+    chromosomes = chromosomes if chromosomes else genome.keys()
+    if not n_cpus:
+        n_cpus = mu.cpu_count()
+    pool = mu.Pool(n_cpus)
+    get_chr_gc = _get_chr_gc_dico if by_chrom else _get_chr_gc_list
+    jobs = {}
+    for crm in chromosomes:
+        jobs[crm] = pool.apply_async(get_chr_gc, args=(genome[crm], resolution))
+    pool.close()
+    pool.join()
+    if by_chrom:
+        gc_content = dict((crm, jobs[crm].get()) for crm in chromosomes)
+    else:
+        gc_content = reduce(lambda x,y: x + y, (jobs[crm].get() for crm in chromosomes))
+    return gc_content
+
+
+def _get_chr_gc_list(chrom, resolution):
+    gc_content = []
+    for pos in xrange(0, len(chrom), resolution):
+        seq = chrom[pos:pos + resolution]
+        try:
+            gc_content.append(float(seq.count('G') + seq.count('C')) /
+                              (len(seq) - seq.count('N')))
+        except ZeroDivisionError:
+            gc_content.append(float('nan'))
+    return gc_content
+
+
+def _get_chr_gc_dico(chrom, reso):
+    gc_content = {}
+    for pos in xrange(0, len(chrom), reso):
+        seq = chrom[pos:pos + reso]
+        try:
+            gc_content[pos  /reso] = (float(seq.count('G') + seq.count('C')) /
+                                      (len(seq) - seq.count('N')))
+        except ZeroDivisionError:
+            gc_content[pos  /reso] = float('nan')
+    return gc_content

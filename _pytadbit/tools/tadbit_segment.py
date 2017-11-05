@@ -5,24 +5,25 @@ information needed
  - path working directory with parsed reads
 
 """
-from argparse                     import HelpFormatter
-from os                           import path, remove
-from shutil                       import copyfile
-from string                       import ascii_letters
-from random                       import random
-from warnings                     import warn
-from cPickle                      import load
-from multiprocessing              import cpu_count
+from argparse                       import HelpFormatter
+from os                             import path, remove
+from shutil                         import copyfile
+from string                         import ascii_letters
+from random                         import random
+from warnings                       import warn
+from cPickle                        import load
+from multiprocessing                import cpu_count
 import sqlite3 as lite
 import time
 
-from pytadbit                     import load_hic_data_from_bam
-from pytadbit                     import tadbit
-from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
-from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
-from pytadbit.utils.file_handling import mkdir
-from pytadbit.parsers.tad_parser  import parse_tads
-from pytadbit.mapping.filter      import MASKED
+from pytadbit                       import load_hic_data_from_bam
+from pytadbit                       import tadbit
+from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
+from pytadbit.utils.sqlite_utils    import add_path, get_jobid, print_db
+from pytadbit.utils.file_handling   import mkdir
+from pytadbit.parsers.tad_parser    import parse_tads
+from pytadbit.parsers.genome_parser import parse_fasta, get_gc_content
+from pytadbit.mapping.filter        import MASKED
 
 
 DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
@@ -60,10 +61,18 @@ def run(opts):
         cmprt_dir = path.join(opts.workdir, '06_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        firsts, richA_pval = hic_data.find_compartments(crms=opts.crms,
-                                                        savefig=cmprt_dir, verbose=True,
-                                                        suffix=param_hash,
-                                                        rich_in_A=opts.rich_in_A)
+        if opts.fasta:
+            print '  - Computing GC content to label compartments'
+            rich_in_A = get_gc_content(parse_fasta(opts.fasta), reso,
+                                       chromosomes=opts.crms,
+                                       by_chrom=True, n_cpus=opts.cpus)
+            opts.rich_in_A = opts.fasta
+        elif opts.rich_in_A:
+            rich_in_A = opts.rich_in_A
+        firsts, richA_pval = hic_data.find_compartments(
+            crms=opts.crms, savefig=cmprt_dir, verbose=True,
+            suffix=param_hash, rich_in_A=rich_in_A)
+
 
         for crm in opts.crms or hic_data.chromosomes:
             if not crm in firsts:
@@ -356,6 +365,11 @@ def populate_args(parser):
                         to be used to label compartments instead of using
                         the relative interaction count.''')
 
+    glopts.add_argument('--fasta', dest='fasta', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''Path to fasta file with genome sequence, to compute
+                        GC content and use it to label compartments''')
+
     glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False,
                         help='''search A/B compartments using first eigen vector
@@ -414,6 +428,9 @@ def check_options(opts):
         opts.cpus = cpu_count()
     else:
         opts.cpus = min(opts.cpus, cpu_count())
+
+    if opts.rich_in_A and opts.fasta:
+        raise Exception('ERROR: should choose one of FASTA or rich_in_A')
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb

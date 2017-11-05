@@ -33,7 +33,7 @@ from pytadbit.utils.extraviews            import nicer
 from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from pytadbit.parsers.genome_parser       import parse_fasta
+from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
 
 # removes annoying message when normalizing...
 seterr(invalid='ignore')
@@ -115,15 +115,8 @@ def run(opts):
                 mappability.append(tmp / opts.reso)
 
         printime('  - Computing GC content per bin (removing Ns)')
-        gc_content  = []
-        for crm in refs:
-            for pos in xrange(0, len(genome[crm]), opts.reso):
-                seq = genome[crm][pos:pos + opts.reso]
-                try:
-                    gc_content.append(float(seq.count('G') + seq.count('C')) /
-                                      (len(seq) - seq.count('N')))
-                except ZeroDivisionError:
-                    gc_content.append(float('nan'))
+        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs.keys(),
+                                    n_cpus=opts.cpus)
         # compute r_sites ~30 sec
         # TODO: read from DB
         printime('  - Computing number of RE sites per bin (+/- 200 bp)')
