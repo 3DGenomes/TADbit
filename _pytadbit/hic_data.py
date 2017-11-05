@@ -615,7 +615,7 @@ class HiC_data(dict):
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='',
                           ev_index=None, rich_in_A=None,
-                          max_ev=3,show_compartment_labels=False, **kwargs):
+                          max_ev=3, show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
