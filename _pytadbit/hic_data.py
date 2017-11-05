@@ -796,7 +796,7 @@ class HiC_data(dict):
                  for b in bads for i in xrange(len(n_first[0]))]
             for b in bads:
                 for brk in breaks:
-                    brk['start'] += brk['start'] > b
+                    brk['start'] += brk['start'] >= b
                     brk['end'] += brk['end'] > b
             bads = set(bads)
 

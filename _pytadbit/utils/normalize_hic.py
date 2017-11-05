@@ -170,7 +170,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     if len(B) == 0:
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     if verbose:
-        print "  - computing baises"
+        print "  - computing biases"
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)

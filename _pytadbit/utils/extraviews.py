@@ -1120,14 +1120,14 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
             breaks.append(cmprt['start'])
             try:
                 if cmprt['type'] == 'A':
-                    a_comp.append((cmprt['start'], cmprt['end']))
+                    a_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
                 elif cmprt['type'] == 'B':
-                    b_comp.append((cmprt['start'], cmprt['end']))
+                    b_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
             except KeyError:
                 if cmprt['dens'] > 1:
-                    a_comp.append((cmprt['start'], cmprt['end']))
+                    a_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
                 else:
-                    b_comp.append((cmprt['start'], cmprt['end']))
+                    b_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
         a_comp.sort()
         b_comp.sort()
         axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
