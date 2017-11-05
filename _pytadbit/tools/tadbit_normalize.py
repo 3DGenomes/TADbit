@@ -75,17 +75,17 @@ def run(opts):
         fas = set(genome.keys())
         bam = set(refs)
         if fas - bam:
-            print 'WARNING: %d extra chromsomes in FASTA (removing them)' % (len(fas - bam))
+            print 'WARNING: %d extra chromosomes in FASTA (removing them)' % (len(fas - bam))
             if len(fas - bam) <= 50:
                 print '\n'.join([('  - ' + c) for c in (fas - bam)])
         if bam - fas:
             txt = ('\n'.join([('  - ' + c) for c in (bam - fas)])
                    if len(bam - fas) <= 50 else '')
-            raise Exception('ERROR: %d extra chromsomes in BAM (remove them):\n%s\n' % (
+            raise Exception('ERROR: %d extra chromosomes in BAM (remove them):\n%s\n' % (
                 len(bam - fas), txt))
         refs = [crm for crm in refs if crm in genome]
         if len(refs) == 0:
-            raise Exception("ERROR: chromsomes in FASTA different the ones in BAM")
+            raise Exception("ERROR: chromosomes in FASTA different the ones in BAM")
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
@@ -646,7 +646,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         bins.extend([(crm, i) for i in xrange(len_crm)])
 
     start_bin = 0
-    end_bin   = len(bins) + 1
+    end_bin   = len(bins)
     total = len(bins)
 
     total = end_bin - start_bin
@@ -724,7 +724,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
                 nicer(resolution).replace(' ', ''), extra_out)))
     else:
-        print '      -> too few  interactions defined as less than %9d interactions' % (
+        print '      -> too few interactions defined as less than %9d interactions' % (
             min_count)
         badcol = {}
         countL = 0
