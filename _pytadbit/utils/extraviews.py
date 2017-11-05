@@ -1085,8 +1085,8 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axim.grid()
 
     # scale first PC
-    mfirst = max(max(first), abs(min(first)))
-    first = [f/mfirst for f in first]
+    mfirst = np.nanmax((np.nanmax(first), abs(np.nanmin(first))))
+    first = [f / mfirst for f in first]
 
     axex.plot(first, color='green', alpha=0.5)
     if heights:
@@ -1097,7 +1097,6 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     _div = float(div)
     half_first = np.array([sum(first[(i + j) / div] for j in range(div)) / _div
                            for i in xrange(len(first) * div - div + 1)])
-
     axex.fill_between([i / _div for i in range(len(half_first))],
                       [0] * len(half_first), half_first,
                       where=half_first > 0, color='olive', alpha=0.5)
@@ -1105,12 +1104,15 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                       [0] * len(half_first), half_first,
                       where=half_first < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
-    axex.set_ylabel('%s PC (green)\ndensity (orange)' % (NTH[whichpc]))
+    if heights:
+        axex.set_ylabel('%s PC (green)\nrich in A (orange)' % (NTH[whichpc]))
+    else:
+        axex.set_ylabel('%s PC (green)' % (NTH[whichpc]))
     breaks = [0] + [i + 0.5 for i, (a, b) in
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]
     # COMPARTMENTS A/B
-    if showAB:
+    if showAB and heights:
         a_comp = []
         b_comp = []
         breaks = []
@@ -1132,6 +1134,8 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                     [a[1] for a in a_comp], color='red' , linewidth=6)
         axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
                     [b[1] for b in b_comp], color='blue' , linewidth=6)
+    elif showAB:
+        warn('WARNING: not displaying AB compartments, need richin A regions')
 
     # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
     #             color='red' , linewidth=4, alpha=0.7)

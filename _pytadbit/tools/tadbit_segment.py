@@ -54,16 +54,16 @@ def run(opts):
 
     # compartments
     cmp_result = {}
+    richA_pval = None
     if not opts.only_tads:
         print 'Searching compartments'
         cmprt_dir = path.join(opts.workdir, '06_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        firsts = hic_data.find_compartments(crms=opts.crms,
-                                            label_compartments='cluster',
-                                            savefig=cmprt_dir,
-                                            suffix=param_hash, log=cmprt_dir,
-                                            rich_in_A=opts.rich_in_A)
+        firsts, richA_pval = hic_data.find_compartments(crms=opts.crms,
+                                                        savefig=cmprt_dir, verbose=True,
+                                                        suffix=param_hash,
+                                                        rich_in_A=opts.rich_in_A)
 
         for crm in opts.crms or hic_data.chromosomes:
             if not crm in firsts:
@@ -133,11 +133,11 @@ def run(opts):
 
     if not opts.nosql:
         save_to_db(opts, cmp_result, tad_result, reso, inputs,
-                   launch_time, finish_time)
+                   richA_pval, launch_time, finish_time)
 
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
-               launch_time, finish_time):
+               richA_pval, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):

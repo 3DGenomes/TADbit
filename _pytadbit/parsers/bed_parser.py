@@ -43,7 +43,7 @@ def parse_bed(fnam, resolution=1):
     :returns: a dictionnary with a count of number of entries found per bin. In
        case column 5 is present the values used tyo weight entries, otherwise
        each entry will weight 1.
-    
+
     """
 
     fhandler = magic_open(fnam)
@@ -77,7 +77,7 @@ def parse_bed(fnam, resolution=1):
             except ValueError:
                 # only chromosome and begin position available
                 parse_line = _2_col
-    
+
     ####################################
     # go back to first informative line
     # parse
@@ -91,4 +91,3 @@ def parse_bed(fnam, resolution=1):
         dico[crm][pos] += val
 
     return dico
-
