@@ -694,9 +694,8 @@ class HiC_data(dict):
         if suffix != '':
             suffix = '_' + suffix
         # parse bed file
-        if rich_in_A:
-            if isinstance(rich_in_A, str):
-                rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
+        if rich_in_A and isinstance(rich_in_A, str):
+            rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
 
         cmprts = {}
         firsts = {}
@@ -803,7 +802,7 @@ class HiC_data(dict):
 
             # rescale first EV according to rich_in_A
             richA_pval = float('nan')
-            if rich_in_A:
+            if rich_in_A and sec in rich_in_A:
                 posit_ev = []
                 negat_ev = []
                 for i, v in enumerate(n_first[ev_num]):
@@ -1313,19 +1312,14 @@ class HiC_data(dict):
                     out.write('## CHR %s\tEigenvector: %d\n' % (sec, ev_nums[sec]))
                 except KeyError:
                     continue
-        out.write('#%sstart\tend\tdensity\ttype\n'% (
+        out.write('#%sstart\tend\trich in A\ttype\n'% (
             'CHR\t' if len(sections) > 1 else ''))
         for sec in sections:
             for c in self.compartments[sec]:
-                try:
-                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (str(sec) + '\t') if sections else '',
-                        c['start'] + 1, c['end'] + 1,
-                        c['dens'], c['type']))
-                except KeyError:
-                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (str(sec) + '\t') if sections else '',
-                        c['start'], c['end'], c['dens'], ''))
+                out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                    (str(sec) + '\t') if sections else '',
+                    c['start'] + 1, c['end'] + 1,
+                    c.get('dens', float('nan')), c.get('type', '')))
         out.close()
 
 

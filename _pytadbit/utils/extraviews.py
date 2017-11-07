@@ -1049,7 +1049,8 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
         except IndexError:
             pass
         except KeyError:
-           break
+            heights = []
+            break
         heights.append(val-1)
 
     if heights:
