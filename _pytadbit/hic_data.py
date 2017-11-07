@@ -802,6 +802,7 @@ class HiC_data(dict):
             bads = set(bads)
 
             # rescale first EV according to rich_in_A
+            richA_pval = float('nan')
             if rich_in_A:
                 posit_ev = []
                 negat_ev = []
