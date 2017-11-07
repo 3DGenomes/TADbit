@@ -701,6 +701,7 @@ class HiC_data(dict):
         firsts = {}
         ev_nums = {}
         count = 0
+        richA_pval = float('nan')
 
         for sec in self.section_pos:
             if crms and sec not in crms:
