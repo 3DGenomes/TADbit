@@ -522,7 +522,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
 
 def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                            filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
-                           verbose=True):
+                           region=None, verbose=True):
     """
     :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -533,6 +533,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     :param 8 ncpus:
     :param (1, 2, 3, 4, 6, 7, 8, 9, 10) filter exclude: filters to define the
        set of valid pair of reads.
+    :param None region: chromosome name, if None, all genome will be loaded
 
     :returns: HiC_data object
     """
@@ -565,7 +566,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
 
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=True,
-               ncpus=ncpus, dico=imx, verbose=verbose)
+               ncpus=ncpus, dico=imx, region1=region, verbose=verbose)
     imx._symmetricize()
     imx.symmetricized = True
 

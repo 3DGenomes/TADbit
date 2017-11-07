@@ -822,6 +822,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     sumdec = {}
     for proc in procs:
         for k, v in proc.get().iteritems():
+            # TODO another loop here for chromosomes
             try:
                 sumdec[k] += v
             except KeyError:
@@ -831,6 +832,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     # find largest chromosome
     len_big = max(section_pos[c][1] - section_pos[c][0] for c in section_pos)
     # initialize dictionary
+    # TODO: by chromosome, not the max of all
     ndiags = dict((k, 0) for k in xrange(len_big))
     for crm in section_pos:
         beg_chr, end_chr = section_pos[crm][0], section_pos[crm][1]
@@ -906,6 +908,7 @@ def sum_dec_matrix(fname, biases, badcol, bins):
             sumdec[k] += val
         except KeyError:
             sumdec[k]  = val
+            ## TODO by chrom another try except, key would be [c][k]
     system('rm -f %s' % (fname))
     return sumdec
 

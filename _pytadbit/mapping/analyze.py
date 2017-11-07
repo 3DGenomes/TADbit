@@ -396,11 +396,8 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
 
     :returns: slope, intercept and R square of each of the 3 correlations
     """
-    resolution = resolution or 1
-    if isinstance(data, dict):
-        dist_intr = dict([(d, [data[d]]) for d in data
-                          if max_diff > d >= min_diff])
-    elif isinstance(data, basestring):
+    if isinstance(data, basestring):
+        resolution = resolution or 1
         dist_intr = dict([(i, {})
                           for i in xrange(min_diff, max_diff)])
         fhandler = open(data)
@@ -427,6 +424,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
             dist_intr[diff] = [dist_intr[diff].get(k, 0)
                                for k in xrange(max(dist_intr[diff]) - diff)]
     elif isinstance(data, HiC_data):
+        resolution = resolution or data.resolution
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if normalized:
             get_data = lambda x, y: data[x, y] / data.bias[x] / data.bias[y]
@@ -445,6 +443,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
                         dist_intr[diff].append(get_data(i, diff))
+    elif isinstance(data, dict):
+        dist_intr = dict([(d, [data[d]]) for d in data
+                          if max_diff > d >= min_diff])
     else:
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if genome_seq:
@@ -463,6 +464,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i][i + diff]):
                         dist_intr[diff].append(data[i][i + diff])
+    resolution = resolution or 1
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
