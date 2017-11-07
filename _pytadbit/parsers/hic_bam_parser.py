@@ -952,6 +952,8 @@ def get_matrix(inbam, resolution, biases=None,
             if i not in bads1 and j not in bads2:
                 dico[i, j] = v
 
+    if clean:
+        os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
     if  verbose:
         printime('\nDone.')
     if return_something:
