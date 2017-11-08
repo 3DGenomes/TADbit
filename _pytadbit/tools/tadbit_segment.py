@@ -71,7 +71,7 @@ def run(opts):
             rich_in_A = opts.rich_in_A
         else:
             rich_in_A = None
-        firsts = hic_data.find_compartments(
+        firsts, richA_pval = hic_data.find_compartments(
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None)
 
