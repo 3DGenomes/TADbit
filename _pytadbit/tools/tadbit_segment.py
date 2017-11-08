@@ -71,7 +71,7 @@ def run(opts):
             rich_in_A = opts.rich_in_A
         else:
             rich_in_A = None
-        firsts, richA_pval = hic_data.find_compartments(
+        firsts = hic_data.find_compartments(
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None)
 
@@ -127,7 +127,7 @@ def run(opts):
                 hic_data.bias = biases['biases']
             tads = load_tad_height(result, size, beg, end, hic_data)
             table = ''
-            table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
+            table += '%s\t%s\t%s\t%s\t%s\n' % ('#', 'start', 'end', 'score', 'density')
             for tad in tads:
                 table += '%s\t%s\t%s\t%s%s\n' % (
                     tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
