@@ -449,7 +449,13 @@ def main():
             crm.add_experiment(exp)
         else:
             exp = crm.experiments[0]
-
+    
+    if  not opts.tad_only and not opts.analyze_only and not opts.xnorm:
+        exp.filter_columns(draw_hist="column filtering" in opts.analyze,
+                           perc_zero=opts.filt, savefig=os.path.join(
+                               opts.outdir, name ,
+                               name + '_column_filtering.pdf'),
+                           diagonal=not opts.nodiag)
     if (not opts.tad_only and "column filtering" in opts.analyze
         and not opts.analyze_only):
         out = open(os.path.join(opts.outdir, name ,
