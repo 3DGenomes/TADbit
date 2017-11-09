@@ -138,7 +138,9 @@ def load_hic_data(opts, xnames):
                 xnorm[0][n] = xnorm[0][n] / factor
             crm.experiments[xnam].norm = xnorm
         if not xnorm:
-            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
+            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag,
+                                                 perc_zero=opts.perc_zero,
+                                                 min_count=opts.min_count)
             logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
     if opts.beg > crm.experiments[-1].size:
@@ -447,8 +449,8 @@ def main():
             crm.add_experiment(exp)
         else:
             exp = crm.experiments[0]
-
-    if  not opts.tad_only and not opts.analyze_only:
+    
+    if  not opts.tad_only and not opts.analyze_only and not opts.xnorm:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
@@ -839,9 +841,16 @@ def get_options():
     glopts.add_argument('--nodiag', dest='nodiag', action='store_true',
                         help='''If the matrix does not contain self interacting
                         bins (only zeroes in the diagonal)''')
-    glopts.add_argument('--filt', dest='filt', metavar='INT', default=90,
-                        help='''Filter out column with more than a given
-                        percentage of zeroes''')
+    glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
+                        action='store', default=95, type=float,
+                        help=('[%(default)s%%] maximum percentage of zeroes '
+                              'allowed per column.'))
+    glopts.add_argument('--min_count', dest='min_count', metavar="INT",
+                        action='store', default=None, type=float,
+                        help=('''[%(default)s] minimum number of reads mapped to
+                        a bin (recommended value could be 2500). If set this
+                        option overrides the perc_zero filtering... This option is
+                        slightly slower.'''))
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
