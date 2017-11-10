@@ -115,7 +115,7 @@ def run(opts):
                 mappability.append(tmp / opts.reso)
 
         printime('  - Computing GC content per bin (removing Ns)')
-        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs.keys(),
+        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
                                     n_cpus=opts.cpus)
         # compute r_sites ~30 sec
         # TODO: read from DB
