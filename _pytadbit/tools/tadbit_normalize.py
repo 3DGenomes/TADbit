@@ -867,11 +867,13 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     signal_to_noise = 0.05
     min_n = signal_to_noise ** -2. # equals 400 when default
     for crm in sections:
-        if not crm in sections:
+        if not crm in nrmdec:
             nrmdec[crm] = {}
             rawdec[crm] = {}
         tmpdec = 0  # store count by diagonal
         tmpsum = 0  # store count by diagonal
+        ndiag  = 0
+        val    = 0
         previous = [] # store diagonals to be summed in case not reaching the minimum
         for k in ndiags[crm]:
             tmpdec += nrmdec[crm].get(k, 0.)
