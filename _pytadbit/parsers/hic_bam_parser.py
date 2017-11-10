@@ -658,26 +658,27 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                 pos2 = sections2[(crm2, pos2 / resolution)]
             except KeyError:
                 continue  # not in the subset matrix we want
+            crm = crm1 * (crm1 == crm2)
             try:
-                dico[(pos1, pos2)] += 1
+                dico[(crm, pos1, pos2)] += 1
             except KeyError:
-                dico[(pos1, pos2)] = 1
+                dico[(crm, pos1, pos2)] = 1
             # print '%-50s %5s %9s %5s %9s' % (r.query_name,
             #                                  crm1, r.reference_start + 1,
             #                                  crm2, r.mpos + 1)
         if half:
-            for i, j in dico:
+            for c, i, j in dico:
                 if i < j:
-                    del dico[(i,j)]
+                    del dico[(c, i, j)]
         out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                                 '%s:%d-%d.tsv' % (region, start, end)), 'w')
-        out.write(''.join('%d\t%d\t%d\n' % (a, b, c)
-                          for (a, b), c in dico.iteritems()))
+        out.write(''.join('%s\t%d\t%d\t%d\n' % (c, a, b, v)
+                          for (c, a, b), v in dico.iteritems()))
         out.close()
         if sum_columns:
             sumcol = {}
             cisprc = {}
-            for (i, j), v in dico.iteritems():
+            for (c, i, j), v in dico.iteritems():
                 # out.write('%d\t%d\t%d\n' % (i, j, v))
                 try:
                     sumcol[i] += v
@@ -854,7 +855,8 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.tsv' % (region, start, end))
         for l in open(fname):
-            yield map(int, l.split())
+            c, a, b, v = l.split('\t')
+            yield c, int(a), int(b), int(v)
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
@@ -953,14 +955,14 @@ def get_matrix(inbam, resolution, biases=None,
     if verbose:
         printime('  - Getting matrices')
 
-    def transform_value_raw(_, __, c):
-        return c
-    def transform_value_norm(a, b, c):
-        return c / bias1[a] / bias2[b]
-    def transform_value_decay(a, b, c):
-        return c / bias1[a] / bias2[b] / decay[abs(a-b)]
-    def transform_value_decay_2reg(a, b, c):
-        return c / bias1[a] / bias2[b] / decay[abs((a + start_bin1) - (b + start_bin2))]
+    def transform_value_raw(_, __ , ___, v):
+        return v
+    def transform_value_norm(_, a, b, v):
+        return v / bias1[a] / bias2[b]
+    def transform_value_decay(c, a, b, v):
+        return v / bias1[a] / bias2[b] / decay[c][abs(a-b)]
+    def transform_value_decay_2reg(c, a, b, v):
+        return v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]
 
     if normalization == 'raw':
         transform_value = transform_value_raw
@@ -975,13 +977,13 @@ def get_matrix(inbam, resolution, biases=None,
     return_something = False
     if dico is None:
         return_something = True
-        dico = dict(((i, j), transform_value(i, j, v))
-                    for i, j, v in _iter_matrix_frags(
+        dico = dict(((c, i, j), transform_value(c, i, j, v))
+                    for c, i, j, v in _iter_matrix_frags(
             chunks, tmpdir, rand_hash, clean=clean, verbose=verbose)
                     if i not in bads1 and j not in bads2)
         # pull all sub-matrices and write full matrix
     else: # dico probably an HiC data object
-        for i, j, v in _iter_matrix_frags(
+        for c, i, j, v in _iter_matrix_frags(
                 chunks, tmpdir, rand_hash,
                 clean=clean, verbose=verbose):
             if i not in bads1 and j not in bads2:
@@ -1156,53 +1158,53 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # functions to write lines of pairwise interactions
     def write_raw(func=None):
-        def writer2(a, b, c):
-            func(a, b, c)
-            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        def writer(a, b, c):
-            out_raw.write('%d\t%d\t%d\n' % (a, b, c))
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
+            out_raw.write('%d\t%d\t%d\n' % (a, b, v))
+        def writer(_, a, b, v):
+            out_raw.write('%d\t%d\t%d\n' % (a, b, v))
         return writer2 if func else writer
 
     def write_bias(func=None):
-        def writer2(a, b, c):
-            func(a, b, c)
-            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
-        def writer(a, b, c):
-            out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, v / bias1[a] / bias2[b]))
+        def writer(_, a, b, v):
+            out_nrm.write('%d\t%d\t%f\n' % (a, b, v / bias1[a] / bias2[b]))
         return writer2 if func else writer
 
     def write_expc(func=None):
-        def writer2(a, b, c):
-            func(a, b, c)
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
             out_dec.write('%d\t%d\t%f\n' % (
-                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
-        def writer(a, b, c):
+                a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+        def writer(c, a, b, v):
             out_dec.write('%d\t%d\t%f\n' % (
-                a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+                a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
         return writer2 if func else writer
 
     def write_expc_2reg(func=None):
-        def writer2(a, b, c):
-            func(a, b, c)
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
             out_dec.write('%d\t%d\t%f\n' % (
-                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin1) - (b + start_bin2))]))
-        def writer(a, b, c):
+                a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
+        def writer(c, a, b, v):
             out_dec.write('%d\t%d\t%f\n' % (
-                a, b, c / bias1[a] / bias2[b] / decay[abs((a + start_bin1) - (b + start_bin2))]))
+                a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
         return writer2 if func else writer
 
     def write_expc_err(func=None):
-        def writer2(a, b, c):
-            func(a, b, c)
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
             try:
                 out_dec.write('%d\t%d\t%f\n' % (
-                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+                    a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
-        def writer(a, b, c):
+        def writer(c, a, b, v):
             try:
                 out_dec.write('%d\t%d\t%f\n' % (
-                    a, b, c / bias1[a] / bias2[b] / decay[abs(a-b)]))
+                    a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
         return writer2 if func else writer
@@ -1223,17 +1225,17 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # pull all sub-matrices and write full matrix
     if half_matrix:
-        for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                          verbose=verbose, clean=clean):
+        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                             verbose=verbose, clean=clean):
             if k < j:
                 continue
             if j not in bads1 and k not in bads2:
-                write(j, k, v)
+                write(c, j, k, v)
     else:
-        for j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                          verbose=verbose, clean=clean):
+        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                             verbose=verbose, clean=clean):
             if j not in bads1 and k not in bads2:
-                write(j, k, v)
+                write(c, j, k, v)
 
     fnames = {}
     if append_to_tar:

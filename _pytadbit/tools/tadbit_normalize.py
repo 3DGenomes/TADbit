@@ -62,7 +62,7 @@ def run(opts):
             raise Exception('ERROR: missing path to FASTA for oneD normalization')
         if not opts.renz:
             raise Exception('ERROR: missing restriction enzyme name for oneD normalization')
-        if not opts.fasta:
+        if not opts.mappability:
             raise Exception('ERROR: missing path to mappability for oneD normalization')
         bamfile = AlignmentFile(mreads, 'rb')
         refs = bamfile.references
@@ -112,10 +112,12 @@ def run(opts):
                         line = fh.next()
                 except EOFError:
                     continue
+                except StopIteration:
+                    pass
                 mappability.append(tmp / opts.reso)
 
         printime('  - Computing GC content per bin (removing Ns)')
-        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs.keys(),
+        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
                                     n_cpus=opts.cpus)
         # compute r_sites ~30 sec
         # TODO: read from DB
@@ -819,27 +821,34 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     pool.join()
 
     # collect results
-    sumdec = {}
+    nrmdec = {}
+    rawdec = {}
     for proc in procs:
-        for k, v in proc.get().iteritems():
-            # TODO another loop here for chromosomes
-            try:
-                sumdec[k] += v
-            except KeyError:
-                sumdec[k]  = v
-    # count the number of cells per diagonal
+        tmpnrm, tmpraw = proc.get()
+        for c, d in tmpnrm.iteritems():
+            for k, v in d.iteritems():
+                try:
+                    nrmdec[c][k] += v
+                    rawdec[c][k] += tmpraw[c][k]
+                except KeyError:
+                    try:
+                        nrmdec[c][k]  = v
+                        rawdec[c][k] = tmpraw[c][k]
+                    except KeyError:
+                        nrmdec[c] = {k: v}
+                        rawdec[c] = {k: tmpraw[c][k]}
+# count the number of cells per diagonal
     # TODO: parallelize
     # find largest chromosome
-    len_big = max(section_pos[c][1] - section_pos[c][0] for c in section_pos)
+    len_crms = dict((c, section_pos[c][1] - section_pos[c][0]) for c in section_pos)
     # initialize dictionary
-    # TODO: by chromosome, not the max of all
-    ndiags = dict((k, 0) for k in xrange(len_big))
+    ndiags = dict((c, dict((k, 0) for k in xrange(len_crms[c]))) for c in sections)
     for crm in section_pos:
         beg_chr, end_chr = section_pos[crm][0], section_pos[crm][1]
         chr_size = end_chr - beg_chr
         thesebads = [b for b in badcol if beg_chr <= b <= end_chr]
         for dist in xrange(1, chr_size):
-            ndiags[dist] += chr_size - dist
+            ndiags[crm][dist] += chr_size - dist
             # from this we remove bad columns
             # bad columns will only affect if they are at least as distant from
             # a border as the distance between the longest diagonal and the
@@ -852,65 +861,78 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                     bad_diag.add(b)
                 if b >= minp:
                     bad_diag.add(b - dist)
-            ndiags[dist] -= len(bad_diag)
-        # chr_sizeerent behavior for longest diagonal:
-        ndiags[0] += chr_size - len(thesebads)
+            ndiags[crm][dist] -= len(bad_diag)
+        # different behavior for longest diagonal:
+        ndiags[crm][0] += chr_size - sum(beg_chr <= b < end_chr for b in thesebads)
 
     # normalize sum per diagonal by total number of cells in diagonal
     signal_to_noise = 0.05
     min_n = signal_to_noise ** -2. # equals 400 when default
-    tmpdec = 0  # store count by diagonal
-    previous = [] # store diagonals to be summed in case not reaching the minimum
-    for k in ndiags:
-        tmpdec += sumdec.get(k, 0.)
-        previous.append(k)
-        if tmpdec > min_n:
-            ndiag = sum(ndiags[k] for k in previous)
-            val = tmpdec  # backup of tmpdec kept for last ones outside the loop
+    for crm in sections:
+        if not crm in nrmdec:
+            nrmdec[crm] = {}
+            rawdec[crm] = {}
+        tmpdec = 0  # store count by diagonal
+        tmpsum = 0  # store count by diagonal
+        ndiag  = 0
+        val    = 0
+        previous = [] # store diagonals to be summed in case not reaching the minimum
+        for k in ndiags[crm]:
+            tmpdec += nrmdec[crm].get(k, 0.)
+            tmpsum += rawdec[crm].get(k, 0.)
+            previous.append(k)
+            if tmpsum > min_n:
+                ndiag = sum(ndiags[crm][k] for k in previous)
+                val = tmpdec  # backup of tmpdec kept for last ones outside the loop
+                try:
+                    ratio = val / ndiag
+                    for k in previous:
+                        nrmdec[crm][k] = ratio
+                except ZeroDivisionError:  # all columns at this distance are "bad"
+                    pass
+                previous = []
+                tmpdec = 0
+                tmpsum = 0
+        # last ones we average with previous result
+        if tmpsum < min_n:
+            ndiag += sum(ndiags[crm][k] for k in previous)
+            val += tmpdec
             try:
                 ratio = val / ndiag
                 for k in previous:
-                    sumdec[k] = ratio
+                    nrmdec[crm][k] = ratio
             except ZeroDivisionError:  # all columns at this distance are "bad"
                 pass
-            previous = []
-            tmpdec = 0
-        else:
-            previous.append(k)
-    # last ones we average with previous result
-    if tmpdec < min_n:
-        ndiag += sum(ndiags[k] for k in previous)
-        val += tmpdec
-        try:
-            ratio = val / ndiag
-            for k in previous:
-                sumdec[k] = ratio
-        except ZeroDivisionError:  # all columns at this distance are "bad"
-            pass
-
-    return biases, sumdec, badcol, raw_cisprc, norm_cisprc
+    return biases, nrmdec, badcol, raw_cisprc, norm_cisprc
 
 
 def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
-    sumdec = {}
+    rawdec = {}
+    nrmdec = {}
     for (i, j), v in dico.iteritems():
         if i < j:
             continue
         # different chromosome
-        if bins[i][0] != bins[j][0]:
+        c = bins[i][0]
+        if c != bins[j][0]:
             continue
         if i in badcol or j in badcol:
             continue
         k = i - j
         val = v / biases[i] / biases[j]
         try:
-            sumdec[k] += val
+            nrmdec[c][k] += val
+            rawdec[c][k] += v
         except KeyError:
-            sumdec[k]  = val
-            ## TODO by chrom another try except, key would be [c][k]
+            try:
+                nrmdec[c][k] = val
+                rawdec[c][k] = v
+            except KeyError:
+                nrmdec[c] = {k: val}
+                rawdec[c] = {k: v}
     system('rm -f %s' % (fname))
-    return sumdec
+    return nrmdec, rawdec
 
 
 def get_cis_perc(fname, biases, badcol, bins):
