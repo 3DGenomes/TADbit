@@ -450,7 +450,7 @@ def main():
         else:
             exp = crm.experiments[0]
     
-    if  not opts.tad_only and not opts.analyze_only and not opts.xnorm:
+    if  not opts.tad_only and not opts.analyze_only and not opts.norm:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
