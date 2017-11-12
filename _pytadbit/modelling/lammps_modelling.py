@@ -160,8 +160,11 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                  chromosomes=coords, close_bins=close_bins,first=first)
     
     
+    run_time = 1000
+    ini_seed = randint(1,99999)
+    
     initial_conformation = tmp_folder+'initial_conformation.dat'
-    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation)
+    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=ini_seed)
     
     colvars = tmp_folder+'colvars.dat'
     steering_pairs = {       
@@ -171,9 +174,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         'timesteps_per_k'           : 10000,
         'timesteps_relaxation'      : 100000
     }
-    
-    run_time = 1000
-    ini_seed = randint(1,99999)
+
     models = lammps_simulate(initial_conformation, run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
 
     try:
