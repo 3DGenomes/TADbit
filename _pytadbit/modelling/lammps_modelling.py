@@ -171,7 +171,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         'timesteps_relaxation'      : 100000
     }
 
-    models = lammps_simulate(initial_conformation_folder=tmp_folder, run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
+    models = lammps_simulate(initial_conformation_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
 
     try:
         xpr = experiment
