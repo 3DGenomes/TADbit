@@ -710,7 +710,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+        bins.extend([(crm, i) for i in xrange(len_crm)])
     if len(bins) == 0:
         raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
     start_bin1 = 0
