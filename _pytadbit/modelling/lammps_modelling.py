@@ -161,10 +161,6 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     
     run_time = 1000
-    ini_seed = randint(1,99999)
-    
-    initial_conformation = tmp_folder+'initial_conformation.dat'
-    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=ini_seed)
     
     colvars = tmp_folder+'colvars.dat'
     steering_pairs = {       
@@ -175,7 +171,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         'timesteps_relaxation'      : 100000
     }
 
-    models = lammps_simulate(initial_conformation, run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
+    models = lammps_simulate(initial_conformation_folder=tmp_folder, run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
 
     try:
         xpr = experiment
@@ -326,7 +322,7 @@ def init_lammps_run(lmp, initial_conformation,
 
     
 # This splits the lammps calculations on different processors:
-def lammps_simulate(initial_conformation, run_time,
+def lammps_simulate(initial_conformation_folder, run_time,
                     initial_seed=None, n_models=500, n_keep=100,
                     resolution=10000, description=None,
                     neighbor=CONFIG.neighbor, tethering=False, 
@@ -343,7 +339,7 @@ def lammps_simulate(initial_conformation, run_time,
     """
     This function launches jobs to generate three-dimensional models in lammps
     
-    :param initial_conformation: lammps input data file with the particles initial conformation. 
+    :param initial_conformation_folder: folder where to store lammps input data file with the particles initial conformation. 
             http://lammps.sandia.gov/doc/2001/data_format.html
     :param run_time: # of timesteps.
     :param None steering_pairs: dictionary with all the info to perform
@@ -420,7 +416,7 @@ def lammps_simulate(initial_conformation, run_time,
     for k in kseeds:
         print "#RandomSeed: %s" % k
         jobs[k] = pool.apply_async(run_lammps,
-                                           args=(k, initial_conformation, run_time,
+                                           args=(k, initial_conformation_folder, run_time,
                                                  neighbor,
                                                  tethering, minimize,
                                                  compress_with_pbc, compress_without_pbc,
@@ -451,7 +447,7 @@ def lammps_simulate(initial_conformation, run_time,
     
 # This performs the dynamics: I should add here: The steered dynamics (Irene and Hi-C based) ; 
 # The loop extrusion dynamics ; the binders based dynamics (Marenduzzo and Nicodemi)...etc...
-def run_lammps(kseed, initial_conformation, run_time,
+def run_lammps(kseed, initial_conformation_folder, run_time,
                neighbor=CONFIG.neighbor,
                tethering=False, minimize=True, 
                compress_with_pbc=None, compress_without_pbc=None,
@@ -464,7 +460,7 @@ def run_lammps(kseed, initial_conformation, run_time,
     Generates one lammps model
     
     :param kseed: Random number to identify the model.
-    :param initial_conformation: lammps input data file with the particles initial conformation. 
+    :param initial_conformation_folder: folder where to store lammps input data file with the particles initial conformation. 
       http://lammps.sandia.gov/doc/2001/data_format.html
     :param run_time: # of timesteps.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
@@ -522,6 +518,8 @@ def run_lammps(kseed, initial_conformation, run_time,
     
     lmp = lammps(cmdargs=['-screen','none','-log',str(kseed)+'_log.lammps'])
         
+    initial_conformation = initial_conformation_folder+str(kseed)+'_'+'initial_conformation.dat'
+    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed)
     
     init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor)
