@@ -161,6 +161,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     
     run_time = 1000
+    ini_seed = randint(1,100000)
     
     colvars = tmp_folder+'colvars.dat'
     steering_pairs = {       
