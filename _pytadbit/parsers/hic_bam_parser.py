@@ -711,7 +711,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+        bins.extend([(crm, i) for i in xrange(len_crm)])
     if len(bins) == 0:
         raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
     start_bin1 = 0
@@ -1260,7 +1260,8 @@ def write_matrix(inbam, resolution, biases, outdir,
             fnames['DEC'] = out_dec.name
 
     # this is the last thing we do in case something goes wrong
-    os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
+    if clean:
+        os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
 
     if  verbose:
         printime('\nDone.')
