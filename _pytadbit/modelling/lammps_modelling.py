@@ -172,7 +172,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         'timesteps_relaxation'      : 100000
     }
 
-    models = lammps_simulate(initial_conformation_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
+    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
 
     try:
         xpr = experiment
@@ -323,7 +323,7 @@ def init_lammps_run(lmp, initial_conformation,
 
     
 # This splits the lammps calculations on different processors:
-def lammps_simulate(initial_conformation_folder, run_time,
+def lammps_simulate(lammps_folder, run_time,
                     initial_seed=None, n_models=500, n_keep=100,
                     resolution=10000, description=None,
                     neighbor=CONFIG.neighbor, tethering=False, 
@@ -416,8 +416,11 @@ def lammps_simulate(initial_conformation_folder, run_time,
     jobs = {}
     for k in kseeds:
         print "#RandomSeed: %s" % k
+        k_folder = lammps_folder + '/' + str(k) + '/'
+        if not os.path.exists(k_folder):
+            os.makedirs(k_folder)
         jobs[k] = pool.apply_async(run_lammps,
-                                           args=(k, initial_conformation_folder, run_time,
+                                           args=(k, k_folder, run_time,
                                                  neighbor,
                                                  tethering, minimize,
                                                  compress_with_pbc, compress_without_pbc,
