@@ -848,13 +848,15 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             maxp = end_chr - dist
             minp = beg_chr + dist
             for b in thesebads:
-                if b <= maxp:
+                if b < maxp:  # not inclusive!!
                     bad_diag.add(b)
                 if b >= minp:
                     bad_diag.add(b - dist)
+            print crm, dist, chr_size, chr_size - dist, len(bad_diag)
             ndiags[dist] -= len(bad_diag)
         # chr_sizeerent behavior for longest diagonal:
         ndiags[0] += chr_size - len(thesebads)
+    print ndiags
 
     # normalize sum per diagonal by total number of cells in diagonal
     signal_to_noise = 0.05
