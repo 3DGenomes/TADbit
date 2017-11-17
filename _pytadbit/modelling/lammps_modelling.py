@@ -163,7 +163,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     run_time = 1000
     ini_seed = randint(1,100000)
     
-    colvars = tmp_folder+'colvars.dat'
+    colvars = 'colvars.dat'
     steering_pairs = {       
         'colvar_input': HiCRestraints,
         'colvar_output': colvars,
@@ -416,7 +416,7 @@ def lammps_simulate(lammps_folder, run_time,
     jobs = {}
     for k in kseeds:
         print "#RandomSeed: %s" % k
-        k_folder = lammps_folder + '/' + str(k) + '/'
+        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
         jobs[k] = pool.apply_async(run_lammps,
@@ -451,7 +451,7 @@ def lammps_simulate(lammps_folder, run_time,
     
 # This performs the dynamics: I should add here: The steered dynamics (Irene and Hi-C based) ; 
 # The loop extrusion dynamics ; the binders based dynamics (Marenduzzo and Nicodemi)...etc...
-def run_lammps(kseed, initial_conformation_folder, run_time,
+def run_lammps(kseed, lammps_folder, run_time,
                neighbor=CONFIG.neighbor,
                tethering=False, minimize=True, 
                compress_with_pbc=None, compress_without_pbc=None,
@@ -520,15 +520,15 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
 
     """
     
-    lmp = lammps(cmdargs=['-screen','none','-log',str(kseed)+'_log.lammps'])
+    lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps'])
         
-    initial_conformation = initial_conformation_folder+str(kseed)+'_'+'initial_conformation.dat'
+    initial_conformation = lammps_folder+'initial_conformation.dat'
     generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed)
     
     init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor)
     
-    lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
+    lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
     #######################################################
@@ -550,20 +550,20 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
 
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   minimization_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %sminimization_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         lmp.command("minimize 1.0e-4 1.0e-6 100000 100000")
         
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
 
     if compress_with_pbc:
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   compress_with_pbc_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %scompress_with_pbc_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         # Re-setting the initial timestep to 0
@@ -599,13 +599,13 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
 
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")        
 
     if compress_without_pbc:
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   compress_without_pbc_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %scompress_without_pbc_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
         # Re-setting the initial timestep to 0
@@ -648,7 +648,7 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
         # Start Steered Langevin dynamics
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   steered_MD_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
         if 'number_of_kincrease' in steering_pairs:
@@ -656,15 +656,16 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
         else:
             nbr_kincr = 1
         
-        steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
+        #steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
+        steering_pairs['colvar_output'] = lammps_folder+os.path.basename(steering_pairs['colvar_output'])
         for kincrease in xrange(nbr_kincr):
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:
             generate_colvars_list(steering_pairs, kincrease+1)
 
             # Adding the colvar option
-            print "fix 4 all colvars %s" % steering_pairs['colvar_output']
-            lmp.command("fix 4 all colvars %s" % steering_pairs['colvar_output'])
+            print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
+            lmp.command("fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder))
 
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
 
@@ -675,7 +676,7 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
         # Change to_dump with some way to load the conformations you want to store in TADbit
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   steered_MD_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
             lmp.command("reset_timestep 0")
             
@@ -749,7 +750,7 @@ def run_lammps(kseed, initial_conformation_folder, run_time,
         # Start Loop extrusion dynamics
         if to_dump:
             lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   loop_extrusion_MD_*.XYZ  id  xu yu zu" % to_dump)
+            lmp.command("dump    1       all    custom    %i   %sloop_extrusion_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
         # List of target loops of the form [(loop1_start,loop1_stop),...,(loopN_start,loopN_stop)]
