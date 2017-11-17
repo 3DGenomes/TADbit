@@ -149,7 +149,7 @@ def get_options():
     parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true',
                         help='display no running information')
     parser.add_argument('-F', '--filter', dest='filter', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                         choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
