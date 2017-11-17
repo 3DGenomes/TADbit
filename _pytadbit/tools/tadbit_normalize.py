@@ -857,7 +857,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             maxp = end_chr - dist
             minp = beg_chr + dist
             for b in thesebads:
-                if b <= maxp:
+                if b < maxp:  # not inclusive!!
                     bad_diag.add(b)
                 if b >= minp:
                     bad_diag.add(b - dist)
