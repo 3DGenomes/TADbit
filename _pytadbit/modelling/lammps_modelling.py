@@ -24,6 +24,7 @@ from shutil import copyfile
 from lammps import lammps
 
 import os
+import shutil
 
 def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, 
@@ -437,6 +438,9 @@ def lammps_simulate(lammps_folder, run_time,
     
     for k in kseeds:
         results.append((k, jobs[k].get()))
+        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
+        if os.path.exists(k_folder):
+            shutil.rmtree(k_folder)
          
     nloci = 0
     models = {}
