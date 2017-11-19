@@ -829,6 +829,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     # Managing the final model
     xc = np.array(lmp.gather_atoms("x",1,3))
     lmp.close()
+    del lmp
     
     result = LAMMPSmodel({'x'          : [],
                           'y'          : [],
