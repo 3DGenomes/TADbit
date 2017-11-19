@@ -438,9 +438,6 @@ def lammps_simulate(lammps_folder, run_time,
     
     for k in kseeds:
         results.append((k, jobs[k].get()))
-        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
-        if os.path.exists(k_folder):
-            shutil.rmtree(k_folder)
          
     nloci = 0
     models = {}
@@ -448,7 +445,12 @@ def lammps_simulate(lammps_folder, run_time,
         sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
         models[i] = m
         nloci = len(m['x'])
-        
+    
+    for k in kseeds:
+        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
+        if os.path.exists(k_folder):
+            shutil.rmtree(k_folder)
+                
     return models
 
     
