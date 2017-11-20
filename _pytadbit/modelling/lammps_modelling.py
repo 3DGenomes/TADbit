@@ -13,6 +13,9 @@ from os.path import exists
 from random import randint, seed, random, sample, shuffle
 from cPickle import load, dump
 import multiprocessing as mu
+from pebble import ProcessPool
+from concurrent.futures import TimeoutError
+
 from math import atan2
 import numpy as np
 import sys
@@ -416,9 +419,7 @@ def lammps_simulate(lammps_folder, run_time,
     for k in xrange(n_models):
         kseeds.append(randint(1,100000000))
     
-    from pebble import process, TimeoutError
-    
-    pool = process.Pool(n_cpus)
+    pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
     
     jobs = {}
     for k in kseeds:
@@ -456,8 +457,8 @@ def lammps_simulate(lammps_folder, run_time,
 #                                                  loop_extrusion_dynamics,
 #                                                  to_dump, pbc,))
 
-    #pool.close()
-    #pool.join()
+    pool.close()
+    pool.join()
     
     results = []
     
@@ -481,7 +482,9 @@ def lammps_simulate(lammps_folder, run_time,
         k_folder = lammps_folder + '/lammps_' + str(k) + '/'
         if os.path.exists(k_folder):
             shutil.rmtree(k_folder)
-                
+
+    pool.stop()
+    
     return models
 
     
@@ -860,7 +863,6 @@ def run_lammps(kseed, lammps_folder, run_time,
     # Managing the final model
     xc = np.array(lmp.gather_atoms("x",1,3))
     lmp.close()
-    del lmp
     
     result = LAMMPSmodel({'x'          : [],
                           'y'          : [],
