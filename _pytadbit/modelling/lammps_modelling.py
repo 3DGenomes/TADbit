@@ -172,8 +172,10 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         'timesteps_per_k'           : 10000,
         'timesteps_relaxation'      : 100000
     }
-
-    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus)
+    
+    if not container:
+        container = ['cube',float(nloci)]
+    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, confining_environment=container)
 
     try:
         xpr = experiment
@@ -327,7 +329,7 @@ def init_lammps_run(lmp, initial_conformation,
 def lammps_simulate(lammps_folder, run_time,
                     initial_seed=None, n_models=500, n_keep=100,
                     resolution=10000, description=None,
-                    neighbor=CONFIG.neighbor, tethering=False, 
+                    neighbor=CONFIG.neighbor, tethering=True, 
                     minimize=True, compress_with_pbc=False,
                     compress_without_pbc=False,
                     keep_restart_step=1000000, 
@@ -408,19 +410,32 @@ def lammps_simulate(lammps_folder, run_time,
     if initial_seed:
         seed(initial_seed)
 
-    pool = mu.Pool(n_cpus)
+    #pool = mu.Pool(n_cpus)
     
     kseeds = []
     for k in xrange(n_models):
         kseeds.append(randint(1,100000000))
-        
+    
+    from pebble import process, TimeoutError
+    
+    pool = process.Pool(n_cpus)
+    
     jobs = {}
     for k in kseeds:
         print "#RandomSeed: %s" % k
         k_folder = lammps_folder + '/lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
-        jobs[k] = pool.apply_async(run_lammps,
+#         jobs[k] = run_lammps(k, k_folder, run_time,
+#                                               neighbor,
+#                                               tethering, minimize,
+#                                               compress_with_pbc, compress_without_pbc,
+#                                               confining_environment, 
+#                                               steering_pairs,
+#                                               time_dependent_steering_pairs,
+#                                               loop_extrusion_dynamics,
+#                                               to_dump, pbc,)
+            jobs[k] = pool.schedule(run_lammps,
                                            args=(k, k_folder, run_time,
                                                  neighbor,
                                                  tethering, minimize,
@@ -429,16 +444,32 @@ def lammps_simulate(lammps_folder, run_time,
                                                  steering_pairs,
                                                  time_dependent_steering_pairs,
                                                  loop_extrusion_dynamics,
-                                                 to_dump, pbc,))
+                                                 to_dump, pbc,), timeout=1800)
+#         jobs[k] = pool.apply_async(run_lammps,
+#                                            args=(k, k_folder, run_time,
+#                                                  neighbor,
+#                                                  tethering, minimize,
+#                                                  compress_with_pbc, compress_without_pbc,
+#                                                  confining_environment, 
+#                                                  steering_pairs,
+#                                                  time_dependent_steering_pairs,
+#                                                  loop_extrusion_dynamics,
+#                                                  to_dump, pbc,))
 
-    pool.close()
-    pool.join()
+    #pool.close()
+    #pool.join()
     
     results = []
     
     for k in kseeds:
-        results.append((k, jobs[k].get()))
-         
+        #results.append((k, jobs[k].get()))
+        try:
+            results.append((k, jobs[k].get()))
+        except TimeoutError:
+            print "Model: %s took more than 30 minutes to complete ... canceling" % str(k)
+            jobs[k].cancel()
+        
+  
     nloci = 0
     models = {}
     for i, (_, m) in enumerate(
@@ -461,7 +492,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                neighbor=CONFIG.neighbor,
                tethering=False, minimize=True, 
                compress_with_pbc=None, compress_without_pbc=None,
-               confining_environment=False,
+               confining_environment=None,
                steering_pairs=None,
                time_dependent_steering_pairs=True,
                loop_extrusion_dynamics=None,
@@ -529,7 +560,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps'])
         
     initial_conformation = lammps_folder+'initial_conformation.dat'
-    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed)
+    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed, confining_environment=confining_environment)
     
     init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor)
