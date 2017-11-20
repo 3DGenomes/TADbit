@@ -465,7 +465,7 @@ def lammps_simulate(lammps_folder, run_time,
     for k in kseeds:
         #results.append((k, jobs[k].get()))
         try:
-            results.append((k, jobs[k].get()))
+            results.append((k, jobs[k].result()))
         except TimeoutError:
             print "Model: %s took more than 30 minutes to complete ... canceling" % str(k)
             jobs[k].cancel()
@@ -482,8 +482,6 @@ def lammps_simulate(lammps_folder, run_time,
         k_folder = lammps_folder + '/lammps_' + str(k) + '/'
         if os.path.exists(k_folder):
             shutil.rmtree(k_folder)
-
-    pool.stop()
     
     return models
 
