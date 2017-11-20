@@ -174,7 +174,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     }
     
     if not container:
-        container = ['cube',float(nloci)]
+        container = ['sphere',float(nloci)]
     models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, confining_environment=container)
 
     try:
