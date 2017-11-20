@@ -33,7 +33,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, 
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None,tmp_folder=None):
+                       first=None, container=None,tmp_folder=None,timeout_job=300):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -178,7 +178,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     if not container:
         container = ['sphere',float(nloci)]
-    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, confining_environment=container)
+    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, confining_environment=container, timeout_job=timeout_job)
 
     try:
         xpr = experiment
@@ -341,7 +341,7 @@ def lammps_simulate(lammps_folder, run_time,
                     steering_pairs=None,
                     time_dependent_steering_pairs=None,
                     loop_extrusion_dynamics=None,                    
-                    to_dump=100000, pbc=False):
+                    to_dump=100000, pbc=False, timeout_job=300):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
@@ -445,7 +445,7 @@ def lammps_simulate(lammps_folder, run_time,
                                                  steering_pairs,
                                                  time_dependent_steering_pairs,
                                                  loop_extrusion_dynamics,
-                                                 to_dump, pbc,), timeout=1800)
+                                                 to_dump, pbc,), timeout=timeout_job)
 #         jobs[k] = pool.apply_async(run_lammps,
 #                                            args=(k, k_folder, run_time,
 #                                                  neighbor,

@@ -87,7 +87,8 @@ class IMPoptimizer(object):
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
-                        use_excluded_volume=True):
+                        use_excluded_volume=True,
+                        timeout_job=300):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -292,7 +293,7 @@ class IMPoptimizer(object):
                                       n_cpus=n_cpus,
                                       verbose=verbose, first=0,coords = self.chromosomes,
                                       close_bins=self.close_bins, config=config_tmp, container=self.container,
-                                      zeros=self.zeros,tmp_folder=self.tmp_folder)
+                                      zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 
