@@ -62,7 +62,7 @@ def run(opts):
             raise Exception('ERROR: missing path to FASTA for oneD normalization')
         if not opts.renz:
             raise Exception('ERROR: missing restriction enzyme name for oneD normalization')
-        if not opts.fasta:
+        if not opts.mappability:
             raise Exception('ERROR: missing path to mappability for oneD normalization')
         bamfile = AlignmentFile(mreads, 'rb')
         refs = bamfile.references
@@ -112,6 +112,8 @@ def run(opts):
                         line = fh.next()
                 except EOFError:
                     continue
+                except StopIteration:
+                    pass
                 mappability.append(tmp / opts.reso)
 
         printime('  - Computing GC content per bin (removing Ns)')
@@ -855,7 +857,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             maxp = end_chr - dist
             minp = beg_chr + dist
             for b in thesebads:
-                if b <= maxp:
+                if b < maxp:  # not inclusive!!
                     bad_diag.add(b)
                 if b >= minp:
                     bad_diag.add(b - dist)

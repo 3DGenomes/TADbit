@@ -124,7 +124,7 @@ def run(opts):
                              region1=region1, start1=start1, end1=end1,
                              region2=region2, start2=start2, end2=end2,
                              tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
-                             verbose=not opts.quiet, extra=param_hash)
+                             verbose=not opts.quiet, extra=param_hash, clean=False)
 
     rmdir(tmpdir)
     finish_time = time.localtime()
