@@ -423,7 +423,7 @@ def lammps_simulate(lammps_folder, run_time,
     
     jobs = {}
     for k in kseeds:
-        print "#RandomSeed: %s" % k
+        #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + '/lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
@@ -467,7 +467,7 @@ def lammps_simulate(lammps_folder, run_time,
         try:
             results.append((k, jobs[k].result()))
         except TimeoutError:
-            print "Model: %s took more than 30 minutes to complete ... canceling" % str(k)
+            print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
             jobs[k].cancel()
         
   
@@ -702,7 +702,7 @@ def run_lammps(kseed, lammps_folder, run_time,
             generate_colvars_list(steering_pairs, kincrease+1)
 
             # Adding the colvar option
-            print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
+            #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
             lmp.command("fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder))
 
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
@@ -985,7 +985,7 @@ harmonicWalls {
         totcolvars = linecount(target_pairs)
         ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
         
-        print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
         rand_positions = sample(list(range(totcolvars)), ncolvars)
         rand_positions = sorted(rand_positions)
     
@@ -1014,7 +1014,7 @@ harmonicWalls {
         totcolvars = len(rand_lines)
         ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
         
-        print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
         rand_positions = sample(list(range(totcolvars)), ncolvars)
         rand_positions = sorted(rand_positions)
         
@@ -1329,7 +1329,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
                                                    pbc=pbc)
 
         # Writing the final_random_walks conformation
-        print "Succesfully generated conformation number %d\n" % (cnt+1)
+        #print "Succesfully generated conformation number %d\n" % (cnt+1)
         write_initial_conformation_file(final_random_walks,
                                         chromosome_particle_numbers,
                                         confining_environment,
@@ -1826,7 +1826,7 @@ def generate_random_walks(chromosome_particle_numbers,
     random_walks = []
     
     for number_of_particles in chromosome_particle_numbers:
-        print "Trying to position random walk"
+        #print "Trying to position random walk"
         random_walk      = {}
         random_walk['x'] = []
         random_walk['y'] = []
@@ -1910,10 +1910,10 @@ def generate_random_walks(chromosome_particle_numbers,
             random_walk['y'].append(new_particle[1])
             random_walk['z'].append(new_particle[2])
                     
-        print "Successfully positioned random walk of %d particles" % number_of_particles
+        #print "Successfully positioned random walk of %d particles" % number_of_particles
         random_walks.append(random_walk)
 
-    print "Successfully generated random walk conformation!"
+    #print "Successfully generated random walk conformation!"
     return random_walks
 
 ##########
