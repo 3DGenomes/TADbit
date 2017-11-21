@@ -469,6 +469,10 @@ def lammps_simulate(lammps_folder, run_time,
         except TimeoutError:
             print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
             jobs[k].cancel()
+        except Exception as error:
+            print("Function raised %s" % error)
+            print(error.traceback)  # traceback of the function
+            jobs[k].cancel()
         
   
     nloci = 0
