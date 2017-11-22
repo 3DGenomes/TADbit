@@ -341,7 +341,7 @@ def lammps_simulate(lammps_folder, run_time,
                     steering_pairs=None,
                     time_dependent_steering_pairs=None,
                     loop_extrusion_dynamics=None,                    
-                    to_dump=100000, pbc=False, timeout_job=300):
+                    to_dump=100000, pbc=False, timeout_job=3600):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
@@ -471,7 +471,6 @@ def lammps_simulate(lammps_folder, run_time,
             jobs[k].cancel()
         except Exception as error:
             print("Function raised %s" % error)
-            print(error.traceback)  # traceback of the function
             jobs[k].cancel()
         
   
