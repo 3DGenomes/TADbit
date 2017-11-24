@@ -180,6 +180,7 @@ def main():
     #get sublists in directory
     sublists = glob.glob(outdir + '*.tsv')
     for l in sublists:
+        label = l.split('/')[-1].split('.')[0]
         print  datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'Getting finger: ', l
         #split file  peaks per chromosome
         print datetime.now().strftime('%Y-%m-%d %H:%M:%S'),' - Splitting peak pairs per chromosome...'
@@ -234,13 +235,15 @@ def main():
             os.system("rm %s%s_sorted"%(tmpdir,chromosome))
             os.system("rm %s%s"%(tmpdir,chromosome))
 
-        out_raw = open(outdir + 'raw_%s.pickle'  % (name), 'wb')
-        out_nrm = open(outdir + 'nrm_%s.pickle'  % (name), 'wb')
-        out_pas = open(outdir + 'pass_%s.pickle' % (name), 'wb')
-        dump(avg_raw , out_raw)
-        dump(avg_nrm , out_nrm)
-        dump(avg_pass, out_pas)
-
+        out_raw=open(outdir+'raw_%s.pickle'%(label),'wb')
+        out_nrm = open(outdir+'nrm_%s.pickle'%(label),'wb')
+        out_pas = open(outdir+'pass_%s.pickle'%(label),'wb')
+        dump(avg_raw,out_raw)
+        dump(avg_nrm,out_nrm)
+        dump(avg_pass,out_pas)
+        out_raw.close()
+        out_nrm.close()
+        out_pas.close()
 
 def get_options():
     parser = ArgumentParser(usage="-i Peaks -r INT [options]")
@@ -266,7 +269,6 @@ def get_options():
     opts = parser.parse_args()
 
     return opts
-
 
 if __name__=='__main__':
     exit(main())
