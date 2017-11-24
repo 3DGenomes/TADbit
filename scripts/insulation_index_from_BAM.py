@@ -5,7 +5,7 @@ from argparse                    import ArgumentParser
 from cPickle                     import load
 
 from pytadbit.parsers.hic_parser import load_hic_data_from_bam
-from pytadbit.mapping.filter      import MASKED
+from pytadbit.mapping.filter     import MASKED
 
 
 def main():
@@ -27,13 +27,13 @@ def main():
             print ' - computing insulation in band %d-%d' % (dist, end)
         insidx[(dist, end)] = {}
         for crm in hic_data.chromosomes:
-            for pos in range(hic_data.section_pos[crm][0] + end - 1,
-                             hic_data.section_pos[crm][1] - end + 1):
+            for pos in range(hic_data.section_pos[crm][0] + end,
+                             hic_data.section_pos[crm][1] - end):
                 insidx[(dist, end)][pos] = sum(
-                    hic_data[i, j] / bias[i] / bias[j] / decay[abs(j-i)]
-                    for i in range(pos - end + 1, pos - dist + 1)
+                    hic_data[i, j] / bias[i] / bias[j] / decay[crm][abs(j-i)]
+                    for i in range(pos - end, pos - dist + 1)
                     if not i in bads
-                    for j in range(pos + dist, pos + end)
+                    for j in range(pos + dist, pos + end + 1)
                     if not j in bads)
     out = open(opts.outfile, 'w')
     out.write('# CRM\tbin\t' + '\t'.join(['Ins.Index (dist: %d-%d )' % (d1, d2)
@@ -55,9 +55,12 @@ def get_options():
     parser.add_argument('-i', '--infile', dest='inbam', metavar='',
                         required=True, default=False, help='input HiC-BAM file.')
     parser.add_argument('-l', '--list_dists', dest='dists', metavar='INT',
-                        default=['2,3', '4,6', '8,12', '14,20'], nargs='+', type=str,
-                        help='''[%(default)s] list of pairs of distances at
-                        which to compute the insulation index''')
+                        default=['2,2', '4,5', '8,11', '14,19'], nargs='+', type=str,
+                        help='''[%(default)s] list of pairs of distances between
+                        which to compute the insulation index. E.g. 4,5 means
+                        that for a given bin B, all interactions between
+                        B-4 to B-5 and B+4 to B+6 will be summed and used to
+                        compute the insulation index.''')
     parser.add_argument('-o', '--outfile', dest='outfile', metavar='',
                         required=True, default=True, help='path to output file.')
     parser.add_argument('--tmp', dest='tmpdir', metavar='',
