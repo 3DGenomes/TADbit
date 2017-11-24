@@ -144,7 +144,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                               if k in [crm1, crm2]]),
                                  hic_data.section_pos,
                                  '%s/%s.%s' % (savefig,
-                                               '_'.join(set((crm1, crm2))),
+                                               '_'.join(set((crm1 -, crm2))),
                                                'pdf' if pdf else 'png'),
                                  show, one=True, clim=clim, perc_clim=perc_clim,
                                  cmap=cmap, decay_resolution=decay_resolution,
@@ -443,9 +443,16 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
                         dist_intr[diff].append(get_data(i, diff))
-    elif isinstance(data, dict):
-        dist_intr = dict([(d, [data[d]]) for d in data
-                          if max_diff > d >= min_diff])
+    elif isinstance(data, dict):  # if we pass decay/expected dictionary, computes weighted mean
+        dist_intr = {}
+        total = sum(len(data[c]) for c in data)
+        for i in range(min_diff, max_diff):
+            val = 0
+            for c in data:
+                if not i in data[c]:
+                    continue
+                val += data[c][i] * len(data[c])
+            dist_intr[i] = [val / total]
     else:
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if genome_seq:
