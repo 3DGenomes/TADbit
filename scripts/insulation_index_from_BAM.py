@@ -1,4 +1,7 @@
 """
+Computes the insulation index using different windows.
+
+Insulation index assigned to bins at a given resolution, not between bins.
 """
 
 from argparse                    import ArgumentParser
@@ -36,14 +39,15 @@ def main():
                     for j in range(pos + dist, pos + end + 1)
                     if not j in bads)
     out = open(opts.outfile, 'w')
-    out.write('# CRM\tbin\t' + '\t'.join(['Ins.Index (dist: %d-%d )' % (d1, d2)
-                                          for d1, d2 in opts.dists]) +
+    out.write('# CRM\tCOORD\t' + '\t'.join(['%d-%d' % (d1, d2)
+                                            for d1, d2 in opts.dists]) +
               '\n')
 
     for crm in hic_data.section_pos:
         for pos in range(*hic_data.section_pos[crm]):
-            out.write('{}\t{}\t{}\n'.format(
-                crm, pos - hic_data.section_pos[crm][0],
+            beg = (pos - hic_data.section_pos[crm][0]) * resolution
+            out.write('{}\t{}-{}\t{}\n'.format(
+                crm, beg + 1, beg + resolution,
                 '\t'.join([str(insidx[dist].get(pos, 'NaN'))
                            for dist in opts.dists])))
     out.close()
@@ -53,16 +57,16 @@ def get_options():
     parser = ArgumentParser(usage="%(prog)s -i PATH -r INT [options]")
 
     parser.add_argument('-i', '--infile', dest='inbam', metavar='',
-                        required=True, default=False, help='input HiC-BAM file.')
-    parser.add_argument('-l', '--list_dists', dest='dists', metavar='INT',
-                        default=['2,2', '4,5', '8,11', '14,19'], nargs='+', type=str,
+                        required=True, default=False, help='input HiC-BAM file')
+    parser.add_argument('-l', '--list_dists', dest='dists', type=str,
+                        default=['2,2', '4,5', '8,11', '14,19'], nargs='+',
                         help='''[%(default)s] list of pairs of distances between
                         which to compute the insulation index. E.g. 4,5 means
-                        that for a given bin B, all interactions between
-                        B-4 to B-5 and B+4 to B+6 will be summed and used to
-                        compute the insulation index.''')
+                        that for a given bin B(i), all interactions between
+                        B(i-4) to B(i-5) and B(i+4) to B(i+6) will be summed and
+                        used to compute the insulation index''')
     parser.add_argument('-o', '--outfile', dest='outfile', metavar='',
-                        required=True, default=True, help='path to output file.')
+                        required=True, default=True, help='path to output file')
     parser.add_argument('--tmp', dest='tmpdir', metavar='',
                         default='.', help='''path where to store temporary
                         files.''')
@@ -72,11 +76,11 @@ def get_options():
     parser.add_argument('-C', '--cpus', dest='cpus', metavar='', type=int,
                         default=8, help='''[%(default)s] number of cpus to be
                         used for parsing the HiC-BAM file''')
-    parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true',
-                        help='display no running information')
+    parser.add_argument('-q', '--quiet', dest='quiet', action='store_true',
+                        default=False, help='display no running information')
     parser.add_argument('-F', '--filter', dest='filter', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        type=int, metavar='INT',choices = range(1, 11),
+                        default=[1, 2, 3, 4, 6, 7, 9, 10],
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
