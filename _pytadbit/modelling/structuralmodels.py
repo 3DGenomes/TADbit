@@ -2404,7 +2404,7 @@ class StructuralModels(object):
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
                          str(my_descr['start'])))
-                my_descr['chrom_start'] = my_descr['start'] + 1
+                my_descr['chrom_start'] = my_descr['start']
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
