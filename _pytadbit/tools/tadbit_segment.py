@@ -49,7 +49,11 @@ def run(opts):
     mkdir(path.join(opts.workdir, '06_segmentation'))
 
     print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
+    region = None
+    if opts.crms and len(opts.crms) == 1:
+        region = opts.crms[0]
     hic_data = load_hic_data_from_bam(mreads, reso, ncpus=opts.cpus,
+                                      region=region,
                                       biases=None if opts.all_bins else biases,
                                       filter_exclude=opts.filter)
 
@@ -63,7 +67,7 @@ def run(opts):
         mkdir(cmprt_dir)
         if opts.fasta:
             print '  - Computing GC content to label compartments'
-            rich_in_A = get_gc_content(parse_fasta(opts.fasta), reso,
+            rich_in_A = get_gc_content(parse_fasta(opts.fasta, chr_filter=opts.crms), reso,
                                        chromosomes=opts.crms,
                                        by_chrom=True, n_cpus=opts.cpus)
             opts.rich_in_A = opts.fasta
