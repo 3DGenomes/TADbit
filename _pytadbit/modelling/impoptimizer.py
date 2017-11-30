@@ -64,7 +64,7 @@ class IMPoptimizer(object):
             chrs = []
             chrom_offset_start = 1
             chrom_offset_end = 0
-            for k, v in self.hic_data[0].chromosomes.iteritems():
+            for k, v in experiment.hic_data[0].chromosomes.iteritems():
                 tot += v
                 if start > tot:
                     chrom_offset_start = start - tot
@@ -78,7 +78,7 @@ class IMPoptimizer(object):
             for k in chrs:
                 self.coords.append({'crm'  : k,
                       'start': 1,
-                      'end'  : self.hic_data[0].chromosomes[k]})
+                      'end'  : experiment.hic_data[0].chromosomes[k]})
             self.coords[0]['start'] = chrom_offset_start
             self.coords[-1]['end'] -= chrom_offset_end
 
