@@ -810,7 +810,7 @@ class Experiment(object):
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
                      outfile=None, config=CONFIG['dmel_01'],
-                     container=None,tool='imp',tmp_folder=None):
+                     container=None,tool='imp',tmp_folder=None,timeout_job=10800):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -933,7 +933,7 @@ class Experiment(object):
                                       outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                       verbose=verbose, first=0,
                                       close_bins=close_bins, config=config, container=container,
-                                      experiment=self, coords=coords, zeros=zeros,tmp_folder=tmp_folder)
+                                      experiment=self, coords=coords, zeros=zeros,tmp_folder=tmp_folder,timeout_job=timeout_job)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,

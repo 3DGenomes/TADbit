@@ -33,7 +33,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, 
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None,tmp_folder=None,timeout_job=300):
+                       first=None, container=None,tmp_folder=None,timeout_job=10800):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
