@@ -695,6 +695,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             sizes divided by 100 000)
         - 'MAD' Double Median Adjusted Deviation
     :param 10000 too_large: upper bound limit for fragment size to consider
+    :param None nreads: number of reads to process (default: all reads)
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -777,7 +778,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     return [to_return[k] for k in stats]
 
 
-def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
+def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
                               ylim=None, yscale=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
@@ -797,10 +798,12 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param None savedata: path where to store the output read counts per bin.
     :param None chr_names: can pass a list of chromosome names in case only some
        them the need to be plotted (this option may last even more than default)
+    :param None nreads: number of reads to process (default: all reads)
 
     """
+    if first_read:
+        warn('WARNING: first_read parameter should no loonger be used.')
     distr = {}
-    idx1, idx2 = (1, 3) if first_read else (7, 9)
     genome_seq = OrderedDict()
     if chr_names:
         chr_names = set(chr_names)
@@ -811,7 +814,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         cond2 = lambda x: x >= nreads
     else:
         cond2 = lambda x: False
-    cond = lambda x, y: cond1(x) and cond2(y)
+    cond = lambda x, y: cond1(x) or cond2(y)
     count = 0
     pos = 0
     fhandler = open(fnam)
@@ -825,21 +828,25 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         pos += len(line)
     fhandler.seek(pos)
     for line in fhandler:
-        crm, pos = line.strip().split('\t')[idx1:idx2]
+        line = line.strip().split('\t')
         count += 1
-        if cond(crm, count):
-            line = fhandler.next()
-            if cond2(count):
-                break
-            continue
-        pos = int(pos) / resolution
-        try:
-            distr[crm][pos] += 1
-        except KeyError:
+        for idx1, idx2 in ((1, 3), (7, 9)):
+            crm, pos = line[idx1:idx2]
+            if cond(crm, count):
+                if cond2(count):
+                    break
+                continue
+            pos = int(pos) / resolution
             try:
-                distr[crm][pos] = 1
+                distr[crm][pos] += 1
             except KeyError:
-                distr[crm] = {pos: 1}
+                try:
+                    distr[crm][pos] = 1
+                except KeyError:
+                    distr[crm] = {pos: 1}
+        else:
+            continue
+        break
     fhandler.close()
     if savefig or show:
         _ = plt.figure(figsize=(15, 1 + 3 * len(
