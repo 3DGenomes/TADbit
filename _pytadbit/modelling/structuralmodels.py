@@ -2397,7 +2397,7 @@ class StructuralModels(object):
                 my_descr['start'] = 0
             if not my_descr.get('end', 0):
                 my_descr['end'  ] = self.nloci
-            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
+            my_descr['chrom'] = my_descr['chromosome'] if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list) else ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
@@ -2412,8 +2412,8 @@ class StructuralModels(object):
                 my_descr['chrom_end'] = (my_descr['end'])
             # coordinates inside an array in case different models
             # from different places in the genome
-            my_descr['chrom_start'] = [my_descr['chrom_start']]
-            my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
+            my_descr['chrom_start'] = my_descr['chrom_start'] if isinstance(my_descr['chrom_start'], list) else [my_descr['chrom_start']]
+            my_descr['chrom_end'  ] = my_descr['chrom_end'  ] if isinstance(my_descr['chrom_end'], list) else [my_descr['chrom_end']]
 
             fil['descr']   = ',\n'.join([
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
