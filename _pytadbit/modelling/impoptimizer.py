@@ -59,6 +59,33 @@ class IMPoptimizer(object):
         self.chromosomes = None
         if experiment.hic_data and experiment.hic_data[0].chromosomes:
             self.chromosomes = experiment.hic_data[0].chromosomes
+            self.coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = 1
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            
+            for k in chrs:
+                self.coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : self.hic_data[0].chromosomes[k]})
+            self.coords[0]['start'] = chrom_offset_start
+            self.coords[-1]['end'] -= chrom_offset_end
+
+        else:
+            self.coords = {'crm'  : self.crm.name,
+                      'start': start,
+                      'end'  : end}
 
         self.tool = tool
         self.tmp_folder = tmp_folder
@@ -291,7 +318,7 @@ class IMPoptimizer(object):
                                       values=self.values, n_models=self.n_models,
                                       n_keep=self.n_keep,
                                       n_cpus=n_cpus,
-                                      verbose=verbose, first=0,coords = self.chromosomes,
+                                      verbose=verbose, first=0,coords = self.coords,
                                       close_bins=self.close_bins, config=config_tmp, container=self.container,
                                       zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job)
                 result = 0
