@@ -131,7 +131,7 @@ def run(opts):
                 hic_data.bias = biases['biases']
             tads = load_tad_height(result, size, beg, end, hic_data)
             table = ''
-            table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
+            table += '%s\t%s\t%s\t%s\t%s\n' % ('#', 'start', 'end', 'score', 'density')
             for tad in tads:
                 table += '%s\t%s\t%s\t%s%s\n' % (
                     tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),

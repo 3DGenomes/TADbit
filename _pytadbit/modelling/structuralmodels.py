@@ -2397,14 +2397,14 @@ class StructuralModels(object):
                 my_descr['start'] = 0
             if not my_descr.get('end', 0):
                 my_descr['end'  ] = self.nloci
-            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
+            my_descr['chrom'] = my_descr['chromosome'] if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list) else ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
                          str(my_descr['start'])))
-                my_descr['chrom_start'] = my_descr['start'] + 1
+                my_descr['chrom_start'] = my_descr['start']
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
@@ -2412,8 +2412,8 @@ class StructuralModels(object):
                 my_descr['chrom_end'] = (my_descr['end'])
             # coordinates inside an array in case different models
             # from different places in the genome
-            my_descr['chrom_start'] = [my_descr['chrom_start']]
-            my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
+            my_descr['chrom_start'] = my_descr['chrom_start'] if isinstance(my_descr['chrom_start'], list) else [my_descr['chrom_start']]
+            my_descr['chrom_end'  ] = my_descr['chrom_end'  ] if isinstance(my_descr['chrom_end'], list) else [my_descr['chrom_end']]
 
             fil['descr']   = ',\n'.join([
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
@@ -2473,7 +2473,7 @@ class StructuralModels(object):
         first = True
         for i, nrow in enumerate(self._original_data):
             for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
+                if not isnan(ncol) and int(ncol) != 0:
                     if not first:
                         out_f.write(',')
                     first = False

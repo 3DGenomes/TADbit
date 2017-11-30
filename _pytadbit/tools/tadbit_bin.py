@@ -124,7 +124,8 @@ def run(opts):
                              region1=region1, start1=start1, end1=end1,
                              region2=region2, start2=start2, end2=end2,
                              tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
-                             verbose=not opts.quiet, extra=param_hash, clean=False)
+                             nchunks=opts.nchunks, verbose=not opts.quiet,
+                             extra=param_hash, clean=False)
 
     rmdir(tmpdir)
     finish_time = time.localtime()
@@ -260,6 +261,11 @@ def populate_args(parser):
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
+
+    glopts.add_argument('--nchunks', dest='nchunks', action='store', default=None,
+                        type=int,
+                        help='''maximum number of chunks into which to
+                        cut the BAM''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
                         default=0, help='''[%(default)s] Maximum number of CPU

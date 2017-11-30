@@ -105,7 +105,7 @@ def main():
                  normalizations=opts.matrices,
                  region1=region1, start1=start1, end1=end1,
                  region2=region2, start2=start2, end2=end2,
-                 append_to_tar=opts.tarfile,
+                 nchunks=opts.nchunks, append_to_tar=opts.tarfile,
                  ncpus=ncpus, tmpdir=tmpdir, verbose=not opts.quiet)
 
 
@@ -149,7 +149,7 @@ def get_options():
     parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true',
                         help='display no running information')
     parser.add_argument('-F', '--filter', dest='filter', nargs='+',
-                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                         choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
@@ -157,6 +157,10 @@ def get_options():
                               "correspond to: %s" % (', '.join(
                                   ['%2d: %15s' % (k, MASKED[k]['name'])
                                    for k in MASKED]))))
+    parser.add_argument('--nchunks', dest='nchunks', action='store', default=None,
+                        type=int,
+                        help='''maximum number of chunks into which to
+                        cut the BAM''')
 
     opts = parser.parse_args()
     # convert filters to binary for samtools

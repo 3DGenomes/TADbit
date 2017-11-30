@@ -393,7 +393,7 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
 
 def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
-             region2=None, start2=None, end2=None,
+             region2=None, start2=None, end2=None, nchunks=None,
              tmpdir='.', verbose=True, normalize=False):
 
     bamfile = AlignmentFile(inbam, 'rb')
@@ -445,7 +445,10 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     regs  = []
     begs  = []
     ends  = []
-    njobs = min(total, 100) + 1
+    if nchunks is None:
+        njobs = min(total, 100) + 1
+    else:
+        njobs = min(nchunks, 1)
     nbins = total / njobs + 1
     for i in xrange(start_bin1, end_bin1, nbins):
         if i + nbins > end_bin1:  # make sure that we stop at the right place
@@ -594,7 +597,7 @@ def get_matrix(inbam, resolution, biases=None,
                filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                region1=None, start1=None, end1=None,
                region2=None, start2=None, end2=None, dico=None, clean=False,
-               tmpdir='.', normalization='raw', ncpus=8, verbose=False):
+               tmpdir='.', normalization='raw', ncpus=8, nchunks=None, verbose=False):
     """
     Get matrix from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -626,6 +629,7 @@ def get_matrix(inbam, resolution, biases=None,
     :param '.' tmpdir: where to write temporary files
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
+    :param None nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: dictionary with keys being tuples of the indexes of interacting
        bins: dico[(bin1, bin2)] = interactions
@@ -638,7 +642,7 @@ def get_matrix(inbam, resolution, biases=None,
         inbam, filter_exclude, resolution, ncpus=ncpus,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
-        tmpdir=tmpdir, verbose=verbose)
+        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose)
 
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
@@ -698,7 +702,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='', half_matrix=True,
-                 tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
+                 nchunks=None, tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -734,6 +738,7 @@ def write_matrix(inbam, resolution, biases, outdir,
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
+    :param None nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: path to output files
     """
@@ -756,7 +761,7 @@ def write_matrix(inbam, resolution, biases, outdir,
         inbam, filter_exclude, resolution, ncpus=ncpus,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
-        tmpdir=tmpdir, verbose=verbose)
+        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose)
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,

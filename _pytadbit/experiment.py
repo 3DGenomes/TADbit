@@ -1530,20 +1530,50 @@ class Experiment(object):
             warn("WARNING: no name specified in chromosome. TADkit will not be able to interpret the file")
 
         if focus:
-            start_j, end_j = focus
-            size = end_j-start_j+1
+            start, end = focus
+            size = end-start+1
         else:
-            start_j = 1
-            end_j = size = self.size
+            start = 0
+            end = size = self.size
 
         if size > 1200:
             warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
 
         new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
-
-        chrom_start = start_j * self.resolution
-        chrom_end = end_j * self.resolution
-        descr = {'chromosome'   : self.crm.name,
+        
+        chrom_start = []
+        chrom_end = []
+        chrom = []
+        if self.hic_data and self.hic_data[0].chromosomes:
+            tot = 0
+            chrs = []
+            chrom_offset_start = 0
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append((k,v))
+                    break
+                if start < tot and end >= tot:
+                    chrs.append((k,v))
+            
+            for k, v in chrs:
+                chrom.append(k)
+                chrom_start.append(0)
+                chrom_end.append(v * self.resolution)
+            chrom_start[0] = chrom_offset_start * self.resolution
+            chrom_end[-1] -= chrom_offset_end * self.resolution
+            
+        else:
+            chrom.append(self.crm.name)
+            chrom_start.append(start * self.resolution)
+            chrom_end.append(end * self.resolution)
+            
+        
+        descr = {'chromosome'   : chrom,
                  'species'      : self.crm.species,
                  'resolution'   : self.resolution,
                  'chrom_start'  : chrom_start,
@@ -1552,7 +1582,7 @@ class Experiment(object):
                  'end'          : size * self.resolution}
 
         # Fake structural models object to produce json
-        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr)
+        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr, config={'scale':0.01})
         sm.write_json(filename=filename)
 
     # def generate_densities(self):
