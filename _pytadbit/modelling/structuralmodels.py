@@ -2473,7 +2473,7 @@ class StructuralModels(object):
         first = True
         for i, nrow in enumerate(self._original_data):
             for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
+                if not isnan(ncol) and int(ncol) != 0:
                     if not first:
                         out_f.write(',')
                     first = False
