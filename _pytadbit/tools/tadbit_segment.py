@@ -122,7 +122,7 @@ def run(opts):
                             n_cpus=opts.cpus, verbose=opts.verbose,
                             max_tad_size=max_tad_size,
                             no_heuristic=False)
-            if opts.all_bins:
+            if not opts.all_bins:
                 if opts.nosql:
                     biases = load(open(biases))
                 else:
