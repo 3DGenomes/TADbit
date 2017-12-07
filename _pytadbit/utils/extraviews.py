@@ -901,14 +901,16 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     show=False
     if focus:
         siz = focus[1] - focus[0]
-        figsiz = 4 + (focus[1] - focus[0])/30
+        figsiz = 4 + (focus[1] - focus[0]) / 30
         beg, end = focus
         tads = dict([(t, xpr.tads[t]) for t in xpr.tads
                      if (xpr.tads[t]['start'] + 1 >= beg
                          and xpr.tads[t]['end'] <= end)])
+        if not tads:
+            raise Exception('ERROR: no TAD borders in range')
     else:
         siz = xpr.size
-        figsiz = 4 + (siz)/30
+        figsiz = 4 + (siz) / 30
         tads = xpr.tads
 
     if not axe:
@@ -919,7 +921,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
 
     zsin = np.sin(np.linspace(0, np.pi))
 
-    shapes = {'ellipse'   : lambda h : [0] + list(h * zsin) + [0],
+    shapes = {'ellipse'   : lambda h: [0] + list(h * zsin) + [0],
               'rectangle' : lambda h: [0] + [h] * 50 + [0],
               'triangle'  : lambda h: ([h/25 * i for i in xrange(26)] +
                                        [h/25 * i for i in xrange(25, -1, -1)])}
@@ -933,8 +935,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             [this.s[i].upper() if this.s[i-1] is 'v' else this.s[i]
              for i in [24, 36, 163, 8, 6, 16, 36]]):
             shape = lambda h: (
-                [h/25 * i for i in xrange(25)] + [h+0.2]*2 +
-                [h/25 * i for i in xrange(24, -1, -1)])
+                [h / 25 * i for i in xrange(25)] + [h + 0.2] * 2 +
+                [h / 25 * i for i in xrange(24, -1, -1)])
         else:
             raise NotImplementedError(
                 '%s not valid, use one of ellipse, rectangle or triangle')
