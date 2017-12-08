@@ -687,7 +687,8 @@ def get_matrix(inbam, resolution, biases=None,
                 chunks, tmpdir, rand_hash,
                 clean=clean, verbose=verbose):
             if i not in bads1 and j not in bads2:
-                dico[i, j] = v
+                off = dico.section_pos[c][0]
+                dico[i + off, j + off] = v
 
     if clean:
         os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))

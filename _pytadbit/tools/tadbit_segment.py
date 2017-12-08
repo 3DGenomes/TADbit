@@ -79,7 +79,6 @@ def run(opts):
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None)
 
-
         for crm in opts.crms or hic_data.chromosomes:
             if not crm in firsts:
                 continue
@@ -122,7 +121,9 @@ def run(opts):
                             n_cpus=opts.cpus, verbose=opts.verbose,
                             max_tad_size=max_tad_size,
                             no_heuristic=False)
-            if not opts.all_bins:
+
+            # use normalization to compute height on TADs called
+            if opts.all_bins:
                 if opts.nosql:
                     biases = load(open(biases))
                 else:
@@ -463,8 +464,7 @@ def load_tad_height(tad_def, size, beg, end, hic_data):
     if bias:
         norm = lambda i, j: bias[i] * bias[j]
     else:
-        norm = lambda i, j: 1 # Non-normalized height, keep in mind! 
-    print 'ZEROS', zeros
+        norm = lambda i, j: 1 # Non-normalized height, keep in mind!
     tads, _ = parse_tads(tad_def)
     diags = []
     for k in xrange(1, size):
