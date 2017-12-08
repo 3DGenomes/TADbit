@@ -114,9 +114,12 @@ def run(opts):
                 print "     Chromosome too short (%d bins), skipping..." % size
                 continue
             # transform bad column in chromosome referential
-            to_rm = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
+            if hic_data.bads:
+                to_rm = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
+            else:
+                to_rm = None
             # maximum size of a TAD
-            max_tad_size = size if opts.max_tad_size is None else opts.max_tad_size
+            max_tad_size = (size - 1) if opts.max_tad_size is None else opts.max_tad_size
             result = tadbit([matrix], remove=to_rm,
                             n_cpus=opts.cpus, verbose=opts.verbose,
                             max_tad_size=max_tad_size,
