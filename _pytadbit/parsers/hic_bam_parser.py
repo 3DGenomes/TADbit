@@ -679,7 +679,7 @@ def get_matrix(inbam, resolution, biases=None,
         return_something = True
         dico = dict(((c, i, j), transform_value(c, i, j, v))
                     for c, i, j, v in _iter_matrix_frags(
-            chunks, tmpdir, rand_hash, clean=clean, verbose=verbose)
+                        chunks, tmpdir, rand_hash, clean=clean, verbose=verbose)
                     if i not in bads1 and j not in bads2)
         # pull all sub-matrices and write full matrix
     else: # dico probably an HiC data object

@@ -38,8 +38,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "OOiiiiiii:tadbit", &py_obs, &py_remove, 
-			&n, &m, &n_threads, 
+  if (!PyArg_ParseTuple(args, "OOiiiiiii:tadbit", &py_obs, &py_remove,
+			&n, &m, &n_threads,
 			&verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
   // convert list of lists to pointer o pointers
@@ -71,8 +71,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject * py_passages;
 
   // get bkpts
-  const int MAXBREAKS = nbks ? nbks : n/5;
-  int dim = MAXBREAKS * n;
+  int dim = seg->maxbreaks * n;
   py_bkpts = PyList_New(dim);
   for(i = 0 ; i < dim; i++)
     PyList_SetItem(py_bkpts, i, PyInt_FromLong(seg->bkpts[i]));
