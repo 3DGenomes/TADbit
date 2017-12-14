@@ -76,8 +76,8 @@ Other programs
 --------------
 TADbit uses other major software packages in biology. Here is the list of their articles:
 
-- IMP. Integrative Modeling Platform [Russel2011]_
-- MCL. Markov Cluster Algorithm [Enright2002]_
+- IMP Integrative Modeling Platform [Russel2011]_
+- MCL Markov Cluster Algorithm [Enright2002]_
 
 TADbit training
 ***************
