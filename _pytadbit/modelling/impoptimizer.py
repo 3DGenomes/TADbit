@@ -83,7 +83,7 @@ class IMPoptimizer(object):
             self.coords[-1]['end'] -= chrom_offset_end
 
         else:
-            self.coords = {'crm'  : self.crm.name,
+            self.coords = {'crm'  : experiment.crm.name,
                       'start': start,
                       'end'  : end}
 
