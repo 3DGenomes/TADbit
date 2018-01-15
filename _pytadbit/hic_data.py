@@ -795,10 +795,13 @@ class HiC_data(dict):
                  for b in bads]
             _ = [matrix[i].insert(b, float('nan'))
                  for b in bads for i in xrange(len(n_first[0]))]
-            for b in bads:
+            for b in bads:  # they are sorted
                 for brk in breaks:
-                    brk['start'] += brk['start'] >= b
-                    brk['end'] += brk['end'] > b
+                    if brk['start'] >= b:
+                        brk['start'] += 1
+                        brk['end'  ] += 1
+                    else:
+                        brk['end'  ] += brk['end'] > b
             bads = set(bads)
 
             # rescale first EV according to rich_in_A
