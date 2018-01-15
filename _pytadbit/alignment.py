@@ -318,23 +318,26 @@ class Alignment(object):
         # draw alignment columns
         start = focus[0] if focus else 1
         end = focus[1] if focus else xpr.tads[max(xpr.tads)]['end']
-        maxy = (ymax or max(maxys)) + 0.4
-        maxxs = []
-        for iex in range(len(experiments)):
-            starting = focus[0] if focus else 1
-            ending = (focus[1] if focus
-                      else experiments[iex].tads.values()[-1]['end'])
-            axes[iex].hlines(1, 1, end, 'k', lw=1.5)
-            axes[iex].set_ylim((0, maxy))
-            maxxs.append(ending / facts[iex])
-            axes[iex].text(starting + 1, float(maxy) / 20,
-                           experiments[iex].name, {'ha': 'left',
-                                                   'va': 'bottom'})
-            axes[iex].set_yticks([float(i) / 2
-                                  for i in range(1, int(maxy + .5) * 2)])
-            if ymax:
-                axes[iex].set_ylim((0, ymax))
-            axes[iex].set_xlim(xmin=starting, xmax=max(maxxs))
+        try:
+            maxy = (ymax or max(maxys)) + 0.4
+            maxxs = []
+            for iex in range(len(experiments)):
+                starting = focus[0] if focus else 1
+                ending = (focus[1] if focus
+                          else experiments[iex].tads.values()[-1]['end'])
+                axes[iex].hlines(1, 1, end, 'k', lw=1.5)
+                axes[iex].set_ylim((0, maxy))
+                maxxs.append(ending / facts[iex])
+                axes[iex].text(starting + 1, float(maxy) / 20,
+                               experiments[iex].name, {'ha': 'left',
+                                                       'va': 'bottom'})
+                axes[iex].set_yticks([float(i) / 2
+                                      for i in range(1, int(maxy + .5) * 2)])
+                if ymax:
+                    axes[iex].set_ylim((0, ymax))
+                axes[iex].set_xlim(xmin=starting, xmax=max(maxxs))
+        except ValueError:
+            pass
 
         pos = {'ha': 'center', 'va': 'bottom'}
         for i, col in enumerate(self.itercolumns()):

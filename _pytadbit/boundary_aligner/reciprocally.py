@@ -111,5 +111,3 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
     perc2 = 1 - float(diff) / len(tads2)
     score = 1 - (float(penalty * diff + sum(diffs))) / len(align1) / penalty
     return [align1, align2], score, perc1, perc2
-            
-        
