@@ -3,9 +3,15 @@
 """
 
 import ctypes
-import os, errno
+import os
+import errno
 import platform
-import bz2, gzip, zipfile, tarfile
+
+import bz2
+import gzip
+import zipfile
+import tarfile
+
 from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 
@@ -81,7 +87,7 @@ def get_free_space_mb(folder, div=2):
 
     :param folder: folder/drive to measure
     :param 2 div: divide the size by (div*1024) to get the size in Mb (3 is Gb...)
-    
+
     """
     if platform.system() == 'Windows':
         free_bytes = ctypes.c_ulonglong(0)
@@ -105,7 +111,7 @@ def mkdir(dnam):
             pass
         else:
             raise
-    
+
 def which(program):
     """
     stackoverflow: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
@@ -124,4 +130,3 @@ def which(program):
             if is_exe(exe_file):
                 return exe_file
     return None
-

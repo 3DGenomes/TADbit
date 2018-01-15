@@ -907,7 +907,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                      if (xpr.tads[t]['start'] + 1 >= beg
                          and xpr.tads[t]['end'] <= end)])
         if not tads:
-            raise Exception('ERROR: no TAD borders in range')
+            warn('WARNING: Experiment %s has no TADs in the region %d-%d' % (
+                xpr.name, focus[0], focus[1]))
     else:
         siz = xpr.size
         figsiz = 4 + (siz) / 30
@@ -952,7 +953,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         warn("WARNING: raw Hi-C data not available, " +
              "TAD's height fixed to 1")
         norms = None
-    if not 'height' in tads[tads.keys()[0]]:
+    if tads and not 'height' in tads[tads.keys()[0]]:
         diags = []
         siz = xpr.size
         sp1 = siz + 1
@@ -1011,10 +1012,16 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                  color=jet(tad['score'] / 10) if tad['score'] else 'w',
                  mec=jet(tad['score'] / 10) if tad['score'] else 'k',
                  marker=6, ms=9, alpha=1, clip_on=False)
-    axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+    try:
+        axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+    except UnboundLocalError:
+        pass
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))
-    axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
+    try:
+        axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
+    except IndexError:
+        pass
     if show:
         tit1 = fig.suptitle("TAD borders", size='x-large')
         plt.subplots_adjust(top=0.76)
