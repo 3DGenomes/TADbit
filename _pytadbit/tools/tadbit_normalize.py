@@ -62,7 +62,7 @@ def run(opts):
             raise Exception('ERROR: missing path to FASTA for oneD normalization')
         if not opts.renz:
             raise Exception('ERROR: missing restriction enzyme name for oneD normalization')
-        if not opts.fasta:
+        if not opts.mappability:
             raise Exception('ERROR: missing path to mappability for oneD normalization')
         bamfile = AlignmentFile(mreads, 'rb')
         refs = bamfile.references
