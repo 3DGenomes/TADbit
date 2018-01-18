@@ -43,6 +43,12 @@ If you have any question remaining, we would be happy to answer informally:
    :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
    :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+Frequently asked questions
+--------------------------
+
+Check the label `FAQ <https://github.com/3DGenomes/TADbit/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+>`_ in TADbit issues.
+
+If your question is still unanswered feel free to open a new issue.
 
 Citation
 ********
