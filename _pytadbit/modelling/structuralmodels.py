@@ -2427,6 +2427,9 @@ class StructuralModels(object):
                 fil['descr'] += ','
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
+        
+        if self.__models:
+            aligned_coords = self.align_models(models=models, cluster=cluster)
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2435,8 +2438,9 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         fil['xyz'] = []
-        for m in models:
-            model = self[m]
+        for m_idx in xrange(len(models)):
+            m = models[m_idx]
+            model = {'rand_init':self[models[m_idx]]['rand_init'],'x':aligned_coords[m_idx][0],'y':aligned_coords[m_idx][1],'z':aligned_coords[m_idx][2]}
             fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % (
                 model['rand_init']) + ','.join(
                     ['%.0f,%.0f,%.0f' % (model['x'][i],
