@@ -333,11 +333,7 @@ def populate_args(parser):
 
     glopts.add_argument('--mreads', dest='mreads', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='''path valid-pairs file''')
-
-    glopts.add_argument('--bad_cols', dest='bad_co', metavar="PATH",
-                        action='store', default=None, type=str,
-                        help='''path to file with bad columns''')
+                        help='''path valid-pairs file (TADbit BAM format)''')
 
     glopts.add_argument('--biases',   dest='biases', metavar="PATH",
                         action='store', default=None, type=str,

@@ -858,10 +858,14 @@ class HiC_data(dict):
                     vmax = max([abs(npperc(matrix, 99.5)),
                                 abs(npperc(matrix, 0.5))])
                     vmin = -vmax
-                plot_compartments(
-                    sec, n_first[ev_num], cmprts, matrix, show,
-                    savefig + '/chr' + str(sec) + suffix + '.png' if savefig else None,
-                    vmin=vmin, vmax=vmax, whichpc=ev_num + 1,showAB=show_compartment_labels)
+                try:
+                    plot_compartments(
+                        sec, n_first[ev_num], cmprts, matrix, show,
+                        savefig + '/chr' + str(sec) + suffix + '.png' if savefig else None,
+                        vmin=vmin, vmax=vmax, whichpc=ev_num + 1,showAB=show_compartment_labels)
+                except AttributeError:
+                    warn(('WARNING: chromosome %s too small for plotting.'
+                          'Skipping image creation.') % sec)
 
         self.compartments = cmprts
         if savedata:
