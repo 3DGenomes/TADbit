@@ -50,20 +50,28 @@ matrix W of size N:
                            /__ Wi
 
 """
-try:
-    import rpy2.robjects as robjects
-    from rpy2.robjects.packages   import importr
-    from rpy2.rinterface          import RRuntimeError
-    try:
-        dryhic = importr('dryhic')
-        from numpy import float64
-    except RRuntimeError:
-        pass
-except ImportError:
-    pass
+#===============================================================================
+# try:
+#     import rpy2.robjects as robjects
+#     from rpy2.robjects.packages   import importr
+#     from rpy2.rinterface          import RRuntimeError
+#     try:
+#         dryhic = importr('dryhic')
+#         from numpy import float64
+#     except RRuntimeError:
+#         pass
+# except ImportError:
+#     pass
+#===============================================================================
 
+import csv
+import subprocess
+from os import path
 
-def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
+from numpy import genfromtxt
+from pytadbit.utils.file_handling import which
+
+def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     """
     Normalizes according to oneD normalization that takes into account the GC
     content, mappability and the number of restriction sites per bin.
@@ -84,18 +92,57 @@ def oneD(form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
 
     :returns: list of biases to use to normalize the raw matrix of interactions
     """
-    try:
-        form = robjects.Formula(form)
-    except NameError:
-        raise Exception('ERROR: dryhic (https://github.com/qenvio/dryhic) not '
-                        'installed, OneD normalization not available')
+#===============================================================================
+#     try:
+#         form = robjects.Formula(form)
+#     except NameError:
+#         raise Exception('ERROR: dryhic (https://github.com/qenvio/dryhic) not '
+#                         'installed, OneD normalization not available')
+# 
+#     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
+#                                    for k in kwargs))
+# 
+#     return map(float64, dryhic.oned(info, form))
+#===============================================================================
+    script_path = which('normalize_oneD.R')
+    proc_par = ["Rscript", "--vanilla", script_path]
 
-    info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
-                                   for k in kwargs))
+    csvfile = path.join(tmp_dir,'tot.csv')
+    proc_par.append(csvfile)
+    with open(csvfile, "w") as output:
+        writer = csv.writer(output, lineterminator='\n')
+        writer.writerow(kwargs['tot'])
 
-    return map(float64, dryhic.oned(info, form))
+    csvfile = path.join(tmp_dir,'map.csv')
+    proc_par.append(csvfile)
+    with open(csvfile, "w") as output:
+        writer = csv.writer(output, lineterminator='\n')
+        writer.writerow(kwargs['map'])
 
+    csvfile = path.join(tmp_dir,'res.csv')
+    proc_par.append(csvfile)
+    with open(csvfile, "w") as output:
+        writer = csv.writer(output, lineterminator='\n')
+        writer.writerow(kwargs['res'])
 
+    csvfile = path.join(tmp_dir,'cg.csv')
+    proc_par.append(csvfile)
+    with open(csvfile, "w") as output:
+        writer = csv.writer(output, lineterminator='\n')
+        writer.writerow(kwargs['cg'])
+
+    out_csv = path.join(tmp_dir,'biases.csv')
+
+    proc_par.append(out_csv)
+    subprocess.call (proc_par)
+
+    biases_oneD = genfromtxt(out_csv, delimiter=',', dtype=float)
+    #with open(out_csv, 'rb') as f:
+    #    reader = csv.reader(f)
+    #    biases_oneD = list(reader)
+
+    return biases_oneD
+    
 def _update_S(W):
     S = {}
     meanS = 0.0

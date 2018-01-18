@@ -10,7 +10,7 @@ from os                                   import path, remove, system
 from sys                                  import exc_info, stdout
 from string                               import ascii_letters
 from random                               import random
-from shutil                               import copyfile
+from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict
 from cPickle                              import dump, load
 # from warnings                             import filterwarnings
@@ -91,8 +91,17 @@ def run(opts):
         printime('  - Parsing mappability')
         fh = open(opts.mappability)
         mappability = []
+        ordered_crm = True
         line = fh.next()
+        crmM, begM, endM, val = line.split()
         for crm in refs:
+            try:
+                while line and crm != crmM:
+                    ordered_crm = False
+                    line = fh.next()
+                    crmM, begM, endM, val = line.split()
+            except EOFError:
+                break
             for begB in xrange(0, len(genome[crm]), opts.reso):
                 endB = begB + opts.reso
                 tmp = 0
@@ -113,7 +122,9 @@ def run(opts):
                 except EOFError:
                     continue
                 mappability.append(tmp / opts.reso)
-
+            if not ordered_crm:
+                fh.seek(0, 0)
+            
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
                                     n_cpus=opts.cpus)
@@ -750,8 +761,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        tmp_oneD = path.join(outdir,'tmp_oneD')
+        mkdir(tmp_oneD)
+        biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
+        rmtree(tmp_oneD)
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
