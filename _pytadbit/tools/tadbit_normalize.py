@@ -124,7 +124,7 @@ def run(opts):
                 mappability.append(tmp / opts.reso)
             if not ordered_crm:
                 fh.seek(0, 0)
-            
+
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
                                     n_cpus=opts.cpus)
@@ -359,8 +359,8 @@ def populate_args(parser):
     """
     parse option from call
     """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
+    parser.formatter_class=lambda prog: SmartFormatter(prog, width=95,
+                                                       max_help_position=27)
 
     oblopt = parser.add_argument_group('Required options')
     glopts = parser.add_argument_group('General options')
@@ -422,8 +422,13 @@ def populate_args(parser):
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
-                        help='''Path to file with mappability, required for oneD
-                        normalization''')
+                        help='''R|Path to mappability bedGraph file, required for oneD normalization.
+Mappability file can be generated with GEM (example from the genomic fasta file hg38.fa):\n
+     gem-indexer -i hg38.fa -o hg38
+     gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
+     gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
+     wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw
+     bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph\n''')
 
     normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
                         metavar='PATH', type=str,
@@ -948,3 +953,14 @@ def sum_nrm_matrix(fname, biases):
     sumnrm = nansum([v / biases[i] / biases[j]
                      for (i, j), v in dico.iteritems()])
     return sumnrm
+
+
+class SmartFormatter(HelpFormatter):
+    """
+    https://stackoverflow.com/questions/3853722/python-argparse-how-to-insert-newline-in-the-help-text
+    """
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()
+        # this is the RawTextHelpFormatter._split_lines
+        return HelpFormatter._split_lines(self, text, width)

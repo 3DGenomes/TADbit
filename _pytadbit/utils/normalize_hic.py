@@ -69,7 +69,9 @@ import subprocess
 from os import path
 
 from numpy import genfromtxt
+
 from pytadbit.utils.file_handling import which
+
 
 def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     """
@@ -98,10 +100,10 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
 #     except NameError:
 #         raise Exception('ERROR: dryhic (https://github.com/qenvio/dryhic) not '
 #                         'installed, OneD normalization not available')
-# 
+#
 #     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
 #                                    for k in kwargs))
-# 
+#
 #     return map(float64, dryhic.oned(info, form))
 #===============================================================================
     script_path = which('normalize_oneD.R')
@@ -142,7 +144,7 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     #    biases_oneD = list(reader)
 
     return biases_oneD
-    
+
 def _update_S(W):
     S = {}
     meanS = 0.0
@@ -292,11 +294,10 @@ def _meandiag(hic_data, dist, diag, min_n, size, bads):
                 continue
             diag.append(hic_data[i, i + dist])
     sum_diag = sum(diag)
-    if len(diag) == 0:
+    if not diag:
         return dist + 1, 0.
     if sum_diag > min_n:
         return dist + 1, float(sum_diag) / len(diag)
-    elif dist >= size:
+    if dist >= size:
         return dist + 1, float(sum_diag) / len(diag)
-    else:
-        return _meandiag(hic_data, dist + 1, diag, min_n, size, bads)
+    return _meandiag(hic_data, dist + 1, diag, min_n, size, bads)
