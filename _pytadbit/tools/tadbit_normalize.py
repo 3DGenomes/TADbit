@@ -10,7 +10,7 @@ from os                                   import path, remove, system
 from sys                                  import exc_info, stdout
 from string                               import ascii_letters
 from random                               import random
-from shutil                               import copyfile
+from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict
 from cPickle                              import dump, load
 # from warnings                             import filterwarnings
@@ -91,8 +91,17 @@ def run(opts):
         printime('  - Parsing mappability')
         fh = open(opts.mappability)
         mappability = []
+        ordered_crm = True
         line = fh.next()
+        crmM, begM, endM, val = line.split()
         for crm in refs:
+            try:
+                while line and crm != crmM:
+                    ordered_crm = False
+                    line = fh.next()
+                    crmM, begM, endM, val = line.split()
+            except EOFError:
+                break
             for begB in xrange(0, len(genome[crm]), opts.reso):
                 endB = begB + opts.reso
                 tmp = 0
@@ -115,6 +124,8 @@ def run(opts):
                 except StopIteration:
                     pass
                 mappability.append(tmp / opts.reso)
+            if not ordered_crm:
+                fh.seek(0, 0)
 
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
@@ -350,8 +361,8 @@ def populate_args(parser):
     """
     parse option from call
     """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
+    parser.formatter_class=lambda prog: SmartFormatter(prog, width=95,
+                                                       max_help_position=27)
 
     oblopt = parser.add_argument_group('Required options')
     glopts = parser.add_argument_group('General options')
@@ -413,8 +424,13 @@ def populate_args(parser):
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
-                        help='''Path to file with mappability, required for oneD
-                        normalization''')
+                        help='''R|Path to mappability bedGraph file, required for oneD normalization.
+Mappability file can be generated with GEM (example from the genomic fasta file hg38.fa):\n
+     gem-indexer -i hg38.fa -o hg38
+     gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
+     gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
+     wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw
+     bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph\n''')
 
     normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
                         metavar='PATH', type=str,
@@ -752,8 +768,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        tmp_oneD = path.join(outdir,'tmp_oneD')
+        mkdir(tmp_oneD)
+        biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
+        rmtree(tmp_oneD)
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
@@ -956,3 +975,14 @@ def sum_nrm_matrix(fname, biases):
     sumnrm = nansum([v / biases[i] / biases[j]
                      for (i, j), v in dico.iteritems()])
     return sumnrm
+
+
+class SmartFormatter(HelpFormatter):
+    """
+    https://stackoverflow.com/questions/3853722/python-argparse-how-to-insert-newline-in-the-help-text
+    """
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()
+        # this is the RawTextHelpFormatter._split_lines
+        return HelpFormatter._split_lines(self, text, width)

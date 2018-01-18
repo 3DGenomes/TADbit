@@ -218,7 +218,7 @@ def main():
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
         scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
-                        'scripts/tadbit'],
+                        'scripts/tadbit', 'scripts/normalize_oneD.R'],
         data_files   = [(path.expanduser('~'),
                          ['extras/.bash_completion'])]
     )
