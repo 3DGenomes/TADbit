@@ -709,11 +709,11 @@ class HiC_data(dict):
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec
             # get chromosomal matrix
-            matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
-                       / self.bias[i] / self.bias[j])
-                      for i in xrange(*self.section_pos[sec])
+            matrix = [[(float(self[i,j]) / self.expected[sec][abs(j-i)]
+                        / self.bias[i] / self.bias[j])
+                       for i in xrange(*self.section_pos[sec])
                        if not i in self.bads]
-                     for j in xrange(*self.section_pos[sec])
+                      for j in xrange(*self.section_pos[sec])
                       if not j in self.bads]
             if not matrix: # MT chromosome will fall there
                 warn('Chromosome %s is probably MT :)' % (sec))
@@ -735,7 +735,7 @@ class HiC_data(dict):
                 continue
             # write correlation matrix to file. replaces filtered row/columns by NaN
             if savecorr:
-                out = open(os.path.join(savecorr, '%s_corr-matrix.tsv' % (sec)),
+                out = open(os.path.join(savecorr, '%s_corr-matrix%s.tsv' % (sec, suffix)),
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)

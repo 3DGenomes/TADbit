@@ -77,7 +77,8 @@ def run(opts):
             rich_in_A = None
         firsts, richA_pval = hic_data.find_compartments(
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
-            rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None)
+            rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None,
+            savecorr=cmprt_dir if opts.savecorr else None)
 
         for crm in opts.crms or hic_data.chromosomes:
             if not crm in firsts:
@@ -91,9 +92,14 @@ def run(opts):
 
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
+            if opts.savecorr:
+                corma_file = cmprt_dir, '%s_corr-matrix%s.tsv' % (sec, suffix)
+            else:
+                corma_file = None
             hic_data.write_compartments(cmprt_file,
                                         chroms=[crm])
-            cmp_result[crm] = {'path': cmprt_file,
+            cmp_result[crm] = {'path_cmprt': cmprt_file,
+                               'path_corma': corma_file,
                                'num' : len(hic_data.compartments[crm])}
 
     # TADs
@@ -200,8 +206,10 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         for crm in max(cmp_result.keys(), tad_result.keys(),
                        key=lambda x: len(x)):
             if crm in cmp_result:
-                add_path(cur, cmp_result[crm]['path'], 'COMPARTMENT',
+                add_path(cur, cmp_result[crm]['path_cmprt'], 'COMPARTMENT',
                          jobid, opts.workdir)
+                if opts.savecorr:
+                    add_path(cur, tad_result[crm]['path_corma'], 'CROSS_CORR_MAT', jobid, opts.workdir)
             if crm in tad_result:
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
             if opts.rich_in_A:
@@ -375,6 +383,9 @@ def populate_args(parser):
                         metavar='PATH', type=str,
                         help='''Path to fasta file with genome sequence, to compute
                         GC content and use it to label compartments''')
+
+    glopts.add_argument('--savecorr', dest='savecorr', action='store_true', default=False,
+                        help='''Save correlation matrix used to predict compartments.''')
 
     glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False,

@@ -412,15 +412,10 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
     start_bin1 = 0
     end_bin1   = len(bins) + 1
-    if region1:
-        if not region1 in section_pos:
-            raise Exception('ERROR: chromosome %s not found' % region1)
-        regions = [region1]
-    else:
-        regions = bamfile.references
-        total = len(bins)
-        if start1 or end1:
-            raise Exception('ERROR: Cannot use start/end1 without region')
+    regions = bamfile.references
+    total = len(bins)
+    if start1 or end1:
+        raise Exception('ERROR: Cannot use start/end1 without region')
 
     if start1 is not None:
         start_bin1 = section_pos[region1][0] + start1 / resolution
@@ -683,12 +678,11 @@ def get_matrix(inbam, resolution, biases=None,
                     if i not in bads1 and j not in bads2)
         # pull all sub-matrices and write full matrix
     else: # dico probably an HiC data object
-        for c, i, j, v in _iter_matrix_frags(
+        for _, i, j, v in _iter_matrix_frags(
                 chunks, tmpdir, rand_hash,
                 clean=clean, verbose=verbose):
             if i not in bads1 and j not in bads2:
-                off = dico.section_pos[c][0]
-                dico[i + off, j + off] = v
+                dico[i, j] = v
 
     if clean:
         os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
