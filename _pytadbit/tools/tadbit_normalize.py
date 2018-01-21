@@ -768,7 +768,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        tmp_oneD = path.join(outdir,'tmp_oneD')
+        tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
         biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
