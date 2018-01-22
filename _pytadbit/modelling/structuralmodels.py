@@ -401,6 +401,7 @@ class StructuralModels(object):
         # Initialize cluster definition of models:
         for model in self:
             model['cluster'] = 'Singleton'
+        new_singles = 0
         if method == 'ward':
 
             matrix = [[0.0 for _ in xrange(len(self))]
@@ -451,7 +452,6 @@ class StructuralModels(object):
             if not exists(tmp_file + '.mcl'):
                 raise Exception('Problem with clustering, try increasing ' +
                                 '"dcutoff", now: %s\n' % (dcutoff))
-            new_singles = 0
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
                 if len(models) == 1:
