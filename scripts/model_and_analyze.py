@@ -562,7 +562,7 @@ def main():
         logging.info("\t\tWARNING: plot for clusters could not be made...")
 
     if not opts.not_write_json:
-        models.write_json(os.path.join(opts.outdir, name, name + '.json'))
+        models.write_json(os.path.join(opts.outdir, name, name + '.json'), title = opts.project+' '+name if opts.project else name)
 
     if not (opts.not_write_xyz and opts.not_write_cmm):
         # Save the clustered models into directories for easy visualization with
