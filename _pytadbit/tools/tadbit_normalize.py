@@ -90,40 +90,42 @@ def run(opts):
         # get mappability ~2 min
         printime('  - Parsing mappability')
         fh = open(opts.mappability)
-        mappability = []
-        ordered_crm = True
+        mappability = dict((c, []) for c in refs)
         line = fh.next()
         crmM, begM, endM, val = line.split()
-        for crm in refs:
-            try:
-                while line and crm != crmM:
-                    ordered_crm = False
-                    line = fh.next()
-                    crmM, begM, endM, val = line.split()
-            except EOFError:
-                break
-            for begB in xrange(0, len(genome[crm]), opts.reso):
+        crm = crmM
+        while any(not mappability[c] for c in mappability):
+            for begB in xrange(0, len(genome[crmM]), opts.reso):
                 endB = begB + opts.reso
                 tmp = 0
                 try:
                     while True:
                         crmM, begM, endM, val = line.split()
+                        if crm != crmM:
+                            try:
+                                while crmM not in refs:
+                                    line = fh.next()
+                                    crmM, _ = line.split('\t', 1)
+                            except StopIteration:
+                                pass
+                            break
                         begM = int(begM)
                         endM = int(endM)
-                        val = float(val)
-                        weight = min(endM, endB) - max(begM, begB)
-                        if weight < 0 or crm != crmM:
-                            break
                         if endM > endB:
-                            tmp += weight * val
+                            weight = endB - begM
+                            if weight >= 0:
+                                tmp += weight * float(val)
                             break
-                        tmp += weight * val
+                        weight = endM - (begM if begM > begB else begB)
+                        if weight < 0:
+                            break
+                        tmp += weight * float(val)
                         line = fh.next()
-                except EOFError:
-                    continue
-                mappability.append(tmp / opts.reso)
-            if not ordered_crm:
-                fh.seek(0, 0)
+                except StopIteration:
+                    pass
+                mappability[crm].append(tmp / opts.reso)
+                crm = crmM
+        mappability = reduce(lambda x, y: x + y, (mappability[c] for c in refs))
 
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
@@ -747,6 +749,9 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
             len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
 
+    if mappability:
+        badcol.update((i, True) for i, m in enumerate(mappability) if not m)
+
     raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
                      for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
 
@@ -766,7 +771,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        tmp_oneD = path.join(outdir,'tmp_oneD')
+        tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
         biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
