@@ -733,6 +733,8 @@ class HiC_data(dict):
                 cmprts[sec] = []
                 count += 1
                 continue
+            # replace nan in correlation matrix
+            matrix = [[0. if isnan(v) else v for v in l] for l in matrix]
             # write correlation matrix to file. replaces filtered row/columns by NaN
             if savecorr:
                 out = open(os.path.join(savecorr, '%s_corr-matrix%s.tsv' % (sec, suffix)),
@@ -771,14 +773,17 @@ class HiC_data(dict):
             # get eigenvectors
             try:
                 # This eighs is very very fast, only ask for one eigvector
-                _, evect = eigsh(array(matrix), k=max_ev)
+                _, evect = eigsh(array(matrix),
+                                 k=max_ev if max_ev else (len(matrix) - 1))
             except (LinAlgError, ValueError):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
                 count += 1
                 continue
             # define breakpoints, and store first EVs
-            n_first = [list(evect[:, -i]) for i in xrange(1, max_ev + 1)]
+            n_first = [list(evect[:, -i])
+                       for i in xrange(1, (max_ev + 1)
+                                       if max_ev else len(matrix))]
             ev_num = (ev_index[count] - 1) if ev_index else 0
             breaks = [i for i, (a, b) in
                       enumerate(zip(n_first[ev_num][1:], n_first[ev_num][:-1]))

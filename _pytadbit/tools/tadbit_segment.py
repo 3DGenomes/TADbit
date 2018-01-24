@@ -79,6 +79,8 @@ def run(opts):
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None,
             savecorr=cmprt_dir if opts.savecorr else None,
+            max_ev=opts.n_evs if opts.n_evs > 0 else None,
+            ev_index=opts.ev_index,
             vmin=None if opts.fix_corr_scale else 'auto',
             vmax=None if opts.fix_corr_scale else 'auto')
 
@@ -95,7 +97,8 @@ def run(opts):
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             if opts.savecorr:
-                corma_file = cmprt_dir, '%s_corr-matrix%s.tsv' % (sec, suffix)
+                corma_file = path.join(cmprt_dir, '%s_corr-matrix%s.tsv' %
+                                       (crm, param_hash))
             else:
                 corma_file = None
             hic_data.write_compartments(cmprt_file,
@@ -211,7 +214,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 add_path(cur, cmp_result[crm]['path_cmprt'], 'COMPARTMENT',
                          jobid, opts.workdir)
                 if opts.savecorr:
-                    add_path(cur, tad_result[crm]['path_corma'], 'CROSS_CORR_MAT', jobid, opts.workdir)
+                    add_path(cur, cmp_result[crm]['path_corma'], 'CROSS_CORR_MAT', jobid, opts.workdir)
             if crm in tad_result:
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
             if opts.rich_in_A:
@@ -395,6 +398,20 @@ def populate_args(parser):
                         default=False,
                         help='''Correlation matrix plot scaled between correlation 1 and -1
                         instead of maximum observed values.''')
+
+    cmopts.add_argument('--n_evs', dest='n_evs', metavar="INT",
+                        action='store', default=3, type=int,
+                        help='''[%(default)s] Number of eigenvectors to
+                        store. if "-1" all eigenvectors will be calculated''')
+
+    cmopts.add_argument('--ev_index', dest='ev_index', nargs='+',
+                        type=int, metavar='INT', default=None,
+                        help="""list of indexes of eigenvectors capturing
+                        compartments signal (one index per chromosome, in the
+                        same order as chromosomes in fasta file). Example
+                        picking the first eigenvector for all chromosomes but
+                        for chromosome 3:
+                        '--ev_index 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1""")
 
     glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False,
