@@ -592,7 +592,8 @@ def get_matrix(inbam, resolution, biases=None,
                filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                region1=None, start1=None, end1=None,
                region2=None, start2=None, end2=None, dico=None, clean=False,
-               tmpdir='.', normalization='raw', ncpus=8, nchunks=None, verbose=False):
+               return_headers=False, tmpdir='.', normalization='raw', ncpus=8,
+               nchunks=None, verbose=False):
     """
     Get matrix from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -633,11 +634,16 @@ def get_matrix(inbam, resolution, biases=None,
     if not isinstance(filter_exclude, int):
         filter_exclude = filters_to_bin(filter_exclude)
 
-    _, rand_hash, bin_coords, chunks = read_bam(
+    regions, rand_hash, bin_coords, chunks = read_bam(
         inbam, filter_exclude, resolution, ncpus=ncpus,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, nchunks=nchunks, verbose=verbose)
+
+    if region1:
+        regions = [region1]
+        if region2:
+            regions.apend(region2)
 
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
@@ -672,7 +678,7 @@ def get_matrix(inbam, resolution, biases=None,
     return_something = False
     if dico is None:
         return_something = True
-        dico = dict(((c, i, j), transform_value(c, i, j, v))
+        dico = dict(((i, j), transform_value(c, i, j, v))
                     for c, i, j, v in _iter_matrix_frags(
                         chunks, tmpdir, rand_hash, clean=clean, verbose=verbose)
                     if i not in bads1 and j not in bads2)
@@ -689,6 +695,25 @@ def get_matrix(inbam, resolution, biases=None,
     if  verbose:
         printime('\nDone.')
     if return_something:
+        if return_headers:
+            # define output file name
+            if len(regions) == 1:
+                if not region1:
+                    region1 = regions[0]
+                if region2:
+                    try:
+                        name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
+                                                      region2, start2 / resolution, end2 / resolution)
+                    except TypeError: # all chromosomes
+                        name = '%s_%s' % (region1, region2)
+                elif start1 is not None:
+                    name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
+                else:
+                    name = region1
+            else:
+                name = 'full'
+
+            return dico, bads1, bads2, regions, name, bin_coords
         return dico
 
 
@@ -757,6 +782,11 @@ def write_matrix(inbam, resolution, biases, outdir,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, nchunks=nchunks, verbose=verbose)
+
+    if region1:
+        regions = [region1]
+        if region2:
+            regions.apend(region2)
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,

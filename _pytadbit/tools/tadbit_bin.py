@@ -14,14 +14,21 @@ from random                          import random
 from cPickle                         import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
+from collections                     import OrderedDict
 import time
+
 import sqlite3 as lite
+from numpy                           import log2
+from matplotlib                      import pyplot as plt
+from pysam                           import AlignmentFile
 
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.utils.file_handling    import mkdir
-from pytadbit.parsers.hic_bam_parser import filters_to_bin, write_matrix
+from pytadbit.parsers.hic_bam_parser import filters_to_bin, printime
+from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
+from pytadbit.utils.extraviews       import tadbit_savefig, nicer
 
 
 DESC = 'bin Hi-C data into matrices'
@@ -117,23 +124,74 @@ def run(opts):
         if not opts.quiet:
             stdout.write('\nExtraction of full genome\n')
 
-    out_files = write_matrix(mreads, opts.reso,
-                             load(open(biases)) if biases else None,
-                             outdir, filter_exclude=opts.filter,
-                             normalizations=opts.normalizations,
-                             region1=region1, start1=start1, end1=end1,
-                             region2=region2, start2=start2, end2=end2,
-                             tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
-                             nchunks=opts.nchunks, verbose=not opts.quiet,
-                             extra=param_hash, clean=False)
+    out_files = {}
+    out_plots = {}
+    norm_string = ('RAW' if 'raw' in opts.normalizations else 'NRM'
+                   if 'norm' in opts.normalizations else 'DEC')
+    print opts.matrix,  opts.plot
+    if opts.matrix or opts.plot:
+        bamfile = AlignmentFile(mreads, 'rb')
+        sections = OrderedDict(zip(bamfile.references,
+                                   [x for x in bamfile.lengths]))
+        for norm in opts.normalizations:
+            printime('Getting %s matrices' % norm)
+            matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
+                mreads, opts.reso,
+                load(open(biases)) if biases else None,
+                normalization=norm,
+                region1=region1, start1=start1, end1=end1,
+                region2=region2, start2=start2, end2=end2,
+                tmpdir='.', ncpus=opts.cpus,
+                return_headers=True,
+                nchunks=opts.nchunks, verbose=not opts.quiet,
+                clean=False)
+            b1, e1, b2, e2 = bin_coords
+            if opts.matrix:
+                printime(' - Writing: %s' % norm)
+                fnam = '%s_%s_%s%s.mat' % (norm, name,
+                                           nicer(opts.reso).replace(' ', ''),
+                                           ('_' + param_hash))
+                out_files[norm_string] = path.join(outdir, fnam)
+                out = open(path.join(outdir, fnam), 'w')
+                for reg in regions:
+                    out.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+                if region2:
+                    out.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+                    out.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+                else:
+                    out.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
+                out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0)) for i in xrange(b1, e1))
+                                    for j in xrange(b2, e2)))
+                out.close()
+            if opts.plot:
+                printime(' - Plotting: %s' % norm)
+                fnam = '%s_%s_%s%s.png' % (norm, name,
+                                           nicer(opts.reso).replace(' ', ''),
+                                           ('_' + param_hash))
+                out_plots[norm_string] = path.join(outdir, fnam)
+                plt.imshow(log2([[matrix.get((i, j), 0) for i in xrange(b1, e1)]
+                                 for j in xrange(b2, e2)]), interpolation='none', origin='lower')
+                tadbit_savefig(path.join(outdir, fnam))
+    if not opts.matrix:
+        printime('Getting and writing matrices')
+        out_files = write_matrix(mreads, opts.reso,
+                                 load(open(biases)) if biases else None,
+                                 outdir, filter_exclude=opts.filter,
+                                 normalizations=opts.normalizations,
+                                 region1=region1, start1=start1, end1=end1,
+                                 region2=region2, start2=start2, end2=end2,
+                                 tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
+                                 nchunks=opts.nchunks, verbose=not opts.quiet,
+                                 extra=param_hash, clean=False)
 
+    printime('Cleaning and saving to db.')
     rmdir(tmpdir)
     finish_time = time.localtime()
 
-    save_to_db(opts, launch_time, finish_time, out_files)
+    save_to_db(opts, launch_time, finish_time, out_files, out_plots)
 
 
-def save_to_db(opts, launch_time, finish_time, out_files):
+def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -167,6 +225,8 @@ def save_to_db(opts, launch_time, finish_time, out_files):
         jobid = get_jobid(cur)
         for fnam in out_files:
             add_path(cur, out_files[fnam], fnam + '_MATRIX', jobid, opts.workdir)
+        for fnam in out_plots:
+            add_path(cur, out_plots[fnam], fnam + '_FIGURE', jobid, opts.workdir)
         if not opts.quiet:
             print_db(cur, 'JOBs')
             print_db(cur, 'PATHs')
@@ -274,6 +334,15 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    outopt.add_argument('--matrix', dest='matrix', action='store_true',
+                        default=False,
+                        help='''Write text matrix in multiple columns. By
+                        defaults matrices are written in BED-like format.''')
+
+    outopt.add_argument('--plot', dest='plot', action='store_true',
+                        default=False,
+                        help='[%(default)s] Plot matrix in desired format.')
+
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to
                         retrieve. By default all genome, arguments can be
@@ -287,7 +356,7 @@ def populate_args(parser):
 
     normpt.add_argument('--biases',   dest='biases', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='''path to file with precalculated biases by
+                        help='''path to file with pre-calculated biases by
                         columns''')
 
     normpt.add_argument('--norm', dest='normalizations', metavar="STR",
@@ -295,14 +364,6 @@ def populate_args(parser):
                         choices=['norm', 'decay', 'raw'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
-
-    outopt.add_argument('--keep', dest='keep', action='store',
-                        default=['intra', 'genome'], nargs='+',
-                        choices = ['intra', 'inter', 'genome', 'none'],
-                        help='''%(default)s Matrices to save, choices are
-                        "intra" to keep intra-chromosomal matrices, "inter" to
-                        keep inter-chromosomal matrices and "genome", to keep
-                        genomic matrices.''')
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
