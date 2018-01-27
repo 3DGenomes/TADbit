@@ -75,11 +75,12 @@ def run(opts):
             rich_in_A = opts.rich_in_A
         else:
             rich_in_A = None
+        n_evs = opts.n_evs if opts.n_evs > 0 else 3
         firsts, richA_pval = hic_data.find_compartments(
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None,
             savecorr=cmprt_dir if opts.savecorr else None,
-            max_ev=opts.n_evs if opts.n_evs > 0 else None,
+            max_ev=n_evs,
             ev_index=opts.ev_index,
             vmin=None if opts.fix_corr_scale else 'auto',
             vmax=None if opts.fix_corr_scale else 'auto')
@@ -89,7 +90,8 @@ def run(opts):
                 continue
             ev_file = open(path.join(cmprt_dir,
                                      '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
-            ev_file.write('# first EV\tsecond EV\n')
+            ev_file.write('# %s\n' % ('\t'.join('EV_%d' % i
+                                                for i in range(1, n_evs + 1))))
             ev_file.write('\n'.join(['\t'.join([str(v) for v in vs])
                                      for vs in zip(*firsts[crm])]))
             ev_file.close()
