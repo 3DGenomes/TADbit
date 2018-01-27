@@ -538,8 +538,10 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     :returns: HiC_data object
     """
     bam = AlignmentFile(fnam)
-    genome_seq = OrderedDict(zip(bam.references, [x / resolution + 1
-                                                  for x in bam.lengths]))
+    genome_seq = OrderedDict((c, l) for c, l in
+                             zip(bam.references,
+                                 [x / resolution + 1 for x in bam.lengths])
+                             if not region or region == c)
     bam.close()
 
     sections = []
