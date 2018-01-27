@@ -325,7 +325,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
 
 
 def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
-                             min_perc=None, max_perc=None, savefig=None):
+                             size=None, min_perc=None, max_perc=None, savefig=None):
     """
     Define artifactual columns with either too low or too high counts of
     interactions by compraing their percentage of cis interactions
@@ -341,6 +341,8 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
        counts
     :param 2 sigma: number of standard deviations used to define lower and upper
        ranges in the varaition of the percentage of cis interactions
+    :param None size: size of the genome, inumber of bins (otherwise inferred
+       from cisprc dictionary)
     :param None sevefig: path to save image of the distribution of cis
        percentages and total counts by bin.
 
@@ -351,7 +353,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
 
     sorted_prc = [float(cisprc[i][0]) / cisprc[i][1] for i in indices]
 
-    size = len(indices)
+    size = (max(indices) + 1) if not size else size
 
     win_size = _best_window_size(sorted_prc, size, beg, end, verbose=verbose)
 
@@ -441,12 +443,12 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         ax1 = fig.add_subplot(111)
         plt.subplots_adjust(left=0.25, bottom=0.2)
         line1 = plt.plot(range(size),
-                         [float(cisprc[i][0]) / cisprc[i][1] for i in indices],
+                         [float(cisprc.get(i, [0, 0])[0]) / cisprc.get(i, [1, 1])[1]
+                          for i in xrange(size)],
                          '.', color='grey', alpha=0.2,
                          label='cis interactions ratio by bin', zorder=1)
-        line2 = plt.plot(range(0, size, 20), [sum(float(cisprc[j][0]) / cisprc[j][1]
-                                                  for j in indices[k:k+win_size]
-                                                  if j in cisprc) / win_size
+        line2 = plt.plot(range(0, size, 20), [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
+                                                  for j in range(k, k+win_size)) / win_size
                                               for k in xrange(0, size, 20)],
                          '.', color='k', alpha=0.3,
                          label='cis interactions ratio by %d bin' % win_size,

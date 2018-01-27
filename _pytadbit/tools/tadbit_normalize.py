@@ -562,15 +562,16 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                 dico[(pos1, pos2)] = 1
         cisprc = {}
         for (i, j), v in dico.iteritems():
-            # out.write('%d\t%d\t%d\n' % (i, j, v))
-            try:
-                if all_bins[i][0] == all_bins[j][0]:
+            if all_bins[i][0] == all_bins[j][0]:
+                try:
                     cisprc[i][0] += v
-                cisprc[i][1] += v
-            except KeyError:
-                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [v, v]
-                else:
+            else:
+                try:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
@@ -613,15 +614,16 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
                 dico[(pos1, pos2)] = 1
         cisprc = {}
         for (i, j), v in dico.iteritems():
-            # out.write('%d\t%d\t%d\n' % (i, j, v))
-            try:
-                if all_bins[i][0] == all_bins[j][0]:
+            if all_bins[i][0] == all_bins[j][0]:
+                try:
                     cisprc[i][0] += v
-                cisprc[i][1] += v
-            except KeyError:
-                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [v, v]
-                else:
+            else:
+                try:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
@@ -658,9 +660,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     start_bin = 0
     end_bin   = len(bins)
-    total = len(bins)
+    total     = len(bins)
 
-    total = end_bin - start_bin
     regs = []
     begs = []
     ends = []
@@ -722,8 +723,6 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         tmp_cisprc = load(open(fname))
         system('rm -f %s' % fname)
         cisprc.update(tmp_cisprc)
-    print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
-                        '%s/%s' % (len(regs),len(regs)))
 
     printime('  - Removing columns with too few or too much interactions')
     if len(bamfile.references) == 1 and min_count is None:
@@ -732,11 +731,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     elif min_count is None and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
-            savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
+            size=total, savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
                 nicer(resolution).replace(' ', ''), extra_out)))
     else:
-        print '      -> too few interactions defined as less than %9d interactions' % (
-            min_count)
+        print ('      -> too few interactions defined as less than %9d '
+               'interactions') % (min_count)
         badcol = {}
         countL = 0
         countZ = 0
@@ -749,6 +748,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
             len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
 
+    # no mappability will result in NaNs, better to filter out these columns
     if mappability:
         badcol.update((i, True) for i, m in enumerate(mappability) if not m)
 
@@ -859,7 +859,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                     except KeyError:
                         nrmdec[c] = {k: v}
                         rawdec[c] = {k: tmpraw[c][k]}
-# count the number of cells per diagonal
+    # count the number of cells per diagonal
     # TODO: parallelize
     # find largest chromosome
     len_crms = dict((c, section_pos[c][1] - section_pos[c][0]) for c in section_pos)

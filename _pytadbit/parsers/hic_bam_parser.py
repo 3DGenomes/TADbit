@@ -399,23 +399,33 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
+    # get chromosomes and genome sizes
     total = 0
     section_pos = dict()
     for crm in sections:
         section_pos[crm] = (total, total + sections[crm])
         total += sections[crm]
+
+    # define genomic bins
     bins = []
     for crm in sections:
         len_crm = sections[crm]
         bins.extend([(crm, i) for i in xrange(len_crm)])
-    if len(bins) == 0:
+    if not bins:
         raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
+
+    # define start, end position of region to grab
     start_bin1 = 0
     end_bin1   = len(bins) + 1
     regions = bamfile.references
-    total = len(bins)
-    if start1 or end1:
-        raise Exception('ERROR: Cannot use start/end1 without region')
+    if region1:
+        regions = [region1]
+        if region2:
+            regions.apend(region2)
+    else:
+        total = len(bins)
+        if start1 is not None or end1:
+            raise Exception('ERROR: Cannot use start/end1 without region')
 
     if start1 is not None:
         start_bin1 = section_pos[region1][0] + start1 / resolution
@@ -692,8 +702,6 @@ def get_matrix(inbam, resolution, biases=None,
 
     if clean:
         os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
-    if  verbose:
-        printime('\nDone.')
     if return_something:
         if return_headers:
             # define output file name
@@ -988,8 +996,5 @@ def write_matrix(inbam, resolution, biases, outdir,
     # this is the last thing we do in case something goes wrong
     if clean:
         os.system('rm -rf %s' % (os.path.join(tmpdir, '_tmp_%s' % (rand_hash))))
-
-    if  verbose:
-        printime('\nDone.')
 
     return fnames
