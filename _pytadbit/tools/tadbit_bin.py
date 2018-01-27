@@ -6,7 +6,7 @@ information needed
 
 """
 from argparse                        import HelpFormatter
-from os                              import path, rmdir, remove
+from os                              import path, remove, system
 from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
@@ -18,8 +18,10 @@ from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
-from numpy                           import log2
-from matplotlib                      import pyplot as plt
+from numpy                           import log2, zeros_like, ma, min as np_min
+from numpy                           import nonzero, isfinite, array
+from numpy                           import nanmin, nanmax
+from matplotlib                      import colors, pyplot as plt
 from pysam                           import AlignmentFile
 
 from pytadbit.mapping.filter         import MASKED
@@ -38,6 +40,8 @@ def run(opts):
     check_options(opts)
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
+
+    clean = True  # change for debug
 
     if opts.bam:
         mreads = path.realpath(opts.bam)
@@ -128,7 +132,7 @@ def run(opts):
     out_plots = {}
     norm_string = ('RAW' if 'raw' in opts.normalizations else 'NRM'
                    if 'norm' in opts.normalizations else 'DEC')
-    print opts.matrix,  opts.plot
+
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
         sections = OrderedDict(zip(bamfile.references,
@@ -137,15 +141,17 @@ def run(opts):
             printime('Getting %s matrices' % norm)
             matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
                 mreads, opts.reso,
-                load(open(biases)) if biases else None,
+                load(open(biases)) if biases and norm != 'raw' else None,
                 normalization=norm,
                 region1=region1, start1=start1, end1=end1,
                 region2=region2, start2=start2, end2=end2,
-                tmpdir='.', ncpus=opts.cpus,
+                tmpdir=tmpdir, ncpus=opts.cpus,
                 return_headers=True,
                 nchunks=opts.nchunks, verbose=not opts.quiet,
-                clean=False)
+                clean=clean)
             b1, e1, b2, e2 = bin_coords
+            b1, e1 = 0, e1 - b1 + 1
+            b2, e2 = 0, e2 - b2 + 1
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
@@ -164,15 +170,35 @@ def run(opts):
                                     for j in xrange(b2, e2)))
                 out.close()
             if opts.plot:
+                cmap = plt.get_cmap(opts.cmap)
+                if norm != 'raw':
+                    cmap.set_bad('grey', 1.)
                 printime(' - Plotting: %s' % norm)
-                fnam = '%s_%s_%s%s.png' % (norm, name,
-                                           nicer(opts.reso).replace(' ', ''),
-                                           ('_' + param_hash))
+                fnam = '%s_%s_%s%s.%s' % (norm, name,
+                                          nicer(opts.reso).replace(' ', ''),
+                                          ('_' + param_hash), opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
-                plt.imshow(log2([[matrix.get((i, j), 0) for i in xrange(b1, e1)]
-                                 for j in xrange(b2, e2)]), interpolation='none', origin='lower')
+                plt.figure(figsize=(15, 12))
+                matrix = array([array([matrix.get((i, j), 0) for i in xrange(b1, e1)])
+                                for j in xrange(b2, e2)])
+                mini = np_min(matrix[nonzero(matrix)]) / 2.
+                matrix[matrix==0] = mini
+                m = zeros_like(matrix)
+                for bad1 in bads1:
+                    for bad2 in bads2:
+                        m[:,bad1] = 1
+                        m[bad2,:] = 1
+                matrix = log2(ma.masked_array(matrix, m))
+                plt.imshow(matrix, interpolation='none', origin='lower',
+                           cmap=cmap)
+                plt.xlabel('Genomic bin')
+                plt.ylabel('Genomic bin')
+                plt.title('Region: %s, normalization: %s, resolution: %s' % (
+                    name, norm, nicer(opts.reso)))
+                cbar = plt.colorbar()
+                cbar.ax.set_ylabel('Hi-C Log2 interaction count')
                 tadbit_savefig(path.join(outdir, fnam))
-    if not opts.matrix:
+    if not opts.matrix and not opts.only_plot:
         printime('Getting and writing matrices')
         out_files = write_matrix(mreads, opts.reso,
                                  load(open(biases)) if biases else None,
@@ -180,12 +206,13 @@ def run(opts):
                                  normalizations=opts.normalizations,
                                  region1=region1, start1=start1, end1=end1,
                                  region2=region2, start2=start2, end2=end2,
-                                 tmpdir='.', append_to_tar=None, ncpus=opts.cpus,
+                                 tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
                                  nchunks=opts.nchunks, verbose=not opts.quiet,
-                                 extra=param_hash, clean=False)
+                                 extra=param_hash, clean=clean)
 
     printime('Cleaning and saving to db.')
-    rmdir(tmpdir)
+    if clean:
+        system('rm -rf %s '% tmpdir)
     finish_time = time.localtime()
 
     save_to_db(opts, launch_time, finish_time, out_files, out_plots)
@@ -337,11 +364,25 @@ def populate_args(parser):
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
                         help='''Write text matrix in multiple columns. By
-                        defaults matrices are written in BED-like format.''')
+                        defaults matrices are written in BED-like format (also
+                        only way to get a raw matrix with all values including
+                        the ones in masked columns).''')
 
     outopt.add_argument('--plot', dest='plot', action='store_true',
                         default=False,
                         help='[%(default)s] Plot matrix in desired format.')
+
+    outopt.add_argument('--only_plot', dest='only_plot', action='store_true',
+                        default=False,
+                        help='[%(default)s] Skip writing matrix in text format.')
+
+    outopt.add_argument('--cmap', dest='cmap', action='store',
+                        default='viridis',
+                        help='[%(default)s] Matplotlib color map to use.')
+
+    outopt.add_argument('--format', dest='format', action='store',
+                        default='png',
+                        help='[%(default)s] plot file format.')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to
