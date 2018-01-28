@@ -540,8 +540,7 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     bam = AlignmentFile(fnam)
     genome_seq = OrderedDict((c, l) for c, l in
                              zip(bam.references,
-                                 [x / resolution + 1 for x in bam.lengths])
-                             if not region or region == c)
+                                 [x / resolution + 1 for x in bam.lengths]))
     bam.close()
 
     sections = []
@@ -551,8 +550,9 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
 
     size = sum(genome_seq.values())
 
+    chromosomes = {region: genome_seq[region]} if region else genome_seq
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
-    imx = HiC_data((), size, chromosomes=genome_seq, dict_sec=dict_sec,
+    imx = HiC_data((), size, chromosomes=chromosomes, dict_sec=dict_sec,
                    resolution=resolution)
 
     if biases:
@@ -562,8 +562,18 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
             raise Exception('ERROR: resolution of biases do not match to the '
                             'one wanted (%d vs %d)' % (
                                 biases['resolution'], resolution))
-        imx.bads     = biases['badcol']
-        imx.bias     = biases['biases']
+        if region:
+            chrom_start = 0
+            for crm in genome_seq:
+                if crm == region:
+                    break
+                len_crm = genome_seq[crm]
+                chrom_start += len_crm
+            imx.bads     = dict((b - chrom_start, biases['badcol'][b]) for b in biases['badcol'])
+            imx.bias     = dict((b - chrom_start, biases['biases'][b]) for b in biases['biases'])
+        else:
+            imx.bads     = biases['badcol']
+            imx.bias     = biases['biases']
         imx.expected = biases['decay']
 
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
