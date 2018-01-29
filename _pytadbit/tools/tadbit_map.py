@@ -24,6 +24,7 @@ from random                               import random
 from shutil                               import copyfile
 from multiprocessing                      import cpu_count
 from argparse                             import HelpFormatter
+from traceback                            import print_exc
 import logging
 import sqlite3 as lite
 import time
@@ -79,21 +80,33 @@ def run(opts):
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, outfiles, launch_time, finish_time)
+    try:
+        save_to_db(opts, outfiles, launch_time, finish_time)
+    except Exception as e:
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
+        print_exc()
+        exit(1)
 
     # write machine log
-    while path.exists(path.join(opts.workdir, '__lock_log')):
-        time.sleep(0.5)
-    open(path.join(opts.workdir, '__lock_log'), 'a').close()
-    with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        mlog.write('\n'.join([
-            ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
-            for out, num in outfiles]) + '\n')
-    # release lock
     try:
-        remove(path.join(opts.workdir, '__lock_log'))
-    except OSError:
-        pass
+        while path.exists(path.join(opts.workdir, '__lock_log')):
+            time.sleep(0.5)
+            open(path.join(opts.workdir, '__lock_log'), 'a').close()
+        with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
+            mlog.write('\n'.join([
+                ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
+                for out, num in outfiles]) + '\n')
+            # release lock
+        try:
+            remove(path.join(opts.workdir, '__lock_log'))
+        except OSError:
+            pass
+    except Exception as e:
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
+        print_exc()
+        exit(1)
 
     # clean
     # if not opts.keep_tmp:

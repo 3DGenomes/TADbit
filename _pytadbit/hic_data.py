@@ -703,7 +703,7 @@ class HiC_data(dict):
         firsts = {}
         ev_nums = {}
         count = 0
-        richA_stats = dict((sec, float('nan')) for sec in self.section_pos)
+        richA_stats = dict((sec, None) for sec in self.section_pos)
 
         for sec in self.section_pos:
             if crms and sec not in crms:
@@ -839,7 +839,7 @@ class HiC_data(dict):
                         n_first[i] = [v / max_v for v in n_first[i]]
                 richA_stats[sec] = r_stat
             else:
-                richA_stats[sec] = (sec, float('nan'))
+                richA_stats[sec] = (sec, None)
                 for i in xrange(len(n_first)):
                     max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
                     n_first[i] = [v / max_v for v in n_first[i]]

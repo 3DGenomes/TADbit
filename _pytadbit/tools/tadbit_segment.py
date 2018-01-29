@@ -13,6 +13,7 @@ from random                         import random
 from warnings                       import warn
 from cPickle                        import load
 from multiprocessing                import cpu_count
+from traceback                      import print_exc
 import sqlite3 as lite
 import time
 
@@ -59,7 +60,7 @@ def run(opts):
 
     # compartments
     cmp_result = {}
-    richA_pval = None
+    richA_stats = {}
     if not opts.only_tads:
         print 'Searching compartments'
         cmprt_dir = path.join(opts.workdir, '06_segmentation',
@@ -164,8 +165,14 @@ def run(opts):
     finish_time = time.localtime()
 
     if not opts.nosql:
-        save_to_db(opts, cmp_result, tad_result, reso, inputs,
-                   richA_stats, launch_time, finish_time)
+        try:
+            save_to_db(opts, cmp_result, tad_result, reso, inputs,
+                       richA_stats, launch_time, finish_time)
+        except:
+            # release lock
+            remove(path.join(opts.workdir, '__lock_db'))
+            print_exc()
+            exit(1)
 
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
@@ -227,26 +234,29 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 insert into SEGMENT_OUTPUTs
                 (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %f,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
-                       richA_stats[crm],
+                       (richA_stats[crm] if crm in richA_stats
+                        and richA_stats[crm] is not None else 'NULL'),
                        crm,
                        reso))
-            except:  # TODO: remove this
+            except lite.OperationalError:  # TODO: remove this
+                print_exc()
                 cur.execute("alter table SEGMENT_OUTPUTs add column 'richA_corr' 'real'")
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
                 (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %f,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
-                       richA_stats[crm],
+                       (richA_stats[crm] if crm in richA_stats
+                        and richA_stats[crm] is not None else 'NULL'),
                        crm,
                        reso))
             print_db(cur, 'PATHs')
