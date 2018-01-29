@@ -76,7 +76,7 @@ def run(opts):
         else:
             rich_in_A = None
         n_evs = opts.n_evs if opts.n_evs > 0 else 3
-        firsts, richA_pval = hic_data.find_compartments(
+        firsts, richA_stats = hic_data.find_compartments(
             crms=opts.crms, savefig=cmprt_dir, verbose=True, suffix=param_hash,
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None,
             savecorr=cmprt_dir if opts.savecorr else None,
@@ -165,11 +165,11 @@ def run(opts):
 
     if not opts.nosql:
         save_to_db(opts, cmp_result, tad_result, reso, inputs,
-                   richA_pval, launch_time, finish_time)
+                   richA_stats, launch_time, finish_time)
 
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
-               richA_pval, launch_time, finish_time):
+               richA_stats, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -194,6 +194,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 Inputs text,
                 TADs int,
                 Compartments int,
+                richA_corr real,
                 Chromosome text,
                 Resolution int)""")
         try:
@@ -221,17 +222,33 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
             if opts.rich_in_A:
                 add_path(cur, opts.rich_in_A, 'BED', jobid, opts.workdir)
-            cur.execute("""
-            insert into SEGMENT_OUTPUTs
-            (Id  , JOBid, Inputs, TADs, Compartments, Chromosome, Resolution)
-            values
-            (NULL,    %d,   '%s',   %d,           %d,       '%s',         %d)
-            """ % (jobid,
-                   ','.join([str(i) for i in inputs]),
-                   tad_result[crm]['num'] if crm in tad_result else 0,
-                   cmp_result[crm]['num'] if crm in cmp_result else 0,
-                   crm,
-                   reso))
+            try:
+                cur.execute("""
+                insert into SEGMENT_OUTPUTs
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
+                values
+                (NULL,    %d,   '%s',   %d,           %d,         %f,       '%s',         %d)
+                """ % (jobid,
+                       ','.join([str(i) for i in inputs]),
+                       tad_result[crm]['num'] if crm in tad_result else 0,
+                       cmp_result[crm]['num'] if crm in cmp_result else 0,
+                       richA_stats[crm],
+                       crm,
+                       reso))
+            except:  # TODO: remove this
+                cur.execute("alter table SEGMENT_OUTPUTs add column 'richA_corr' 'real'")
+                cur.execute("""
+                insert into SEGMENT_OUTPUTs
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
+                values
+                (NULL,    %d,   '%s',   %d,           %d,         %f,       '%s',         %d)
+                """ % (jobid,
+                       ','.join([str(i) for i in inputs]),
+                       tad_result[crm]['num'] if crm in tad_result else 0,
+                       cmp_result[crm]['num'] if crm in cmp_result else 0,
+                       richA_stats[crm],
+                       crm,
+                       reso))
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
             print_db(cur, 'SEGMENT_OUTPUTs')

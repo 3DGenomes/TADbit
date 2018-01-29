@@ -13,7 +13,7 @@ from numpy                          import corrcoef, nansum, array, isnan, mean
 from numpy                          import meshgrid, asarray, exp, linspace, std
 from numpy                          import nanpercentile as npperc, log as nplog
 from numpy                          import nanmax, nanmin
-from scipy.stats                    import ttest_ind, ks_2samp
+from scipy.stats                    import ttest_ind, ks_2samp, spearmanr
 from scipy.special                  import gammaincc
 from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
 from scipy.sparse.linalg            import eigsh
@@ -667,7 +667,9 @@ class HiC_data(dict):
                instead of the mean correlation, gives generally worse results.
 
         :returns: a dictionary with the N (max_ev) first eigen vectors used to define
-           compartment borders for each chromosome (keys are chromosome names)
+           compartment borders for each chromosome (keys are chromosome names).
+           And a dictionary of statistics of enrichment for A compartments
+           (spearman rho).
         """
         if not self.bads:
             if kwargs.get('verbose', False):
@@ -701,7 +703,7 @@ class HiC_data(dict):
         firsts = {}
         ev_nums = {}
         count = 0
-        richA_pval = float('nan')
+        richA_stats = dict((sec, float('nan')) for sec in self.section_pos)
 
         for sec in self.section_pos:
             if crms and sec not in crms:
@@ -810,25 +812,24 @@ class HiC_data(dict):
             bads = set(bads)
 
             # rescale first EV according to rich_in_A
-            richA_pval = float('nan')
             if rich_in_A and sec in rich_in_A:
-                posit_ev = []
-                negat_ev = []
+                eves = []
+                gccs = []
                 for i, v in enumerate(n_first[ev_num]):
                     if i in bads:
                         continue
-                    if v  > 0:
-                        posit_ev.append(rich_in_A.get(sec, {None: 0}).get(i, 0))
-                    else:
-                        negat_ev.append(rich_in_A.get(sec, {None: 0}).get(i, 0))
-                richA_pval = ks_2samp(posit_ev, negat_ev)[1]
+                    try:
+                        gc = rich_in_A[sec][i]
+                    except KeyError:
+                        continue
+                    gccs.append(gc)
+                    eves.append(v)
+                r_stat, richA_pval = spearmanr(eves, gccs)
                 if kwargs.get('verbose', False):
-                    print ('  - p-value of KS-test of enrichment of a '
-                           'compartment type \n    in rich in A regions is: '
-                           '%.6f' % (richA_pval))
-                posit_ev = float(sum(posit_ev)) / len(posit_ev)
-                negat_ev = float(sum(negat_ev)) / len(negat_ev)
-                if posit_ev < negat_ev:
+                    print ('  - Spearman correlation between "rich in A" and '
+                           'EigenVector:\n'
+                           '      rho: %.7f p-val:%.7f' % (r_stat, richA_pval))
+                if r_stat < 0:  # switch sign
                     for i in xrange(len(n_first)):
                         max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
                         n_first[i] = [-v / max_v for v in n_first[i]]
@@ -836,8 +837,9 @@ class HiC_data(dict):
                     for i in xrange(len(n_first)):
                         max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
                         n_first[i] = [v / max_v for v in n_first[i]]
+                richA_stats[sec] = r_stat
             else:
-                richA_pval = float('nan')
+                richA_stats[sec] = (sec, float('nan'))
                 for i in xrange(len(n_first)):
                     max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
                     n_first[i] = [v / max_v for v in n_first[i]]
@@ -876,7 +878,7 @@ class HiC_data(dict):
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys(),
                                     ev_nums=ev_nums)
-        return firsts, richA_pval
+        return firsts, richA_stats
 
     def find_compartments_beta(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
