@@ -84,7 +84,7 @@ def populate_args(parser):
 
     glopts.add_argument('-T', '--skip_tables', dest='skip_tables', metavar='',
                         action='store', nargs='+', type=str,
-                        default=None,
+                        default=[],
                         help=('[%(default)s] what tables NOT to show, write either '
                               'the sequence of names or indexes, according to '
                               'this list: {}').format(', '.join(
@@ -135,6 +135,7 @@ def check_options(opts):
                 exit()
             bads.append(t)
         opts.tables[t] = TABLE_IDX.get(opts.tables[t], opts.tables[t])
+
     for t in range(len(opts.skip_tables)):
         opts.skip_tables[t] = opts.skip_tables[t].lower()
         if not opts.skip_tables[t] in choices:
