@@ -99,6 +99,7 @@ def run(opts):
 
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
+            cmprt_imag = path.join(cmprt_dir, 'chr%s_%s.png' % (crm, param_hash))
             if opts.savecorr:
                 corma_file = path.join(cmprt_dir, '%s_corr-matrix%s.tsv' %
                                        (crm, param_hash))
@@ -108,6 +109,7 @@ def run(opts):
                                         chroms=[crm])
             cmp_result[crm] = {'path_cmprt': cmprt_file,
                                'path_corma': corma_file,
+                               'imag_cmprt': cmprt_imag,
                                'num' : len(hic_data.compartments[crm])}
 
     # TADs
@@ -170,8 +172,11 @@ def run(opts):
                        richA_stats, launch_time, finish_time)
         except:
             # release lock
-            remove(path.join(opts.workdir, '__lock_db'))
             print_exc()
+            try:
+                remove(path.join(opts.workdir, '__lock_db'))
+            except OSError:
+                pass
             exit(1)
 
 
@@ -222,6 +227,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        key=lambda x: len(x)):
             if crm in cmp_result:
                 add_path(cur, cmp_result[crm]['path_cmprt'], 'COMPARTMENT',
+                         jobid, opts.workdir)
+                add_path(cur, cmp_result[crm]['imag_cmprt'], 'FIGURE',
                          jobid, opts.workdir)
                 if opts.savecorr:
                     add_path(cur, cmp_result[crm]['path_corma'], 'CROSS_CORR_MAT', jobid, opts.workdir)

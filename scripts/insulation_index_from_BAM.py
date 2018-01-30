@@ -63,7 +63,7 @@ def get_options():
                         help='''[%(default)s] list of pairs of distances between
                         which to compute the insulation index. E.g. 4,5 means
                         that for a given bin B(i), all interactions between
-                        B(i-4) to B(i-5) and B(i+4) to B(i+6) will be summed and
+                        B(i-4) to B(i-5) and B(i+4) to B(i+5) will be summed and
                         used to compute the insulation index''')
     parser.add_argument('-o', '--outfile', dest='outfile', metavar='',
                         required=True, default=True, help='path to output file')

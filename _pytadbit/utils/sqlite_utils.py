@@ -115,7 +115,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
         pass
 
 
-def print_db(cur, name, no_print='', savedata=None, append=False):
+def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False):
     """
     print the content of a table to stdout in ascii/human-friendly format,
     or write it to a file in tab separated format (suitable for excel).
@@ -127,9 +127,16 @@ def print_db(cur, name, no_print='', savedata=None, append=False):
        tsv format,otherwise, it will be written to stdout in ascii format
     :param False append: whether to append to file,or to overwrite it.
     """
-    cur.execute('select * from %s' % name)
+    if jobids:
+        cur.execute('select * from %s where %s in(%s)' % (
+            name, 'JOBID' if name != 'JOBs' else 'ID',
+            ','.join(map(str, jobids))))
+    else:
+        cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
+    if not rows:
+        return
     if isinstance(no_print, str):
         no_print = [no_print]
     for nop in no_print:
