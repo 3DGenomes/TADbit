@@ -4,17 +4,17 @@ from subprocess import Popen, PIPE, check_call, CalledProcessError
 
 from pytadbit._version import __version__
 
-## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
-if not "DISPLAY" in environ:
-    import matplotlib
-    matplotlib.use('Agg')
-else:
-    try:
-        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
-                   shell=True, stdout=PIPE, stderr=PIPE)
-    except CalledProcessError:
-        import matplotlib
-        matplotlib.use('Agg')
+# ## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
+# if not "DISPLAY" in environ:
+#     import matplotlib
+#     matplotlib.use('Agg')
+# else:
+#     try:
+#         check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
+#                    shell=True, stdout=PIPE, stderr=PIPE)
+#     except CalledProcessError:
+#         import matplotlib
+#         matplotlib.use('Agg')
 
 def get_dependencies_version(dico=False):
     """
