@@ -4,6 +4,7 @@ some utils relative to sqlite
 import sqlite3 as lite
 from os.path import abspath, relpath, join
 from hashlib import md5
+from sys import stdout
 
 
 def digest_parameters(opts, get_md5=True, extra=None):
@@ -116,7 +117,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
 
 
 def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
-             **kwargs):
+             tsv=False, **kwargs):
     """
     print the content of a table to stdout in ascii/human-friendly format,
     or write it to a file in tab separated format (suitable for excel).
@@ -130,6 +131,8 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
     :param False append: whether to append to file,or to overwrite it.
     :param kwargs: dictionary with column names and values to use as filter
     """
+    if not savedata:
+        savedata = stdout
     if jobids:
         cur.execute('select * from %s where %s in(%s)' % (
             name, 'JOBID' if name != 'JOBs' else 'ID',
@@ -154,10 +157,10 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             bad = names.index(nop)
             names.pop(bad)
             rows = [[v for i, v in enumerate(row) if i != bad] for row in rows]
-    if savedata is None:
+    if not tsv:
         cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
                                             for row in rows + [names]])]
-        _ascii_print_db(name, names, cols, rows)
+        _ascii_print_db(name, names, cols, rows, savedata)
     else:
         if name == 'FILTER_OUTPUTs':
             _rev_tsv_print_db(names, rows, savedata, append)
@@ -165,21 +168,31 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             _tsv_print_db(name, names, rows, savedata, append)
 
 
-def _ascii_print_db(name, names, cols, rows):
-    print ',-' + '-' * len(name) + '-.'
-    print '| ' + name + ' |'
-    print ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.'
-    print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v)
-                             for i, v in enumerate(names)]) + ' |'
-    print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
-    print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                          for i, v in enumerate(row)]) + ' |'
+def _ascii_print_db(name, names, cols, rows, savedata):
+    if isinstance(savedata, str):
+        out = open(savedata, 'w')
+    else:
+        out = savedata
+    chars = ''
+    chars += ',-' + '-' * len(name) + '-.\n'
+    chars += '| ' + name + ' |\n'
+    chars += ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.\n'
+    chars += '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v)
+                             for i, v in enumerate(names)]) + ' |\n'
+    chars += '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|\n'
+    chars += '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
+                                          for i, v in enumerate(row)]) + ' |\n'
                               for row in rows])
-    print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"
+    chars += "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'\n"
+    out.write(chars)
+    out.close()
 
 
 def _tsv_print_db(name, names, rows, savedata, append):
-    out = open(savedata, 'a' if append else 'w')
+    if isinstance(savedata, str):
+        out = open(savedata, 'a' if append else 'w')
+    else:
+        out = savedata
     out.write('\t' + '\t'.join(names) + '\n')
     out.write(name)
     for row in rows:
@@ -189,7 +202,10 @@ def _tsv_print_db(name, names, rows, savedata, append):
 
 
 def _rev_tsv_print_db(names, rows, savedata, append):
-    out = open(savedata, 'a' if append else 'w')
+    if isinstance(savedata, str):
+        out = open(savedata, 'a' if append else 'w')
+    else:
+        out = savedata
     pos = names.index('Name')
     out.write('\t'.join([row[pos] for row in rows]) + '\n')
     for col in xrange(len(rows[pos])):

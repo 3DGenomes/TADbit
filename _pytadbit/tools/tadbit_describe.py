@@ -7,12 +7,13 @@ information needed
 """
 
 from argparse                    import HelpFormatter
-from pytadbit.utils.sqlite_utils import print_db
 import sqlite3 as lite
 from os                          import path, remove
 from string                      import ascii_letters
 from random                      import random
 from shutil                      import copyfile
+
+from pytadbit.utils.sqlite_utils import print_db
 
 DESC = "Describe jobs and results in a given working directory"
 
@@ -40,8 +41,8 @@ def run(opts):
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
     con = lite.connect(dbfile)
-    if opts.tsv and path.exists(opts.tsv):
-        remove(opts.tsv)
+    if opts.output and path.exists(opts.output):
+        remove(opts.output)
     with con:
         cur = con.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -49,7 +50,9 @@ def run(opts):
             if table[0].lower() in ['jobs', 'paths'] and opts.tsv:
                 continue
             if table[0].lower() in opts.tables:
-                print_db(cur, table[0], savedata=opts.tsv, append=True,
+                print_db(cur, table[0],
+                         savedata=opts.output,
+                         append=True, tsv=opts.tsv,
                          no_print=['JOBid', 'Id', 'Input',
                                    '' if table[0] == 'MAPPED_OUTPUTs'
                                    else 'PATHid'] if opts.tsv else '',
@@ -106,11 +109,13 @@ def populate_args(parser):
                         help='''if provided uses this directory to manipulate the
                         database''')
 
-    glopts.add_argument('--tsv', dest='tsv', action='store', default=None,
-                        metavar='PATH', type=str,
-                        help='''store output in tab separated format to the
-                        provided path.''')
+    glopts.add_argument('--tsv', dest='tsv', default=False,
+                        action='store_true',
+                        help='''Print output in tab separated format''')
 
+    glopts.add_argument('-o', '--output', dest='output', default=None,
+                        action='store',
+                        help='''Writes output in specified file.''')
     parser.add_argument_group(glopts)
 
 
