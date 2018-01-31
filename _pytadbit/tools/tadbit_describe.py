@@ -97,7 +97,7 @@ def populate_args(parser):
                         help='''Display only items matching these jobids.''')
 
     glopts.add_argument('-s', '--select', dest='select', metavar="STR",
-                        action='store', default=None, type=str, nargs='+',
+                        action='store', default={}, type=str, nargs='+',
                         help='''ensemble of keyword and value to filter results
                         in the form: `-s Chromosome,18`''')
 
