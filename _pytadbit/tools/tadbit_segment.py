@@ -32,7 +32,7 @@ DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
-    param_hash = digest_parameters(opts)
+    param_hash = digest_parameters(opts, get_md5=True)
 
     if opts.nosql:
         biases = opts.biases
@@ -71,7 +71,6 @@ def run(opts):
             rich_in_A = get_gc_content(parse_fasta(opts.fasta, chr_filter=opts.crms), reso,
                                        chromosomes=opts.crms,
                                        by_chrom=True, n_cpus=opts.cpus)
-            opts.rich_in_A = opts.fasta
         elif opts.rich_in_A:
             rich_in_A = opts.rich_in_A
         else:
@@ -98,18 +97,19 @@ def run(opts):
             ev_file.close()
 
         for crm in opts.crms or hic_data.chromosomes:
-            cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
-            cmprt_imag = path.join(cmprt_dir, 'chr%s_%s.png' % (crm, param_hash))
+            cmprt_file1 = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
+            cmprt_file2 = path.join(cmprt_dir, '%s_EigVect_%s.tsv' % (crm, param_hash))
+            cmprt_image = path.join(cmprt_dir, 'chr%s_%s.png' % (crm, param_hash))
             if opts.savecorr:
-                corma_file = path.join(cmprt_dir, '%s_corr-matrix%s.tsv' %
+                cormat_file = path.join(cmprt_dir, '%s_corr-matrix%s.tsv' %
                                        (crm, param_hash))
             else:
-                corma_file = None
-            hic_data.write_compartments(cmprt_file,
-                                        chroms=[crm])
-            cmp_result[crm] = {'path_cmprt': cmprt_file,
-                               'path_corma': corma_file,
-                               'imag_cmprt': cmprt_imag,
+                cormat_file = None
+            hic_data.write_compartments(cmprt_file1, chroms=[crm])
+            cmp_result[crm] = {'path_cmprt1': cmprt_file1,
+                               'path_cmprt2': cmprt_file2,
+                               'path_cormat': cormat_file,
+                               'image_cmprt': cmprt_image,
                                'num' : len(hic_data.compartments[crm])}
 
     # TADs
@@ -169,9 +169,9 @@ def run(opts):
     if not opts.nosql:
         try:
             save_to_db(opts, cmp_result, tad_result, reso, inputs,
-                       richA_stats, launch_time, finish_time)
+                       richA_stats, param_hash, launch_time, finish_time)
         except:
-            # release lock
+            # release lock anyway
             print_exc()
             try:
                 remove(path.join(opts.workdir, '__lock_db'))
@@ -181,7 +181,7 @@ def run(opts):
 
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
-               richA_stats, launch_time, finish_time):
+               richA_stats, param_hash, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -207,31 +207,33 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 TADs int,
                 Compartments int,
                 richA_corr real,
+                best_EV int,
                 Chromosome text,
                 Resolution int)""")
         try:
-            parameters = digest_parameters(opts, get_md5=False)
-            param_hash = digest_parameters(opts, get_md5=True )
+            parameters = digest_parameters(opts, get_md5=False, extra=['fasta'])
             cur.execute("""
             insert into JOBs
             (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
             values
-            (NULL,       '%s',        '%s',        '%s', 'Segment',           '%s')
+            (NULL,       '%s',        '%s',        '%s', 'Segment',       '%s')
             """ % (parameters,
                    time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
                    time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        for crm in max(cmp_result.keys(), tad_result.keys(),
-                       key=lambda x: len(x)):
+        for crm in max(cmp_result.keys(), tad_result.keys(), key=len):
             if crm in cmp_result:
-                add_path(cur, cmp_result[crm]['path_cmprt'], 'COMPARTMENT',
+                add_path(cur, cmp_result[crm]['path_cmprt1'], 'COMPARTMENT',
                          jobid, opts.workdir)
-                add_path(cur, cmp_result[crm]['imag_cmprt'], 'FIGURE',
+                add_path(cur, cmp_result[crm]['path_cmprt2'], 'COMPARTMENT',
+                         jobid, opts.workdir)
+                add_path(cur, cmp_result[crm]['image_cmprt'], 'FIGURE',
                          jobid, opts.workdir)
                 if opts.savecorr:
-                    add_path(cur, cmp_result[crm]['path_corma'], 'CROSS_CORR_MAT', jobid, opts.workdir)
+                    add_path(cur, cmp_result[crm]['path_cormat'],
+                             'CROSS_CORR_MAT', jobid, opts.workdir)
             if crm in tad_result:
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
             if opts.rich_in_A:
@@ -239,9 +241,9 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             try:
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
-                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, best_EV, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,      %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
@@ -252,7 +254,14 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        reso))
             except lite.OperationalError:  # TODO: remove this
                 print_exc()
-                cur.execute("alter table SEGMENT_OUTPUTs add column 'richA_corr' 'real'")
+                try:
+                    cur.execute("alter table SEGMENT_OUTPUTs add column 'richA_corr' 'real'")
+                except:
+                    pass
+                try:
+                    cur.execute("alter table SEGMENT_OUTPUTs add column 'best_EV' 'int'")
+                except:
+                    pass
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
                 (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
@@ -506,6 +515,14 @@ def check_options(opts):
 
     if opts.rich_in_A and opts.fasta:
         raise Exception('ERROR: should choose one of FASTA or rich_in_A')
+
+    # rich_in_A
+    if opts.fasta:
+        opts.rich_in_A = opts.fasta
+        if opts.rich_in_A:
+            raise Exception(('ERROR: if you input a FASTA file, GC content will'
+                             'will be used as "rich in A" metric to infer '
+                             'compartments.'))
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
