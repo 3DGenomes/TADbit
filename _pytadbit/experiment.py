@@ -1547,7 +1547,7 @@ class Experiment(object):
         if self.hic_data and self.hic_data[0].chromosomes:
             tot = 0
             chrs = []
-            chrom_offset_start = 0
+            chrom_offset_start = start
             chrom_offset_end = 0
             for k, v in self.hic_data[0].chromosomes.iteritems():
                 tot += v
