@@ -115,7 +115,8 @@ def add_path(cur, path, typ, jobid, workdir=None):
         pass
 
 
-def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False):
+def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
+             **kwargs):
     """
     print the content of a table to stdout in ascii/human-friendly format,
     or write it to a file in tab separated format (suitable for excel).
@@ -123,14 +124,23 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False):
     :param cur: sqlite cursor
     :param name: DB name
     :param '' no_print: columns to skip
+    :param None jobids: limit to a given list of jobids
     :param None savedata: path to file. If provided than output will be saved in
        tsv format,otherwise, it will be written to stdout in ascii format
     :param False append: whether to append to file,or to overwrite it.
+    :param kwargs: dictionary with column names and values to use as filter
     """
     if jobids:
         cur.execute('select * from %s where %s in(%s)' % (
             name, 'JOBID' if name != 'JOBs' else 'ID',
             ','.join(map(str, jobids))))
+    elif kwargs:
+        filterstr = ' AND '.join("%s='%s'" % (k, 'NULL' if v == 'None' else v)
+                                 for k, v in kwargs.iteritems())
+        try:
+            cur.execute("select * from %s where %s" % (name, filterstr))
+        except lite.OperationalError:
+            return
     else:
         cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
