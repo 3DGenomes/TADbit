@@ -117,7 +117,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
 
 
 def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
-             tsv=False, **kwargs):
+             columns=None, tsv=False, **kwargs):
     """
     print the content of a table to stdout in ascii/human-friendly format,
     or write it to a file in tab separated format (suitable for excel).
@@ -133,19 +133,23 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
     """
     if not savedata:
         savedata = stdout
+    if not columns:
+        columns = ['*']
+    columns = [c.lower() for c in columns]
     if jobids:
-        cur.execute('select * from %s where %s in(%s)' % (
-            name, 'JOBID' if name != 'JOBs' else 'ID',
+        cur.execute('select %s from %s where %s in(%s)' % (
+            ','.join(columns), name, 'JOBID' if name != 'JOBs' else 'ID',
             ','.join(map(str, jobids))))
     elif kwargs:
         filterstr = ' AND '.join("%s='%s'" % (k, 'NULL' if v == 'None' else v)
                                  for k, v in kwargs.iteritems())
         try:
-            cur.execute("select * from %s where %s" % (name, filterstr))
+            cur.execute("select %s from %s where %s" % (
+                ','.join(columns), name, filterstr))
         except lite.OperationalError:
             return
     else:
-        cur.execute('select * from %s' % name)
+        cur.execute('select %s from %s' % (','.join(columns), name))
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
     if not rows:
@@ -153,6 +157,8 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
     if isinstance(no_print, str):
         no_print = [no_print]
     for nop in no_print:
+        if nop.lower() in columns:
+            continue
         if nop in names:
             bad = names.index(nop)
             names.pop(bad)

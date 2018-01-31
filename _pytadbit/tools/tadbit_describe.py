@@ -56,8 +56,8 @@ def run(opts):
                          no_print=['JOBid', 'Id', 'Input',
                                    '' if table[0] == 'MAPPED_OUTPUTs'
                                    else 'PATHid'] if opts.tsv else '',
-                         jobids=opts.jobids,
-                         **dict(f.split(',') for f in opts.select))
+                         jobids=opts.jobids, columns=opts.select,
+                         **dict(f.split(',') for f in opts.where))
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
@@ -99,10 +99,15 @@ def populate_args(parser):
                         nargs='+', action='store', default=None, type=int,
                         help='''Display only items matching these jobids.''')
 
-    glopts.add_argument('-s', '--select', dest='select', metavar="STR",
+    glopts.add_argument('-W', '--where', dest='where', metavar="STR",
                         action='store', default={}, type=str, nargs='+',
                         help='''ensemble of keyword and value to filter results
                         in the form: `-s Chromosome,18`''')
+
+    glopts.add_argument('-s', '--select', dest='select', metavar="STR",
+                        action='store', default={}, type=str, nargs='+',
+                        help='''ensemble of keyword to show results. E.g.
+                        to show only JobIds: `-s Jobids`''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,

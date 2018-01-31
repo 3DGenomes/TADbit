@@ -250,7 +250,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm], crm,
+                       opts.ev_index[ncrm] if opts.ev_index else 1, crm,
                        reso))
             except lite.OperationalError:  # TODO: remove this
                 print_exc()
@@ -273,7 +273,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm], crm,
+                       opts.ev_index[ncrm] if opts.ev_index else 1, crm,
                        reso))
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
