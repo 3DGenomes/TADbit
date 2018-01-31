@@ -171,8 +171,10 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
 def _ascii_print_db(name, names, cols, rows, savedata):
     if isinstance(savedata, str):
         out = open(savedata, 'w')
+        to_close = True
     else:
         out = savedata
+        to_close = False
     chars = ''
     chars += ',-' + '-' * len(name) + '-.\n'
     chars += '| ' + name + ' |\n'
@@ -181,11 +183,12 @@ def _ascii_print_db(name, names, cols, rows, savedata):
                              for i, v in enumerate(names)]) + ' |\n'
     chars += '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|\n'
     chars += '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                          for i, v in enumerate(row)]) + ' |\n'
-                              for row in rows])
+                                          for i, v in enumerate(row)]) + ' |'
+                              for row in rows]) + '\n'
     chars += "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'\n"
     out.write(chars)
-    out.close()
+    if to_close:
+        out.close()
 
 
 def _tsv_print_db(name, names, rows, savedata, append):

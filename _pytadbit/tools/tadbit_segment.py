@@ -223,7 +223,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        for crm in max(cmp_result.keys(), tad_result.keys(), key=len):
+        for ncrm, crm in enumerate(max(cmp_result.keys(), tad_result.keys(), key=len)):
             if crm in cmp_result:
                 add_path(cur, cmp_result[crm]['path_cmprt1'], 'COMPARTMENT',
                          jobid, opts.workdir)
@@ -250,7 +250,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       crm,
+                       opts.ev_index[ncrm], crm,
                        reso))
             except lite.OperationalError:  # TODO: remove this
                 print_exc()
@@ -264,16 +264,16 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                     pass
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
-                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, Chromosome, Resolution)
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, best_EV, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,      %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       crm,
+                       opts.ev_index[ncrm], crm,
                        reso))
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
@@ -518,11 +518,11 @@ def check_options(opts):
 
     # rich_in_A
     if opts.fasta:
-        opts.rich_in_A = opts.fasta
         if opts.rich_in_A:
             raise Exception(('ERROR: if you input a FASTA file, GC content will'
                              'will be used as "rich in A" metric to infer '
                              'compartments.'))
+        opts.rich_in_A = opts.fasta
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
