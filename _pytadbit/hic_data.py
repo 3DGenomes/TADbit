@@ -71,7 +71,7 @@ class HiC_data(dict):
         Check if matrix is symmetric (check first 10 non-zero values) and,
         if not, make it symmetric
          - if matrix is half empty, copy values on one side to the other side
-         - if matrix is asymetric, sum non-diagonal values
+         - if matrix is asymmetric, sum non-diagonal values
         """
         to_sum = False
         symmetric = True
@@ -151,7 +151,7 @@ class HiC_data(dict):
 
     def get_hic_data_as_csr(self):
         """
-        Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
+        Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary
 
         :returns: scipy sparse matrix in Compressed Sparse Row format
         """
@@ -201,12 +201,12 @@ class HiC_data(dict):
 
     def add_sections(self, lengths, chr_names=None, binned=False):
         """
-        Add genomic coordinate to HiC_data object by getting them from a fasta
+        Add genomic coordinate to HiC_data object by getting them from a FASTA
         file containing chromosome sequences. Orders matters.
 
         :param lengths: list of chromosome lengths
         :param None chr_names: list of corresponding chromosome names.
-        :param False binned: if True, leghths will not be divided by resolution
+        :param False binned: if True, lengths will not be divided by resolution
         """
         sections = []
         genome_seq = OrderedDict()
@@ -304,7 +304,7 @@ class HiC_data(dict):
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
                        by_mean=True, min_count=None, silent=False):
         """
-        Call filtering function, to remove artefactual columns in a given Hi-C
+        Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
         counts; columns passing through a cell with no interaction in the
         diagonal; and columns with NaN values (in this case NaN will be replaced
@@ -473,7 +473,7 @@ class HiC_data(dict):
                                       key=lambda x: self.sections[x])
                       if start2 <= self.sections[k] < end2]
             if not rownam:
-                raise Exception('ERROR: HiC data object should have genomic coordinates')
+                raise Exception('ERROR: Hi-C data object should have genomic coordinates')
             iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
                                           normalized=normalized)
             pair_string = '%s\t%s,%f\t%d\t.\n' if normalized else '%s\t%s,%d\t%d\t.\n'
@@ -648,7 +648,7 @@ class HiC_data(dict):
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
         :param 3 max_ev: maximum number of EV to try
-        :param None ev_index: a list of number refering to the index of the
+        :param None ev_index: a list of number referring to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones. Note:
            if asking for only one chromosome the list should be only of one
@@ -659,17 +659,20 @@ class HiC_data(dict):
            parameter a path to a BED or BED-Graph file with a list of genes or
            active epigenetic marks can be passed, and used instead of the mean
            interactions.
-        :param False'show_compartment_labels': if True draw A and B compartment blocks.
+        :param False show_compartment_labels: if True draw A and B compartment blocks.
 
         TODO: this is really slow...
 
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: a dictionary with the N (max_ev) first eigen vectors used to define
-           compartment borders for each chromosome (keys are chromosome names).
+        :returns: a dictionary with the N (max_ev) first eigenvectors used to
+           define compartment borders for each chromosome (keys are chromosome
+           names). Sign of the eigenvectors are changed in order to match the
+           prediction of A/B compartments (positive is A). Also values in the
+           eigenvector are scaled dividing by the maximum value.
            And a dictionary of statistics of enrichment for A compartments
-           (spearman rho).
+           (Spearman rho).
         """
         if not self.bads:
             if kwargs.get('verbose', False):
@@ -827,7 +830,7 @@ class HiC_data(dict):
                 r_stat, richA_pval = spearmanr(eves, gccs)
                 if kwargs.get('verbose', False):
                     print ('  - Spearman correlation between "rich in A" and '
-                           'EigenVector:\n'
+                           'Eigenvector:\n'
                            '      rho: %.7f p-val:%.7f' % (r_stat, richA_pval))
                 if r_stat < 0:  # switch sign
                     for i in xrange(len(n_first)):
@@ -916,7 +919,7 @@ class HiC_data(dict):
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
         :param 3 max_ev: maximum number of EV to try
-        :param None ev_index: a list of number refering to the index of the
+        :param None ev_index: a list of number referring to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones. Note:
            if asking for only one chromosome the list should be only of one
@@ -1451,7 +1454,7 @@ def _hmm_refine_compartments(xsec, models, bads, verbose):
 
 def _training(x, n, verbose):
     """
-    define default emision transition and initial states, and train the hmm
+    define default emission transition and initial states, and train the hmm
     """
     pi = [0.5 - ((n - 2) * 0.05)**2 if i == 0 or i == n - 1 else ((n - 2)*0.05)**2*2 / (n - 2) for i in range(n)]
     T = [[0.9 if i==j else 0.1/(n-1) for i in xrange(n)] for j in xrange(n)]
@@ -1539,7 +1542,7 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
     if len(clusters) != n_clust:
         # warn('WARNING2: compartment clustering is too clear. Skipping')
         return (float('inf'), float('inf'), float('inf'))
-    # labelling compartments. A compartments shall have lower
+    # labeling compartments. A compartments shall have lower
     # mean intra-interactions
     dens = {}
     if rich_in_A:
