@@ -150,8 +150,11 @@ def run(opts):
                 nchunks=opts.nchunks, verbose=not opts.quiet,
                 clean=clean)
             b1, e1, b2, e2 = bin_coords
-            b1, e1 = 0, e1 - b1 + 1
-            b2, e2 = 0, e2 - b2 + 1
+            b1, e1 = 0, e1 - b1
+            b2, e2 = 0, e2 - b2
+            if opts.row_names:
+                row_names = ((reg, p + 1 , p + opts.reso) for reg in regions
+                             for p in range(0, sections[reg], opts.reso))
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
@@ -166,8 +169,15 @@ def run(opts):
                     out.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
                 else:
                     out.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
-                out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0)) for i in xrange(b1, e1))
-                                    for j in xrange(b2, e2)))
+                if opts.row_names:
+                    out.write('\n'.join('%s\t%d\t%d\t' % (row_names.next()) +
+                                        '\t'.join(str(matrix.get((i, j), 0))
+                                                  for i in xrange(b1, e1))
+                                        for j in xrange(b2, e2)) + '\n')
+                else:
+                    out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0))
+                                                  for i in xrange(b1, e1))
+                                        for j in xrange(b2, e2)) + '\n')
                 out.close()
             if opts.plot:
                 cmap = plt.get_cmap(opts.cmap)
@@ -367,6 +377,10 @@ def populate_args(parser):
                         defaults matrices are written in BED-like format (also
                         only way to get a raw matrix with all values including
                         the ones in masked columns).''')
+
+    outopt.add_argument('--rownames', dest='row_names', action='store_true',
+                        default=False,
+                        help='To store row names in the output text matrix.')
 
     outopt.add_argument('--plot', dest='plot', action='store_true',
                         default=False,
