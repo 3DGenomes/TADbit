@@ -61,6 +61,7 @@ def run(opts):
     # compartments
     cmp_result = {}
     richA_stats = {}
+    firsts = {}
     if not opts.only_tads:
         print 'Searching compartments'
         cmprt_dir = path.join(opts.workdir, '06_segmentation',
@@ -90,10 +91,11 @@ def run(opts):
                 continue
             ev_file = open(path.join(cmprt_dir,
                                      '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
-            ev_file.write('# %s\n' % ('\t'.join('EV_%d' % i
-                                                for i in range(1, n_evs + 1))))
+            ev_file.write('# %s\n' % ('\t'.join(
+                'EV_%d (%.4f)' % (i, v)
+                for i, v in enumerate(firsts[crm][0], 1))))
             ev_file.write('\n'.join(['\t'.join([str(v) for v in vs])
-                                     for vs in zip(*firsts[crm])]))
+                                     for vs in zip(*firsts[crm][1])]))
             ev_file.close()
 
         for crm in opts.crms or hic_data.chromosomes:
@@ -169,7 +171,8 @@ def run(opts):
     if not opts.nosql:
         try:
             save_to_db(opts, cmp_result, tad_result, reso, inputs,
-                       richA_stats, param_hash, launch_time, finish_time)
+                       richA_stats, firsts, param_hash,
+                       launch_time, finish_time)
         except:
             # release lock anyway
             print_exc()
@@ -181,7 +184,8 @@ def run(opts):
 
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
-               richA_stats, param_hash, launch_time, finish_time):
+               richA_stats, firsts, param_hash,
+               launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -207,7 +211,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 TADs int,
                 Compartments int,
                 richA_corr real,
-                best_EV int,
+                EV_index int,
+                EValue real,
                 Chromosome text,
                 Resolution int)""")
         try:
@@ -238,19 +243,23 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
             if opts.rich_in_A:
                 add_path(cur, opts.rich_in_A, 'BED', jobid, opts.workdir)
+
             try:
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
-                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, best_EV, Chromosome, Resolution)
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, EV_index, EValue, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,      %s,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,       %s,     %f,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm] if opts.ev_index else 1, crm,
+                       opts.ev_index[ncrm] if opts.ev_index else 1,
+                       firsts[crm][0][(opts.ev_index[ncrm] - 1)
+                                      if opts.ev_index else 0],
+                       crm,
                        reso))
             except lite.OperationalError:  # TODO: remove this
                 print_exc()
@@ -259,21 +268,28 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 except:
                     pass
                 try:
-                    cur.execute("alter table SEGMENT_OUTPUTs add column 'best_EV' 'int'")
+                    cur.execute("alter table SEGMENT_OUTPUTs add column 'EValue' 'real'")
+                except:
+                    pass
+                try:
+                    cur.execute("alter table SEGMENT_OUTPUTs add column 'EV_index', 'int'")
                 except:
                     pass
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
-                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, best_EV, Chromosome, Resolution)
+                (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, EV_index, EValue, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,      %s,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,            %s,     %f,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm] if opts.ev_index else 1, crm,
+                       opts.ev_index[ncrm] if opts.ev_index else 1,
+                       firsts[crm][0][(opts.ev_index[ncrm] - 1)
+                                      if opts.ev_index else 0],
+                       crm,
                        reso))
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
@@ -524,6 +540,13 @@ def check_options(opts):
                              'compartments.'))
         opts.rich_in_A = opts.fasta
 
+    # N EVs
+    if max(opts.ev_index) > opts.n_evs:
+        warn('WARNING: increasing number of calculated eigenvectors to %d, '
+             'to match the u=input eigenvectors indices' % max(opts.ev_index))
+        opts.n_evs = max(opts.ev_index)
+
+    # tmp folder
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
         # tmp file

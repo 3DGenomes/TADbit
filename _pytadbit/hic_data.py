@@ -666,9 +666,9 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: a dictionary with the N (max_ev) first eigenvectors used to
-           define compartment borders for each chromosome (keys are chromosome
-           names). Sign of the eigenvectors are changed in order to match the
+        :returns: a dictionary with the N (max_ev) first eigenvectors in the
+           form: {Chromosome_name: (Eigenvalue: [Eigenvector])}
+           Sign of the eigenvectors are changed in order to match the
            prediction of A/B compartments (positive is A). Also values in the
            eigenvector are scaled dividing by the maximum value.
            And a dictionary of statistics of enrichment for A compartments
@@ -777,9 +777,9 @@ class HiC_data(dict):
 
             # get eigenvectors
             try:
-                # This eighs is very very fast, only ask for one eigvector
-                _, evect = eigsh(array(matrix),
-                                 k=max_ev if max_ev else (len(matrix) - 1))
+                # This eighs is very very fast, only ask for one eigenvector
+                evals, evect = eigsh(array(matrix),
+                                     k=max_ev if max_ev else (len(matrix) - 1))
             except (LinAlgError, ValueError):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
@@ -832,7 +832,8 @@ class HiC_data(dict):
                     print ('  - Spearman correlation between "rich in A" and '
                            'Eigenvector:\n'
                            '      rho: %.7f p-val:%.7f' % (r_stat, richA_pval))
-                if r_stat < 0:  # switch sign
+                # switch sign and normalize
+                if r_stat < 0:
                     for i in xrange(len(n_first)):
                         max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
                         n_first[i] = [-v / max_v for v in n_first[i]]
@@ -858,7 +859,7 @@ class HiC_data(dict):
                     except ZeroDivisionError:
                         cmprt['dens'] = float('nan')
                     cmprt['type'] = 'A' if n_first[ev_num][cmprt['start']] > 0 else'B'
-            firsts[sec] = n_first
+            firsts[sec] = (evals[::-1], n_first)
 
             # needed for the plotting
             if savefig or show:
