@@ -541,10 +541,11 @@ def check_options(opts):
         opts.rich_in_A = opts.fasta
 
     # N EVs
-    if max(opts.ev_index) > opts.n_evs:
-        warn('WARNING: increasing number of calculated eigenvectors to %d, '
-             'to match the u=input eigenvectors indices' % max(opts.ev_index))
-        opts.n_evs = max(opts.ev_index)
+    if opts.ev_index:
+        if max(opts.ev_index) > opts.n_evs:
+            warn('WARNING: increasing number of calculated eigenvectors to %d, '
+                 'to match the u=input eigenvectors indices' % max(opts.ev_index))
+            opts.n_evs = max(opts.ev_index)
 
     # tmp folder
     if 'tmpdb' in opts and opts.tmpdb:
