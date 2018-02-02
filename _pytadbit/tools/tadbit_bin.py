@@ -40,6 +40,10 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
+    if opts.zrange:
+        vmin = float(opts.zrange.split(',')[0])
+        vmax = float(opts.zrange.split(',')[1])
+
     clean = True  # change for debug
 
     if opts.bam:
@@ -199,7 +203,7 @@ def run(opts):
                         m[bad2,:] = 1
                 matrix = log2(ma.masked_array(matrix, m))
                 plt.imshow(matrix, interpolation='none', origin='lower',
-                           cmap=cmap)
+                           cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.xlabel('Genomic bin')
                 plt.ylabel('Genomic bin')
                 plt.title('Region: %s, normalization: %s, resolution: %s' % (
@@ -324,6 +328,7 @@ def populate_args(parser):
     rfiltr = parser.add_argument_group('Read filtering options')
     normpt = parser.add_argument_group('Normalization options')
     outopt = parser.add_argument_group('Output options')
+    pltopt = parser.add_argument_group('Plotting options')
 
     oblopt.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
@@ -381,7 +386,7 @@ def populate_args(parser):
                         default=False,
                         help='To store row names in the output text matrix.')
 
-    outopt.add_argument('--plot', dest='plot', action='store_true',
+    pltopt.add_argument('--plot', dest='plot', action='store_true',
                         default=False,
                         help='[%(default)s] Plot matrix in desired format.')
 
@@ -389,13 +394,18 @@ def populate_args(parser):
                         default=False,
                         help='[%(default)s] Skip writing matrix in text format.')
 
-    outopt.add_argument('--cmap', dest='cmap', action='store',
+    pltopt.add_argument('--cmap', dest='cmap', action='store',
                         default='viridis',
                         help='[%(default)s] Matplotlib color map to use.')
 
-    outopt.add_argument('--format', dest='format', action='store',
+    pltopt.add_argument('--format', dest='format', action='store',
                         default='png',
                         help='[%(default)s] plot file format.')
+
+    pltopt.add_argument('--zrange', dest='zrange', action='store',
+                        default=None,
+                        help='''Range, in log2 scale of the color scale.
+                        i.e.: --zrange 2,-2''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to
@@ -417,7 +427,7 @@ def populate_args(parser):
                         action='store', default=['raw'], type=str, nargs='+',
                         choices=['norm', 'decay', 'raw'],
                         help='''[%(default)s] normalization(s) to apply.
-                        Order matters. Choices: [%(choices)s]''')
+                        Choices are: [%(choices)s]''')
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],

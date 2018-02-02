@@ -705,22 +705,21 @@ def get_matrix(inbam, resolution, biases=None,
     if return_something:
         if return_headers:
             # define output file name
-            if len(regions) == 1:
-                if not region1:
-                    region1 = regions[0]
-                if region2:
+            if len(regions) in [1, 2]:
+                if region1 and region2:
                     try:
-                        name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
-                                                      region2, start2 / resolution, end2 / resolution)
+                        name = '%s:%d-%d_%s:%d-%d' % (
+                            region1, start1 / resolution, end1 / resolution,
+                            region2, start2 / resolution, end2 / resolution)
                     except TypeError: # all chromosomes
                         name = '%s_%s' % (region1, region2)
-                elif start1 is not None:
-                    name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
+                elif region1 and start1 is not None:
+                    name = '%s:%d-%d' % (
+                        region1, start1 / resolution, end1 / resolution)
                 else:
                     name = region1
             else:
                 name = 'full'
-
             return dico, bads1, bads2, regions, name, bin_coords
         return dico
 
