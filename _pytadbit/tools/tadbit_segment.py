@@ -86,11 +86,13 @@ def run(opts):
             vmin=None if opts.fix_corr_scale else 'auto',
             vmax=None if opts.fix_corr_scale else 'auto')
 
-        for crm in opts.crms or hic_data.chromosomes:
+        for ncrm, crm in enumerate(opts.crms or hic_data.chromosomes):
             if not crm in firsts:
                 continue
-            ev_file = open(path.join(cmprt_dir,
-                                     '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
+            ev_file = open(path.join(
+                cmprt_dir, '%s_EigVect%d_%s.tsv' % (
+                    crm, opts.ev_index[ncrm] if opts.ev_index else 1,
+                    param_hash)), 'w')
             ev_file.write('# %s\n' % ('\t'.join(
                 'EV_%d (%.4f)' % (i, v)
                 for i, v in enumerate(firsts[crm][0], 1))))
@@ -98,10 +100,13 @@ def run(opts):
                                      for vs in zip(*firsts[crm][1])]))
             ev_file.close()
 
-        for crm in opts.crms or hic_data.chromosomes:
+        for ncrm, crm in enumerate(opts.crms or hic_data.chromosomes):
             cmprt_file1 = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
-            cmprt_file2 = path.join(cmprt_dir, '%s_EigVect_%s.tsv' % (crm, param_hash))
-            cmprt_image = path.join(cmprt_dir, 'chr%s_%s.png' % (crm, param_hash))
+            cmprt_file2 = path.join(cmprt_dir, '%s_EigVect%d_%s.tsv' % (
+                crm, opts.ev_index[ncrm] if opts.ev_index else 1, param_hash))
+            cmprt_image = path.join(cmprt_dir, '%s_EV%d_%s.%s' % (
+                crm, opts.ev_index[ncrm] if opts.ev_index else 1,
+                param_hash, opts.format))
             if opts.savecorr:
                 cormat_file = path.join(cmprt_dir, '%s_corr-matrix%s.tsv' %
                                        (crm, param_hash))
@@ -459,6 +464,9 @@ def populate_args(parser):
                         default=False,
                         help='''Correlation matrix plot scaled between correlation 1 and -1
                         instead of maximum observed values.''')
+
+    cmopts.add_argument('--format', dest='format', action='store', default='png',
+                        type=str, help='[%(default)s] file format for figures')
 
     cmopts.add_argument('--n_evs', dest='n_evs', metavar="INT",
                         action='store', default=3, type=int,

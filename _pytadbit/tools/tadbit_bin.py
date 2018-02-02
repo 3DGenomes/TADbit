@@ -443,6 +443,8 @@ def load_parameters_fromdb(opts):
         dbfile = opts.tmpdb
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
+    if not path.exists(dbfile):
+        raise Exception('ERROR: DB file: %s not found.' % dbfile)
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()

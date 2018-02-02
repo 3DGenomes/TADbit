@@ -614,7 +614,7 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='',
-                          ev_index=None, rich_in_A=None,
+                          ev_index=None, rich_in_A=None, format='png',
                           max_ev=3, show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
@@ -634,7 +634,8 @@ class HiC_data(dict):
         :param None crms: only runs these given list of chromosomes
         :param None savefig: path to a directory to store matrices with
            compartment predictions, one image per chromosome, stored under
-           'chromosome-name.png'.
+           'chromosome-name_EV1.png'.
+        :param png format: in which to save the figures.
         :param False show: show the plot
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
@@ -863,10 +864,16 @@ class HiC_data(dict):
                                 abs(npperc(matrix, 0.5))])
                     vmin = -vmax
                 try:
+                    fnam = os.path.join(savefig,
+                                        '%s_EV%d%s.%s' % (str(sec),
+                                                          ev_nums[sec],
+                                                          suffix,
+                                                          format)
+                                        if savefig else None)
                     plot_compartments(
-                        sec, n_first[ev_num], cmprts, matrix, show,
-                        savefig + '/chr' + str(sec) + suffix + '.png' if savefig else None,
-                        vmin=vmin, vmax=vmax, whichpc=ev_num + 1,showAB=show_compartment_labels)
+                        sec, n_first[ev_num], cmprts, matrix, show, fnam,
+                        vmin=vmin, vmax=vmax, whichpc=ev_num + 1,
+                        showAB=show_compartment_labels)
                 except AttributeError:
                     warn(('WARNING: chromosome %s too small for plotting.'
                           'Skipping image creation.') % sec)
