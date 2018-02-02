@@ -814,7 +814,9 @@ class HiC_data(dict):
                         brk['end'  ] += brk['end'] > b
             bads = set(bads)
 
-            # rescale first EV according to rich_in_A
+            # rescale first EV and change sign according to rich_in_A
+            richA_stats[sec] = None
+            sign = 1
             if rich_in_A and sec in rich_in_A:
                 eves = []
                 gccs = []
@@ -832,21 +834,12 @@ class HiC_data(dict):
                     print ('  - Spearman correlation between "rich in A" and '
                            'Eigenvector:\n'
                            '      rho: %.7f p-val:%.7f' % (r_stat, richA_pval))
-                # switch sign and normalize
-                if r_stat < 0:
-                    for i in xrange(len(n_first)):
-                        max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
-                        n_first[i] = [-v / max_v for v in n_first[i]]
-                else:
-                    for i in xrange(len(n_first)):
-                        max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
-                        n_first[i] = [v / max_v for v in n_first[i]]
                 richA_stats[sec] = r_stat
-            else:
-                richA_stats[sec] = (sec, None)
-                for i in xrange(len(n_first)):
-                    max_v = float(nanmax((nanmax(n_first[i]), -nanmin(n_first[i]))))
-                    n_first[i] = [v / max_v for v in n_first[i]]
+                # switch sign and normalize
+                sign = 1 if r_stat > 0 else -1
+            for i in xrange(len(n_first)):
+                max_v =  float(max(nanmax(n_first[i]), -nanmin(n_first[i])))
+                n_first[i] = [sign * v / max_v for v in n_first[i]]
             # store it
             ev_nums[sec] = ev_num + 1
             cmprts[sec] = breaks
