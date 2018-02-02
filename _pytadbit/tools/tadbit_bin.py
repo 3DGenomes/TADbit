@@ -43,6 +43,8 @@ def run(opts):
     if opts.zrange:
         vmin = float(opts.zrange.split(',')[0])
         vmax = float(opts.zrange.split(',')[1])
+    else:
+        vmin = vmax = None
 
     clean = True  # change for debug
 
