@@ -421,7 +421,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     if region1:
         regions = [region1]
         if region2:
-            regions.apend(region2)
+            regions.append(region2)
     else:
         total = len(bins)
         if start1 is not None or end1:
@@ -581,17 +581,17 @@ def get_biases_region(biases, bin_coords):
     # load biases and bad columns
     bias1  = dict((k - start_bin1, v)
                   for k, v in biases.get('biases', {}).iteritems()
-                  if start_bin1 <= k <= end_bin1)
+                  if start_bin1 <= k < end_bin1)
     bads1  = dict((k - start_bin1, v)
                   for k, v in biases.get('badcol', {}).iteritems()
-                  if start_bin1 <= k <= end_bin1)
+                  if start_bin1 <= k < end_bin1)
     if start_bin1 != start_bin2:
         bias2  = dict((k - start_bin2, v)
                       for k, v in biases.get('biases', {}).iteritems()
-                      if start_bin2 <= k <= end_bin2)
+                      if start_bin2 <= k < end_bin2)
         bads2  = dict((k - start_bin2, v)
                       for k, v in biases.get('badcol', {}).iteritems()
-                      if start_bin2 <= k <= end_bin2)
+                      if start_bin2 <= k < end_bin2)
     else:
         bias2 = bias1
         bads2 = bads1
@@ -653,7 +653,7 @@ def get_matrix(inbam, resolution, biases=None,
     if region1:
         regions = [region1]
         if region2:
-            regions.apend(region2)
+            regions.append(region2)
 
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)

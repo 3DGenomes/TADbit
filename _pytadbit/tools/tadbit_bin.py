@@ -19,9 +19,8 @@ import time
 
 import sqlite3 as lite
 from numpy                           import log2, zeros_like, ma, min as np_min
-from numpy                           import nonzero, isfinite, array
-from numpy                           import nanmin, nanmax
-from matplotlib                      import colors, pyplot as plt
+from numpy                           import nonzero, array
+from matplotlib                      import pyplot as plt
 from pysam                           import AlignmentFile
 
 from pytadbit.mapping.filter         import MASKED
@@ -195,8 +194,8 @@ def run(opts):
                 matrix[matrix==0] = mini
                 m = zeros_like(matrix)
                 for bad1 in bads1:
+                    m[:,bad1] = 1
                     for bad2 in bads2:
-                        m[:,bad1] = 1
                         m[bad2,:] = 1
                 matrix = log2(ma.masked_array(matrix, m))
                 plt.imshow(matrix, interpolation='none', origin='lower',
