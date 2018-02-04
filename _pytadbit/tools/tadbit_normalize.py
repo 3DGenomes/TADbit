@@ -15,6 +15,7 @@ from collections                          import OrderedDict
 from cPickle                              import dump, load
 # from warnings                             import filterwarnings
 from multiprocessing                      import cpu_count
+from traceback                            import print_exc
 import multiprocessing  as mu
 import sqlite3 as lite
 import time
@@ -155,7 +156,7 @@ def run(opts):
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
         cg_content=gc_content, n_rsites=n_rsites, min_perc=opts.min_perc, max_perc=opts.max_perc,
-        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs)
+        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs, extra_bads=opts.badcols)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
@@ -189,10 +190,20 @@ def run(opts):
 
     finish_time = time.localtime()
 
-    save_to_db(opts, bias_file, mreads, bad_col_image,
-               len(badcol), len(biases), raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2, opts.filter,
-               launch_time, finish_time)
+    try:
+        save_to_db(opts, bias_file, mreads, bad_col_image,
+                   len(badcol), len(biases), raw_cisprc, norm_cisprc,
+                   inter_vs_gcoord, a2, opts.filter,
+                   launch_time, finish_time)
+    except:
+        # release lock anyway
+        print_exc()
+        try:
+            remove(path.join(opts.workdir, '__lock_db'))
+        except OSError:
+            pass
+        exit(1)
+
 
 
 def save_to_db(opts, bias_file, mreads, bad_col_image,
@@ -480,6 +491,12 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         help='''only filter according to the percentage of zero
                         count or minimum count of reads''')
 
+    bfiltr.add_argument('-B', '--badcols', dest='badcols', nargs='+',
+                        type=str, default=None, metavar='CHR:POS1-POS2',
+                        help=('extra regions to be added to bad-columns (in'
+                              'genomic position). e.g.: --badcols'
+                              ' 1:150000000-160000000 2:1200000-1300000'))
+
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                         choices = range(1, 11),
@@ -644,7 +661,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
              extra_out='', only_valid=False, normalize_only=False,
-             max_njobs=100, min_perc=None, max_perc=None):
+             max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -752,6 +769,17 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     if mappability:
         badcol.update((i, True) for i, m in enumerate(mappability) if not m)
 
+    # add manually columns to bad columns
+    if extra_bads:
+        removed_manually = 0
+        for ebc in extra_bads:
+            c, ebc = ebc.split(':')
+            b, e = map(int, ebc.split('-'))
+            b = b / resolution + section_pos[c][0]
+            e = e / resolution + section_pos[c][0]
+            removed_manually += (e - b)
+            badcol.update(dict((p, 'manual') for p in xrange(b, e)))
+        printime('  - Removed %d columns manually.' % removed_manually)
     raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
                      for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
 

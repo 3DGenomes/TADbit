@@ -142,6 +142,11 @@ def run(opts):
         bamfile = AlignmentFile(mreads, 'rb')
         sections = OrderedDict(zip(bamfile.references,
                                    [x for x in bamfile.lengths]))
+        total = 0
+        section_pos = dict()
+        for crm in sections:
+            section_pos[crm] = (total, total + sections[crm])
+            total += sections[crm]
         for norm in opts.normalizations:
             printime('Getting %s matrices' % norm)
             matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
@@ -158,8 +163,12 @@ def run(opts):
             b1, e1 = 0, e1 - b1
             b2, e2 = 0, e2 - b2
             if opts.row_names:
-                row_names = ((reg, p + 1 , p + opts.reso) for reg in regions
-                             for p in range(0, sections[reg], opts.reso))
+                starts = [start1, start2]
+                ends = [end1, end2]
+                row_names = ((reg, p + 1 , p + opts.reso) for r, reg in enumerate(regions)
+                             for p in range(starts[r] if starts[r] else 0,
+                                            ends[r] if ends[r] else sections[reg],
+                                            opts.reso))
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
@@ -204,7 +213,7 @@ def run(opts):
                     for bad2 in bads2:
                         m[bad2,:] = 1
                 matrix = log2(ma.masked_array(matrix, m))
-                plt.imshow(matrix, interpolation='none', origin='lower',
+                plt.imshow(matrix, interpolation='None', origin='lower',
                            cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.xlabel('Genomic bin')
                 plt.ylabel('Genomic bin')
@@ -212,7 +221,11 @@ def run(opts):
                     name, norm, nicer(opts.reso)))
                 cbar = plt.colorbar()
                 cbar.ax.set_ylabel('Hi-C Log2 interaction count')
-                tadbit_savefig(path.join(outdir, fnam))
+                if opts.interactive:
+                    plt.show()
+                    plt.close('all')
+                else:
+                    tadbit_savefig(path.join(outdir, fnam))
     if not opts.matrix and not opts.only_plot:
         printime('Getting and writing matrices')
         out_files = write_matrix(mreads, opts.reso,
@@ -395,6 +408,11 @@ def populate_args(parser):
     outopt.add_argument('--only_plot', dest='only_plot', action='store_true',
                         default=False,
                         help='[%(default)s] Skip writing matrix in text format.')
+
+    outopt.add_argument('--interactive', dest='interactive', action='store_true',
+                        default=False,
+                        help='''[%(default)s] Open matplotlib interactive plot
+                        (nothing will be saved).''')
 
     pltopt.add_argument('--cmap', dest='cmap', action='store',
                         default='viridis',

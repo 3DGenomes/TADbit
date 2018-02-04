@@ -5,9 +5,16 @@
 from __future__ import absolute_import
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from os import environ
+from subprocess import check_call, PIPE, CalledProcessError
 
-import matplotlib
-matplotlib.use('Agg')
+if environ.get("DISPLAY", None) != ':0':
+    try:
+        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
+                   shell=True, stdout=PIPE, stderr=PIPE)
+    except CalledProcessError:
+        import matplotlib
+        matplotlib.use('Agg')
 
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_bin
