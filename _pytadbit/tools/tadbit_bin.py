@@ -19,7 +19,7 @@ import time
 
 import sqlite3 as lite
 from numpy                           import log2, zeros_like, ma, min as np_min
-from numpy                           import nonzero, array
+from numpy                           import nonzero, array, linspace
 from matplotlib                      import pyplot as plt
 from pysam                           import AlignmentFile
 
@@ -166,8 +166,8 @@ def run(opts):
                 starts = [start1, start2]
                 ends = [end1, end2]
                 row_names = ((reg, p + 1 , p + opts.reso) for r, reg in enumerate(regions)
-                             for p in range(starts[r] if starts[r] else 0,
-                                            ends[r] if ends[r] else sections[reg],
+                             for p in range(starts[r] if r < len(starts) and starts[r] else 0,
+                                            ends[r] if r < len(ends) and ends[r] else sections[reg],
                                             opts.reso))
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
@@ -202,7 +202,8 @@ def run(opts):
                                           nicer(opts.reso).replace(' ', ''),
                                           ('_' + param_hash), opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
-                plt.figure(figsize=(15, 12))
+                fig = plt.figure(figsize=(15, 12))
+                ax1 = plt.subplot(111)
                 matrix = array([array([matrix.get((i, j), 0) for i in xrange(b1, e1)])
                                 for j in xrange(b2, e2)])
                 mini = np_min(matrix[nonzero(matrix)]) / 2.
@@ -215,8 +216,59 @@ def run(opts):
                 matrix = log2(ma.masked_array(matrix, m))
                 plt.imshow(matrix, interpolation='None', origin='lower',
                            cmap=cmap, vmin=vmin, vmax=vmax)
-                plt.xlabel('Genomic bin')
-                plt.ylabel('Genomic bin')
+
+                if len(regions) <= 2:
+                    pltbeg1 = 0 if start1 is None else start1
+                    pltend1 = sections[regions[0]] if end1 is None else end1
+                    pltbeg2 = pltbeg1 if len(regions) == 1 else 0 if start2 is None else start2
+                    pltend2 = pltend1 if len(regions) == 1 else sections[regions[-1]] if end2 is None else end2
+
+                    plt.xlabel('%s:%d-%d' % (regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+                    plt.ylabel('%s:%d-%d' % (regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+                    pltend1 =  pltend1 // opts.reso * opts.reso
+                    pltend2 =  pltend2 // opts.reso * opts.reso
+
+                    xcuts = 2 if len(matrix[0]) <= 10 else 5 if len(matrix[0]) <= 20 else 10
+                    x_pos = linspace(0, len(matrix[0]) // xcuts * xcuts, xcuts + 1)
+                    plt.xticks(x_pos, [nicer(p if p else 1, coma=True) for p in range(pltbeg1, pltend1, (pltend1 - pltbeg1) // xcuts)],
+                               rotation=-25, ha='left')
+
+                    ycuts = 2 if len(matrix) <= 10 else 5 if len(matrix) <= 20 else 10
+                    y_pos = linspace(0, len(matrix) // ycuts * ycuts, ycuts + 1)
+                    plt.yticks(y_pos, [nicer(p if p else 1, coma=True) for p in range(pltbeg2, pltend2, (pltend2 - pltbeg2) // ycuts)])
+
+                    plt.xlim(-0.5, len(matrix[0]) - 0.5)
+                    plt.ylim(-0.5, len(matrix) - 0.5)
+                else:
+                    vals = [0]
+                    keys = ['']
+                    for crm in regions:
+                        vals.append(section_pos[crm][0] / opts.reso)
+                        keys.append(crm)
+                    vals.append(section_pos[crm][1] / opts.reso)
+                    ax1.set_yticks(vals)
+                    ax1.set_yticklabels('')
+                    ax1.set_yticks([float(vals[i]+vals[i+1])/2
+                                    for i in xrange(len(vals) - 1)], minor=True)
+                    ax1.set_yticklabels(keys, minor=True)
+                    for t in ax1.yaxis.get_minor_ticks():
+                        t.tick1On = False
+                        t.tick2On = False
+
+                    ax1.set_xticks(vals)
+                    ax1.set_xticklabels('')
+                    ax1.set_xticks([float(vals[i]+vals[i+1])/2
+                                    for i in xrange(len(vals) - 1)], minor=True)
+                    ax1.set_xticklabels(keys, minor=True)
+                    for t in ax1.xaxis.get_minor_ticks():
+                        t.tick1On = False
+                        t.tick2On = False
+                    plt.xlabel('Chromosomes')
+                    plt.ylabel('Chromosomes')
+                    plt.xlim(-0.5, len(matrix[0]) - 0.5)
+                    plt.ylim(-0.5, len(matrix) - 0.5)
+
                 plt.title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)))
                 cbar = plt.colorbar()

@@ -66,19 +66,24 @@ def tadbit_savefig(savefig):
     plt.savefig(savefig, format=form)
 
 
-def nicer(res, sep=' '):
+def nicer(res, sep=' ', coma=False):
     """
     writes resolution number for human beings.
     """
+    if coma:
+        format = lambda x: '{:,}'.format(x)
+    else:
+        format = lambda x: '{}'.format(x)
+
+    if not res:
+        return format(res) + sep + 'b'
     if not res % 1000000000:
-        return str(res)[:-9] + sep + 'Gb'
+        return format(res)[:-9 - (1 if coma else 0)] + sep + 'Gb'
     if not res % 1000000:
-        return str(res)[:-6] + sep + 'Mb'
+        return format(res)[:-6 - (1 if coma else 0)] + sep + 'Mb'
     if not res % 1000:
-        return str(res)[:-3] + sep + 'kb'
-    if res == 1:
-        return 'bin'
-    return str(res) + sep + 'b'
+        return format(res)[:-3 - (1 if coma else 0)] + sep + 'kb'
+    return format(res) + sep + 'b'
 
 
 COLOR = {None: '\033[31m', # red

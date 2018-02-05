@@ -481,7 +481,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     all_bins = []
     for crm in regions:
         beg_crm = section_pos[crm][0]
-        if len(regions) >= 1:
+        if region1:
             start = start_bin1 - beg_crm
             end   = end_bin1   - beg_crm
         else:
