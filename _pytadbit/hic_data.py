@@ -613,8 +613,8 @@ class HiC_data(dict):
         return start1, start2, end1, end2
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          savecorr=None, show=False, suffix='',
-                          ev_index=None, rich_in_A=None, format='png',
+                          savecorr=None, show=False, suffix='', ev_index=None,
+                          rich_in_A=None, format='png',
                           max_ev=3, show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
@@ -667,12 +667,12 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: a dictionary with the N (max_ev) first eigenvectors in the
-           form: {Chromosome_name: (Eigenvalue: [Eigenvector])}
+        :returns: 1- a dictionary with the N (max_ev) first
+           eigenvectors in the form:
+           {Chromosome_name: (Eigenvalue: [Eigenvector])}
            Sign of the eigenvectors are changed in order to match the
-           prediction of A/B compartments (positive is A). Also values in the
-           eigenvector are scaled dividing by the maximum value.
-           And a dictionary of statistics of enrichment for A compartments
+           prediction of A/B compartments (positive is A).
+           2- a dictionary of statistics of enrichment for A compartments
            (Spearman rho).
         """
         if not self.bads:
@@ -839,8 +839,7 @@ class HiC_data(dict):
                 # switch sign and normalize
                 sign = 1 if r_stat > 0 else -1
             for i in xrange(len(n_first)):
-                max_v =  float(max(nanmax(n_first[i]), -nanmin(n_first[i])))
-                n_first[i] = [sign * v / max_v for v in n_first[i]]
+                n_first[i] = [sign * v for v in n_first[i]]
             # store it
             ev_nums[sec] = ev_num + 1
             cmprts[sec] = breaks
