@@ -447,7 +447,7 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
             fetched = cur.fetchall()
             if len(fetched) > 1:
                 raise Exception('ERROR: more than one item in the database')
-            mreads = cur.fetchall()[0][0]
+            mreads = fetched[0][0]
         return biases, mreads, reso
 
 
