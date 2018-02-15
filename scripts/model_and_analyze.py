@@ -139,7 +139,7 @@ def load_hic_data(opts, xnames):
             crm.experiments[xnam].norm = xnorm
         if not xnorm:
             crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag,
-                                                 perc_zero=opts.perc_zero,
+                                                 perc_zero=opts.perc_zeros,
                                                  min_count=opts.min_count)
             logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
