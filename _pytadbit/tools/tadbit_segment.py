@@ -249,23 +249,25 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             if opts.rich_in_A:
                 add_path(cur, opts.rich_in_A, 'BED', jobid, opts.workdir)
 
+            if crm in firsts:
+                evalue = firsts[crm][0][(opts.ev_index[ncrm] - 1) if opts.ev_index else 0]
+                eindex = opts.ev_index[ncrm] if opts.ev_index else 1
+            else:
+                evalue = 'NULL'
+                eindex = 'NULL'
             try:
                 cur.execute("""
                 insert into SEGMENT_OUTPUTs
                 (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, EV_index, EValue, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,       %s,     %f,       '%s',         %d)
+                (NULL,    %d,   '%s',   %s,           %s,         %s,       %s,     %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
-                       tad_result[crm]['num'] if crm in tad_result else 0,
-                       cmp_result[crm]['num'] if crm in cmp_result else 0,
+                       tad_result[crm]['num'] if crm in tad_result else 'NULL',
+                       cmp_result[crm]['num'] if crm in cmp_result else 'NULL',
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm] if opts.ev_index else 1,
-                       firsts[crm][0][(opts.ev_index[ncrm] - 1)
-                                      if opts.ev_index else 0],
-                       crm,
-                       reso))
+                       eindex, evalue, crm, reso))
             except lite.OperationalError:  # TODO: remove this
                 print_exc()
                 try:
@@ -284,18 +286,14 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                 insert into SEGMENT_OUTPUTs
                 (Id  , JOBid, Inputs, TADs, Compartments, richA_corr, EV_index, EValue, Chromosome, Resolution)
                 values
-                (NULL,    %d,   '%s',   %d,           %d,         %s,            %s,     %f,       '%s',         %d)
+                (NULL,    %d,   '%s',   %d,           %d,         %s,       %s,     %s,       '%s',         %d)
                 """ % (jobid,
                        ','.join([str(i) for i in inputs]),
                        tad_result[crm]['num'] if crm in tad_result else 0,
                        cmp_result[crm]['num'] if crm in cmp_result else 0,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
-                       opts.ev_index[ncrm] if opts.ev_index else 1,
-                       firsts[crm][0][(opts.ev_index[ncrm] - 1)
-                                      if opts.ev_index else 0],
-                       crm,
-                       reso))
+                       eindex, evalue, crm, reso))
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
             print_db(cur, 'SEGMENT_OUTPUTs')
