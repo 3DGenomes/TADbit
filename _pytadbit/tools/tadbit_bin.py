@@ -497,7 +497,7 @@ def populate_args(parser):
 
     normpt.add_argument('--norm', dest='normalizations', metavar="STR",
                         action='store', default=['raw'], type=str, nargs='+',
-                        choices=['norm', 'decay', 'raw'],
+                        choices=['norm', 'decay', 'raw', 'raw&decay'],
                         help='''[%(default)s] normalization(s) to apply.
                         Choices are: [%(choices)s]''')
 

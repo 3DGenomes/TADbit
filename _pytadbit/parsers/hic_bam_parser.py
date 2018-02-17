@@ -728,8 +728,9 @@ def write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None, clean=True,
-                 region2=None, start2=None, end2=None, extra='', half_matrix=True,
-                 nchunks=None, tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
+                 region2=None, start2=None, end2=None, extra='',
+                 half_matrix=True, nchunks=None, tmpdir='.', append_to_tar=None,
+                 ncpus=8, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -868,7 +869,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
             out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
-    if 'decay' in normalizations:
+    if 'decay' in normalizations or 'raw&decay' in normalizations:
         fnam = 'dec_%s_%s%s.abc' % (name,
                                     nicer(resolution).replace(' ', ''),
                                     ('_' + extra) if extra else '')
@@ -942,6 +943,16 @@ def write_matrix(inbam, resolution, biases, outdir,
                 out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
         return writer2 if func else writer
 
+    def write_raw_and_expc(func=None):
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
+            out_dec.write('%d\t%d\t%d\t%f\n' % (
+                a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+        def writer(c, a, b, v):
+            out_dec.write('%d\t%d\t%d\t%f\n' % (
+                a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+        return writer2 if func else writer
+
     write = None
     if 'raw'   in normalizations:
         write = write_raw(write)
@@ -955,6 +966,8 @@ def write_matrix(inbam, resolution, biases, outdir,
                 write = write_expc(write)
         else:
             write = write_expc_err(write)
+    if 'raw&decay' in normalizations:
+        write = write_raw_and_expc(write)
 
     # pull all sub-matrices and write full matrix
     if half_matrix:
