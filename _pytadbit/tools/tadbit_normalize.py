@@ -740,6 +740,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         tmp_cisprc = load(open(fname))
         system('rm -f %s' % fname)
         cisprc.update(tmp_cisprc)
+    stdout.write('\n')
 
     printime('  - Removing columns with too few or too much interactions')
     if len(bamfile.references) == 1 and min_count is None:
@@ -944,7 +945,9 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 tmpdec = 0
                 tmpsum = 0
         # last ones we average with previous result
-        if tmpsum < min_n:
+        if  len(previous) == len(ndiags[crm]):
+            nrmdec[crm] = {}
+        elif tmpsum < min_n:
             ndiag += sum(ndiags[crm][k] for k in previous)
             val += tmpdec
             try:
