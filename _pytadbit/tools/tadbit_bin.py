@@ -329,6 +329,32 @@ def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
                    time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         except lite.IntegrityError:
             pass
+        except lite.OperationalError:
+            try:
+                cur.execute("""
+                create table PATHs
+                (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            except lite.OperationalError:
+                pass  # may append when mapped files cleaned
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
+            cur.execute("""
+            insert into JOBs
+            (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
+            values
+            (NULL,       '%s',        '%s',        '%s', 'Bin',           '%s')
+            """ % (parameters,
+                   time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+                   time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         jobid = get_jobid(cur)
         for fnam in out_files:
             add_path(cur, out_files[fnam], fnam + '_MATRIX', jobid, opts.workdir)

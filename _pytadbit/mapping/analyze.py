@@ -445,14 +445,13 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                         dist_intr[diff].append(get_data(i, diff))
     elif isinstance(data, dict):  # if we pass decay/expected dictionary, computes weighted mean
         dist_intr = {}
-        total = sum(len(data[c]) for c in data)
         for i in range(min_diff, max_diff):
-            val = 0
-            for c in data:
-                if not i in data[c]:
-                    continue
-                val += data[c][i] * len(data[c])
-            dist_intr[i] = [val / total]
+            val = [data[c][i] for c in data
+                   if i in data[c] and data[c][i] != data[c].get(i-1, 0)]
+            if val:
+                dist_intr[i] = [sum(val) / float(len(val))]
+            else:
+                dist_intr[i] = [0]
     else:
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if genome_seq:
@@ -509,7 +508,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
         if yp[k]:
             x.append(xp[k])
             y.append(yp[k])
-    axe.plot(x, y, 'k.')
+    axe.plot(x, y, 'k.', alpha=0.4)
     best = (float('-inf'), 0, 0, 0, 0, 0, 0, 0, 0, 0)
     logx = np.log(x)
     logy = np.log(y)

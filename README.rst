@@ -5,13 +5,13 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.2.0.345         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+| Current version: v0.2.0.349         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
 |                                     |                                                                           |                                                                                             |                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
 
 TADbit is a complete Python library to deal with all steps to analyze,
-model and explore 3C-based data. With TADbit the user can map FASTQ
+model and explore 3C-based data. With TADbit the user can map FASTsQ
 files to obtain raw interaction binned matrices (Hi-C like matrices),
 normalize and correct interaction matrices, identify and compare the
 Topologically Associating Domains (TADs), build 3D models
