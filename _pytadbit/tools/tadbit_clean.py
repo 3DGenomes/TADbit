@@ -84,6 +84,7 @@ def run(opts):
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)        
 
+
 def populate_args(parser):
     """
     parse option from call
