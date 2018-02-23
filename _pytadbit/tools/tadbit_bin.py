@@ -38,7 +38,7 @@ DESC = 'bin Hi-C data into matrices'
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
-    param_hash = digest_parameters(opts)
+    param_hash = digest_parameters(opts, extra=['quiet'])
 
     if opts.zrange:
         vmin = float(opts.zrange.split(',')[0])
@@ -135,8 +135,6 @@ def run(opts):
 
     out_files = {}
     out_plots = {}
-    norm_string = ('RAW' if 'raw' in opts.normalizations else 'NRM'
-                   if 'norm' in opts.normalizations else 'DEC')
 
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
@@ -148,17 +146,26 @@ def run(opts):
             section_pos[crm] = (total, total + sections[crm])
             total += sections[crm]
         for norm in opts.normalizations:
+            norm_string = ('RAW' if norm == 'raw' else 'NRM'
+                           if norm == 'norm' else 'DEC')
             printime('Getting %s matrices' % norm)
-            matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
-                mreads, opts.reso,
-                load(open(biases)) if biases and norm != 'raw' else None,
-                normalization=norm,
-                region1=region1, start1=start1, end1=end1,
-                region2=region2, start2=start2, end2=end2,
-                tmpdir=tmpdir, ncpus=opts.cpus,
-                return_headers=True,
-                nchunks=opts.nchunks, verbose=not opts.quiet,
-                clean=clean)
+            try:
+                matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
+                    mreads, opts.reso,
+                    load(open(biases)) if biases and norm != 'raw' else None,
+                    normalization=norm,
+                    region1=region1, start1=start1, end1=end1,
+                    region2=region2, start2=start2, end2=end2,
+                    tmpdir=tmpdir, ncpus=opts.cpus,
+                    return_headers=True,
+                    nchunks=opts.nchunks, verbose=not opts.quiet,
+                    clean=clean)
+            except NotImplementedError:
+                if norm == "raw&decay":
+                    warn('WARNING: raw&decay normalization not implemeted for '
+                         'matrices\n... skipping\n')
+                    continue
+                raise
             b1, e1, b2, e2 = bin_coords
             b1, e1 = 0, e1 - b1
             b2, e2 = 0, e2 - b2
@@ -280,15 +287,16 @@ def run(opts):
                     tadbit_savefig(path.join(outdir, fnam))
     if not opts.matrix and not opts.only_plot:
         printime('Getting and writing matrices')
-        out_files = write_matrix(mreads, opts.reso,
-                                 load(open(biases)) if biases else None,
-                                 outdir, filter_exclude=opts.filter,
-                                 normalizations=opts.normalizations,
-                                 region1=region1, start1=start1, end1=end1,
-                                 region2=region2, start2=start2, end2=end2,
-                                 tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
-                                 nchunks=opts.nchunks, verbose=not opts.quiet,
-                                 extra=param_hash, clean=clean)
+        out_files.update(write_matrix(
+            mreads, opts.reso,
+            load(open(biases)) if biases else None,
+            outdir, filter_exclude=opts.filter,
+            normalizations=opts.normalizations,
+            region1=region1, start1=start1, end1=end1,
+            region2=region2, start2=start2, end2=end2,
+            tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
+            nchunks=opts.nchunks, verbose=not opts.quiet,
+            extra=param_hash, clean=clean))
 
     printime('Cleaning and saving to db.')
     if clean:
@@ -403,7 +411,7 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
+    if already_run(opts, extra=['quiet']):
         if 'tmpdb' in opts and opts.tmpdb:
             remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
