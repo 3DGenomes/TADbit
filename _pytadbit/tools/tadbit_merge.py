@@ -11,6 +11,7 @@ from string                          import ascii_letters
 from random                          import random
 from shutil                          import copyfile
 from warnings                        import warn
+from distutils.version               import LooseVersion
 import sqlite3 as lite
 import time
 
@@ -115,7 +116,14 @@ def run(opts):
     printime('  - Mergeing experiments')
     system(samtools  + ' merge -@ %d %s %s %s' % (opts.cpus, outbam, mreads1, mreads2))
     printime('  - Indexing new BAM file')
-    system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+    # check samtools version number and modify command line
+    version = LooseVersion([l.split()[1]
+                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            if 'Version' in l][0])
+    if version >= LooseVersion('1.3.1'):
+        system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+    else:
+        system(samtools  + ' index %s' % (outbam))
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
