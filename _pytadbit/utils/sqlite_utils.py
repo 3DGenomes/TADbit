@@ -57,7 +57,7 @@ def delete_entries(cur, table, col, val):
         pass
 
 
-def already_run(opts):
+def already_run(opts, extra=None):
     if 'tmpdb' in opts and 'tmp' in opts and opts.tmp and opts.tmpdb:
         dbpath = opts.tmpdb
     else:
@@ -67,7 +67,7 @@ def already_run(opts):
         with con:
             # check if table exists
             cur = con.cursor()
-            param_hash = digest_parameters(opts, get_md5=True)
+            param_hash = digest_parameters(opts, get_md5=True, extra=extra)
             cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
             found = len(cur.fetchall()) == 1
             if found:
@@ -110,10 +110,17 @@ def add_path(cur, path, typ, jobid, workdir=None):
         path    = relpath(path, workdir)
     try:
         cur.execute("""
-        insert into PATHs (Id  , Path, Type, JOBid)
-        values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
+            insert into PATHs (Id  , Path, Type, JOBid)
+            values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
     except lite.IntegrityError:
-        pass
+        cur.execute("""
+            create table PATHs
+            (Id integer primary key,
+            JOBid int, Path text, Type text,
+            unique (Path))""")
+        cur.execute("""
+            insert into PATHs (Id  , Path, Type, JOBid)
+            values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
 
 
 def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
