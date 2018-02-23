@@ -469,7 +469,7 @@ def populate_args(parser):
     glopts = parser.add_argument_group('General options')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
-                        action='store', default=None, type=str, required=True,
+                        action='store', default=None, type=str,
                         help='''path to a new output folder''')
 
     glopts.add_argument('-w1', '--workdir1', dest='workdir1', metavar="PATH",
