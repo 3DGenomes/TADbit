@@ -442,35 +442,35 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         fig = plt.figure(figsize=(20,11))
         ax1 = fig.add_subplot(111)
         plt.subplots_adjust(left=0.25, bottom=0.2)
-        line1 = plt.plot(range(size),
-                         [float(cisprc.get(i, [0, 0])[0]) / cisprc.get(i, [1, 1])[1]
-                          for i in xrange(size)],
+        line1 = ax1.plot([float(cisprc.get(i, [0, 0])[0]) / cisprc.get(i, [1, 1])[1]
+                          for i in indices],
                          '.', color='grey', alpha=0.2,
                          label='cis interactions ratio by bin', zorder=1)
-        line2 = plt.plot(range(0, size, 20), [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
-                                                  for j in range(k, k+win_size)) / win_size
-                                              for k in xrange(0, size, 20)],
+        line2 = ax1.plot(range(0, len(indices), 20),
+                         [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
+                                                  for j in indices[k:k+win_size]) / win_size
+                                                      for k in xrange(0, len(indices), 20)],
                          '.', color='k', alpha=0.3,
                          label='cis interactions ratio by %d bin' % win_size,
                          zorder=1)
 
         for k, (p, n) in enumerate(zip(errors_pos[::size / 100], errors_neg[::size / 100])):
-            plt.vlines(k * (size / 100), (p + n) / 2, p, color='red', alpha=0.6)
-            plt.vlines(k * (size / 100), n, (p + n) / 2, color='blue', alpha=0.6)
-        plt.plot(range(0, size, size / 100), errors_neg[::size/100], 'b^', mec='blue', alpha=0.5)
-        plt.plot(range(0, size, size / 100), errors_pos[::size/100], 'rv', mec='red', alpha=0.5)
+            ax1.vlines(k * (size / 100), (p + n) / 2, p, color='red', alpha=0.6)
+            ax1.vlines(k * (size / 100), n, (p + n) / 2, color='blue', alpha=0.6)
+        ax1.plot(range(0, size, size / 100), errors_neg[::size/100], 'b^', mec='blue', alpha=0.5)
+        ax1.plot(range(0, size, size / 100), errors_pos[::size/100], 'rv', mec='red', alpha=0.5)
 
-        plt.fill_between([0, size], beg_pos, end_pos, color='red', alpha=0.3, zorder=2)
-        plt.text(-size/15., (end_pos + beg_pos) / 2, 'Confidance band for\nupper stddev of median',
+        ax1.fill_between([0, size], beg_pos, end_pos, color='red', alpha=0.3, zorder=2)
+        ax1.text(-size/15., (end_pos + beg_pos) / 2, 'Confidance band for\nupper stddev of median',
                  color='red', ha='right', va='center')
-        plt.fill_between([0, size], beg_neg, end_neg, color='blue', alpha=0.3, zorder=2)
-        plt.text(-size/15., (end_neg + beg_neg) / 2, 'Confidance band for\nlower stddev of median',
+        ax1.fill_between([0, size], beg_neg, end_neg, color='blue', alpha=0.3, zorder=2)
+        ax1.text(-size/15., (end_neg + beg_neg) / 2, 'Confidance band for\nlower stddev of median',
                  color='blue', ha='right', va='center')
 
-        plt.ylim((0,1.1))
-        plt.ylabel('Ratio of cis interactions ratio')
-        plt.fill_betweenx([0, 1.1], cutoffL, cutoffR, color='green', alpha=0.2)
-        plt.text((cutoffR + cutoffL) / 2, -0.1,
+        ax1.set_ylim((0,1.1))
+        ax1.set_ylabel('Ratio of cis interactions ratio')
+        ax1.fill_betweenx([0, 1.1], cutoffL, cutoffR, color='green', alpha=0.2)
+        ax1.text((cutoffR + cutoffL) / 2, -0.1,
                  ('Kept bins, top and bottom deviations from median cis-ratio\n' +
                   'should be inside their respective confidance bands'),
                  ha='center', color='green')
@@ -485,13 +485,26 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         labs  = [l.get_label() for l in lns]
         ax2.legend(lns, labs, loc=0, bbox_to_anchor=(0, 0), frameon=False)
 
+        ax3 = fig.add_subplot(111, frameon=False)
+        ax3.xaxis.tick_top()
+        ax3.set_xticks(range(100), minor=True)
+        ax3.set_xticks(range(0, 100, 5), minor=False)
+        ax3.set_yticks([])
+        ax3.set_xticklabels([])
+        for p in xrange(5, 100, 5):
+            ax3.text(p, 99, '%d%%' % p, va='top', ha='left', size=9)
+        ax3.tick_params(direction='in', axis='x', which='both')
+        ax3.set_xlim(0, 100)
+        ax3.set_ylim(0, 100)
+        ax3.grid(which='major')
+        ax3.grid(which='minor', alpha=0.5)
         if min_perc:
-            plt.title('Setting from %.2f%% to %.2f%%' % (100 * float(cutoffL) / size,
-                                                         100 * float(cutoffR) / size))
+            plt.title('Setting from %.2f%% to %.2f%%' % (100 * float(cutoffL) / len(indices),
+                                                         100 * float(cutoffR) / len(indices)))
         else:
-            plt.title('Keeping from %.2f%% to %.2f%%' % (100 * float(cutoffL) / size,
-                                                         100 * float(cutoffR) / size))
-        plt.xlim(0, size)
+            plt.title('Keeping from %.2f%% to %.2f%%' % (100 * float(cutoffL) / len(indices),
+                                                         100 * float(cutoffR) / len(indices)))
+        ax1.set_xlim((0, len(indices)))
 
         tadbit_savefig(savefig)
         plt.close('all')
