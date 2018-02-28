@@ -12,6 +12,7 @@ from random                          import random
 from shutil                          import copyfile
 from warnings                        import warn
 from distutils.version               import LooseVersion
+from multiprocessing                 import cpu_count
 import sqlite3 as lite
 import time
 
@@ -495,7 +496,7 @@ def populate_args(parser):
                         working directory database)''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
+                        default=cpu_count(), help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)

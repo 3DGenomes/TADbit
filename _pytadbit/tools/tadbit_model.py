@@ -15,6 +15,7 @@ from itertools                        import product
 from warnings                         import warn
 from cPickle                          import load
 from hashlib                          import md5
+from multiprocessing                  import cpu_count
 import sqlite3 as lite
 import time
 
@@ -611,15 +612,15 @@ def populate_args(parser):
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
                         ' number -- or a list of numbers')
 
-    anopts.add_argument('--analyze', dest='analyze', 
+    anopts.add_argument('--analyze', dest='analyze',
                         default=False, action="store_true",
                         help='''analyze models.''')
-    
+
     ruopts.add_argument('--nmodels_run', dest='nmodels_run', metavar="INT",
                         default=None, type=int,
                         help='[ALL] number of models to run with this call')
     ruopts.add_argument("-C", "--cpu", dest="cpus", type=int,
-                        default=1, help='''[%(default)s] Maximum number of CPU
+                        default=cpu_count(), help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
