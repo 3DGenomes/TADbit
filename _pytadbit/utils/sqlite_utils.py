@@ -113,14 +113,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
             insert into PATHs (Id  , Path, Type, JOBid)
             values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
     except lite.IntegrityError:
-        cur.execute("""
-            create table PATHs
-            (Id integer primary key,
-            JOBid int, Path text, Type text,
-            unique (Path))""")
-        cur.execute("""
-            insert into PATHs (Id  , Path, Type, JOBid)
-            values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
+        pass
 
 
 def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
