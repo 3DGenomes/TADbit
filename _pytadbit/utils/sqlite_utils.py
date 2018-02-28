@@ -152,6 +152,8 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
         cur.execute('select %s from %s' % (','.join(columns), name))
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
+    rows = [['{:,}'.format(v) if isinstance(v, int) else v for v in vals]
+            for vals in rows]
     if not rows:
         return
     if isinstance(no_print, str):
@@ -184,14 +186,14 @@ def _ascii_print_db(name, names, cols, rows, savedata):
     chars = ''
     chars += ',-' + '-' * len(name) + '-.\n'
     chars += '| ' + name + ' |\n'
-    chars += ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.\n'
-    chars += '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v)
-                             for i, v in enumerate(names)]) + ' |\n'
-    chars += '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|\n'
-    chars += '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                          for i, v in enumerate(row)]) + ' |'
-                              for row in rows]) + '\n'
-    chars += "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'\n"
+    chars += ',-' + '-.-'.join('-' * cols[i] for i, v in enumerate(names)) + '-.\n'
+    chars += '| ' + ' | '.join(('%{}s'.format(cols[i])) % str(v)
+                             for i, v in enumerate(names)) + ' |\n'
+    chars += '|-' + '-+-'.join('-' * cols[i] for i, v in enumerate(names)) + '-|\n'
+    chars += '| ' + '\n| '.join(' | '.join(('%{}s'.format(cols[i])) % str(v)
+                                          for i, v in enumerate(row)) + ' |'
+                              for row in rows) + '\n'
+    chars += "'-" + '-^-'.join('-' * cols[i] for i, v in enumerate(names)) + "-'\n"
     out.write(chars)
     if to_close:
         out.close()
