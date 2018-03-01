@@ -2,7 +2,7 @@
 some utils relative to sqlite
 """
 import sqlite3 as lite
-from os.path import abspath, relpath, join
+from os.path import abspath, relpath, join, exists
 from hashlib import md5
 from sys import stdout
 
@@ -62,6 +62,8 @@ def already_run(opts, extra=None):
         dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
+    if not exists(dbpath):
+        raise Exception('ERROR: DB file: %s not found.' % dbpath)
     con = lite.connect(dbpath)
     try:
         with con:
