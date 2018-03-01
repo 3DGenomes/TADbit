@@ -13,6 +13,7 @@ from shutil                          import copyfile
 from warnings                        import warn
 from distutils.version               import LooseVersion
 from multiprocessing                 import cpu_count
+from subprocess                      import Popen, PIPE
 import sqlite3 as lite
 import time
 
