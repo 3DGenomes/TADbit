@@ -59,7 +59,7 @@ def run(opts):
     else:
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
-        biases = path.join(opts.workdir, biases)
+        biases = path.join(opts.workdir, biases) if biases else None
     if opts.biases:
         biases = opts.biases
 
@@ -322,8 +322,8 @@ def run(opts):
     if clean:
         system('rm -rf %s '% tmpdir)
     finish_time = time.localtime()
-
-    save_to_db(opts, launch_time, finish_time, out_files, out_plots)
+    if not opts.interactive:
+        save_to_db(opts, launch_time, finish_time, out_files, out_plots)
 
 
 def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
@@ -407,6 +407,13 @@ def check_options(opts):
 
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
+
+    # enlight plotting parameter writing
+    if opts.only_plot:
+        opts.plot = True
+    if opts.interactive:
+        opts.plot = True
+        opts.only_plot = True
 
     # check resume
     if not path.exists(opts.workdir):
@@ -518,7 +525,7 @@ def populate_args(parser):
                         default=False,
                         help='[%(default)s] Skip writing matrix in text format.')
 
-    outopt.add_argument('--interactive', dest='interactive', action='store_true',
+    outopt.add_argument('-i', '--interactive', dest='interactive', action='store_true',
                         default=False,
                         help='''[%(default)s] Open matplotlib interactive plot
                         (nothing will be saved).''')
@@ -630,7 +637,7 @@ def load_parameters_fromdb(opts):
         # fetch path to parsed BED files
         # try:
         biases = mreads = reso = None
-        if opts.normalizations != ('raw', ):
+        if len(opts.normalizations) > 1 or opts.normalizations[0] != 'raw':
             try:
                 cur.execute("""
                 select distinct Path from PATHs
