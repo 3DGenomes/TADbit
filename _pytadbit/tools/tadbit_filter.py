@@ -183,7 +183,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                        count, ' '.join(['%s:%d' % (k, multiples[k])
                                         for k in sorted(multiples)]),
                        median, mad, max_f))
-        for nf, f in enumerate(masked):
+        for nf, f in enumerate(masked, 1):
             try:
                 add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             except KeyError:

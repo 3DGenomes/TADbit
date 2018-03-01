@@ -78,11 +78,11 @@ def nicer(res, sep=' ', coma=False):
     if not res:
         return format(res) + sep + 'b'
     if not res % 1000000000:
-        return format(res)[:-9 - (1 if coma else 0)] + sep + 'Gb'
+        return format(res / 1000000000) + sep + 'Gb'
     if not res % 1000000:
-        return format(res)[:-6 - (1 if coma else 0)] + sep + 'Mb'
+        return format(res / 1000000) + sep + 'Mb'
     if not res % 1000:
-        return format(res)[:-3 - (1 if coma else 0)] + sep + 'kb'
+        return format(res / 1000) + sep + 'kb'
     return format(res) + sep + 'b'
 
 
