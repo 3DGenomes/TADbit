@@ -13,9 +13,8 @@ from random                               import random
 from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict
 from cPickle                              import dump, load
-# from warnings                             import filterwarnings
-from multiprocessing                      import cpu_count
 from traceback                            import print_exc
+from multiprocessing                      import cpu_count
 import multiprocessing  as mu
 import sqlite3 as lite
 import time
@@ -349,7 +348,10 @@ def load_parameters_fromdb(opts, what='bam'):
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '
                                 'jobid with --jobid')
-            parse_jobid = jobids[0][0]
+            try:
+                parse_jobid = jobids[0][0]
+            except IndexError:
+                raise Exception('ERROR: no BAM file found... is it filtered?')
         else:
             parse_jobid = opts.jobid
         # fetch path to parsed BED files
@@ -417,9 +419,9 @@ def populate_args(parser):
                         database''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
-                        cores  available in the execution host. If higher
-                        than 1, tasks with multi-threading
+                        default=cpu_count(), help='''[%(default)s] Maximum
+                        number of CPU cores  available in the execution host.
+                        If higher than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 

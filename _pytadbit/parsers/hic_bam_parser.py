@@ -677,13 +677,16 @@ def get_matrix(inbam, resolution, biases=None,
 
     if normalization == 'raw':
         transform_value = transform_value_raw
-    if normalization == 'norm':
+    elif normalization == 'norm':
         transform_value = transform_value_norm
-    if normalization == 'decay':
+    elif normalization == 'decay':
         if start_bin1 == start_bin2:
             transform_value = transform_value_decay
         else:
             transform_value = transform_value_decay_2reg
+    else:
+        raise NotImplementedError(('ERROR: %s normalization not implemented '
+                                   'here') % normalization)
 
     return_something = False
     if dico is None:
@@ -728,8 +731,9 @@ def write_matrix(inbam, resolution, biases, outdir,
                  filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None, clean=True,
-                 region2=None, start2=None, end2=None, extra='', half_matrix=True,
-                 nchunks=None, tmpdir='.', append_to_tar=None, ncpus=8, verbose=True):
+                 region2=None, start2=None, end2=None, extra='',
+                 half_matrix=True, nchunks=None, tmpdir='.', append_to_tar=None,
+                 ncpus=8, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -868,7 +872,7 @@ def write_matrix(inbam, resolution, biases, outdir,
             out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
         else:
             out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
-    if 'decay' in normalizations:
+    if 'decay' in normalizations or 'raw&decay' in normalizations:
         fnam = 'dec_%s_%s%s.abc' % (name,
                                     nicer(resolution).replace(' ', ''),
                                     ('_' + extra) if extra else '')
@@ -893,36 +897,36 @@ def write_matrix(inbam, resolution, biases, outdir,
     def write_raw(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_raw.write('%d\t%d\t%d\n' % (a, b, v))
+            out_raw.write('{}\t{}\t{}\n'.format(a, b, v))
         def writer(_, a, b, v):
-            out_raw.write('%d\t%d\t%d\n' % (a, b, v))
+            out_raw.write('{}\t{}\t{}\n'.format(a, b, v))
         return writer2 if func else writer
 
     def write_bias(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_nrm.write('%d\t%d\t%f\n' % (a, b, v / bias1[a] / bias2[b]))
+            out_nrm.write('{}\t{}\t{}\n'.format(a, b, v / bias1[a] / bias2[b]))
         def writer(_, a, b, v):
-            out_nrm.write('%d\t%d\t%f\n' % (a, b, v / bias1[a] / bias2[b]))
+            out_nrm.write('{}\t{}\t{}\n'.format(a, b, v / bias1[a] / bias2[b]))
         return writer2 if func else writer
 
     def write_expc(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_dec.write('%d\t%d\t%f\n' % (
+            out_dec.write('{}\t{}\t{}\n'.format(
                 a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
         def writer(c, a, b, v):
-            out_dec.write('%d\t%d\t%f\n' % (
+            out_dec.write('{}\t{}\t{}\n'.format(
                 a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
         return writer2 if func else writer
 
     def write_expc_2reg(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_dec.write('%d\t%d\t%f\n' % (
+            out_dec.write('{}\t{}\t{}\n'.format(
                 a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
         def writer(c, a, b, v):
-            out_dec.write('%d\t%d\t%f\n' % (
+            out_dec.write('{}\t{}\t{}\n'.format(
                 a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
         return writer2 if func else writer
 
@@ -930,16 +934,34 @@ def write_matrix(inbam, resolution, biases, outdir,
         def writer2(c, a, b, v):
             func(c, a, b, v)
             try:
-                out_dec.write('%d\t%d\t%f\n' % (
+                out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
         def writer(c, a, b, v):
             try:
-                out_dec.write('%d\t%d\t%f\n' % (
+                out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
+                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
+        return writer2 if func else writer
+
+    def write_raw_and_expc(func=None):
+        def writer2(c, a, b, v):
+            func(c, a, b, v)
+            try:
+                out_dec.write('{}\t{}\t{}\t{}\n'.format(
+                    a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+            except KeyError:  # different chromosomes
+                out_dec.write('{}\t{}\t{}\t{}\n'.format(
+                    a, b, v, v / bias1[a] / bias2[b]))
+        def writer(c, a, b, v):
+            try:
+                out_dec.write('{}\t{}\t{}\t{}\n'.format(
+                    a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+            except KeyError:  # different chromosomes
+                out_dec.write('{}\t{}\t{}\t{}\n'.format(
+                    a, b, v, v / bias1[a] / bias2[b]))
         return writer2 if func else writer
 
     write = None
@@ -955,6 +977,8 @@ def write_matrix(inbam, resolution, biases, outdir,
                 write = write_expc(write)
         else:
             write = write_expc_err(write)
+    if 'raw&decay' in normalizations:
+        write = write_raw_and_expc(write)
 
     # pull all sub-matrices and write full matrix
     if half_matrix:
@@ -991,6 +1015,9 @@ def write_matrix(inbam, resolution, biases, outdir,
         if 'decay' in normalizations:
             out_dec.close()
             fnames['DEC'] = out_dec.name
+        if 'raw&decay' in normalizations:
+            out_dec.close()
+            fnames['RAW&DEC'] = out_dec.name
 
     # this is the last thing we do in case something goes wrong
     if clean:

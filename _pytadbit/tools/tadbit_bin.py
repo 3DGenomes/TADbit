@@ -18,9 +18,11 @@ from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
-from numpy                           import log2, zeros_like, ma, min as np_min
-from numpy                           import nonzero, array, linspace
+from numpy                           import zeros_like, dstack, min as np_min
+from numpy                           import nonzero, array, linspace, isnan
+from numpy                           import nanmin, nanmax, ma, log2, isfinite
 from matplotlib                      import pyplot as plt
+from matplotlib.ticker               import FuncFormatter
 from pysam                           import AlignmentFile
 
 from pytadbit.mapping.filter         import MASKED
@@ -38,7 +40,7 @@ DESC = 'bin Hi-C data into matrices'
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
-    param_hash = digest_parameters(opts)
+    param_hash = digest_parameters(opts, extra=['quiet'])
 
     if opts.zrange:
         vmin = float(opts.zrange.split(',')[0])
@@ -57,7 +59,7 @@ def run(opts):
     else:
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
-        biases = path.join(opts.workdir, biases)
+        biases = path.join(opts.workdir, biases) if biases else None
     if opts.biases:
         biases = opts.biases
 
@@ -135,8 +137,6 @@ def run(opts):
 
     out_files = {}
     out_plots = {}
-    norm_string = ('RAW' if 'raw' in opts.normalizations else 'NRM'
-                   if 'norm' in opts.normalizations else 'DEC')
 
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
@@ -148,17 +148,26 @@ def run(opts):
             section_pos[crm] = (total, total + sections[crm])
             total += sections[crm]
         for norm in opts.normalizations:
+            norm_string = ('RAW' if norm == 'raw' else 'NRM'
+                           if norm == 'norm' else 'DEC')
             printime('Getting %s matrices' % norm)
-            matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
-                mreads, opts.reso,
-                load(open(biases)) if biases and norm != 'raw' else None,
-                normalization=norm,
-                region1=region1, start1=start1, end1=end1,
-                region2=region2, start2=start2, end2=end2,
-                tmpdir=tmpdir, ncpus=opts.cpus,
-                return_headers=True,
-                nchunks=opts.nchunks, verbose=not opts.quiet,
-                clean=clean)
+            try:
+                matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
+                    mreads, opts.reso,
+                    load(open(biases)) if biases and norm != 'raw' else None,
+                    normalization=norm,
+                    region1=region1, start1=start1, end1=end1,
+                    region2=region2, start2=start2, end2=end2,
+                    tmpdir=tmpdir, ncpus=opts.cpus,
+                    return_headers=True,
+                    nchunks=opts.nchunks, verbose=not opts.quiet,
+                    clean=clean)
+            except NotImplementedError:
+                if norm == "raw&decay":
+                    warn('WARNING: raw&decay normalization not implemeted for '
+                         'matrices\n... skipping\n')
+                    continue
+                raise
             b1, e1, b2, e2 = bin_coords
             b1, e1 = 0, e1 - b1
             b2, e2 = 0, e2 - b2
@@ -202,8 +211,13 @@ def run(opts):
                                           nicer(opts.reso).replace(' ', ''),
                                           ('_' + param_hash), opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
-                fig = plt.figure(figsize=(15, 12))
-                ax1 = plt.subplot(111)
+                if opts.interactive:
+                    _ = plt.figure(figsize=(8, 7))
+                else:
+                    _ = plt.figure(figsize=(16, 14))
+                # ax1 = plt.subplot(111)
+                ax1 = plt.axes([0.1, 0.1, 0.7, 0.8])
+                ax2 = plt.axes([0.82, 0.1, 0.07, 0.8])
                 matrix = array([array([matrix.get((i, j), 0) for i in xrange(b1, e1)])
                                 for j in xrange(b2, e2)])
                 mini = np_min(matrix[nonzero(matrix)]) / 2.
@@ -214,7 +228,7 @@ def run(opts):
                     for bad2 in bads2:
                         m[bad2,:] = 1
                 matrix = log2(ma.masked_array(matrix, m))
-                plt.imshow(matrix, interpolation='None', origin='lower',
+                ax1.imshow(matrix, interpolation='None', origin='lower',
                            cmap=cmap, vmin=vmin, vmax=vmax)
 
                 if len(regions) <= 2:
@@ -223,23 +237,25 @@ def run(opts):
                     pltbeg2 = pltbeg1 if len(regions) == 1 else 0 if start2 is None else start2
                     pltend2 = pltend1 if len(regions) == 1 else sections[regions[-1]] if end2 is None else end2
 
-                    plt.xlabel('%s:%d-%d' % (regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
-                    plt.ylabel('%s:%d-%d' % (regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+                    ax1.set_xlabel('{}:{:,}-{:,}'.format(regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+                    ax1.set_ylabel('{}:{:,}-{:,}'.format(regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
 
-                    pltend1 =  pltend1 // opts.reso * opts.reso
-                    pltend2 =  pltend2 // opts.reso * opts.reso
+                    def format_xticks(tickstring, _=None):
+                        tickstring = int(tickstring * opts.reso + pltbeg1)
+                        return nicer(tickstring if tickstring else 1, coma=True)
 
-                    xcuts = 2 if len(matrix[0]) <= 10 else 5 if len(matrix[0]) <= 20 else 10
-                    x_pos = linspace(0, len(matrix[0]) // xcuts * xcuts, xcuts + 1)
-                    plt.xticks(x_pos, [nicer(p if p else 1, coma=True) for p in range(pltbeg1, pltend1, (pltend1 - pltbeg1) // xcuts)],
-                               rotation=-25, ha='left')
+                    def format_yticks(tickstring, _=None):
+                        tickstring = int(tickstring * opts.reso + pltbeg2)
+                        return nicer(tickstring if tickstring else 1, coma=True)
 
-                    ycuts = 2 if len(matrix) <= 10 else 5 if len(matrix) <= 20 else 10
-                    y_pos = linspace(0, len(matrix) // ycuts * ycuts, ycuts + 1)
-                    plt.yticks(y_pos, [nicer(p if p else 1, coma=True) for p in range(pltbeg2, pltend2, (pltend2 - pltbeg2) // ycuts)])
+                    ax1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+                    ax1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
 
-                    plt.xlim(-0.5, len(matrix[0]) - 0.5)
-                    plt.ylim(-0.5, len(matrix) - 0.5)
+                    labels = ax1.get_xticklabels()
+                    plt.setp(labels, rotation=-25, ha='left')
+
+                    ax1.set_xlim(-0.5, len(matrix[0]) - 0.5)
+                    ax1.set_ylim(-0.5, len(matrix) - 0.5)
                 else:
                     vals = [0]
                     keys = ['']
@@ -264,15 +280,26 @@ def run(opts):
                     for t in ax1.xaxis.get_minor_ticks():
                         t.tick1On = False
                         t.tick2On = False
-                    plt.xlabel('Chromosomes')
-                    plt.ylabel('Chromosomes')
-                    plt.xlim(-0.5, len(matrix[0]) - 0.5)
-                    plt.ylim(-0.5, len(matrix) - 0.5)
-
-                plt.title('Region: %s, normalization: %s, resolution: %s' % (
+                    ax1.set_xlabel('Chromosomes')
+                    ax1.set_ylabel('Chromosomes')
+                    ax1.set_xlim(-0.5, len(matrix[0]) - 0.5)
+                    ax1.set_ylim(-0.5, len(matrix) - 0.5)
+                data = [i for d in matrix for i in d if isfinite(i)]
+                mindata = nanmin(data)
+                maxdata = nanmax(data)
+                gradient = linspace(maxdata, mindata, max((len(matrix), len(matrix[0]))))
+                gradient = dstack((gradient, gradient))[0]
+                h  = ax2.hist(data, color='darkgrey', linewidth=2, orientation='horizontal',
+                              bins=50, histtype='step', normed=True)
+                _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
+                                extent=(0, max(h[0]), mindata, maxdata))
+                ax2.yaxis.tick_right()
+                ax2.yaxis.set_label_position("right")
+                ax2.set_xticks([])
+                ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)))
-                cbar = plt.colorbar()
-                cbar.ax.set_ylabel('Hi-C Log2 interaction count')
+                ax2.set_ylabel('Hi-C Log2 interactions', rotation=-90)
+                ax2.set_xlabel('Count')
                 if opts.interactive:
                     plt.show()
                     plt.close('all')
@@ -280,22 +307,26 @@ def run(opts):
                     tadbit_savefig(path.join(outdir, fnam))
     if not opts.matrix and not opts.only_plot:
         printime('Getting and writing matrices')
-        out_files = write_matrix(mreads, opts.reso,
-                                 load(open(biases)) if biases else None,
-                                 outdir, filter_exclude=opts.filter,
-                                 normalizations=opts.normalizations,
-                                 region1=region1, start1=start1, end1=end1,
-                                 region2=region2, start2=start2, end2=end2,
-                                 tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
-                                 nchunks=opts.nchunks, verbose=not opts.quiet,
-                                 extra=param_hash, clean=clean)
+        out_files.update(write_matrix(
+            mreads, opts.reso,
+            load(open(biases)) if biases else None,
+            outdir, filter_exclude=opts.filter,
+            normalizations=opts.normalizations,
+            region1=region1, start1=start1, end1=end1,
+            region2=region2, start2=start2, end2=end2,
+            tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
+            nchunks=opts.nchunks, verbose=not opts.quiet,
+            extra=param_hash, clean=clean))
 
-    printime('Cleaning and saving to db.')
+      
     if clean:
+        printime('Cleaning')
         system('rm -rf %s '% tmpdir)
-    finish_time = time.localtime()
 
-    save_to_db(opts, launch_time, finish_time, out_files, out_plots)
+    if not opts.interactive:
+        printime('Saving to DB')
+        finish_time = time.localtime()
+        save_to_db(opts, launch_time, finish_time, out_files, out_plots)
 
 
 def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
@@ -380,6 +411,13 @@ def check_options(opts):
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
 
+    # enlight plotting parameter writing
+    if opts.only_plot:
+        opts.plot = True
+    if opts.interactive:
+        opts.plot = True
+        opts.only_plot = True
+
     # check resume
     if not path.exists(opts.workdir):
         raise IOError('ERROR: workdir not found.')
@@ -404,9 +442,12 @@ def check_options(opts):
 
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
+        if not opts.force:
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(path.join(dbdir, dbfile))
+            exit('WARNING: exact same job already computed, see JOBs table above')
+        else:
+            warn('WARNING: exact same job already computed, overwritting...')
 
 
 def populate_args(parser):
@@ -462,9 +503,9 @@ def populate_args(parser):
                         cut the BAM''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
-                        cores  available in the execution host. If higher
-                        than 1, tasks with multi-threading
+                        default=cpu_count(), help='''[%(default)s] Maximum
+                        number of CPU cores  available in the execution host.
+                        If higher than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
@@ -487,7 +528,7 @@ def populate_args(parser):
                         default=False,
                         help='[%(default)s] Skip writing matrix in text format.')
 
-    outopt.add_argument('--interactive', dest='interactive', action='store_true',
+    outopt.add_argument('-i', '--interactive', dest='interactive', action='store_true',
                         default=False,
                         help='''[%(default)s] Open matplotlib interactive plot
                         (nothing will be saved).''')
@@ -523,7 +564,7 @@ def populate_args(parser):
 
     normpt.add_argument('--norm', dest='normalizations', metavar="STR",
                         action='store', default=['raw'], type=str, nargs='+',
-                        choices=['norm', 'decay', 'raw'],
+                        choices=['norm', 'decay', 'raw', 'raw&decay'],
                         help='''[%(default)s] normalization(s) to apply.
                         Choices are: [%(choices)s]''')
 
@@ -551,8 +592,6 @@ def load_parameters_fromdb(opts):
         dbfile = opts.tmpdb
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
-    if not path.exists(dbfile):
-        raise Exception('ERROR: DB file: %s not found.' % dbfile)
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
@@ -562,7 +601,7 @@ def load_parameters_fromdb(opts):
                 cur.execute("""
                 select distinct Id from JOBs
                 where Type = '%s'
-                """ % ('Normalize' if opts.normalizations != ('raw', ) else 'Filter'))
+                """ % ('Normalize' if opts.normalizations != ['raw'] else 'Filter'))
                 jobids = cur.fetchall()
                 parse_jobid = jobids[0][0]
             except IndexError:
@@ -599,7 +638,7 @@ def load_parameters_fromdb(opts):
         # fetch path to parsed BED files
         # try:
         biases = mreads = reso = None
-        if opts.normalizations != ('raw', ):
+        if len(opts.normalizations) > 1 or opts.normalizations[0] != 'raw':
             try:
                 cur.execute("""
                 select distinct Path from PATHs
@@ -629,7 +668,10 @@ def load_parameters_fromdb(opts):
                 inner join filter_outputs on filter_outputs.pathid = paths.id
                 where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
                 """ % parse_jobid)
-                mreads = cur.fetchall()[0][0]
+                try:
+                    mreads = cur.fetchall()[0][0]
+                except IndexError:
+                    raise Exception('ERROR: missing normalization input file.')
         else:
             cur.execute("""
             select distinct path from paths

@@ -45,8 +45,6 @@ def run(opts):
             cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
             paths.extend([p for p in cur.fetchall()])
 
-
-
         # delete files and directories
         if opts.delete:
             print 'deleting %d files' % len(paths)
@@ -82,7 +80,8 @@ def run(opts):
                 print ' * dropped table %s' % table
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
-        remove(dbfile)        
+        remove(dbfile)
+
 
 def populate_args(parser):
     """
@@ -123,6 +122,10 @@ def populate_args(parser):
 
 def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
+
+    dbpath = path.join(opts.workdir, 'trace.db')
+    if not path.exists(dbpath):
+        raise Exception('ERROR: DB file: %s not found.' % dbpath)
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb

@@ -11,6 +11,9 @@ from string                          import ascii_letters
 from random                          import random
 from shutil                          import copyfile
 from warnings                        import warn
+from distutils.version               import LooseVersion
+from multiprocessing                 import cpu_count
+from subprocess                      import Popen, PIPE
 import sqlite3 as lite
 import time
 
@@ -115,7 +118,14 @@ def run(opts):
     printime('  - Mergeing experiments')
     system(samtools  + ' merge -@ %d %s %s %s' % (opts.cpus, outbam, mreads1, mreads2))
     printime('  - Indexing new BAM file')
-    system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+    # check samtools version number and modify command line
+    version = LooseVersion([l.split()[1]
+                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            if 'Version' in l][0])
+    if version >= LooseVersion('1.3.1'):
+        system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+    else:
+        system(samtools  + ' index %s' % (outbam))
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
@@ -461,7 +471,7 @@ def populate_args(parser):
     glopts = parser.add_argument_group('General options')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
-                        action='store', default=None, type=str, required=True,
+                        action='store', default=None, type=str,
                         help='''path to a new output folder''')
 
     glopts.add_argument('-w1', '--workdir1', dest='workdir1', metavar="PATH",
@@ -487,7 +497,7 @@ def populate_args(parser):
                         working directory database)''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
+                        default=cpu_count(), help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
@@ -564,6 +574,10 @@ def populate_args(parser):
 def check_options(opts):
     mkdir(opts.workdir)
 
+    # create empty DB if don't exists
+    dbpath = path.join(opts.workdir, 'trace.db')
+    open(dbpath, 'a').close()
+
     # for lustre file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
@@ -600,6 +614,7 @@ def check_options(opts):
     # resolution needed to compare
     if not opts.skip_comparison and not opts.reso:
         raise Exception('ERROR: need to define resolution at which to compare')
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         if 'tmpdb' in opts and opts.tmpdb:

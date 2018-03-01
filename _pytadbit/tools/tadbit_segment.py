@@ -510,7 +510,7 @@ def populate_args(parser):
                         defines it as the number of rows/columns''')
 
     glopts.add_argument("-C", "--cpu", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
+                        default=cpu_count(), help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)

@@ -2,7 +2,7 @@
 some utils relative to sqlite
 """
 import sqlite3 as lite
-from os.path import abspath, relpath, join
+from os.path import abspath, relpath, join, exists
 from hashlib import md5
 from sys import stdout
 
@@ -57,17 +57,19 @@ def delete_entries(cur, table, col, val):
         pass
 
 
-def already_run(opts):
+def already_run(opts, extra=None):
     if 'tmpdb' in opts and 'tmp' in opts and opts.tmp and opts.tmpdb:
         dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
+    if not exists(dbpath):
+        raise Exception('ERROR: DB file: %s not found.' % dbpath)
     con = lite.connect(dbpath)
     try:
         with con:
             # check if table exists
             cur = con.cursor()
-            param_hash = digest_parameters(opts, get_md5=True)
+            param_hash = digest_parameters(opts, get_md5=True, extra=extra)
             cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
             found = len(cur.fetchall()) == 1
             if found:
@@ -110,8 +112,8 @@ def add_path(cur, path, typ, jobid, workdir=None):
         path    = relpath(path, workdir)
     try:
         cur.execute("""
-        insert into PATHs (Id  , Path, Type, JOBid)
-        values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
+            insert into PATHs (Id  , Path, Type, JOBid)
+            values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
     except lite.IntegrityError:
         pass
 
@@ -152,6 +154,8 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
         cur.execute('select %s from %s' % (','.join(columns), name))
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
+    rows = [['{:,}'.format(v) if isinstance(v, int) else v for v in vals]
+            for vals in rows]
     if not rows:
         return
     if isinstance(no_print, str):
@@ -184,14 +188,14 @@ def _ascii_print_db(name, names, cols, rows, savedata):
     chars = ''
     chars += ',-' + '-' * len(name) + '-.\n'
     chars += '| ' + name + ' |\n'
-    chars += ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.\n'
-    chars += '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v)
-                             for i, v in enumerate(names)]) + ' |\n'
-    chars += '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|\n'
-    chars += '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                          for i, v in enumerate(row)]) + ' |'
-                              for row in rows]) + '\n'
-    chars += "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'\n"
+    chars += ',-' + '-.-'.join('-' * cols[i] for i, v in enumerate(names)) + '-.\n'
+    chars += '| ' + ' | '.join(('%{}s'.format(cols[i])) % str(v)
+                             for i, v in enumerate(names)) + ' |\n'
+    chars += '|-' + '-+-'.join('-' * cols[i] for i, v in enumerate(names)) + '-|\n'
+    chars += '| ' + '\n| '.join(' | '.join(('%{}s'.format(cols[i])) % str(v)
+                                          for i, v in enumerate(row)) + ' |'
+                              for row in rows) + '\n'
+    chars += "'-" + '-^-'.join('-' * cols[i] for i, v in enumerate(names)) + "-'\n"
     out.write(chars)
     if to_close:
         out.close()
