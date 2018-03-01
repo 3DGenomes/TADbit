@@ -349,7 +349,10 @@ def load_parameters_fromdb(opts, what='bam'):
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '
                                 'jobid with --jobid')
-            parse_jobid = jobids[0][0]
+            try:
+                parse_jobid = jobids[0][0]
+            except IndexError:
+                raise Exception('ERROR: no BAM file found... is it filtered?')
         else:
             parse_jobid = opts.jobid
         # fetch path to parsed BED files
