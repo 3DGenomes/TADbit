@@ -318,11 +318,14 @@ def run(opts):
             nchunks=opts.nchunks, verbose=not opts.quiet,
             extra=param_hash, clean=clean))
 
-    printime('Cleaning and saving to db.')
+      
     if clean:
+        printime('Cleaning')
         system('rm -rf %s '% tmpdir)
-    finish_time = time.localtime()
+
     if not opts.interactive:
+        printime('Saving to DB')
+        finish_time = time.localtime()
         save_to_db(opts, launch_time, finish_time, out_files, out_plots)
 
 
@@ -589,8 +592,6 @@ def load_parameters_fromdb(opts):
         dbfile = opts.tmpdb
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
-    if not path.exists(dbfile):
-        raise Exception('ERROR: DB file: %s not found.' % dbfile)
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
@@ -600,7 +601,7 @@ def load_parameters_fromdb(opts):
                 cur.execute("""
                 select distinct Id from JOBs
                 where Type = '%s'
-                """ % ('Normalize' if opts.normalizations != ('raw', ) else 'Filter'))
+                """ % ('Normalize' if opts.normalizations != ['raw'] else 'Filter'))
                 jobids = cur.fetchall()
                 parse_jobid = jobids[0][0]
             except IndexError:

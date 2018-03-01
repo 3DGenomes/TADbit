@@ -574,6 +574,10 @@ def populate_args(parser):
 def check_options(opts):
     mkdir(opts.workdir)
 
+    # create empty DB if don't exists
+    dbpath = path.join(opts.workdir, 'trace.db')
+    open(dbpath, 'a').close()
+
     # for lustre file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
@@ -610,6 +614,7 @@ def check_options(opts):
     # resolution needed to compare
     if not opts.skip_comparison and not opts.reso:
         raise Exception('ERROR: need to define resolution at which to compare')
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         if 'tmpdb' in opts and opts.tmpdb:

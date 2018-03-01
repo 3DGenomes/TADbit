@@ -230,6 +230,10 @@ def check_options(opts):
             raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
                                        'or not suported by this tool.') % k)
 
+    # create empty DB if don't exists
+    dbpath = path.join(opts.workdir, 'trace.db')
+    open(dbpath, 'a').close()
+
     # for lustre file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb

@@ -13,9 +13,8 @@ from random                               import random
 from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict
 from cPickle                              import dump, load
-# from warnings                             import filterwarnings
-from multiprocessing                      import cpu_count
 from traceback                            import print_exc
+from multiprocessing                      import cpu_count
 import multiprocessing  as mu
 import sqlite3 as lite
 import time

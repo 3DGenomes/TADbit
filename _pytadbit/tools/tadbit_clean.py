@@ -123,6 +123,10 @@ def populate_args(parser):
 def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
 
+    dbpath = path.join(opts.workdir, 'trace.db')
+    if not path.exists(dbpath):
+        raise Exception('ERROR: DB file: %s not found.' % dbpath)
+
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
         # tmp file
