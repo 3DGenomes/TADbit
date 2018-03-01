@@ -715,12 +715,20 @@ class HiC_data(dict):
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec
             # get chromosomal matrix
-            matrix = [[(float(self[i,j]) / self.expected[sec][abs(j-i)]
-                        / self.bias[i] / self.bias[j])
-                       for i in xrange(*self.section_pos[sec])
-                       if not i in self.bads]
-                      for j in xrange(*self.section_pos[sec])
-                      if not j in self.bads]
+            try:
+                matrix = [[(float(self[i,j]) / self.expected[sec][abs(j-i)]
+                            / self.bias[i] / self.bias[j])
+                        for i in xrange(*self.section_pos[sec])
+                        if not i in self.bads]
+                        for j in xrange(*self.section_pos[sec])
+                        if not j in self.bads]
+            except KeyError:
+                matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
+                            / self.bias[i] / self.bias[j])
+                        for i in xrange(*self.section_pos[sec])
+                        if not i in self.bads]
+                        for j in xrange(*self.section_pos[sec])
+                        if not j in self.bads]
             if not matrix: # MT chromosome will fall there
                 warn('Chromosome %s is probably MT :)' % (sec))
                 cmprts[sec] = []
