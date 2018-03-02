@@ -94,4 +94,4 @@ tadbit normalize $tmpdir/both -r 100000
 tadbit normalize $tmpdir/both -r 10000
 
 echo 'TADs/compartments'
-tadbit segment $tmpdir/both -r 10000
+tadbit segment $tmpdir/both -r 10000 --fasta $tmpdir/db/yeast.fa
