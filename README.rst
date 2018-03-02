@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.2.0.372         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+| Current version: v0.2.0.374         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
 |                                     |                                                                           |                                                                                             |                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
@@ -42,6 +42,74 @@ If you have any question remaining, we would be happy to answer informally:
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
    :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
+
+Docker
+------
+
+This minimal `Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ (resulting in a 3 Gb docker image) can be used to run TADbit in any computer::
+
+    FROM debian:8
+
+    ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y wget bzip2 --no-install-recommends && \
+        rm -rf /var/lib/apt/lists/*
+
+    RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+        wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+            -O ~/miniconda.sh && \
+        /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+        rm ~/miniconda.sh
+
+    ENV PATH /opt/conda/bin:$PATH
+
+    RUN conda config --add channels salilab && conda config --add channels bioconda && \
+        conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam && \
+        conda clean -y --all  && rm -rf /opt/conda/pkgs/*
+
+    RUN wget --quiet --no-check-certificate https://newcontinuum.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%202/GEM-binaries-Linux-x86_64-core_i3-20121106-022124.tbz2 \
+            -O GEM.tbz2 && \
+        tar xvf GEM.tbz2 && cd GEM-*/ && \
+        mv * /usr/local/bin/ && cd .. && rm -rf GEM*
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y unzip build-essential --no-install-recommends && \
+        wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/dev.zip && unzip dev.zip && \
+        cd TADbit-dev && python setup.py install && cd .. && rm -rf TADbit-dev dev.zip && \
+        apt-get remove -y --purge unzip build-essential && \
+        apt-get autoremove -y && \
+        apt-get autoclean -y && \
+        rm -rf /var/lib/apt/lists/*
+
+    CMD [ "/bin/bash" ]
+
+Build the image by saving this file as :code:`Dockerfile` into an empty folder
+and build the image from inside this empty folder with :code:`docker build -t tadbit .` (~20 minutes)
+
+Once built, run it as :code:`docker run tadbit tadbit map -h`
+
+This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_.
+
+To run a notebook from inside the docker container run :code:`tadbit` docker image as::
+
+    docker run -it -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit
+
+:code:`LOCAL_PATH` *would be for example a local folder with data*
+*(e.g. FASTQs or reference genomes). And* :code:`/mnt` *a directory*
+*inside the Docker container where the* :code:`LOCAL_PATH` *would be mounted.*
+
+From inside docker run::
+
+  jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token=''
+
+And finally write the url :code:`http://localhost:8888` in your browser.
+
+*Note: this can also be done in a single line and running in the background:*
+::
+
+  docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
 
 
 Citation
