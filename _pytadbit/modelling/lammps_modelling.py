@@ -24,7 +24,10 @@ from numpy import sin, cos, arccos, sqrt, fabs, asarray, pi, zeros
 from itertools import combinations, product
 from shutil import copyfile
 
-from lammps import lammps
+try:
+    from lammps import lammps
+except ImportError:
+    pass
 
 import os
 import shutil

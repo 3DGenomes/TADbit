@@ -505,7 +505,8 @@ class Experiment(object):
 
 
     def filter_columns(self, silent=False, draw_hist=False, savefig=None,
-                       diagonal=True, perc_zero=90, auto=True, min_count=None):
+                       diagonal=True, perc_zero=90, auto=True, min_count=None,
+                       index=0):
         """
         Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -528,21 +529,22 @@ class Experiment(object):
            filtering... This option is slightly slower.
         :param True auto: if False, only filters based on the given percentage
            zeros
+        :param 0 index: hic_data index to normalize
 
         """
         try:
-            data = self.hic_data[0]
+            data = self.hic_data[index]
         except:
-            data = self.norm[0]
+            data = self.norm[index]
             diagonal = True
         self._zeros, has_nans = hic_filtering_for_modelling(
             data, silent=silent, draw_hist=draw_hist, savefig=savefig,
             diagonal=diagonal, perc_zero=perc_zero, auto=auto,
             min_count=min_count)
         if has_nans: # to make it simple
-            for i in xrange(self.hic_data[0]._size2):
-                if repr(self.hic_data[0][i]) == 'nan':
-                    del(self.hic_data[0][i])
+            for i in xrange(self.hic_data[index]._size2):
+                if repr(self.hic_data[index][i]) == 'nan':
+                    del(self.hic_data[index][i])
         # Also remove columns where there is no data in the diagonal
         size = self.size
         # else:
@@ -707,7 +709,7 @@ class Experiment(object):
 
 
     def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
-                      rowsums=None):
+                      rowsums=None, index=0):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -733,20 +735,28 @@ class Experiment(object):
            per cell
         :param False silent: does not warn when overwriting weights
         :param None rowsums: input a list of rowsums calculated elsewhere
+        :param 0 index: hic_data index to normalize
         """
 
-        if not self.hic_data:
+        if not self.hic_data or len(self.hic_data) <= index:
             raise Exception('ERROR: No Hi-C data loaded\n')
-        if self.norm and not silent:
+        if self.norm and len(self.norm) > index and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        self.bias = iterative(self.hic_data[0], iterations=iterations,
+        self.bias = iterative(self.hic_data[index], iterations=iterations,
                               max_dev=max_dev, bads=self._zeros,
                               verbose=not silent)
-        self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
+        norm = HiC_data([(i + j * size, float(self.hic_data[index][i, j]) /
                                 self.bias[i] /
                                 self.bias[j] * size)
-                               for i in self.bias for j in self.bias], size)]
+                               for i in self.bias for j in self.bias], size)
+        if not self.norm:
+            self.norm = [norm]
+        elif len(self.norm) > index:
+            self.norm[index] = norm
+        else:
+            self.norm.append(norm)
+        
         # no need to use lists, tuples use less memory
         if factor:
             self._normalization = 'visibility_factor:' + str(factor)
@@ -810,7 +820,7 @@ class Experiment(object):
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG['dmel_01'],
+                     outfile=None, config=CONFIG,
                      container=None,tool='imp',tmp_folder=None,timeout_job=10800):
         """
         Generates of three-dimensional models using IMP, for a given segment of
