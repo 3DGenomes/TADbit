@@ -345,8 +345,8 @@ opts_file.close()
 
 nloci = end - beg + 1
 coords = {"crm"  : opts.crm,
-          "start": opts.beg,
-          "end"  : opts.end}
+          "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
+          "end"  : int(opts.end*opts.res + opts.chrom_start)}
 
 zeros = tuple([i not in zeros for i in xrange(end - beg + 1)])
 
@@ -381,13 +381,13 @@ models.save_models(
         out.close()
     models.experiment = exp
     coords = {"crm"  : opts.crm,
-              "start": opts.beg,
-              "end"  : opts.end}
+              "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
+              "end"  : int(opts.end*opts.res + opts.chrom_start)}
     crm = exp.crm
     description = {'identifier'     : exp.identifier,
                    'chromosome'     : coords['crm'],
-                   'start'          : (exp.resolution * coords['start']) if coords['start'] else None,
-                   'end'            : (exp.resolution * coords['end'])   if coords['end'  ] else None,
+                   'start'          : coords['start'] if coords['start'] else None,
+                   'end'            : coords['end'] if coords['end'  ] else None,
                    'species'        : crm.species,
                    'cell type'      : exp.cell_type,
                    'experiment type': exp.exp_type,
@@ -421,7 +421,7 @@ def main():
     else:
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
-    name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
+    name = '{0}_{1}_{2}'.format(opts.crm, int((opts.beg-1)*opts.res + opts.chrom_start), int(opts.end*opts.res + opts.chrom_start))
 
     ############################################################################
     ############################  LOAD HI-C DATA  ##############################
@@ -856,6 +856,9 @@ def get_options():
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
                         default=None,
                         help='genomic coordinate from which to start modeling')
+    glopts.add_argument('--chrom_start', dest='chrom_start', metavar="INT", type=float,
+                        default=0,
+                        help='genomic coordinate corresponding to the bin 0 of the input matrices')
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
     glopts.add_argument('--res', dest='res', metavar="INT", type=int,
@@ -1100,8 +1103,8 @@ def get_options():
     # do the division to bins
     if not opts.tad_only:
         try:
-            opts.beg = int(float(opts.beg) / opts.res)
-            opts.end = int(float(opts.end) / opts.res)
+            opts.beg = int(float(opts.beg - opts.chrom_start) / opts.res) + 1
+            opts.end = int(float(opts.end - opts.chrom_start) / opts.res)
             if opts.end - opts.beg <= 2:
                 raise Exception('"beg" and "end" parameter should be given in ' +
                                 'genomic coordinates, not bin')
@@ -1109,7 +1112,7 @@ def get_options():
             pass
 
     # Create out-directory
-    name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
+    name = '{0}_{1}_{2}'.format(opts.crm, int((opts.beg - 1)*opts.res + opts.chrom_start), int(opts.end*opts.res + opts.chrom_start))
     if not os.path.exists(os.path.join(opts.outdir, name)):
         os.makedirs(os.path.join(opts.outdir, name))
 
