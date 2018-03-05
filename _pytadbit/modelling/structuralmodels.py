@@ -402,6 +402,7 @@ class StructuralModels(object):
         # Initialize cluster definition of models:
         for model in self:
             model['cluster'] = 'Singleton'
+        new_singles = 0
         if method == 'ward':
 
             matrix = [[0.0 for _ in xrange(len(self))]
@@ -452,7 +453,6 @@ class StructuralModels(object):
             if not exists(tmp_file + '.mcl'):
                 raise Exception('Problem with clustering, try increasing ' +
                                 '"dcutoff", now: %s\n' % (dcutoff))
-            new_singles = 0
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
                 if len(models) == 1:
@@ -1651,6 +1651,7 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
+
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
@@ -1679,7 +1680,6 @@ class StructuralModels(object):
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
-
         """
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
@@ -1692,7 +1692,7 @@ class StructuralModels(object):
         moddata = []
         for i in xrange(len(self._original_data)):
             for j in xrange(i + off_diag, len(self._original_data)):
-                if not self._original_data[i][j] > 0:
+                if not model_matrix[i][j] > 0 or not self._original_data[i][j] > 0:
                     continue
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
@@ -1719,8 +1719,19 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        self.contact_map(models, cluster, cutoff, axe=ax)
-        # correlation
+        cmap = plt.get_cmap('jet')
+        cmap.set_bad('darkgrey', 1)
+        ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
+                         vmin=0, vmax=1, cmap=cmap,
+                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+        ax.set_ylabel('Particle')
+        ax.set_xlabel('Particle')
+        cbar = ax.figure.colorbar(ims)
+        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                           '%s nm' % (cutoff))
+        ax.set_title('Contact map')        # correlation
+
         ax = fig.add_subplot(132)
         try:
             if log_corr:
@@ -1798,8 +1809,8 @@ class StructuralModels(object):
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest", cmap=cmap,
                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        ax.set_ylabel('Particles')
-        ax.set_xlabel('Particles')
+        ax.set_ylabel('Genomic bin')
+        ax.set_xlabel('Genomic bin')
         ax.set_title('Normalized Hi-C count')
         cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
@@ -1809,6 +1820,7 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
         return corr
+
 
     def view_centroid(self, **kwargs):
         """
@@ -2351,6 +2363,7 @@ class StructuralModels(object):
         "object": {\n%(descr)s
                    "uuid": "%(sha)s",
                    "title": "%(title)s",
+                   "bp_per_nm": %(scale)s,
                    "datatype": "xyz",
                    "components": 3,
                    "source": "local",
@@ -2368,6 +2381,7 @@ class StructuralModels(object):
 '''
         fil = {}
         fil['title']   = title or "Sample TADbit data"
+        fil['scale']   = str(self._config['scale'])
         versions = get_dependencies_version(dico=True)
         fil['dep'] = str(dict([(k.strip(), v.strip()) for k, v in versions.items()
                                if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
@@ -2383,12 +2397,12 @@ class StructuralModels(object):
             try:
                 my_descr = dict(self.description)
             except TypeError:
-                my_descr = {'start'     : 0,
-                            'end'       : self.nloci}
-            if isinstance(my_descr.get('chromosome', 'Chromosome'), list):
-                my_descr['chrom'] = my_descr.get('chromosome', 'Chromosome')
-            else:
-                my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
+                my_descr = {}
+            if not my_descr.get('start', 0):
+                my_descr['start'] = 0
+            if not my_descr.get('end', 0):
+                my_descr['end'  ] = self.nloci
+            my_descr['chrom'] = my_descr['chromosome'] if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list) else ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
@@ -2421,6 +2435,9 @@ class StructuralModels(object):
                 fil['descr'] += ','
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
+        
+        if self.__models:
+            aligned_coords = self.align_models(models=models, cluster=cluster)
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2429,8 +2446,9 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         fil['xyz'] = []
-        for m in models:
-            model = self[m]
+        for m_idx in xrange(len(models)):
+            m = models[m_idx]
+            model = {'rand_init':self[models[m_idx]]['rand_init'],'x':aligned_coords[m_idx][0],'y':aligned_coords[m_idx][1],'z':aligned_coords[m_idx][2]}
             fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % (
                 model['rand_init']) + ','.join(
                     ['%.0f,%.0f,%.0f' % (model['x'][i],
@@ -2467,7 +2485,7 @@ class StructuralModels(object):
         first = True
         for i, nrow in enumerate(self._original_data):
             for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
+                if not isnan(ncol) and int(ncol) != 0:
                     if not first:
                         out_f.write(',')
                     first = False
@@ -2522,6 +2540,48 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
+    def write_xyz_babel(self, directory, model_num=None, models=None, cluster=None,
+                        get_path=False, rndname=True):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model using a file format compatible with babel
+        (http://openbabel.org/wiki/XYZ_%28format%29).
+        .. note::
+          If none of model_num, models or cluster parameter are set,
+          ALL the models will be written.
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        """
+        if model_num > -1:
+            models = [model_num]
+        elif models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1 and len(self.clusters) > 0:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        for model_num in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            path_f = model.write_xyz_babel(directory, model_num=model_num,
+                                           get_path=get_path, rndname=rndname)
+        if get_path:
+            return path_f
+    
     def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
                                plot=True):
         """

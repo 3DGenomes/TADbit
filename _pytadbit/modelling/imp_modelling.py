@@ -82,33 +82,31 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
        ::
 
          CONFIG = {
-          'dmel_01': {
-              # Paramaters for the Hi-C dataset from:
-              'reference' : 'victor corces dataset 2013',
+          # Paramaters for the Hi-C dataset from:
+          'reference' : 'victor corces dataset 2013',
 
-              # Force applied to the restraints inferred to neighbor particles
-              'kforce'    : 5,
+          # Force applied to the restraints inferred to neighbor particles
+          'kforce'    : 5,
 
-              # Space occupied by a nucleotide (nm)
-              'scale'     : 0.005
+          # Space occupied by a nucleotide (nm)
+          'scale'     : 0.005
 
-              # Strength of the bending interaction
-              'kbending'     : 0.0, # OPTIMIZATION:
+          # Strength of the bending interaction
+          'kbending'     : 0.0, # OPTIMIZATION:
 
-              # Maximum experimental contact distance
-              'maxdist'   : 600, # OPTIMIZATION: 500-1200
+          # Maximum experimental contact distance
+          'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
-              # Minimum thresholds used to decide which experimental values have to be
-              # included in the computation of restraints. Z-score values bigger than upfreq
-              # and less that lowfreq will be include, whereas all the others will be rejected
-              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+          # Minimum thresholds used to decide which experimental values have to be
+          # included in the computation of restraints. Z-score values bigger than upfreq
+          # and less that lowfreq will be include, whereas all the others will be rejected
+          'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
-              # Maximum threshold used to decide which experimental values have to be
-              # included in the computation of restraints. Z-score values greater than upfreq
-              # and less than lowfreq will be included, while all the others will be rejected
-              'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
+          # Maximum threshold used to decide which experimental values have to be
+          # included in the computation of restraints. Z-score values greater than upfreq
+          # and less than lowfreq will be included, while all the others will be rejected
+          'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
 
-              }
           }
     :param None first: particle number at which model should start (0 should be
        used inside TADbit)

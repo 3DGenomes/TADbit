@@ -492,11 +492,19 @@ class IMPoptimizer(object):
         if not self.results:
             stderr.write('WARNING: no optimization done yet\n')
             return
-        best = ((None, None, None, None), 0.0)
-        for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
-            if val > best[-1]:
-                best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+        best = ((float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')), 0.0)
+        kbending = 0
+        try:
+            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
+                if val > best[-1]:
+                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+        except ValueError:
+            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.iteritems():
+                if val > best[-1]:
+                    best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
+
         if with_corr:
+            print best
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),
                           ('maxdist'  , float(best[0][2])),
@@ -538,7 +546,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.maxdist_range],
                                       [float(i) for i in self.upfreq_range],
                                       [float(i) for i in self.lowfreq_range]),
-                                     results), axes=axes, show_best=show_best,
+                                     results), axes=axes, dcutoff=self.dcutoff_range, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
     def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'), dcutoff=None,
@@ -565,7 +573,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.maxdist_range],
                                       [float(i) for i in self.lowfreq_range],
                                       [float(i) for i in self.upfreq_range]),
-                                     results), axes=axes, show_best=show_best,dcutoff=dcutoff,
+                                     results), dcutoff=self.dcutoff_range, axes=axes, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
 

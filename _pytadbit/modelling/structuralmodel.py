@@ -116,9 +116,9 @@ class StructuralModel(dict):
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
-        rog = sqrt(sum([self._square_distance_to(i,
-                                                 (com['x'], com['y'], com['z']))
-                        for i in xrange(len(self))]) / len(self))
+        rog = sqrt(sum(self._square_distance_to(i,
+                                                (com['x'], com['y'], com['z']))
+                       for i in xrange(len(self))) / len(self))
         return rog
 
 
@@ -672,7 +672,7 @@ class StructuralModel(dict):
       	            "centroid":[%(centroid)s],
 	            "restraints": [[][]],
 		    "chromatinColor" : [ ]
-		}    
+		}
 	}
 }
 '''
@@ -757,6 +757,60 @@ class StructuralModel(dict):
         else:
             return None
 
+    def write_xyz_babel(self, directory, model_num=None, get_path=False,
+                        rndname=True, filename=None):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model using a file format compatible with babel
+        (http://openbabel.org/wiki/XYZ_%28format%29).
+        Outfile is tab separated column with the bead number being the
+        first column, then the genomic coordinate and finally the 3
+        coordinates X, Y and Z
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        :param None filename: overide the default file name writing
+        """
+        if filename:
+            path_f = '%s/%s' % (directory, filename)
+        else:
+            if rndname:
+                path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+            else:
+                path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                    self['rand_init'])
+        out = ''
+        # Write header as number of atoms
+        out += str(len(self['x']))
+        # Write comment as type of molecule
+        out += "\nDNA\n"
+
+        form = "%s\t%.3f\t%.3f\t%.3f\n"
+        # TODO: do not use resolution directly -> specific to Hi-C
+        for i in xrange(len(self['x'])):
+            out += form % (
+                '%s:%s-%s' % (
+                    self['description']['chromosome'],
+                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * i + 1,
+                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * (i + 1)),
+                round(self['x'][i], 3),
+                round(self['y'][i], 3), round(self['z'][i], 3))
+        out_f = open(path_f, 'w')
+        out_f.write(out)
+        out_f.close()
+        if get_path:
+            return path_f
+        else:
+            return None
 
     def view_model(self, tool='chimera', savefig=None, cmd=None,
                    center_of_mass=False, gyradius=False, color='index',

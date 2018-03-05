@@ -39,7 +39,6 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
     :returns: number of reads kept
     """
     filters = filters or masked.keys()
-    filter_names = []
     filter_handlers = {}
     for k in filters:
         try:
@@ -97,8 +96,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
                     del filter_handlers[k]
             current = set([v for v, _ in filter_handlers.values()])
     if verbose:
-        print '    saving to file %d reads %s %s.' % (
-            count, 'with' if reverse else 'without', ', '.join(filter_names))
+        print '    saving to file {:,} reads {}.'.format(
+            count, 'with' if reverse else 'without')
     out.close()
     return count
 
@@ -211,15 +210,12 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         out.close()
     if verbose:
         print 'Filtered reads (and percentage of total):\n'
-        print '     %-25s  : %12d (100.00%%)' % ('Mapped both', total)
+        print '     {:>25}  : {:12,} (100.00%)'.format('Mapped both', total)
         print '  ' + '-' * 53
-        for k in xrange(1, len(MASKED) + 1):
-            print '  %2d- %-25s : %12d (%6.2f%%)' %(
+        for k in xrange(1, len(MASKED)):
+            print '  {:2}- {:>25} : {:12,} ({:6.2f}%)'.format(
                 k, MASKED[k]['name'], MASKED[k]['reads'],
                 float(MASKED[k]['reads']) / total * 100)
-        # print '\n     %-25s : %12d (%6.2f%%)' %(
-        #     'Valid-pairs', total - bads, float(total - bads) / (
-        #         total) * 100)
     return MASKED
 
 def _filter_same_frag(fnam, max_molecule_length, output):

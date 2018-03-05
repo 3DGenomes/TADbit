@@ -18,7 +18,17 @@ mapping strategy
 
 """
 
+from os                                   import path, remove, system
+from string                               import ascii_letters
+from random                               import random
+from shutil                               import copyfile
+from multiprocessing                      import cpu_count
 from argparse                             import HelpFormatter
+from traceback                            import print_exc
+import logging
+import sqlite3 as lite
+import time
+
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.utils.file_handling         import which, mkdir
@@ -26,14 +36,6 @@ from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
-from os                                   import system, path, remove
-from string                               import ascii_letters
-from random                               import random
-from shutil                               import copyfile
-from multiprocessing                      import cpu_count
-import logging
-import sqlite3 as lite
-import time
 
 DESC = "Map Hi-C reads and organize results in an output working directory"
 
@@ -45,24 +47,36 @@ def run(opts):
     # hash that gonna be append to output file names
     param_hash = digest_parameters(opts, get_md5=True)
 
-    if opts.quality_plot:
-        logging.info('Generating Hi-C QC plot at:\n  ' +
-               path.join(opts.workdir, path.split(opts.fastq)[-1] + '.pdf'))
-        dangling_ends, ligated = quality_plot(opts.fastq, r_enz=opts.renz,
-                                              nreads=100000, paired=False,
-                                              savefig=path.join(
-                                                  opts.workdir,
-                                                  path.split(opts.fastq)[-1] + '.pdf'))
-        logging.info('  - Dangling-ends (sensu-stricto): %.3f%%', dangling_ends)
-        logging.info('  - Ligation sites: %.3f%%', ligated)
-        return
+    # create tmp directory
+    if not opts.tmp:
+        temp_dir = opts.workdir + '_tmp_r%d_%s' % (opts.read, param_hash)
+    else:
+        temp_dir = path.join(opts.tmp, 
+                             'TADbit_tmp_r%d_%s' % (opts.read, param_hash))
+    
+    # QC plot
+    fig_path = path.join(opts.workdir, 
+                            '%s_%s_%s.png' % (path.split(opts.fastq)[-1], 
+                                              '-'.join(opts.renz), param_hash))
+    logging.info('Generating Hi-C QC plot')
+    
+    dangling_ends, ligated = quality_plot(opts.fastq, r_enz=opts.renz,
+                                            nreads=100000, paired=False,
+                                            savefig=fig_path)
+    for renz in dangling_ends:
+        logging.info('  - Dangling-ends (sensu-stricto): %.3f%%', dangling_ends[renz])
+    for renz in ligated:
+        logging.info('  - Ligation sites: %.3f%%', ligated[renz])
+    if opts.skip_mapping:
+        save_to_db(opts, dangling_ends, ligated, fig_path, [], launch_time, time.localtime())
 
+    # Mapping
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
 
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
                                       '01_mapped_r%d' % (opts.read)),
-                            r_enz=opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
+                            r_enz=opts.renz, temp_dir=temp_dir, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=not opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
                             suffix=param_hash, **opts.gem_param)
@@ -75,139 +89,40 @@ def run(opts):
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, outfiles, launch_time, finish_time)
+    save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, finish_time)
+    try:
+        save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, finish_time)
+    except Exception as e:
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
+        print_exc()
+        exit(1)
 
     # write machine log
-    while path.exists(path.join(opts.workdir, '__lock_log')):
-        time.sleep(0.5)
-    open(path.join(opts.workdir, '__lock_log'), 'a').close()
-    with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        mlog.write('\n'.join([
-            ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
-            for out, num in outfiles]) + '\n')
-    # release lock
     try:
-        remove(path.join(opts.workdir, '__lock_log'))
-    except OSError:
-        pass
+        while path.exists(path.join(opts.workdir, '__lock_log')):
+            time.sleep(0.5)
+            open(path.join(opts.workdir, '__lock_log'), 'a').close()
+        with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
+            mlog.write('\n'.join([
+                ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
+                for out, num in outfiles]) + '\n')
+            # release lock
+        try:
+            remove(path.join(opts.workdir, '__lock_log'))
+        except OSError:
+            pass
+    except Exception as e:
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
+        print_exc()
+        exit(1)
 
     # clean
-    # if not opts.keep_tmp:
-    #     logging.info('cleaning temporary files')
-    #     system('rm -rf ' + opts.tmp)
+    if not opts.keep_tmp:
+        logging.info('cleaning temporary files')
+        system('rm -rf ' + temp_dir)
 
-def populate_args(parser):
-    """
-    parse option from call
-    """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
-
-    glopts = parser.add_argument_group('General options')
-    mapper = parser.add_argument_group('Mapping options')
-    descro = parser.add_argument_group('Descriptive, optional arguments')
-
-    glopts.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
-                        default=None, type=str,
-                        help='path to a configuration file with predefined ' +
-                        'parameters')
-
-    glopts.add_argument('--qc_plot', dest='quality_plot', action='store_true',
-                        default=False,
-                        help='generate a quality plot of FASTQ and exits')
-
-    glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
-                        action='store', default=None, type=str, required=True,
-                        help='path to an output folder.')
-
-    glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
-                        default=None, type=str, required=True,
-                        help='path to a FASTQ files (can be compressed files)')
-
-    glopts.add_argument('--index', dest='index', metavar="PATH",
-                        type=str, required=True,
-                        help='''paths to file(s) with indexed FASTA files of the
-                        reference genome.''')
-
-    glopts.add_argument('--read', dest='read', metavar="INT",
-                        type=int, required=True,
-                        help='read number')
-
-    glopts.add_argument('--renz', dest='renz', metavar="STR",
-                        type=str, required=True, nargs='+',
-                        help='restriction enzyme name(s)')
-
-    glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
-                        default=[], type=str,
-                        help='''[fasta header] chromosome name(s). Used in the
-                        same order as data.''')
-
-    glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
-                        default=None, type=str,
-                        help='''path to a temporary directory (default next to
-                        "workdir" directory)''')
-
-    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
-                        metavar='PATH', type=str,
-                        help='''if provided uses this directory to manipulate the
-                        database''')
-
-    mapper.add_argument('--iterative', dest='iterative', default=False,
-                        action='store_true',
-                        help='''default mapping strategy is fragment based
-                        use this flag for iterative mapping''')
-
-    mapper.add_argument('--windows', dest='windows', default=None,
-                        nargs='+',
-                        help='''defines windows to be used to trim the input
-                        FASTQ reads, for example an iterative mapping can be defined
-                        as: "--windows 1:20 1:25 1:30 1:35 1:40 1:45 1:50". But
-                        this parameter can also be used for fragment based mapping
-                        if for example pair-end reads are both in the same FASTQ,
-                        for example: "--windows 1:50" (if the length of the reads
-                        is 100). Note: that the numbers are both inclusive.''')
-
-    # mapper.add_argument('--mapping_only', dest='mapping_only', action='store_true',
-    #                     help='only do the mapping does not parse results')
-
-    descro.add_argument('--species', dest='species', metavar="STR",
-                        type=str,
-                        help='species name')
-
-    descro.add_argument('--descr', dest='description', metavar="LIST", nargs='+',
-                        type=str,
-                        help='''extra descriptive fields each filed separated by
-                        coma, and inside each, name and value separated by column:
-                        --descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf''')
-
-    glopts.add_argument('--skip', dest='skip', action='store_true',
-                        default=False,
-                        help='[DEBUG] in case already mapped.')
-
-    glopts.add_argument('--keep_tmp', dest='keep_tmp', action='store_true',
-                        default=False,
-                        help='[DEBUG] keep temporary files.')
-
-    mapper.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
-                        cores  available in the execution host. If higher
-                        than 1, tasks with multi-threading
-                        capabilities will enabled (if 0 all available)
-                        cores will be used''')
-
-    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR",
-                        type=str, default='gem-mapper',
-                        help='[%(default)s] path to GEM mapper binary')
-
-    mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
-                        nargs='+',
-                        help='''any parameter that could be passed to the GEM
-                        mapper. e.g. if we want to set the proportion of
-                        mismatches to 0.05 and the maximum indel length to 10,
-                        (in GEM it would be: -e 0.05 --max-big-indel-length 10),
-                        here we could write: "--gem_param e:0.05
-                        max-big-indel-length:10". IMPORTANT: some options are
-                        incompatible with 3C-derived experiments.''')
 
 def check_options(opts):
     if opts.cfg:
@@ -254,11 +169,6 @@ def check_options(opts):
 
     if not path.exists(opts.fastq):
         raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
-
-    # create tmp directory
-
-    if not opts.tmp:
-        opts.tmp = opts.workdir + '_tmp_r%d' % opts.read
 
     try:
         opts.windows = [[int(i) for i in win.split(':')]
@@ -320,6 +230,10 @@ def check_options(opts):
             raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
                                        'or not suported by this tool.') % k)
 
+    # create empty DB if don't exists
+    dbpath = path.join(opts.workdir, 'trace.db')
+    open(dbpath, 'a').close()
+
     # for lustre file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
@@ -339,7 +253,7 @@ def check_options(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 
-def save_to_db(opts, outfiles, launch_time, finish_time):
+def save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, finish_time):
     """
     write little DB to keep track of processes and options
     """
@@ -364,11 +278,14 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='MAPPED_INPUTs'""")
         if not cur.fetchall():
-            cur.execute("""
-            create table PATHs
-               (Id integer primary key,
+            try:
+                cur.execute("""
+                create table PATHs
+                (Id integer primary key,
                 JOBid int, Path text, Type text,
                 unique (Path))""")
+            except lite.OperationalError:
+                pass  # may append when mapped files cleaned
             cur.execute("""
             create table JOBs
                (Id integer primary key,
@@ -387,6 +304,8 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 Frag text,
                 Read int,
                 Enzyme text,
+                Dangling_Ends text,
+                Ligation_Sites text,
                 WRKDIRid int,
                 MAPPED_OUTPUTid int,
                 INDEXid int,
@@ -409,6 +328,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         add_path(cur, opts.workdir, 'WORKDIR', jobid)
         add_path(cur, opts.fastq  ,  'MAPPED_FASTQ' , jobid, opts.workdir)
         add_path(cur, opts.index  , 'INDEX'  , jobid, opts.workdir)
+        add_path(cur, fig_path  , 'FIGURE'  , jobid, opts.workdir)
         for i, (out, num) in enumerate(outfiles):
             try:
                 window = opts.windows[i]
@@ -422,11 +342,14 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             try:
                 cur.execute("""
     insert into MAPPED_INPUTs
-     (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, MAPPED_OUTPUTid, INDEXid)
+     (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, Dangling_Ends, Ligation_Sites, WRKDIRid, MAPPED_OUTPUTid, INDEXid)
     values
-     (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
+     (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',         '%s',          '%s',       %d,              %d,      %d)
      """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,
-            opts.read, '-'.join(opts.renz), get_path_id(cur, opts.workdir),
+            opts.read, '-'.join(opts.renz), 
+            ' '.join('%s:%.3f%%' % (r, dangling_ends[r]) for r in opts.renz), 
+            ' '.join('%s:%.3f%%' % ('-'.join(r), ligated[r]) for r in ligated), 
+            get_path_id(cur, opts.workdir),
             get_path_id(cur, out, opts.workdir),
             get_path_id(cur, opts.index, opts.workdir)))
             except lite.IntegrityError:
@@ -446,3 +369,115 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
+
+
+
+def populate_args(parser):
+    """
+    parse option from call
+    """
+    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
+                                                      max_help_position=27)
+
+    glopts = parser.add_argument_group('General options')
+    mapper = parser.add_argument_group('Mapping options')
+    descro = parser.add_argument_group('Descriptive, optional arguments')
+
+    glopts.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
+                        default=None, type=str,
+                        help='path to a configuration file with predefined ' +
+                        'parameters')
+
+    glopts.add_argument('--skip_mapping', dest='skip_mapping', action='store_true',
+                        default=False,
+                        help='generate a Hi-C specific quality plot from FASTQ and exits')
+
+    glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
+                        action='store', default=None, type=str, required=True,
+                        help='path to an output folder.')
+
+    glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
+                        default=None, type=str, required=True,
+                        help='path to a FASTQ files (can be compressed files)')
+
+    glopts.add_argument('--index', dest='index', metavar="PATH",
+                        type=str, required=True,
+                        help='''paths to file(s) with indexed FASTA files of the
+                        reference genome.''')
+
+    glopts.add_argument('--read', dest='read', metavar="INT",
+                        type=int, required=True,
+                        help='read number')
+
+    glopts.add_argument('--renz', dest='renz', metavar="STR",
+                        type=str, required=True, nargs='+',
+                        help='restriction enzyme name(s)')
+
+    glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
+                        default=[], type=str,
+                        help='''[fasta header] chromosome name(s). Used in the
+                        same order as data.''')
+
+    glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
+                        default=None, type=str,
+                        help='''path to a temporary directory (default next to
+                        "workdir" directory)''')
+
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
+
+    mapper.add_argument('--iterative', dest='iterative', default=False,
+                        action='store_true',
+                        help='''default mapping strategy is fragment based
+                        use this flag for iterative mapping''')
+
+    mapper.add_argument('--windows', dest='windows', default=None,
+                        nargs='+',
+                        help='''defines windows to be used to trim the input
+                        FASTQ reads, for example an iterative mapping can be defined
+                        as: "--windows 1:20 1:25 1:30 1:35 1:40 1:45 1:50". But
+                        this parameter can also be used for fragment based mapping
+                        if for example pair-end reads are both in the same FASTQ,
+                        for example: "--windows 1:50" (if the length of the reads
+                        is 100). Note: that the numbers are both inclusive.''')
+
+    descro.add_argument('--species', dest='species', metavar="STR",
+                        type=str,
+                        help='species name')
+
+    descro.add_argument('--descr', dest='description', metavar="LIST", nargs='+',
+                        type=str,
+                        help='''extra descriptive fields each filed separated by
+                        coma, and inside each, name and value separated by column:
+                        --descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf''')
+
+    glopts.add_argument('--skip', dest='skip', action='store_true',
+                        default=False,
+                        help='[DEBUG] in case already mapped.')
+
+    glopts.add_argument('--keep_tmp', dest='keep_tmp', action='store_true',
+                        default=False,
+                        help='[DEBUG] keep temporary files.')
+
+    mapper.add_argument("-C", "--cpus", dest="cpus", type=int,
+                        default=cpu_count(), help='''[%(default)s] Maximum
+                        number of CPU cores  available in the execution host.
+                         If higher than 1, tasks with multi-threading
+                        capabilities will enabled (if 0 all available)
+                        cores will be used''')
+
+    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR",
+                        type=str, default='gem-mapper',
+                        help='[%(default)s] path to GEM mapper binary')
+
+    mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
+                        nargs='+',
+                        help='''any parameter that could be passed to the GEM
+                        mapper. e.g. if we want to set the proportion of
+                        mismatches to 0.05 and the maximum indel length to 10,
+                        (in GEM it would be: -e 0.05 --max-big-indel-length 10),
+                        here we could write: "--gem_param e:0.05
+                        max-big-indel-length:10". IMPORTANT: some options are
+                        incompatible with 3C-derived experiments.''')

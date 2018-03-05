@@ -13,7 +13,6 @@ from collections                     import OrderedDict
 from cPickle                         import dump, load
 from argparse                        import ArgumentParser, SUPPRESS
 
-from scipy.optimize                  import curve_fit
 from pysam                           import AlignmentFile
 import numpy as np
 
@@ -21,9 +20,10 @@ from pytadbit.utils.file_handling    import mkdir
 from pytadbit.utils.extraviews       import nicer
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.parsers.hic_bam_parser import printime, print_progress
+from pytadbit.utils.hic_filtering    import filter_by_cis_percentage
 
 
-def read_bam_frag(inbam, filter_exclude, sections,
+def read_bam_frag(inbam, filter_exclude, all_bins, sections,
                   resolution, outdir, region, start, end):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
@@ -47,27 +47,35 @@ def read_bam_frag(inbam, filter_exclude, sections,
                 dico[(pos1, pos2)] += 1
             except KeyError:
                 dico[(pos1, pos2)] = 1
-        sumcol = {}
-        for (i, _), v in dico.iteritems():
+        cisprc = {}
+        for (i, j), v in dico.iteritems():
             # out.write('%d\t%d\t%d\n' % (i, j, v))
             try:
-                sumcol[i] += v
+                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][0] += v
+                cisprc[i][1] += v
             except KeyError:
-                sumcol[i]  = v
+                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i] = [v, v]
+                else:
+                    cisprc[i] = [0, v]
         out = open(os.path.join(outdir,
                                 'tmp_%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
+        out.close()
+        out = open(os.path.join(outdir,
+                                'tmp_bins_%s:%d-%d.pickle' % (region, start, end)), 'w')
+        dump(cisprc, out)
         out.close()
     except Exception, e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print e
         print(exc_type, fname, exc_tb.tb_lineno)
-    return sumcol
 
 
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
-             ncpus=8, factor=1, outdir='.', check_sum=False):
+             sigma=2, ncpus=8, factor=1, outdir='.', check_sum=False):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -120,17 +128,36 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         procs.append(pool.apply_async(
-            read_bam_frag, args=(inbam, filter_exclude, bins_dict,
+            read_bam_frag, args=(inbam, filter_exclude, bins, bins_dict,
                                  resolution, outdir, region, start, end,)))
     pool.close()
     print_progress(procs)
     pool.join()
 
     ## COLLECT RESULTS
-    colsum = {}
-    for p in procs:
-        c = p.get()
-        colsum.update(c)
+    verbose = True
+    cisprc = {}
+    for countbin, (region, start, end) in enumerate(zip(regs, begs, ends)):
+        if verbose:
+            if not countbin % 10 and countbin:
+                sys.stdout.write(' ')
+            if not countbin % 50 and countbin:
+                sys.stdout.write(' %9s\n     ' % ('%s/%s' % (countbin , len(regs))))
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+        fname = os.path.join(outdir,
+                             'tmp_bins_%s:%d-%d.pickle' % (region, start, end))
+        tmp_cisprc = load(open(fname))
+        cisprc.update(tmp_cisprc)
+    if verbose:
+        print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
+                            '%s/%s' % (len(regs),len(regs)))
+
+    # out = open(os.path.join(outdir, 'dicos_%s.pickle' % (
+    #     nicer(resolution).replace(' ', ''))), 'w')
+    # dump(cisprc, out)
+    # out.close()
     # bad columns
     def func_gen(x, *args):
         cmd = "zzz = " + func_restring % (args)
@@ -141,32 +168,36 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         except:
             # avoid the creation of NaNs when invalid values for power or log
             return x
-    print '  - Removing columns with few interactions'
+    print '  - Removing columns with too few or too much interactions'
     if not min_count:
-        x = np.array(sorted(v for v in colsum.values() if v))
-        y = np.array(range(len(x)))
-        func_restring = "{}/(1 + np.exp(-%s*(x-%s)))+%s".format(len(x))
-        # p0 starting values
-        # sigma defines more weight to large values (right of the curve)
-        logx = np.log(len(x))
-        z, _ = curve_fit(func_gen, x, y, p0=[1., 1., len(x)/500], maxfev=10000,
-                         sigma=[np.log(i) / logx for i in range(1, len(x) + 1)])
-        cutoff = func_gen(0, *z)
-        min_count = x[int(cutoff)]
-    print '      -> few interactions defined as less than %d interactions' % (
-        min_count)
-    badcol = {}
-    for c in xrange(total):
-        if colsum.get(c, 0) < min_count:
-            badcol[c] = colsum.get(c, 0)
-    print '      -> removed %d columns of %d (%.1f%%)' % (
-        len(badcol), total, float(len(badcol)) / total * 100)
+
+        badcol = filter_by_cis_percentage(
+            cisprc, sigma=sigma, verbose=True,
+            savefig=os.path.join(outdir + 'filtered_bins_%s.png' % (
+                nicer(resolution).replace(' ', ''))))
+    else:
+        print '      -> too few  interactions defined as less than %9d interactions' % (
+            min_count)
+        for k in cisprc:
+            cisprc[k] = cisprc[k][1]
+        badcol = {}
+        countL = 0
+        countZ = 0
+        for c in xrange(total):
+            if cisprc.get(c, 0) < min_count:
+                badcol[c] = cisprc.get(c, 0)
+                countL += 1
+                if not c in cisprc:
+                    countZ += 1
+        print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
+            len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
 
     printime('  - Rescaling biases')
     size = len(bins)
-    biases = [colsum.get(k, 1.) for k in range(size)]
+    biases = [cisprc.get(k, 1.) for k in range(size)]
     mean_col = float(sum(biases)) / len(biases)
-    biases = dict([(k, b / mean_col * mean_col**0.5) for k, b in enumerate(biases)])
+    biases = dict([(k, b / mean_col * mean_col**0.5)
+                   for k, b in enumerate(biases)])
 
     # collect subset-matrices and write genomic one
     # out = open(os.path.join(outdir,
@@ -301,13 +332,14 @@ def main():
     ncpus          = opts.cpus
     factor         = 1
     outdir         = opts.outdir
+    sigma          = 2
 
     mkdir(outdir)
 
     sys.stdout.write('\nNormalization of full genome\n')
 
     biases, decay, badcol = read_bam(inbam, filter_exclude, resolution,
-                                     min_count=min_count, ncpus=ncpus,
+                                     min_count=min_count, ncpus=ncpus, sigma=sigma,
                                      factor=factor, outdir=outdir, check_sum=opts.check_sum)
 
     printime('  - Saving biases and badcol columns')

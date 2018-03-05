@@ -427,6 +427,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
             dist_intr[diff] = [dist_intr[diff].get(k, 0)
                                for k in xrange(max(dist_intr[diff]) - diff)]
     elif isinstance(data, HiC_data):
+        resolution = resolution or data.resolution
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if normalized:
             get_data = lambda x, y: data[x, y] / data.bias[x] / data.bias[y]
@@ -445,6 +446,15 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
                         dist_intr[diff].append(get_data(i, diff))
+    elif isinstance(data, dict):  # if we pass decay/expected dictionary, computes weighted mean
+        dist_intr = {}
+        for i in range(min_diff, max_diff):
+            val = [data[c][i] for c in data
+                   if i in data[c] and data[c][i] != data[c].get(i-1, 0)]
+            if val:
+                dist_intr[i] = [sum(val) / float(len(val))]
+            else:
+                dist_intr[i] = [0]
     else:
         dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if genome_seq:
@@ -463,6 +473,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i][i + diff]):
                         dist_intr[diff].append(data[i][i + diff])
+    resolution = resolution or 1
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
@@ -500,7 +511,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
         if yp[k]:
             x.append(xp[k])
             y.append(yp[k])
-    axe.plot(x, y, 'k.')
+    axe.plot(x, y, 'k.', alpha=0.4)
     best = (float('-inf'), 0, 0, 0, 0, 0, 0, 0, 0, 0)
     logx = np.log(x)
     logy = np.log(y)
@@ -686,6 +697,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             sizes divided by 100 000)
         - 'MAD' Double Median Adjusted Deviation
     :param 10000 too_large: upper bound limit for fragment size to consider
+    :param None nreads: number of reads to process (default: all reads)
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -768,7 +780,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     return [to_return[k] for k in stats]
 
 
-def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
+def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
                               ylim=None, yscale=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
@@ -788,10 +800,12 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param None savedata: path where to store the output read counts per bin.
     :param None chr_names: can pass a list of chromosome names in case only some
        them the need to be plotted (this option may last even more than default)
+    :param None nreads: number of reads to process (default: all reads)
 
     """
+    if first_read:
+        warn('WARNING: first_read parameter should no loonger be used.')
     distr = {}
-    idx1, idx2 = (1, 3) if first_read else (7, 9)
     genome_seq = OrderedDict()
     if chr_names:
         chr_names = set(chr_names)
@@ -802,7 +816,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         cond2 = lambda x: x >= nreads
     else:
         cond2 = lambda x: False
-    cond = lambda x, y: cond1(x) and cond2(y)
+    cond = lambda x, y: cond1(x) or cond2(y)
     count = 0
     pos = 0
     fhandler = open(fnam)
@@ -816,21 +830,25 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         pos += len(line)
     fhandler.seek(pos)
     for line in fhandler:
-        crm, pos = line.strip().split('\t')[idx1:idx2]
+        line = line.strip().split('\t')
         count += 1
-        if cond(crm, count):
-            line = fhandler.next()
-            if cond2(count):
-                break
-            continue
-        pos = int(pos) / resolution
-        try:
-            distr[crm][pos] += 1
-        except KeyError:
+        for idx1, idx2 in ((1, 3), (7, 9)):
+            crm, pos = line[idx1:idx2]
+            if cond(crm, count):
+                if cond2(count):
+                    break
+                continue
+            pos = int(pos) / resolution
             try:
-                distr[crm][pos] = 1
+                distr[crm][pos] += 1
             except KeyError:
-                distr[crm] = {pos: 1}
+                try:
+                    distr[crm][pos] = 1
+                except KeyError:
+                    distr[crm] = {pos: 1}
+        else:
+            continue
+        break
     fhandler.close()
     if savefig or show:
         _ = plt.figure(figsize=(15, 1 + 3 * len(

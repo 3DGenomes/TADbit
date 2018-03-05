@@ -4,9 +4,10 @@
 
 """
 from warnings import warn
+from subprocess import Popen
+from itertools import product
+
 import numpy as np
-from subprocess import Popen, PIPE
-import itertools
 
 try:
     from matplotlib.ticker import MultipleLocator
@@ -14,6 +15,7 @@ try:
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
     warn('matplotlib not found\n')
+
 
 NTH = {
     1 : "First",
@@ -29,6 +31,7 @@ NTH = {
     11: "Eleventh",
     12: "Twelfth"
 }
+
 
 def setup_plot(axe, figsize=None):
     if axe:
@@ -50,6 +53,7 @@ def setup_plot(axe, figsize=None):
                        left=False, bottom=False, which='minor')
     return ax
 
+
 def tadbit_savefig(savefig):
     try:
         form = savefig[-4:].split('.')[1]
@@ -61,19 +65,25 @@ def tadbit_savefig(savefig):
             ['png', 'pdf', 'ps', 'eps', 'svg']))
     plt.savefig(savefig, format=form)
 
-def nicer(res):
+
+def nicer(res, sep=' ', coma=False):
     """
     writes resolution number for human beings.
     """
+    if coma:
+        format = lambda x: '{:,}'.format(x)
+    else:
+        format = lambda x: '{}'.format(x)
+
+    if not res:
+        return format(res) + sep + 'b'
     if not res % 1000000000:
-        return str(res)[:-9] + ' Gb'
+        return format(res / 1000000000) + sep + 'Gb'
     if not res % 1000000:
-        return str(res)[:-6] + ' Mb'
+        return format(res / 1000000) + sep + 'Mb'
     if not res % 1000:
-        return str(res)[:-3] + ' kb'
-    if res == 1:
-        return 'bin'
-    return str(res) + ' b'
+        return format(res / 1000) + sep + 'kb'
+    return format(res) + sep + 'b'
 
 
 COLOR = {None: '\033[31m', # red
@@ -90,6 +100,7 @@ COLOR = {None: '\033[31m', # red
          10  : '\033[31m'  # red
          }
 
+
 COLORHTML = {None: '<span style="color:red;">'       , # red
              0   : '<span>'                          , # blue
              1   : '<span style="color:blue;">'      , # blue
@@ -103,6 +114,7 @@ COLORHTML = {None: '<span style="color:red;">'       , # red
              9   : '<span style="color:red;">'       , # red
              10  : '<span style="color:red;">'         # red
              }
+
 
 def colorize(string, num, ftype='ansi'):
     """
@@ -118,12 +130,13 @@ def colorize(string, num, ftype='ansi'):
     return '%s%s%s' % (color[num], string,
                        '\033[m' if ftype=='ansi' else '</span>')
 
+
 def color_residues(x, **kwargs):
     """
     Function to color residues from blue to red.
-    
+
     :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
-    
+
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
@@ -137,10 +150,10 @@ def tad_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     """
     Colors TADs from blue to red (first to last TAD). TAD borders are displayed
     in scale of grey, from light to dark grey (again first to last border)
-    
+
     :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     :param tads: a dictionary of TADs, Experiments.tads can be directly passed
-    
+
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     ltads = [t for t in tads if tads[t]['end'] > mstart
@@ -170,10 +183,10 @@ def tad_border_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     Colors TAD borders from blue to red (bad to good score). TAD are displayed
     in scale of grey, from light to dark grey (first to last particle in the
     TAD)
-    
+
     :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     :param tads: a dictionary of TADs, Experiments.tads can be directly passed
-    
+
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
@@ -219,7 +232,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                        left=False, bottom=False)
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
-    
+
     # set dict to store data of each cluster (count and energy), depending on
     # x position in graph.
     debug = False
@@ -313,7 +326,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     plt.setp(bp['whiskers'], color='black')
     plt.setp(bp['medians'], color='darkred')
     plt.setp(bp['fliers'], color='darkred', marker='+')
-    bpAx.plot(sum(data)/len(data), 1, 
+    bpAx.plot(sum(data)/len(data), 1,
               color='w', marker='*', markeredgecolor='k')
     bpAx.annotate('%.1f' % (bp['boxes'][0].get_xdata()[0]),
                   (bp['boxes'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[1]),
@@ -345,7 +358,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     histAx.tick_params(axis='both', direction='out', top=False, right=False,
                    left=False, bottom=False, which='minor')
     h = histAx.hist(data, bins=20, alpha=0.5, color='darkgreen')
-    # confirm that the axes line up 
+    # confirm that the axes line up
     xlims = np.array([bpAx.get_xlim(), histAx.get_xlim()])
     for ax in [bpAx, histAx]:
         ax.set_xlim([xlims.min(), xlims.max()])
@@ -439,8 +452,8 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
             tadbit_savefig(savefig)
         else:
             plt.show()
-    
-    
+
+
 def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                  chimera_cmd=None, savefig=None, center_of_mass=False,
                  gyradius=False, align=True, grid=False, highlight='all',
@@ -516,7 +529,7 @@ movie encode output %s
     else:
         out.write('\n'.join(chimera_cmd) + '\n')
     out.close()
-    
+
     Popen('%s %s' % (chimera_bin, pref_f), shell=True)
 
 
@@ -554,7 +567,7 @@ def plot_3d_optimization_result(result,
     x = [i for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
     y = [j for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
     z = [k for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
-    
+
     from mpl_toolkits.mplot3d import Axes3D
 
     ncols  = int(np.sqrt(len(wax)) + 0.999)
@@ -586,9 +599,9 @@ def my_round(num, val):
 
 
 
-def plot_2d_optimization_result(result, 
+def plot_2d_optimization_result(result,
                                 axes=('scale', 'kbending', 'maxdist', 'lowfreq',
-                                      'upfreq'), 
+                                      'upfreq'),
                                 dcutoff=None,
                                 show_best=0, skip=None, savefig=None,clim=None):
 
@@ -597,17 +610,17 @@ def plot_2d_optimization_result(result,
     up to 5 parameters can be optimized: 'scale', 'kbending', 'maxdist', 'lowfreq', and 'upfreq'.
     The maps will be divided in different pages depending on the 'scale' and 'kbending' values.
     In each page there will be different maps depending the 'maxdist' values.
-    Each map has 'upfreq' values along the x-axes, and 'lowfreq' values along the y-axes.     
+    Each map has 'upfreq' values along the x-axes, and 'lowfreq' values along the y-axes.
 
     :param result: 3D numpy array contating the computed correlation values
     :param 'scale','kbending','maxdist','lowfreq','upfreq' axes: tuple of axes
-       to represent. The order is important here. It will define which parameter 
+       to represent. The order is important here. It will define which parameter
        will be placed respectively on the v, w, z, y, or x axes.
     :param 0 show_best: number of best correlation value to highlight in the heatmaps.
        The best correlation is highlithed by default
     :param None skip: a dict can be passed here in order to fix a given parameter value,
-       e.g.: {'scale': 0.001, 'kbending': 30, 'maxdist': 500} will represent all the 
-       correlation values at fixed 'scale', 'kbending', and 'maxdist' values, 
+       e.g.: {'scale': 0.001, 'kbending': 30, 'maxdist': 500} will represent all the
+       correlation values at fixed 'scale', 'kbending', and 'maxdist' values,
        respectively equal to 0.001, 30, and 500.
     :param None dcutoff: The distance cutoff (dcutoff) used to compute the contact matrix
        in the models.
@@ -615,13 +628,13 @@ def plot_2d_optimization_result(result,
        If None, the image will be displayed using matplotlib GUI. NOTE: the extension
        of the file name will automatically determine the desired format.
     :param None clim: color scale. If None, the max and min values of the input are used.
-    
+
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
     from matplotlib.cm import jet
-    
+
     ori_axes, axes_range, result = result
 
     # Commands for compatibility with the OLD version:
@@ -652,23 +665,23 @@ def plot_2d_optimization_result(result,
 
         tmp_result     = np.empty((len_scale_range  , len_kbending_range, len_maxdist_range,
                                    len_lowfreq_range, len_upfreq_range))
-        
-        indeces_sets = itertools.product(range(len(axes_range[0])),
+
+        indeces_sets = product(range(len(axes_range[0])),
                                          range(len(axes_range[1])),
                                          range(len(axes_range[2])),
                                          range(len(axes_range[3])))
 
-        for indeces_set in indeces_sets:            
+        for indeces_set in indeces_sets:
             tmp_indeces_set = (0,0,0,0,0)
             tmp_indeces_set[0] = indeces_set[scale_index]   # scale
             tmp_indeces_set[1] = 0                          # kbending
-            tmp_indeces_set[2] = indeces_set[maxdist_index] # maxdist 
+            tmp_indeces_set[2] = indeces_set[maxdist_index] # maxdist
             tmp_indeces_set[3] = indeces_set[lowfreq_index] # lowfreq
             tmp_indeces_set[4]=  indeces_set[upfreq_index]  # upfreq
             tmp_result[tmp_indeces_set] = result[indeces_set]
 
 
-        ori_axes   = ('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq')        
+        ori_axes   = ('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq')
         axes_range = tmp_axes_range
         result     = tmp_result
 
@@ -681,14 +694,14 @@ def plot_2d_optimization_result(result,
     cmap = jet
     cmap.set_bad('w', 1.)
 
-    # defines axes    
+    # defines axes
     if clim:
         vmin=clim[0]
         vmax=clim[1]
     else:
         vmin = result.min()
         vmax = result.max()
-    
+
     # Here we round the values in axes_range and pass from the
     # 5 parameters to the cartesian axes names.
     vax = [my_round(i, 3) for i in axes_range[0]] # scale
@@ -704,7 +717,7 @@ def plot_2d_optimization_result(result,
     zax_range = range(len(zax))       # maxdist
     yax_range = range(len(yax))       # lowfreq
     xax_range = range(len(xax))       # upfreq
-    indeces_sets = itertools.product(vax_range, wax_range,
+    indeces_sets = product(vax_range, wax_range,
                                      zax_range, yax_range,
                                      xax_range)
 
@@ -713,7 +726,7 @@ def plot_2d_optimization_result(result,
                           for indeces_set in indeces_sets if str(result[indeces_set]) != '--'],
                          key=lambda x: x[0], reverse=True)[:show_best+1]
 
-    # This part allows the user to "skip" some parameters to show. 
+    # This part allows the user to "skip" some parameters to show.
     # This means to fix the value of certain parameters.
     skip = {} if not skip else skip
     for i, parameter in enumerate(axes):
@@ -728,26 +741,26 @@ def plot_2d_optimization_result(result,
         else:
             raise Exception(('ERROR: skip keys must be one of the three first' +
                              ' keywords passed as axes parameter'))
-    
+
     # best number of rows/columns
     ncols  = len(zax_range)
     nrows  = len(vax_range) * len(wax_range)
 
-    # width and height of each heatmap. These dimensions of each heatmap 
-    # depend on the number of values on the x-axes, len(xax), related to 
+    # width and height of each heatmap. These dimensions of each heatmap
+    # depend on the number of values on the x-axes, len(xax), related to
     # 'upfreq', and on the y-axes, len(yax), related to 'lowfreq'. width and
-    # height are also multiplied by the ncols, that is the number of 
+    # height are also multiplied by the ncols, that is the number of
     # heatmaps per row (one for each value of 'maxdist'), and nrows, that is
     # the number of heatmaps per column (one for each combination of 'scale' and
     # 'kbending' values).
-    width  = max(4, (float(ncols) * len(xax)) / 3) 
-    height = max(3, (float(nrows) * len(yax)) / 3) 
+    width  = max(4, (float(ncols) * len(xax)) / 3)
+    height = max(3, (float(nrows) * len(yax)) / 3)
     #print 4,float(ncols)*len(xax) / 3,width
     #print 3,float(nrows)*len(yax) / 3,height
     # Definition of the heatmap object
     heatmap = plt.figure(figsize=(width, height))
 
-    # Here we define the grid of heatmaps. 
+    # Here we define the grid of heatmaps.
     grid = AxesGrid(heatmap, [.2, .2, .6, .5],
                     nrows_ncols = (nrows + 1, ncols + 1),
                     axes_pad = 0.0,
@@ -761,14 +774,14 @@ def plot_2d_optimization_result(result,
     cell = ncols
     used = []
 
-    for row in itertools.product(vax_range,wax_range):
+    for row in product(vax_range,wax_range):
         cell+=1
 
         for column in zax_range:
             used.append(cell)
             # Setting the values in the heatmap
-            im = grid[cell].imshow(result[row[0], row[1], column, :, :], 
-                                   interpolation="nearest", origin='lower', 
+            im = grid[cell].imshow(result[row[0], row[1], column, :, :],
+                                   interpolation="nearest", origin='lower',
                                    vmin=vmin, vmax=vmax, cmap=cmap)
 
             # Setting the ticks of the heatmap
@@ -780,7 +793,7 @@ def plot_2d_optimization_result(result,
                     #print j, best, vax[row[0]], wax[row[1]], zax[column]
                     grid[cell].text(xax.index(best[5]), yax.index(best[4]), str(j),
                                     {'ha':'center', 'va':'center'}, size=8)
-                    
+
             if row[0] == vax_range[0] and row[1] == wax_range[0]:
                 rect = patches.Rectangle((-0.5, len(yax)-0.5), len(xax), 1.5,
                                          facecolor='grey', alpha=0.5)
@@ -796,26 +809,26 @@ def plot_2d_optimization_result(result,
                 grid[cell].text(len(xax) / 2. - 0.5, len(yax)+0.25,
                                 str(my_round(zax[column], 3)),
                                 {'ha':'center', 'va':'center'}, size=8)
-                    
+
             cell += 1
 
         rect = patches.Rectangle((len(xax)-.5, -0.5), 1.5, len(yax),
                                  facecolor='grey', alpha=0.5)
-        # Define the rectangles for 
+        # Define the rectangles for
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
-        grid[cell-1].text(len(xax)+.25, 0.0, 
+        grid[cell-1].text(len(xax)+.25, 0.0,
                           str(my_round(vax[row[0]], 3)) + '\n' +
                           str(my_round(wax[row[1]], 3)),
-                          {'ha':'center', 'va':'center'}, 
+                          {'ha':'center', 'va':'center'},
                           rotation=90, size=8)
-        
-    grid[cell-1].text(len(xax)+.25, len(yax)/2.-2.0, 
+
+    grid[cell-1].text(len(xax)+.25, len(yax)/2.-2.0,
                       axes[0] + '\n' + axes[1],
-                      {'ha':'center', 'va':'center'}, 
+                      {'ha':'center', 'va':'center'},
                       rotation=90, size=8)
 
-    # 
+    #
     for i in range(cell+1):
         if not i in used:
             grid[i].set_visible(False)
@@ -823,7 +836,7 @@ def plot_2d_optimization_result(result,
     # This affects the axes of all the heatmaps, because the flag set share_all
     # is set equal to True.
     # grid.axes_llc.set_ylim(-0.5, len(yax)+1)
-    
+
     grid.axes_llc.set_xticks(range(0, len(xax), 2))
     grid.axes_llc.set_yticks(range(0, len(yax), 2))
     grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2], size=9)
@@ -835,14 +848,17 @@ def plot_2d_optimization_result(result,
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value', size=9)
     grid.cbar_axes[0].tick_params(labelsize=9)
- 
+
     # Setting title of the genearal title of the grid of heatmaps
-    title = 'Optimal IMP parameters\n'
-    title += 'Best: %s=%%s, %s=%%s, %s=%%s\n%s=%%s, %s=%%s %s=%%s' % (
-        axes[0], axes[1], axes[2], axes[3], axes[4], 'dcutoff')    
-    heatmap.suptitle(title % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
-                                   [str(dcutoff)]),
-                     size=12)
+    dcutoffs = [str(d) for d in dcutoff if dcutoff] if dcutoff else ['Default']
+    # TODO: FIXME
+    # title = 'Optimal IMP parameters\n'
+    # title += 'Best: %s=%%s, %s=%%s, %s=%%s\n%s=%%s, %s=%%s %s=%%s' % (
+    #     axes[0], axes[1], axes[2], axes[3], axes[4], 'dcutoff')
+    # heatmap.suptitle(title % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
+    #                                dcutoffs),
+    #                  size=12)
+
     #plt.tight_layout()
     if savefig:
         tadbit_savefig(savefig)
@@ -856,7 +872,7 @@ def compare_models(sm1, sm2, cutoff=150,
                    models2=None, cluster2=None):
     """
     Plots the difference of contact maps of two group of structural models.
-    
+
     :param sm1: a StructuralModel
     :param sm2: a StructuralModel
     :param 150 dcutoff: distance threshold (nm) to determine if two
@@ -865,7 +881,7 @@ def compare_models(sm1, sm2, cutoff=150,
        using all the models. A list of numbers corresponding to a given set
        of models can be passed
     :param None cluster: compute the contact map only for the models in the
-       cluster number 'cluster'       
+       cluster number 'cluster'
     """
     mtx1 = sm1.get_contact_matrix(models=models1, cluster=cluster1, cutoff=cutoff)
     mtx2 = sm2.get_contact_matrix(models=models2, cluster=cluster2, cutoff=cutoff)
@@ -891,14 +907,17 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     show=False
     if focus:
         siz = focus[1] - focus[0]
-        figsiz = 4 + (focus[1] - focus[0])/30
+        figsiz = 4 + (focus[1] - focus[0]) / 30
         beg, end = focus
         tads = dict([(t, xpr.tads[t]) for t in xpr.tads
                      if (xpr.tads[t]['start'] + 1 >= beg
                          and xpr.tads[t]['end'] <= end)])
+        if not tads:
+            warn('WARNING: Experiment %s has no TADs in the region %d-%d' % (
+                xpr.name, focus[0], focus[1]))
     else:
         siz = xpr.size
-        figsiz = 4 + (siz)/30
+        figsiz = 4 + (siz) / 30
         tads = xpr.tads
 
     if not axe:
@@ -908,12 +927,12 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         show=True
 
     zsin = np.sin(np.linspace(0, np.pi))
-    
-    shapes = {'ellipse'   : lambda h : [0] + list(h * zsin) + [0],
+
+    shapes = {'ellipse'   : lambda h: [0] + list(h * zsin) + [0],
               'rectangle' : lambda h: [0] + [h] * 50 + [0],
               'triangle'  : lambda h: ([h/25 * i for i in xrange(26)] +
                                        [h/25 * i for i in xrange(25, -1, -1)])}
-    
+
     try:
         shape = shapes[shape]
     except KeyError:
@@ -923,8 +942,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             [this.s[i].upper() if this.s[i-1] is 'v' else this.s[i]
              for i in [24, 36, 163, 8, 6, 16, 36]]):
             shape = lambda h: (
-                [h/25 * i for i in xrange(25)] + [h+0.2]*2 +
-                [h/25 * i for i in xrange(24, -1, -1)])
+                [h / 25 * i for i in xrange(25)] + [h + 0.2] * 2 +
+                [h / 25 * i for i in xrange(24, -1, -1)])
         else:
             raise NotImplementedError(
                 '%s not valid, use one of ellipse, rectangle or triangle')
@@ -940,7 +959,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         warn("WARNING: raw Hi-C data not available, " +
              "TAD's height fixed to 1")
         norms = None
-    if not 'height' in tads[tads.keys()[0]]:
+    if tads and not 'height' in tads[tads.keys()[0]]:
         diags = []
         siz = xpr.size
         sp1 = siz + 1
@@ -999,10 +1018,16 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                  color=jet(tad['score'] / 10) if tad['score'] else 'w',
                  mec=jet(tad['score'] / 10) if tad['score'] else 'k',
                  marker=6, ms=9, alpha=1, clip_on=False)
-    axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+    try:
+        axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+    except UnboundLocalError:
+        pass
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))
-    axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
+    try:
+        axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
+    except IndexError:
+        pass
     if show:
         tit1 = fig.suptitle("TAD borders", size='x-large')
         plt.subplots_adjust(top=0.76)
@@ -1028,7 +1053,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             tadbit_savefig(savefig)
         else:
             plt.show()
-        
+
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                       vmin=-1, vmax=1, whichpc=1,showAB=False):
     heights = []
@@ -1038,27 +1063,31 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
             val = [c['dens'] for c in cmprts[crm] if c['start']==i][0]
         except IndexError:
             pass
+        except KeyError:
+            heights = []
+            break
         heights.append(val-1)
-    
-    maxheights = max([abs(f) for f in heights])
-    try:
-        heights = [f / maxheights for f in heights]
-    except ZeroDivisionError:
-        warn('WARNING: no able to plot chromosome %s' % crm)
-        return
+
+    if heights:
+        maxheights = max([abs(f) for f in heights])
+        try:
+            heights = [f / maxheights for f in heights]
+        except ZeroDivisionError:
+            warn('WARNING: no able to plot chromosome %s' % crm)
+            return
 
     # definitions for the axes
     left, width = 0.1, 0.75
     bottom, height = 0.1, 0.75
     bottom_h = left + height + 0.02
-    
+
     rect_scatter = [left               , bottom  , width, height]
     rect_histx   = [left               , bottom_h, width, 0.08 ]
     rect_histy   = [left + width + 0.02, bottom  , 0.02 , 0.75  ]
-    
+
     # start with a rectangular Figure
     plt.figure(1, figsize=(14, 14))
-    
+
     axim = plt.axes(rect_scatter)
     axex = plt.axes(rect_histx, sharex=axim)
     axey = plt.axes(rect_histy)
@@ -1072,44 +1101,57 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axim.grid()
 
     # scale first PC
-    mfirst = max(max(first), abs(min(first)))
-    first = [f/mfirst for f in first]
-    
+    mfirst = np.nanmax((np.nanmax(first), abs(np.nanmin(first))))
+    first = [f / mfirst for f in first]
+
     axex.plot(first, color='green', alpha=0.5)
-    axex.plot(heights, color='black', alpha=1, linewidth=2)
-    axex.plot(heights, color='orange', alpha=1, linewidth=1)
-    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
-                      where=np.array(first) > 0, color='olive', alpha=0.5)
-    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
-                      where=np.array(first) < 0, color='darkgreen', alpha=0.5)
+    if heights:
+        axex.plot(heights, color='black', alpha=1, linewidth=2)
+        axex.plot(heights, color='orange', alpha=1, linewidth=1)
+
+    div = 1000 / len(matrix) + 1
+    _div = float(div)
+    half_first = np.array([sum(first[(i + j) / div] for j in range(div)) / _div
+                           for i in xrange(len(first) * div - div + 1)])
+    axex.fill_between([i / _div for i in range(len(half_first))],
+                      [0] * len(half_first), half_first,
+                      where=half_first > 0, color='olive', alpha=0.5)
+    axex.fill_between([i / _div for i in range(len(half_first))],
+                      [0] * len(half_first), half_first,
+                      where=half_first < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
-    axex.set_ylabel('%s PC (green)\ndensity (orange)' % (NTH[whichpc]))
+    if heights:
+        axex.set_ylabel('%s PC (green)\nrich in A (orange)' % (NTH[whichpc]))
+    else:
+        axex.set_ylabel('%s PC (green)' % (NTH[whichpc]))
     breaks = [0] + [i + 0.5 for i, (a, b) in
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]
     # COMPARTMENTS A/B
-    if showAB:
-      a_comp = []
-      b_comp = []
-      breaks = []
-      for cmprt in cmprts[crm]:
-	  breaks.append(cmprt['start'])
-	  try:
-	      if cmprt['type'] == 'A':
-		  a_comp.append((cmprt['start'], cmprt['end']))
-	      elif cmprt['type'] == 'B':
-		  b_comp.append((cmprt['start'], cmprt['end']))
-	  except KeyError:
-	      if cmprt['dens'] > 1:
-		  a_comp.append((cmprt['start'], cmprt['end']))
-	      else:
-		  b_comp.append((cmprt['start'], cmprt['end']))            
-      a_comp.sort()
-      b_comp.sort()
-      axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
-                [a[1] for a in a_comp], color='red' , linewidth=6)
-      axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
-                [b[1] for b in b_comp], color='blue' , linewidth=6)
+    if showAB and heights:
+        a_comp = []
+        b_comp = []
+        breaks = []
+        for cmprt in cmprts[crm]:
+            breaks.append(cmprt['start'])
+            try:
+                if cmprt['type'] == 'A':
+                    a_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
+                elif cmprt['type'] == 'B':
+                    b_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
+            except KeyError:
+                if cmprt['dens'] > 1:
+                    a_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
+                else:
+                    b_comp.append((cmprt['start'] - 0.5, cmprt['end'] + 0.5))
+        a_comp.sort()
+        b_comp.sort()
+        axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
+                    [a[1] for a in a_comp], color='red' , linewidth=6)
+        axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
+                    [b[1] for b in b_comp], color='blue' , linewidth=6)
+    elif showAB:
+        warn('WARNING: not displaying AB compartments, need richin A regions')
 
     # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
     #             color='red' , linewidth=4, alpha=0.7)
@@ -1120,14 +1162,15 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axex.minorticks_on()
     axex.grid(b=True, which='minor')
     plt.setp(axex.get_xticklabels(), visible=False)
-    
-    axex.set_xlim(0,len(matrix))
-    axim.set_ylim(0,len(matrix))
+
+    axex.set_xlim((-0.5, len(matrix) - 0.5))
+    axim.set_ylim((-0.5, len(matrix) - 0.5))
     if show:
         plt.show()
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
+
 
 def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
 
@@ -1147,7 +1190,7 @@ def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
             if cmprt['dens'] > 1:
                 a_comp.append((cmprt['start'], cmprt['end']))
             else:
-                b_comp.append((cmprt['start'], cmprt['end']))            
+                b_comp.append((cmprt['start'], cmprt['end']))
     a_comp.sort()
     b_comp.sort()
     fig, ax = plt.subplots(figsize=(3 + cmprt['end'] / 100., 2))

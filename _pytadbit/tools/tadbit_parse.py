@@ -83,10 +83,13 @@ def run(opts):
             elif not line.startswith('#'):
                 break
         multis = {}
-        multis[0] = 0
+        multis[0] = {}
         for line in fhandler:
             if '|||' in line:
-                multis[0] += line.count('|||')
+                try:
+                    multis[0][line.count('|||')] += 1
+                except KeyError:
+                    multis[0][line.count('|||')] = 1
         if out_file2:
             counts[1] = {}
             fhandler = open(out_file2)
@@ -157,7 +160,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
            (Id integer primary key,
             PATHid int,
             Total_interactions int,
-            Multiples int,
+            Multiples text,
             unique (PATHid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -200,11 +203,13 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 insert into PARSED_OUTPUTs
                 (Id  , PATHid, Total_interactions, Multiples)
                 values
-                (NULL,     %d,      %d,        %d)
+                (NULL,     %d,      %d,        '%s')
                 """ % (get_path_id(cur, outfiles[count], opts.workdir),
-                       sum_reads, multis[count]))
+                       sum_reads, ','.join([':'.join(map(str, (n, multis[count][n])))
+                                            for n in multis[count] if n])))
             except lite.IntegrityError:
                 print 'WARNING: already parsed (PARSED_OUTPUTs)'
+
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')

@@ -11,7 +11,8 @@ from string                          import ascii_letters
 from random                          import random
 from os                              import path, remove
 from shutil                          import copyfile
-from subprocess                      import Popen, PIPE
+from multiprocessing                 import cpu_count
+from warnings                        import warn
 
 import sqlite3 as lite
 import time
@@ -22,7 +23,6 @@ from pytadbit.utils.sqlite_utils     import get_jobid, add_path, get_path_id, pr
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.mapping.analyze        import insert_sizes
 from pytadbit.mapping.filter         import filter_reads, apply_filter
-from pytadbit.parsers.hic_bam_parser import _map2sam_long, _map2sam_mid, _map2sam_short
 from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
 
 
@@ -77,22 +77,23 @@ def run(opts):
                               re_proximity=opts.re_proximity,
                               min_dist_to_re=min_dist, fast=True)
 
-    n_valid_pairs = apply_filter(reads, mreads, masked,
-                                 filters=opts.apply)
-
-    # TODO: save to BAM, and compress/remove other files
+    n_valid_pairs = apply_filter(reads, mreads, masked, filters=opts.apply)
 
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s' % param_hash)
 
-    bed2D_to_BAMhic(mreads, opts.valid, opts.cpus, outbam, opts.format, masked,
+    if opts.valid:
+        infile = mreads
+    else:
+        infile = reads
+    bed2D_to_BAMhic(infile, opts.valid, opts.cpus, outbam, opts.format, masked,
                     samtools=opts.samtools)
 
     finish_time = time.localtime()
     print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
-               outbam, hist_path, median, max_f, mad, launch_time, finish_time)
+               outbam + '.bam', hist_path, median, max_f, mad, launch_time, finish_time)
 
 
 def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
@@ -133,6 +134,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
             PATHid int,
             Name text,
             Count int,
+            Applied text,
             JOBid int,
             unique (PATHid))""")
         try:
@@ -181,7 +183,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                        count, ' '.join(['%s:%d' % (k, multiples[k])
                                         for k in sorted(multiples)]),
                        median, mad, max_f))
-        for f in masked:
+        for nf, f in enumerate(masked, 1):
             try:
                 add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             except KeyError:
@@ -189,11 +191,12 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
             try:
                 cur.execute("""
             insert into FILTER_OUTPUTs
-            (Id  , PATHid, Name, Count, JOBid)
+                (Id  , PATHid, Name, Count, Applied, JOBid)
             values
-            (NULL,    %d,     '%s',      '%s', %d)
+                (NULL,     %d, '%s',  '%s',    '%s',    %d)
                 """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
-                       masked[f]['name'], masked[f]['reads'], jobid))
+                       masked[f]['name'], masked[f]['reads'],
+                       'True' if nf in opts.apply else 'False', jobid))
             except lite.IntegrityError:
                 print 'WARNING: already filtered'
                 if opts.force:
@@ -202,19 +205,20 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                             get_path_id(cur, masked[f]['fnam'], opts.workdir)))
                     cur.execute("""
                 insert into FILTER_OUTPUTs
-                (Id  , PATHid, Name, Count, JOBid)
+                    (Id  , PATHid, Name, Count, Applied, JOBid)
                 values
-                (NULL,    %d,     '%s',      '%s', %d)
+                    (NULL,     %d, '%s',  '%s',    '%s',    %d)
                     """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
-                           masked[f]['name'], masked[f]['reads'], jobid))
+                           masked[f]['name'], masked[f]['reads'],
+                           'True' if nf in opts.apply else 'False', jobid))
         try:
             cur.execute("""
         insert into FILTER_OUTPUTs
-        (Id  , PATHid, Name, Count, JOBid)
+            (Id  , PATHid, Name, Count, Applied, JOBid)
         values
-        (NULL,    %d,     '%s',      '%s', %d)
+            (NULL,     %d, '%s',  '%s',    '%s',    %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
-                   'valid-pairs', n_valid_pairs, jobid))
+                   'valid-pairs', n_valid_pairs, '', jobid))
         except lite.IntegrityError:
             print 'WARNING: already filtered'
             if opts.force:
@@ -223,11 +227,11 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                         get_path_id(cur, mreads, opts.workdir)))
                 cur.execute("""
                 insert into FILTER_OUTPUTs
-                (Id  , PATHid, Name, Count, JOBid)
+                (Id  , PATHid, Name, Count, Applied, JOBid)
                 values
-                (NULL,    %d,     '%s',      '%s', %d)
+                (NULL,     %d, '%s',  '%s',    '%s',    %d)
                 """ % (get_path_id(cur, mreads, opts.workdir),
-                       'valid-pairs', n_valid_pairs, jobid))
+                       'valid-pairs', n_valid_pairs, '', jobid))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -244,6 +248,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         remove(path.join(opts.workdir, '__lock_db'))
     except OSError:
         pass
+
 
 def load_parameters_fromdb(opts):
     if 'tmpdb' in opts and opts.tmpdb:
@@ -314,7 +319,7 @@ def populate_args(parser):
                         help='use filters of previously run job')
 
     filter_.add_argument('--apply', dest='apply', nargs='+',
-                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
                          choices = range(1, 11),
                          help=("""[%(default)s] Use filters to define a set os valid pair of reads
                          e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +
@@ -327,9 +332,9 @@ def populate_args(parser):
                         tool tadbit mapper)''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
-                        cores  available in the execution host. If higher
-                        than 1, tasks with multi-threading
+                        default=cpu_count(), help='''[%(default)s] Maximum
+                        number of CPU cores  available in the execution host.
+                         If higher than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
@@ -414,7 +419,10 @@ def check_options(opts):
             pass
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts) and not opts.force:
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
+    if already_run(opts):
+        if not opts.force:
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(path.join(dbdir, dbfile))
+            exit('WARNING: exact same job already computed, see JOBs table above')
+        else:
+            warn('WARNING: exact same job already computed, overwritting...')

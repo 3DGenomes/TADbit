@@ -19,7 +19,7 @@ def parse_tads(handler):
     :returns: list of TADs and list of weights, each TAD being a dict of type:
 
     ::
-    
+
       {TAD_num: {'start': start,
                  'end'  : end,
                  'brk'  : end,

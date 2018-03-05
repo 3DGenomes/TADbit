@@ -10,10 +10,10 @@ from os                                   import path, remove, system
 from sys                                  import exc_info, stdout
 from string                               import ascii_letters
 from random                               import random
-from shutil                               import copyfile
+from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict
 from cPickle                              import dump, load
-# from warnings                             import filterwarnings
+from traceback                            import print_exc
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
 import sqlite3 as lite
@@ -33,7 +33,7 @@ from pytadbit.utils.extraviews            import nicer
 from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from pytadbit.parsers.genome_parser       import parse_fasta
+from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
 
 # removes annoying message when normalizing...
 seterr(invalid='ignore')
@@ -62,7 +62,7 @@ def run(opts):
             raise Exception('ERROR: missing path to FASTA for oneD normalization')
         if not opts.renz:
             raise Exception('ERROR: missing restriction enzyme name for oneD normalization')
-        if not opts.fasta:
+        if not opts.mappability:
             raise Exception('ERROR: missing path to mappability for oneD normalization')
         bamfile = AlignmentFile(mreads, 'rb')
         refs = bamfile.references
@@ -75,67 +75,68 @@ def run(opts):
         fas = set(genome.keys())
         bam = set(refs)
         if fas - bam:
-            print 'WARNING: %d extra chromsomes in FASTA (removing them)' % (len(fas - bam))
+            print 'WARNING: %d extra chromosomes in FASTA (removing them)' % (len(fas - bam))
             if len(fas - bam) <= 50:
                 print '\n'.join([('  - ' + c) for c in (fas - bam)])
         if bam - fas:
             txt = ('\n'.join([('  - ' + c) for c in (bam - fas)])
                    if len(bam - fas) <= 50 else '')
-            raise Exception('ERROR: %d extra chromsomes in BAM (remove them):\n%s\n' % (
+            raise Exception('ERROR: %d extra chromosomes in BAM (remove them):\n%s\n' % (
                 len(bam - fas), txt))
         refs = [crm for crm in refs if crm in genome]
         if len(refs) == 0:
-            raise Exception("ERROR: chromsomes in FASTA different the ones in BAM")
-        genome_lengths = {refs[0] : 0}
-        total = len(genome[refs[0]]) / opts.reso + 1
-        if len(refs) > 1:
-            for crm in refs[1:]:
-                genome_lengths[crm] = total + len(genome[crm]) / opts.reso + 1
+            raise Exception("ERROR: chromosomes in FASTA different the ones in BAM")
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
         fh = open(opts.mappability)
-        mappability = []
+        mappability = dict((c, []) for c in refs)
         line = fh.next()
-        for crm in refs:
-            for begB in xrange(0, len(genome[crm]) + opts.reso, opts.reso):
+        crmM, begM, endM, val = line.split()
+        crm = crmM
+        while any(not mappability[c] for c in mappability):
+            for begB in xrange(0, len(genome[crmM]), opts.reso):
                 endB = begB + opts.reso
                 tmp = 0
                 try:
                     while True:
                         crmM, begM, endM, val = line.split()
+                        if crm != crmM:
+                            try:
+                                while crmM not in refs:
+                                    line = fh.next()
+                                    crmM, _ = line.split('\t', 1)
+                            except StopIteration:
+                                pass
+                            break
                         begM = int(begM)
                         endM = int(endM)
-                        val = float(val)
-                        weight = min(endM, endB) - max(begM, begB)
-                        if weight < 0 or crm != crmM:
-                            break
                         if endM > endB:
-                            tmp += weight * val
+                            weight = endB - begM
+                            if weight >= 0:
+                                tmp += weight * float(val)
                             break
-                        tmp += weight * val
+                        weight = endM - (begM if begM > begB else begB)
+                        if weight < 0:
+                            break
+                        tmp += weight * float(val)
                         line = fh.next()
-                except EOFError:
-                    continue
-                mappability.append(tmp / opts.reso)
+                except StopIteration:
+                    pass
+                mappability[crm].append(tmp / opts.reso)
+                crm = crmM
+        mappability = reduce(lambda x, y: x + y, (mappability[c] for c in refs))
 
         printime('  - Computing GC content per bin (removing Ns)')
-        gc_content  = []
-        for crm in refs:
-            for pos in xrange(0, len(genome[crm]) + opts.reso, opts.reso):
-                seq = genome[crm][pos:pos + opts.reso]
-                try:
-                    gc_content.append(float(seq.count('G') + seq.count('C')) /
-                                      (len(seq) - seq.count('N')))
-                except ZeroDivisionError:
-                    gc_content.append(float('nan'))
+        gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
+                                    n_cpus=opts.cpus)
         # compute r_sites ~30 sec
         # TODO: read from DB
         printime('  - Computing number of RE sites per bin (+/- 200 bp)')
         n_rsites  = []
         re_site = RESTRICTION_ENZYMES[opts.renz].replace('|', '')
         for crm in refs:
-            for pos in xrange(200, len(genome[crm]) + opts.reso + 200, opts.reso):
+            for pos in xrange(200, len(genome[crm]) + 200, opts.reso):
                 seq = genome[crm][pos-200:pos + opts.reso + 200]
                 n_rsites.append(seq.count(re_site))
 
@@ -154,13 +155,13 @@ def run(opts):
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
         cg_content=gc_content, n_rsites=n_rsites, min_perc=opts.min_perc, max_perc=opts.max_perc,
-        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs)
+        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs, extra_bads=opts.badcols)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
 
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
-                                'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
+                                'interactions_vs_genomic-coords.png_%s_%s.png' % (
                                     opts.reso, param_hash))
 
     # get and plot decay
@@ -188,10 +189,20 @@ def run(opts):
 
     finish_time = time.localtime()
 
-    save_to_db(opts, bias_file, opts.bam, bad_col_image,
-               len(badcol), len(biases), raw_cisprc, norm_cisprc,
-               inter_vs_gcoord, a2, opts.filter,
-               launch_time, finish_time)
+    try:
+        save_to_db(opts, bias_file, mreads, bad_col_image,
+                   len(badcol), len(biases), raw_cisprc, norm_cisprc,
+                   inter_vs_gcoord, a2, opts.filter,
+                   launch_time, finish_time)
+    except:
+        # release lock anyway
+        print_exc()
+        try:
+            remove(path.join(opts.workdir, '__lock_db'))
+        except OSError:
+            pass
+        exit(1)
+
 
 
 def save_to_db(opts, bias_file, mreads, bad_col_image,
@@ -337,7 +348,10 @@ def load_parameters_fromdb(opts, what='bam'):
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '
                                 'jobid with --jobid')
-            parse_jobid = jobids[0][0]
+            try:
+                parse_jobid = jobids[0][0]
+            except IndexError:
+                raise Exception('ERROR: no BAM file found... is it filtered?')
         else:
             parse_jobid = opts.jobid
         # fetch path to parsed BED files
@@ -360,8 +374,8 @@ def populate_args(parser):
     """
     parse option from call
     """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
+    parser.formatter_class=lambda prog: SmartFormatter(prog, width=95,
+                                                       max_help_position=27)
 
     oblopt = parser.add_argument_group('Required options')
     glopts = parser.add_argument_group('General options')
@@ -405,9 +419,9 @@ def populate_args(parser):
                         database''')
 
     glopts.add_argument("-C", "--cpus", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
-                        cores  available in the execution host. If higher
-                        than 1, tasks with multi-threading
+                        default=cpu_count(), help='''[%(default)s] Maximum
+                        number of CPU cores  available in the execution host.
+                        If higher than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
@@ -423,8 +437,13 @@ def populate_args(parser):
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
-                        help='''Path to file with mappability, required for oneD
-                        normalization''')
+                        help='''R|Path to mappability bedGraph file, required for oneD normalization.
+Mappability file can be generated with GEM (example from the genomic fasta file hg38.fa):\n
+     gem-indexer -i hg38.fa -o hg38
+     gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
+     gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
+     wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw
+     bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph\n''')
 
     normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
                         metavar='PATH', type=str,
@@ -473,6 +492,12 @@ def populate_args(parser):
                         default=False,
                         help='''only filter according to the percentage of zero
                         count or minimum count of reads''')
+
+    bfiltr.add_argument('-B', '--badcols', dest='badcols', nargs='+',
+                        type=str, default=None, metavar='CHR:POS1-POS2',
+                        help=('extra regions to be added to bad-columns (in'
+                              'genomic position). e.g.: --badcols'
+                              ' 1:150000000-160000000 2:1200000-1300000'))
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
@@ -556,15 +581,16 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                 dico[(pos1, pos2)] = 1
         cisprc = {}
         for (i, j), v in dico.iteritems():
-            # out.write('%d\t%d\t%d\n' % (i, j, v))
-            try:
-                if all_bins[i][0] == all_bins[j][0]:
+            if all_bins[i][0] == all_bins[j][0]:
+                try:
                     cisprc[i][0] += v
-                cisprc[i][1] += v
-            except KeyError:
-                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [v, v]
-                else:
+            else:
+                try:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
@@ -607,15 +633,16 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
                 dico[(pos1, pos2)] = 1
         cisprc = {}
         for (i, j), v in dico.iteritems():
-            # out.write('%d\t%d\t%d\n' % (i, j, v))
-            try:
-                if all_bins[i][0] == all_bins[j][0]:
+            if all_bins[i][0] == all_bins[j][0]:
+                try:
                     cisprc[i][0] += v
-                cisprc[i][1] += v
-            except KeyError:
-                if all_bins[i][0] == all_bins[j][0]:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [v, v]
-                else:
+            else:
+                try:
+                    cisprc[i][1] += v
+                except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
@@ -636,7 +663,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
              extra_out='', only_valid=False, normalize_only=False,
-             max_njobs=100, min_perc=None, max_perc=None):
+             max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -644,17 +671,16 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     section_pos = dict()
     for crm in sections:
         section_pos[crm] = (total, total + sections[crm])
-        total += sections[crm] + 1
+        total += sections[crm]
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm + 1)])
+        bins.extend([(crm, i) for i in xrange(len_crm)])
 
     start_bin = 0
-    end_bin   = len(bins) + 1
-    total = len(bins)
+    end_bin   = len(bins)
+    total     = len(bins)
 
-    total = end_bin - start_bin + 1
     regs = []
     begs = []
     ends = []
@@ -716,21 +742,20 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         tmp_cisprc = load(open(fname))
         system('rm -f %s' % fname)
         cisprc.update(tmp_cisprc)
-    print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
-                        '%s/%s' % (len(regs),len(regs)))
+    stdout.write('\n')
 
     printime('  - Removing columns with too few or too much interactions')
-    if len(bamfile.references) == 1 and not min_count:
+    if len(bamfile.references) == 1 and min_count is None:
         raise Exception("ERROR: only one chromosome can't filter by "
                         "cis-percentage, set min_count instead")
-    elif not min_count and len(bamfile.references) > 1:
+    elif min_count is None and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
-            savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
+            size=total, savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
                 nicer(resolution).replace(' ', ''), extra_out)))
     else:
-        print '      -> too few  interactions defined as less than %9d interactions' % (
-            min_count)
+        print ('      -> too few interactions defined as less than %9d '
+               'interactions') % (min_count)
         badcol = {}
         countL = 0
         countZ = 0
@@ -743,6 +768,21 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
             len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
 
+    # no mappability will result in NaNs, better to filter out these columns
+    if mappability:
+        badcol.update((i, True) for i, m in enumerate(mappability) if not m)
+
+    # add manually columns to bad columns
+    if extra_bads:
+        removed_manually = 0
+        for ebc in extra_bads:
+            c, ebc = ebc.split(':')
+            b, e = map(int, ebc.split('-'))
+            b = b / resolution + section_pos[c][0]
+            e = e / resolution + section_pos[c][0]
+            removed_manually += (e - b)
+            badcol.update(dict((p, 'manual') for p in xrange(b, e)))
+        printime('  - Removed %d columns manually.' % removed_manually)
     raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
                      for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
 
@@ -762,8 +802,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             print "biases", "mappability", "n_rsites", "cg_content"
             print len(biases), len(mappability), len(n_rsites), len(cg_content)
             raise Exception('Error: not all arrays have the same size')
-        biases = oneD(tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
+        mkdir(tmp_oneD)
+        biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
+        rmtree(tmp_oneD)
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
@@ -831,26 +874,34 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     pool.join()
 
     # collect results
-    sumdec = {}
+    nrmdec = {}
+    rawdec = {}
     for proc in procs:
-        for k, v in proc.get().iteritems():
-            try:
-                sumdec[k] += v
-            except KeyError:
-                sumdec[k]  = v
-
+        tmpnrm, tmpraw = proc.get()
+        for c, d in tmpnrm.iteritems():
+            for k, v in d.iteritems():
+                try:
+                    nrmdec[c][k] += v
+                    rawdec[c][k] += tmpraw[c][k]
+                except KeyError:
+                    try:
+                        nrmdec[c][k]  = v
+                        rawdec[c][k] = tmpraw[c][k]
+                    except KeyError:
+                        nrmdec[c] = {k: v}
+                        rawdec[c] = {k: tmpraw[c][k]}
     # count the number of cells per diagonal
     # TODO: parallelize
-    # find larget chromsome
-    len_big = max(section_pos[c][1] - section_pos[c][0] for c in section_pos)
+    # find largest chromosome
+    len_crms = dict((c, section_pos[c][1] - section_pos[c][0]) for c in section_pos)
     # initialize dictionary
-    ndiags = dict((k, 0) for k in xrange(len_big))
+    ndiags = dict((c, dict((k, 0) for k in xrange(len_crms[c]))) for c in sections)
     for crm in section_pos:
         beg_chr, end_chr = section_pos[crm][0], section_pos[crm][1]
         chr_size = end_chr - beg_chr
         thesebads = [b for b in badcol if beg_chr <= b <= end_chr]
         for dist in xrange(1, chr_size):
-            ndiags[dist] += chr_size - dist
+            ndiags[crm][dist] += chr_size - dist
             # from this we remove bad columns
             # bad columns will only affect if they are at least as distant from
             # a border as the distance between the longest diagonal and the
@@ -859,43 +910,84 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             maxp = end_chr - dist
             minp = beg_chr + dist
             for b in thesebads:
-                if b <= maxp:
+                if b < maxp:  # not inclusive!!
                     bad_diag.add(b)
                 if b >= minp:
                     bad_diag.add(b - dist)
-            ndiags[dist] -= len(bad_diag)
-        # chr_sizeerent behavior for longest diagonal:
-        ndiags[0] += chr_size - len(thesebads)
+            ndiags[crm][dist] -= len(bad_diag)
+        # different behavior for longest diagonal:
+        ndiags[crm][0] += chr_size - sum(beg_chr <= b < end_chr for b in thesebads)
 
     # normalize sum per diagonal by total number of cells in diagonal
-    for k in sumdec:
-        try:
-            sumdec[k] /= ndiags[k]
-        except ZeroDivisionError:  # all columns at this distance are "bad"
-            pass
-
-    return biases, sumdec, badcol, raw_cisprc, norm_cisprc
+    signal_to_noise = 0.05
+    min_n = signal_to_noise ** -2. # equals 400 when default
+    for crm in sections:
+        if not crm in nrmdec:
+            nrmdec[crm] = {}
+            rawdec[crm] = {}
+        tmpdec = 0  # store count by diagonal
+        tmpsum = 0  # store count by diagonal
+        ndiag  = 0
+        val    = 0
+        previous = [] # store diagonals to be summed in case not reaching the minimum
+        for k in ndiags[crm]:
+            tmpdec += nrmdec[crm].get(k, 0.)
+            tmpsum += rawdec[crm].get(k, 0.)
+            previous.append(k)
+            if tmpsum > min_n:
+                ndiag = sum(ndiags[crm][k] for k in previous)
+                val = tmpdec  # backup of tmpdec kept for last ones outside the loop
+                try:
+                    ratio = val / ndiag
+                    for k in previous:
+                        nrmdec[crm][k] = ratio
+                except ZeroDivisionError:  # all columns at this distance are "bad"
+                    pass
+                previous = []
+                tmpdec = 0
+                tmpsum = 0
+        # last ones we average with previous result
+        if  len(previous) == len(ndiags[crm]):
+            nrmdec[crm] = {}
+        elif tmpsum < min_n:
+            ndiag += sum(ndiags[crm][k] for k in previous)
+            val += tmpdec
+            try:
+                ratio = val / ndiag
+                for k in previous:
+                    nrmdec[crm][k] = ratio
+            except ZeroDivisionError:  # all columns at this distance are "bad"
+                pass
+    return biases, nrmdec, badcol, raw_cisprc, norm_cisprc
 
 
 def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
-    sumdec = {}
+    rawdec = {}
+    nrmdec = {}
     for (i, j), v in dico.iteritems():
-        # different chromosome
-        if bins[i][0] != bins[j][0]:
-            continue
         if i < j:
+            continue
+        # different chromosome
+        c = bins[i][0]
+        if c != bins[j][0]:
             continue
         if i in badcol or j in badcol:
             continue
         k = i - j
         val = v / biases[i] / biases[j]
         try:
-            sumdec[k] += val
+            nrmdec[c][k] += val
+            rawdec[c][k] += v
         except KeyError:
-            sumdec[k]  = val
+            try:
+                nrmdec[c][k] = val
+                rawdec[c][k] = v
+            except KeyError:
+                nrmdec[c] = {k: val}
+                rawdec[c] = {k: v}
     system('rm -f %s' % (fname))
-    return sumdec
+    return nrmdec, rawdec
 
 
 def get_cis_perc(fname, biases, badcol, bins):
@@ -919,3 +1011,14 @@ def sum_nrm_matrix(fname, biases):
     sumnrm = nansum([v / biases[i] / biases[j]
                      for (i, j), v in dico.iteritems()])
     return sumnrm
+
+
+class SmartFormatter(HelpFormatter):
+    """
+    https://stackoverflow.com/questions/3853722/python-argparse-how-to-insert-newline-in-the-help-text
+    """
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()
+        # this is the RawTextHelpFormatter._split_lines
+        return HelpFormatter._split_lines(self, text, width)

@@ -395,20 +395,20 @@ class Experiment(object):
         if not xpr.size:
             xpr.size = len(xpr.norm[0])
 
-        
-            
+
+
         def __merge(own, fgn):
             "internal function to merge descriptions"
             if own == fgn:
                 return own
             return '%s+%s' % (own , fgn)
-        
+
         xpr.identifier  = __merge(self.identifier , other.identifier )
         xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
         xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
         xpr.description = __merge(self.description, other.description)
         xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
-        
+
         for des in self.description:
             if not des in other.description:
                 continue
@@ -417,7 +417,7 @@ class Experiment(object):
         return xpr
 
 
-    
+
     def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for the resolution. Copy the original data into
@@ -705,6 +705,7 @@ class Experiment(object):
                 height = 0.
             tads[tad]['height'] = height
 
+
     def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
                       rowsums=None):
         """
@@ -840,7 +841,7 @@ class Experiment(object):
            micrometers length and 0.5 micrometer of width), these values could be
            used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
            (6 micrometers diameter): ['cylinder', 3000, 0, 50]
-        :param CONFIG['dmel_01'] config: a dictionary containing the standard
+        :param CONFIG config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
@@ -855,26 +856,24 @@ class Experiment(object):
            ::
 
              CONFIG = {
-              'dmel_01': {
-                  # use these paramaters with the Hi-C data from:
-                  'reference' : 'victor corces dataset 2013',
+              # use these paramaters with the Hi-C data from:
+              'reference' : 'victor corces dataset 2013',
 
-                  # Force applied to the restraints inferred to neighbor particles
-                  'kforce'    : 5,
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
 
-                  # Maximum experimental contact distance
-                  'maxdist'   : 600, # OPTIMIZATION: 500-1200
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
-                  # Minimum and maximum thresholds used to decide which experimental values have to be
-                  # included in the computation of restraints. Z-score values bigger than upfreq
-                  # and less that lowfreq will be include, whereas all the others will be rejected
-                  'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+              # Minimum and maximum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
-                  'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
-                  # How much space (radius in nm) ocupies a nucleotide
-                  'scale'     : 0.005
-                  }
+              # How much space (radius in nm) ocupies a nucleotide
+              'scale'     : 0.005
               }
         :param None tmp_folder: for lammps simulation, path to a temporary file created during
            the clustering computation. Default will be created in /tmp/ folder
@@ -1039,7 +1038,7 @@ class Experiment(object):
 
         :returns: z-score, raw values and zzeros of the experiment
         """
-        if not self._normalization.startswith('visibility'):
+        if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
             self.normalize_hic()
         from pytadbit import Chromosome
@@ -1570,20 +1569,50 @@ class Experiment(object):
             warn("WARNING: no name specified in chromosome. TADkit will not be able to interpret the file")
 
         if focus:
-            start_j, end_j = focus
-            size = end_j-start_j+1
+            start, end = focus
+            size = end-start+1
         else:
-            start_j = 1
-            end_j = size = self.size
+            start = 0
+            end = size = self.size
 
         if size > 1200:
             warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
 
         new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
-
-        chrom_start = start_j * self.resolution
-        chrom_end = end_j * self.resolution
-        descr = {'chromosome'   : self.crm.name,
+        
+        chrom_start = []
+        chrom_end = []
+        chrom = []
+        if self.hic_data and self.hic_data[0].chromosomes:
+            tot = 0
+            chrs = []
+            chrom_offset_start = start
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append((k,v))
+                    break
+                if start < tot and end >= tot:
+                    chrs.append((k,v))
+            
+            for k, v in chrs:
+                chrom.append(k)
+                chrom_start.append(0)
+                chrom_end.append(v * self.resolution)
+            chrom_start[0] = chrom_offset_start * self.resolution
+            chrom_end[-1] -= chrom_offset_end * self.resolution
+            
+        else:
+            chrom.append(self.crm.name)
+            chrom_start.append(start * self.resolution)
+            chrom_end.append(end * self.resolution)
+            
+        
+        descr = {'chromosome'   : chrom,
                  'species'      : self.crm.species,
                  'resolution'   : self.resolution,
                  'chrom_start'  : chrom_start,
@@ -1592,7 +1621,7 @@ class Experiment(object):
                  'end'          : size * self.resolution}
 
         # Fake structural models object to produce json
-        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr)
+        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr, config={'scale':0.01})
         sm.write_json(filename=filename)
 
     # def generate_densities(self):

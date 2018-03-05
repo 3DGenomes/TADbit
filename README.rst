@@ -3,15 +3,15 @@
    :height: 50
    :width: 240
 
-+-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master                                                                     |
-| Current version: v0.2.0.141         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                                                                                     |
-|                                     |                                                                           |                                                                                                                                                           |
-+-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
++-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
+|                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
+| Current version: v0.2.0.374         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+|                                     |                                                                           |                                                                                             |                                                               |
++-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
 
 TADbit is a complete Python library to deal with all steps to analyze,
-model and explore 3C-based data. With TADbit the user can map FASTQ
+model and explore 3C-based data. With TADbit the user can map FASTsQ
 files to obtain raw interaction binned matrices (Hi-C like matrices),
 normalize and correct interaction matrices, identify and compare the
 Topologically Associating Domains (TADs), build 3D models
@@ -44,28 +44,101 @@ If you have any question remaining, we would be happy to answer informally:
    :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
+Docker
+------
+
+This minimal `Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ (resulting in a 3 Gb docker image) can be used to run TADbit in any computer::
+
+    FROM debian:8
+
+    ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y wget bzip2 --no-install-recommends && \
+        rm -rf /var/lib/apt/lists/*
+
+    RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+        wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+            -O ~/miniconda.sh && \
+        /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+        rm ~/miniconda.sh
+
+    ENV PATH /opt/conda/bin:$PATH
+
+    RUN conda config --add channels salilab && conda config --add channels bioconda && \
+        conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam && \
+        conda clean -y --all  && rm -rf /opt/conda/pkgs/*
+
+    RUN wget --quiet --no-check-certificate https://newcontinuum.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%202/GEM-binaries-Linux-x86_64-core_i3-20121106-022124.tbz2 \
+            -O GEM.tbz2 && \
+        tar xvf GEM.tbz2 && cd GEM-*/ && \
+        mv * /usr/local/bin/ && cd .. && rm -rf GEM*
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y unzip build-essential --no-install-recommends && \
+        wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/dev.zip && unzip dev.zip && \
+        cd TADbit-dev && python setup.py install && cd .. && rm -rf TADbit-dev dev.zip && \
+        apt-get remove -y --purge unzip build-essential && \
+        apt-get autoremove -y && \
+        apt-get autoclean -y && \
+        rm -rf /var/lib/apt/lists/*
+
+    CMD [ "/bin/bash" ]
+
+Build the image by saving this file as :code:`Dockerfile` into an empty folder
+and build the image from inside this empty folder with :code:`docker build -t tadbit .` (~20 minutes)
+
+Once built, run it as :code:`docker run tadbit tadbit map -h`
+
+This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_.
+
+To run a notebook from inside the docker container run :code:`tadbit` docker image as::
+
+    docker run -it -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit
+
+:code:`LOCAL_PATH` *would be for example a local folder with data*
+*(e.g. FASTQs or reference genomes). And* :code:`/mnt` *a directory*
+*inside the Docker container where the* :code:`LOCAL_PATH` *would be mounted.*
+
+From inside docker run::
+
+  jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token=''
+
+And finally write the url :code:`http://localhost:8888` in your browser.
+
+*Note: this can also be done in a single line and running in the background:*
+::
+
+  docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
+
+
 Citation
 ********
-Serra, F., Baù, D., Filion, G., & Marti-Renom, M. A. (2016).
-**Structural features of the fly chromatin colors revealed by automatic three-dimensional modeling.**
-*bioRxiv*. `doi:10.1101/036764 <http://biorxiv.org/cgi/content/short/036764>`_
+Please, cite this article if you use TADbit.
 
-Methods implemented in TADbit that have been already published
---------------------------------------------------------------
+Serra, F., Baù, D., Goodstadt, M., Castillo, D. Filion, G., & Marti-Renom, M.A. (2017).
+**Automatic analysis and 3D-modelling of Hi-C data using TADbit reveals structural features of the fly chromatin colors.**
+*PLOS Comp Bio* 13(7) e1005665. `doi:10.1371/journal.pcbi.1005665 <https://doi.org/10.1371/journal.pcbi.1005665>`_
+
+Methods implemented in TADbit
+-----------------------------
+In addition to the general citation for the TADbit library, please cite these articles if you used TADbit for:
+
 - Mapping and read filtering [Imakaev2012]_ [Ay2015]_
-- 3D Model Building of the chromatin [BaùMarti-Renom2012]_
-- Normalization [Imakaev2012]_ [Rao2014]_
-- Compartment calling [Lieberman-Aiden2009]_
+- Hi-C normalization [Imakaev2012]_ [Rao2014]_
+- A/B compartment calling [Lieberman-Aiden2009]_
+- Model assessemnt [Trussart2015]_
+- Chromatin 3D Model Building [BaùMarti-Renom2012]_
 
 Applications
 ------------
-- [Trussart2015]_
-- [BaùMarti-Renom2011]_
-- [Baù2011]_
-- [Umbarger2011]_
-- [Le_Dily2014]_
-- [Belton2015]_
-- [Trussart2017]_
+TADbit has been previously used for modeling genomes and genomic domains. Here is the list of published articles:
+
+- Alpha-globin domain [Baù2011]_
+- *Caulobacter crescentus* genome [Umbarger2011]_
+- TADs as regulons [Le_Dily2014]_
+- Yeast chromosome III [Belton2015]_
+- *Mycoplasma pneumoniae* genome [Trussart2017]_
 
 
 TADbit training
@@ -95,7 +168,7 @@ Past editions
 * September 28th to October 2nd 2015: `Chromosomal Conformation course
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `CRG <http://www.crg.eu/en/content/training/>`_
-  training programme Bracelona (Spain)
+  training programme Barcelona (Spain)
 * November 25th to November 28th 2014: `CSDM 2014
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
@@ -116,8 +189,6 @@ Bibliography
 .. [Ay2015] Ay, F., Vu, T.H., Zeitz, M.J., Varoquaux, N., Carette, J.E., Vert, J.-P., Hoffman, A.R. and Noble, W.S. 2015. Identifying multi-locus chromatin contacts in human cells using tethered multiple 3C. BMC Genomics 16, p. 121.
 
 .. [BaùMarti-Renom2012] Baù, D. and Marti-Renom, M.A. 2012. Genome structure determination via 3C-based data integration by the Integrative Modeling Platform. Methods 58(3), pp. 300–306.
-
-.. [BaùMarti-Renom2011] Baù, D. and Marti-Renom, M.A. 2011. Structure determination of genomic domains by satisfaction of spatial restraints. Chromosome Research 19(1), pp. 25–35.
 
 .. [Baù2011] Baù, D., Sanyal, A., Lajoie, B.R., Capriotti, E., Byron, M., Lawrence, J.B., Dekker, J. and Marti-Renom, M.A. 2011. The three-dimensional folding of the α-globin gene domain reveals formation of chromatin globules. Nature Structural & Molecular Biology 18(1), pp. 107–114.
 

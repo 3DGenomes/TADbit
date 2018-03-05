@@ -4,12 +4,22 @@
 
 """
 
+import sys
+
+from itertools import combinations
+from math import pi, sqrt, cos, sin, acos
+from copy import deepcopy
+
+import numpy as np
+from numpy.random import shuffle as np_shuffle
+from scipy.stats  import skew, kurtosis, norm as sc_norm
+from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib import rcParams
+
 from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
 from pytadbit.consistency import consistency_wrapper
-from itertools import combinations
-import numpy as np
-from math import pi, sqrt, cos, sin, acos
-
+from pytadbit.utils.extraviews import tadbit_savefig
 
 def generate_sphere_points(n=100):
     """
@@ -560,4 +570,218 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
     return points, subpoints, supersubpoints, positions
 
 
+def randomize_matrix(data, savefig=None):
+    size = len(data)
+    rand_data = deepcopy(data)
+    for d in xrange(size):
+        diag = zip(*[range(d, size), range(size - d)])
+        rdiag = diag[:]
+        np_shuffle(rdiag)
+        for v in xrange(len(diag)):
+            val = data[diag[v][0]][diag[v][1]]
+            a, b = rdiag[v][0], rdiag[v][1]
+            rand_data[b][a] = rand_data[a][b] = val
+    if savefig:
+        plt.subplot(211)
+        plt.imshow(np.log2(data), interpolation='none')
+        plt.subplot(212)
+        plt.imshow(np.log2(rand_data), interpolation='none')
+        plt.savefig(savefig, format='pdf')
+        plt.close('all')
+    return rand_data
 
+
+def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
+    """
+    :param matrix: list of lists
+    :param 10 nrand: number of randomizations
+    :param None savefig: path where to save figure
+
+    :returns: 1- MMP score which ranges from 0 (bad) to 1 (good), and 2- the
+       expected correlation of the contact matrices of the modeled chromatin
+       with the original Hi-C data (plus the 3- lower and 4- upper values
+       expected in 95% of the cases)
+    """
+    data = np.array([np.array([v for v in l]) for l in matrix])
+
+    if verbose:
+        sys.stdout.write('  - getting EigenVectors\n')
+    egval, _ = np.linalg.eigh(data)
+    # sort eigenvalues/vectors
+    idx = (-egval).argsort()
+    egval = egval[idx]
+
+    regvals = []
+
+    if verbose:
+        sys.stdout.write('  - randomization\n')
+    for i in xrange(int(nrand)):
+        if verbose:
+            sys.stdout.write('\r    ' + str(i + 1) + ' / ' + str(nrand))
+            sys.stdout.flush()
+        regval, _ = np.linalg.eigh(randomize_matrix(data))
+        regval = [abs(j) for j in regval]
+        regval.sort(reverse=True)
+        regvals.append( regval)
+    if verbose:
+        sys.stdout.write('\n')
+    regvals = zip(*regvals)
+    rvmean = []
+    for rv in regvals:
+        rvmean.append(np.mean(rv))
+    total = sum(rvmean)/100
+    rvmean = [i/total for i in rvmean]
+
+    err = []
+    for rv in regvals:
+        rvstd = np.std(rv/total)
+        err.append(2 * rvstd)
+
+    zdata = sorted(np.log2([data[i][j] for i in xrange(len(data))
+                            for j in xrange(i, len(data)) if data[i][j]]))
+    skewness = skew(zdata)
+    kurtness = kurtosis(zdata)
+
+    if savefig:
+        _ = plt.figure(figsize=(14, 8))
+        gs = gridspec.GridSpec(7, 5, wspace=0.5, hspace=1.5)
+        ax1 = plt.subplot(gs[:   , 0:3])
+        ax2 = plt.subplot(gs[1:5 , 3: ])
+        ax3 = plt.subplot(gs[5:7 , 3: ])
+        img = ax2.imshow(np.log2(data), interpolation='none')
+        plt.colorbar(img, ax=ax2)
+
+        if savefig:
+            ax2.set_title('Original matrix', size=12)
+            ax2.tick_params(axis='both', which='major', labelsize=10)
+        ax2.set_xlabel('Bin')
+        ax2.set_ylabel('Bin')
+
+        normfit = sc_norm.pdf(zdata, np.mean(zdata), np.std(zdata))
+        _ = ax3.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4,
+                     markersize=.5)
+        ax3.tick_params(axis='both', which='major', labelsize=10)
+
+        ax3.hist(zdata, bins=20, normed=True, alpha=0.7, color='r')
+        ax3.set_xlabel('Z-score')
+        ax3.set_ylabel('Frequency')
+        rcParams['xtick.direction'] = 'out'
+        rcParams['ytick.direction'] = 'out'
+        rcParams['axes.axisbelow']  = True
+        rcParams['xtick.direction'] = 'out'
+        rcParams['ytick.direction'] = 'out'
+        rcParams['axes.axisbelow']  = True
+        rcParams['axes.grid']       = True
+        rcParams['grid.color']      = 'w'
+        rcParams['grid.linestyle']  = '-'
+        rcParams['grid.linewidth']  = 2
+        # rcParams['grid.alpha']      = .3
+        ax1.minorticks_on()
+        ax1.grid(ls='-', color='w', alpha=.3, lw=2, which='major')
+        ax1.grid(ls='-', b=True, color='w', alpha=.3, lw=1, which='minor')
+        ax1.spines['top'].set_color('none')
+        ax1.spines['right'].set_color('none')
+        ax1.spines['bottom'].set_color('none')
+        ax1.spines['left'].set_color('none')
+        ax1.xaxis.set_ticks_position('bottom')
+        ax1.yaxis.set_ticks_position('left')
+        ax1.set_xscale('log')
+        ax1.set_axis_bgcolor((.9,.9,.9))
+
+        ax1.errorbar(range(1, 1 + len(rvmean)), rvmean, yerr=err, ecolor='red',
+                     color='orange', lw=2,
+                     label='%s randomizations' % (nrand))
+
+    total = sum(abs(egval)) / 100
+    egval = np.array(sorted([e/total for e in abs(egval)], reverse=True))
+
+    for i in xrange(len(rvmean)):
+        if rvmean[i] + err[i] > egval[i]:
+            break
+    signifidx = i
+
+    size = len(data)
+
+    sev = sum(egval[:signifidx]-rvmean[:signifidx])
+
+    if savefig:
+        ax1.plot(range(1, 1 + len(rvmean)), egval,
+                 color='green', lw=2, label='Observed data')
+
+        ax1.fill_between(range(1, 1 + len(rvmean)), rvmean, egval,
+                         where=(np.array(rvmean) + np.array(err))<egval,
+                         facecolor='green', interpolate=True, alpha=0.2)
+        ax1.fill_between(range(1, 1 + len(rvmean)), rvmean, egval,
+                         where=(np.array(rvmean) + np.array(err))>egval,
+                         facecolor='red'  , interpolate=True, alpha=0.2)
+        ax1.set_xlim((0,len(rvmean)))
+        ax1.set_ylim((0, max(max(rvmean), max(egval))))
+        ax1.legend(frameon=False, loc='upper right', prop={'size': 10})
+        ax1.set_xlabel('Log indexes of Eigenvalues')
+        ax1.set_ylabel('Eigenvalues (percentage of total)')
+        #plt.subplots_adjust(right=0.6)
+
+        #img = Image.open(opts.outdir + '/matrix_small.png')
+        #fig.figimage(img, 640, -160)
+
+    minv = float(min([i for d in data for i in d if i])) / 2
+    if minv == 0.5:
+        minv = 1./(len(data)**2)
+
+    mmp = -0.0002 * size + 0.0335 * skewness - 0.0229 * kurtness + 0.0069 * sev + 0.8126
+
+    if verbose:
+        sys.stdout.write('\n')
+        sys.stdout.write('\n                       Results\n')
+        sys.stdout.write('                       -------\n\n')
+
+
+    if verbose:
+        sys.stdout.write('                  MMP score: %.4f\n\n' % mmp)
+
+    ex_a1, ex_b1 = [0.6975926,  0.2548171]
+    supa1, supb1 = [0.69300732000423904, 0.29858572176099613]
+    lowa1, lowb1 = [0.70217788900976075, 0.211048473299004]
+
+    scc     = (mmp - ex_b1 ) / ex_a1
+    scc_up1 = (mmp - supb1 ) / supa1
+    scc_lw1 = (mmp - lowb1 ) / lowa1
+
+    if verbose:
+        sys.stdout.write(('  predicted dSCC is %.3f (%.3f-%.3f '
+                          '68%% confidence)\n') % (scc , scc_up1 , scc_lw1 ))
+
+    supa75, supb75 = [0.69230778430383244, 0.30526310790548261]
+    lowa75, lowb75 = [0.70287742471016734, 0.20437108715451746]
+
+    scc_up75 = (mmp - supb75 ) / supa75
+    scc_lw75 = (mmp - lowb75 ) / lowa75
+
+    if verbose:
+        sys.stdout.write(('                        (%.3f-%.3f '
+                          '75%% confidence)\n') % (scc_up75 , scc_lw75 ))
+
+    supa2, supb2 = [0.68855373600821357, 0.34109720480765293]
+    lowa2, lowb2 = [0.70663147300578644, 0.16853699025234709]
+
+    scc_up2 = (mmp - supb2 ) / supa2
+    scc_lw2 = (mmp - lowb2 ) / lowa2
+    if verbose:
+        sys.stdout.write(('                        (%.3f-%.3f '
+                          '95%% confidence)\n') % (scc_up2 , scc_lw2 ))
+
+    if savefig:
+        # write the log
+        log = ''
+        log +=  '    1- Matrix size (number of eigenvalues): %s\n' % (len(egval))
+        log +=  "    2- Skewness of the distribution: %0.3f\n" % (skewness)
+        log +=  "    3- Kurtosis of the distribution: %0.3f\n" % (kurtness)
+        log +=  "    4- Sum of differences signif EV real-rand: %0.3f\n\n" % (sev)
+        plt.figtext(0.62, 0.77, log, size='small')
+        log =  "MMP score: %.3f\n" % (mmp)
+        log +=  "Predicted dSCC: %.3f (%.3f-%.3f at 95%% conf)\n" % (scc, scc_up2, scc_lw2)
+        plt.figtext(0.61, 0.87, log, size=12)
+        tadbit_savefig(savefig)
+        plt.close('all')
+
+    return mmp, scc, scc_up2 , scc_lw2

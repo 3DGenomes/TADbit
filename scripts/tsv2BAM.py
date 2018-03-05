@@ -24,11 +24,14 @@ Gets the *_both_filled_map.tsv contacts from TADbit (and the corresponding filte
 Each pair of contacts produces two lines in the output BAM
 """
 
-from argparse    import ArgumentParser
-from collections import OrderedDict
-from subprocess  import Popen, PIPE
+from argparse                     import ArgumentParser
+from collections                  import OrderedDict
+from subprocess                   import Popen, PIPE
+from distutils.version            import LooseVersion
 import sys
 import os
+
+from pytadbit.utils.file_handling import which
 
 def _map2sam_short(line, flag):
     """
@@ -190,15 +193,21 @@ def generate_BAM(infile, valid, ncpus, outbam, frmt):
     output += ("\t".join(("@CO" ,"E2:i", "Position of the right RE site of 1st read-end\n")))
     output += ("\t".join(("@CO" ,"E3:i", "Position of the left RE site of 2nd read-end\n")))
     output += ("\t".join(("@CO" ,"E4:i", "Position of the right RE site of 2nd read-end\n")))
-    output += ("\t".join(("@CO" ,"S1:i", "Strand of the 1st read-end (1: positive, 0: negative)")))
-    output += ("\t".join(("@CO" ,"S2:i", "Strand of the 2nd read-end  (1: positive, 0: negative)")))
+    output += ("\t".join(("@CO" ,"S1:i", "Strand of the 1st read-end (1: positive, 0: negative)\n")))
+    output += ("\t".join(("@CO" ,"S2:i", "Strand of the 2nd read-end  (1: positive, 0: negative)\n")))
 
     # open and init filter files
     if not valid:
         filter_line, filter_handler = get_filters(infile)
     fhandler.seek(pos_fh)
-    proc = Popen('samtools view -Shb -@ %d - | samtools sort -@ %d - %s' % (
-        ncpus, ncpus, outbam),
+    samtools = which('samtools')
+    version = LooseVersion([l.split()[1]
+                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            if 'Version' in l][0])
+    pre = '-o' if version >= LooseVersion('1.3') else ''
+    proc = Popen('samtools view -Shb -@ %d - | samtools sort -@ %d - %s %s' % (
+        ncpus, ncpus, pre,
+        outbam + '.bam' if  version >= LooseVersion('1.3') else ''),  # in new version '.bam' is no longer added
                  shell=True, stdin=PIPE)
     proc.stdin.write(output)
     if frmt == 'mid':

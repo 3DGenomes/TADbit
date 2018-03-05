@@ -5,8 +5,19 @@
 from __future__ import absolute_import
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from os import environ
+from subprocess import check_call, PIPE, CalledProcessError
+
+if environ.get("DISPLAY", None) != ':0':
+    try:
+        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
+                   shell=True, stdout=PIPE, stderr=PIPE)
+    except CalledProcessError:
+        import matplotlib
+        matplotlib.use('Agg')
 
 from pytadbit.tools import tadbit_map
+from pytadbit.tools import tadbit_bin
 from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
 from pytadbit.tools import tadbit_merge
@@ -80,6 +91,14 @@ def main(arguments):
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
     tadbit_normalize.populate_args(args_pp["normalize"])
+
+    # - BIN -
+    args_pp["bin"] = subparser.add_parser("bin",
+                                          description=tadbit_bin.DESC,
+                                          help=tadbit_bin.DESC,
+                                          formatter_class=RawDescriptionHelpFormatter)
+    args_pp["bin"].set_defaults(func=tadbit_bin.run)
+    tadbit_bin.populate_args(args_pp["bin"])
 
     # - MERGE -
     args_pp["merge"] = subparser.add_parser("merge",
