@@ -1,4 +1,4 @@
-#!/home/dcastillo/miniconda2/bin/python
+#! /usr/bin/python
 
 """
 This script contains the main analysis that can be done using TADbit:
