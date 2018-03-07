@@ -927,13 +927,13 @@ def write_matrix(inbam, resolution, biases, outdir,
                 out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
         def writer(c, a, b, v):
             try:
                 out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
         return writer2 if func else writer
 
     def write_raw_and_expc(func=None):
