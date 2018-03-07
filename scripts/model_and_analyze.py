@@ -1096,6 +1096,7 @@ def get_options():
     opts.nkeep_opt   = int(opts.nkeep_opt  )
     opts.ncpus       = int(opts.ncpus      )
     opts.res         = int(opts.res        )
+    opts.chrom_start = int(opts.chrom_start)
 
     # TODO: UNDER TEST
     opts.container   = None #['cylinder', 1000, 5000, 100]
@@ -1103,8 +1104,8 @@ def get_options():
     # do the division to bins
     if not opts.tad_only:
         try:
-            opts.beg = int(float(opts.beg - opts.chrom_start) / opts.res) + 1
-            opts.end = int(float(opts.end - opts.chrom_start) / opts.res)
+            opts.beg = int(float(int(opts.beg) - opts.chrom_start) / opts.res) + 1
+            opts.end = int(float(int(opts.end) - opts.chrom_start) / opts.res)
             if opts.end - opts.beg <= 2:
                 raise Exception('"beg" and "end" parameter should be given in ' +
                                 'genomic coordinates, not bin')
