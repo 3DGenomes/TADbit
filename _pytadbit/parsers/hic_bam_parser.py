@@ -708,23 +708,27 @@ def get_matrix(inbam, resolution, biases=None,
     if return_something:
         if return_headers:
             # define output file name
-            if len(regions) in [1, 2]:
-                if region1 and region2:
-                    try:
-                        name = '%s:%d-%d_%s:%d-%d' % (
-                            region1, start1 / resolution, end1 / resolution,
-                            region2, start2 / resolution, end2 / resolution)
-                    except TypeError: # all chromosomes
-                        name = '%s_%s' % (region1, region2)
-                elif region1 and start1 is not None:
-                    name = '%s:%d-%d' % (
-                        region1, start1 / resolution, end1 / resolution)
-                else:
-                    name = region1
-            else:
-                name = 'full'
+            name = _generate_name(regions, (start1, start2), (end1, end2), resolution)
             return dico, bads1, bads2, regions, name, bin_coords
         return dico
+
+
+def _generate_name(regions, starts, ends, resolution):
+    """
+    Generate file name for write_matrix and get_matrix functions
+    """
+    name = []
+    if len(regions) in [1, 2]:
+        for i, region in enumerate(regions):
+            try:
+                name.append('%s:%d-%d' % (region, starts[i] / resolution, 
+                                        ends[i] / resolution))
+            except TypeError: # all chromosomes
+                name.append('%s' % (region))
+        name = '_'.join(name)
+    else:
+        name = 'full'
+    return name
 
 
 def write_matrix(inbam, resolution, biases, outdir,
@@ -797,7 +801,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     if region1:
         regions = [region1]
         if region2:
-            regions.apend(region2)
+            regions.append(region2)
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
@@ -814,21 +818,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     if verbose:
         printime('  - Writing matrices')
     # define output file name
-    if len(regions) == 1:
-        if not region1:
-            region1 = regions[0]
-        if region2:
-            try:
-                name = '%s:%d-%d_%s:%d-%d' % (region1, start1 / resolution, end1 / resolution,
-                                              region2, start2 / resolution, end2 / resolution)
-            except TypeError: # all chromosomes
-                name = '%s_%s' % (region1, region2)
-        elif start1 is not None:
-            name = '%s:%d-%d' % (region1, start1 / resolution, end1 / resolution)
-        else:
-            name = region1
-    else:
-        name = 'full'
+    name = _generate_name(regions, (start1, start2), (end1, end2), resolution)
 
     # prepare file header
     outfiles = []
