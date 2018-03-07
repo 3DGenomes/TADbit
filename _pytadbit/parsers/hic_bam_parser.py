@@ -476,9 +476,9 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             begs.append(beg1 * resolution)
             ends.append(fin2 * resolution + resolution - 1)
     ends[-1] += 1  # last nucleotide included
-
     # reduce dictionaries
     all_bins = []
+    seenbins = set()
     for crm in regions:
         beg_crm = section_pos[crm][0]
         if region1:
@@ -487,8 +487,12 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         else:
             start = 0
             end   = section_pos[crm][1] - section_pos[crm][0]
-        all_bins.extend([(crm, i) for i in xrange(start, end)])
-    bins_dict1 = dict([(j, i) for i, j in enumerate(all_bins)])
+        all_bins.extend([(crm, i) for i in xrange(start, end)
+                          if not (crm, i) in seenbins])
+        seenbins = set(all_bins)
+    del(seenbins)
+
+    bins_dict1 = dict((j, i) for i, j in enumerate(all_bins))
     if region2:
         if not region2 in section_pos:
             raise Exception('ERROR: chromosome %s not found' % region2)
@@ -927,13 +931,13 @@ def write_matrix(inbam, resolution, biases, outdir,
                 out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
         def writer(c, a, b, v):
             try:
                 out_dec.write('{}\t{}\t{}\n'.format(
                     a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t%s\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
         return writer2 if func else writer
 
     def write_raw_and_expc(func=None):
@@ -971,10 +975,13 @@ def write_matrix(inbam, resolution, biases, outdir,
         write = write_raw_and_expc(write)
 
     # pull all sub-matrices and write full matrix
+    if region2 is not None:  # already half-matrix in this case
+        half_matrix = False
+
     if half_matrix:
         for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
                                              verbose=verbose, clean=clean):
-            if k < j:
+            if k > j:
                 continue
             if j not in bads1 and k not in bads2:
                 write(c, j, k, v)

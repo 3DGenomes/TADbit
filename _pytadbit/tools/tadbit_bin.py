@@ -570,11 +570,11 @@ def populate_args(parser):
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        choices = range(0, 11),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
-                              "correspond to: %s" % (', '.join(
+                              "correspond to: 0: nothing, %s" % (', '.join(
                                   ['%2d: %15s' % (k, MASKED[k]['name'])
                                    for k in MASKED]))))
 
