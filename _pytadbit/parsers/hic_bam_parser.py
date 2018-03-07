@@ -797,7 +797,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     if region1:
         regions = [region1]
         if region2:
-            regions.apend(region2)
+            regions.append(region2)
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
