@@ -25,6 +25,11 @@ from itertools import combinations, product
 from shutil import copyfile
 
 try:
+    from pytadbit.modelling.imp_modelling import generate_3d_models
+except ImportError:
+    pass
+
+try:
     from lammps import lammps
 except ImportError:
     pass
@@ -36,7 +41,9 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, 
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None,tmp_folder=None,timeout_job=10800):
+                       first=None, container=None,tmp_folder=None,timeout_job=10800,
+                       initial_conformation='tadbit', timesteps_per_k=10000,
+                       kfactor=1, adaptation_step=False):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -123,6 +130,9 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     :param None tmp_folder: path to a temporary file created during
            the clustering computation. Default will be created in /tmp/ folder
+    :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
+            of lammps before is killed
+    
          
 
     :returns: a StructuralModels object
@@ -132,6 +142,9 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     if not tmp_folder:
         tmp_folder = '/tmp/tadbit_tmp_%s/' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
+    else:
+        if tmp_folder[-1] != '/':
+            tmp_folder += '/'
     if not os.path.exists(tmp_folder):
         os.makedirs(tmp_folder)
     
@@ -151,8 +164,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     global LOCI
     # if z-scores are generated outside TADbit they may not start at zero
     if first == None:
-        first = min([int(j) for i in zscores for j in zscores[i]] +
-                    [int(i) for i in zscores])
+        first = min([int(j) for i in zscores[0] for j in zscores[0][i]] +
+                    [int(i) for i in zscores[0]])
     LOCI  = range(first, nloci + first)
     
     # random inital number
@@ -163,25 +176,73 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     VERBOSE = verbose
     #VERBOSE = 3
     
-    HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution,zscores,
-                 chromosomes=coords, close_bins=close_bins,first=first)
-    
+    HiCRestraints = [HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution, zs,
+                 chromosomes=coords, close_bins=close_bins,first=first) for zs in zscores]
     
     run_time = 1000
     ini_seed = randint(1,100000)
     
     colvars = 'colvars.dat'
-    steering_pairs = {       
-        'colvar_input': HiCRestraints,
-        'colvar_output': colvars,
-        'binsize': resolution,
-        'timesteps_per_k'           : 10000,
-        'timesteps_relaxation'      : 100000
-    }
+    
+    steering_pairs = None
+    time_dependent_steering_pairs = None
+    if(len(HiCRestraints) > 1):
+        time_dependent_steering_pairs = { 
+            'colvar_input'              : HiCRestraints,
+            'colvar_output'             : colvars,
+            'chrlength'                 : nloci,
+            'binsize'                   : resolution,
+            'timesteps_per_k_change'    : [timesteps_per_k]*6,
+            'k_factor'                  : kfactor,
+            'perc_enfor_contacts'       : 100.,
+            'colvar_dump_freq'          : int(timesteps_per_k/100),
+            'adaptation_step'           : adaptation_step,
+        }
+    else:
+        steering_pairs = {       
+            'colvar_input': HiCRestraints[0],
+            'colvar_output': colvars,
+            'binsize': resolution,
+            'timesteps_per_k'           : timesteps_per_k,
+            'timesteps_relaxation'      : int(timesteps_per_k*10)
+        }
     
     if not container:
-        container = ['sphere',float(nloci)]
-    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, steering_pairs=steering_pairs, initial_seed=ini_seed, n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, confining_environment=container, timeout_job=timeout_job)
+        container = ['cube',1000.0] # http://lammps.sandia.gov/threads/msg48683.html
+    
+    ini_conf = None
+    if(initial_conformation == 'tadbit'):
+        sm = generate_3d_models(zscores[0], resolution, nloci,
+              values=values[0], n_models=n_models, n_keep=1, n_cpus=1,
+              verbose=verbose, first=first, close_bins=close_bins, 
+              config=config, container=container,
+              coords=coords, zeros=zeros)
+        
+        sm_diameter = float(resolution * CONFIG.HiC['scale'])
+        for i in xrange(len(sm[0]['x'])):
+            sm[0]['x'][i] /= sm_diameter
+            sm[0]['y'][i] /= sm_diameter
+            sm[0]['z'][i] /= sm_diameter
+        cm0 = sm[0].center_of_mass()
+        for i in xrange(len(sm[0]['x'])):
+            sm[0]['x'][i] -= cm0['x']
+            sm[0]['y'][i] -= cm0['y']
+            sm[0]['z'][i] -= cm0['z']
+            
+        print "Succesfully generated tadbit initial conformation \n"
+        chromosome_particle_numbers = [int(x) for x in [len(LOCI)]]
+        chromosome_particle_numbers.sort(key=int,reverse=True)
+        ini_conf = '%sinitial_conformation.dat' % tmp_folder
+        write_initial_conformation_file(sm,
+                                        chromosome_particle_numbers,
+                                        container,
+                                        out_file=ini_conf)
+        
+    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, initial_conformation=ini_conf, 
+                             steering_pairs=steering_pairs, time_dependent_steering_pairs=time_dependent_steering_pairs,
+                             initial_seed=ini_seed, 
+                             n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, 
+                             confining_environment=container, timeout_job=timeout_job)
 
     try:
         xpr = experiment
@@ -220,13 +281,14 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values,
             zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
-            restraints=HiCRestraints._get_restraints(),
+            restraints=HiCRestraints[0]._get_restraints(),
             description=description)
 # Initialize the lammps simulation with standard polymer physics based
 # interactions: chain connectivity (FENE) ; excluded volume (WLC) ; and
 # bending rigidity (KP)
 def init_lammps_run(lmp, initial_conformation,
-                    neighbor=CONFIG.neighbor):
+                    neighbor=CONFIG.neighbor,
+                    connectivity="FENE"):
     
     """
     Initialise the parameters for the computation in lammps job
@@ -236,7 +298,10 @@ def init_lammps_run(lmp, initial_conformation,
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
 
     """
-    
+
+    #lmp.command("log none")
+    #os.remove("log.lammps")
+
     #######################################################
     # Box and units  (use LJ units and period boundaries) #
     #######################################################
@@ -304,35 +369,39 @@ def init_lammps_run(lmp, initial_conformation,
  
     lmp.command("pair_coeff * * morse  %f %f %f" % (0.0, 0.0, 0.0))
     
-    #########################################################
-    # Pair interaction between bonded atoms                 #
-    #                                                       #
-    # Fene potential + Lennard Jones 12-6:                  #
-    #  E= - 0.5 K R0^2 ln[ 1- (r/R0)^2]                     #
-    #     + 4epsilon[ (sigma/r)^12 - (sigma/r)^6] + epsilon #
-    #########################################################
-    lmp.command("bond_style fene")
+    if connectivity == "FENE":
+        #########################################################
+        # Pair interaction between bonded atoms                 #
+        #                                                       #
+        # Fene potential + Lennard Jones 12-6:                  #
+        #  E= - 0.5 K R0^2 ln[ 1- (r/R0)^2]                     #
+        #     + 4epsilon[ (sigma/r)^12 - (sigma/r)^6] + epsilon #
+        #########################################################
+        lmp.command("bond_style fene")
     
-    ########################################
-    # For style fene, specify:             #
-    #   * bond type                        #
-    #   * K (energy/distance^2)            #
-    #   * R0 (distance)                    #
-    #   * epsilon (energy)  (LJ component) #
-    #   * sigma (distance)  (LJ component) #
-    ########################################
-    lmp.command("bond_coeff * %f %f %f %f" % (CONFIG.FENEK, CONFIG.FENER0, CONFIG.FENEepsilon, CONFIG.FENEsigma))
-    lmp.command("special_bonds fene") #<=== I M P O R T A N T (new command)
-    
+        ########################################
+        # For style fene, specify:             #
+        #   * bond type                        #
+        #   * K (energy/distance^2)            #
+        #   * R0 (distance)                    #
+        #   * epsilon (energy)  (LJ component) #
+        #   * sigma (distance)  (LJ component) #
+        ########################################
+        lmp.command("bond_coeff * %f %f %f %f" % (CONFIG.FENEK, CONFIG.FENER0, CONFIG.FENEepsilon, CONFIG.FENEsigma))
+        lmp.command("special_bonds fene") #<=== I M P O R T A N T (new command)
+    if connectivity == "harmonic":
+        lmp.command("bond_style harmonic")
+        lmp.command("bond_coeff * 100.0 1.2")
+
     ##############################
     # set timestep of integrator #
     ##############################
     lmp.command("timestep %f" % CONFIG.timestep)
 
-
-    
 # This splits the lammps calculations on different processors:
 def lammps_simulate(lammps_folder, run_time,
+                    initial_conformation=None,
+                    connectivity="FENE",
                     initial_seed=None, n_models=500, n_keep=100,
                     resolution=10000, description=None,
                     neighbor=CONFIG.neighbor, tethering=True, 
@@ -427,30 +496,22 @@ def lammps_simulate(lammps_folder, run_time,
     jobs = {}
     for k in kseeds:
         #print "#RandomSeed: %s" % k
-        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
+        k_folder = lammps_folder + 'lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
-#         jobs[k] = run_lammps(k, k_folder, run_time,
-#                                               neighbor,
-#                                               tethering, minimize,
-#                                               compress_with_pbc, compress_without_pbc,
-#                                               confining_environment, 
-#                                               steering_pairs,
-#                                               time_dependent_steering_pairs,
-#                                               loop_extrusion_dynamics,
-#                                               to_dump, pbc,)
-            jobs[k] = pool.schedule(run_lammps,
-                                           args=(k, k_folder, run_time,
-                                                 neighbor,
-                                                 tethering, minimize,
-                                                 compress_with_pbc, compress_without_pbc,
-                                                 confining_environment, 
-                                                 steering_pairs,
-                                                 time_dependent_steering_pairs,
-                                                 loop_extrusion_dynamics,
-                                                 to_dump, pbc,), timeout=timeout_job)
-#         jobs[k] = pool.apply_async(run_lammps,
+        jobs[k] = run_lammps(k, k_folder, run_time,
+                                              initial_conformation, connectivity,
+                                              neighbor,
+                                              tethering, minimize,
+                                              compress_with_pbc, compress_without_pbc,
+                                              confining_environment, 
+                                              steering_pairs,
+                                              time_dependent_steering_pairs,
+                                              loop_extrusion_dynamics,
+                                              to_dump, pbc,)
+#             jobs[k] = pool.schedule(run_lammps,
 #                                            args=(k, k_folder, run_time,
+#                                                  initial_conformation, connectivity,
 #                                                  neighbor,
 #                                                  tethering, minimize,
 #                                                  compress_with_pbc, compress_without_pbc,
@@ -458,7 +519,7 @@ def lammps_simulate(lammps_folder, run_time,
 #                                                  steering_pairs,
 #                                                  time_dependent_steering_pairs,
 #                                                  loop_extrusion_dynamics,
-#                                                  to_dump, pbc,))
+#                                                  to_dump, pbc,), timeout=timeout_job)
 
     pool.close()
     pool.join()
@@ -496,21 +557,25 @@ def lammps_simulate(lammps_folder, run_time,
 # This performs the dynamics: I should add here: The steered dynamics (Irene and Hi-C based) ; 
 # The loop extrusion dynamics ; the binders based dynamics (Marenduzzo and Nicodemi)...etc...
 def run_lammps(kseed, lammps_folder, run_time,
+               initial_conformation=None, connectivity="FENE",
                neighbor=CONFIG.neighbor,
                tethering=False, minimize=True, 
                compress_with_pbc=None, compress_without_pbc=None,
                confining_environment=None,
                steering_pairs=None,
-               time_dependent_steering_pairs=True,
+               time_dependent_steering_pairs=None,
                loop_extrusion_dynamics=None,
                to_dump=10000, pbc=False):
     """
     Generates one lammps model
     
     :param kseed: Random number to identify the model.
-    :param initial_conformation_folder: folder where to store lammps input data file with the particles initial conformation. 
-      http://lammps.sandia.gov/doc/2001/data_format.html
+    :param initial_conformation_folder: folder where to store lammps input 
+        data file with the particles initial conformation. 
+        http://lammps.sandia.gov/doc/2001/data_format.html
     :param run_time: # of timesteps.
+    :param None initial_conformation: path to initial conformation file or None 
+        for random walk initial start.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param False tethering: whether to apply tethering command or not.
     :param True minimize: whether to apply minimize command or not. 
@@ -565,12 +630,14 @@ def run_lammps(kseed, lammps_folder, run_time,
     """
     
     lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps'])
-        
-    initial_conformation = lammps_folder+'initial_conformation.dat'
-    generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed, confining_environment=confining_environment)
+    
+    if not initial_conformation:    
+        initial_conformation = lammps_folder+'initial_conformation.dat'
+        generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed, confining_environment=confining_environment)
     
     init_lammps_run(lmp, initial_conformation,
-                neighbor=neighbor)
+                neighbor=neighbor,
+                connectivity=connectivity)
     
     lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
@@ -596,7 +663,8 @@ def run_lammps(kseed, lammps_folder, run_time,
             lmp.command("undump 1")
             lmp.command("dump    1       all    custom    %i   %sminimization_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
             #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
-
+        
+        print "Performing minimization run..."
         lmp.command("minimize 1.0e-4 1.0e-6 100000 100000")
         
         if to_dump:
@@ -716,72 +784,225 @@ def run_lammps(kseed, lammps_folder, run_time,
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
 
-        # Start Steered Langevin dynamics
-        # Change to_dump with some way to load the conformations you want to store in TADbit
-        if to_dump:
-            lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
-            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
-            lmp.command("reset_timestep 0")
-            
+        #if exists("objective_function_profile.txt"):
+        #    os.remove("objective_function_profile.txt")
+
         #print "# Getting the time dependent steering pairs!"        
         time_dependent_restraints = get_time_dependent_colvars_list(time_dependent_steering_pairs)
         time_points = sorted(time_dependent_restraints.keys())
-        print "#Time_points",time_points
-        
-        for i in xrange(len(time_points)-1):
+        print "#Time_points",time_points        
+        sys.stdout.flush()            
+
+        time_dependent_steering_pairs['colvar_output'] = lammps_folder+os.path.basename(time_dependent_steering_pairs['colvar_output'])
+        # Performing the adaptation step from TADbit to TADdyn excluded volume
+        if time_dependent_steering_pairs['adaptation_step']:
             restraints = {}
-            time_point = time_points[i]
+            for time_point in time_points[0:1]:
+                lmp.command("reset_timestep %i" % 0)    
+                # Change to_dump with some way to load the conformations you want to store in TADbit
+                # This Adaptation could be discarded in the trajectory files.
+                if to_dump:
+                    lmp.command("undump 1")
+                    lmp.command("dump    1       all    custom    %i  %sadapting_MD_from_TADbit_to_TADdyn_at_time_point_%s.XYZ  id  xu yu zu" % (to_dump, lammps_folder, time_point))
+                    lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+
+                restraints[time_point] = {}
+                print "# Step %s - %s" % (time_point, time_point)
+                sys.stdout.flush()            
+                for pair in time_dependent_restraints[time_point].keys():
+                    # Strategy changing gradually the spring constant and the equilibrium distance
+                    # Case 1: The restraint is present at time point 0 and time point 1:
+                    if pair in time_dependent_restraints[time_point]:
+                        # Case A: The restrainttype is the same at time point 0 and time point 1 ->
+                        # The spring force changes, and the equilibrium distance is the one at time_point+1
+                        restraints[time_point][pair] = [
+                            # Restraint type
+                            [time_dependent_restraints[time_point][pair][0]], 
+                            # Initial spring constant 
+                            [time_dependent_restraints[time_point][pair][1]*time_dependent_steering_pairs['k_factor']], 
+                            # Final spring constant 
+                            [time_dependent_restraints[time_point][pair][1]*time_dependent_steering_pairs['k_factor']], 
+                            # Initial equilibrium distance
+                            [time_dependent_restraints[time_point][pair][2]], 
+                            # Final equilibrium distance
+                            [time_dependent_restraints[time_point][pair][2]], 
+                            # Number of timesteps for the gradual change
+                            [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]*0.1)]]
+
+                generate_time_dependent_colvars_list(restraints[time_point], time_dependent_steering_pairs['colvar_output'], time_dependent_steering_pairs['colvar_dump_freq'])
+                copyfile(time_dependent_steering_pairs['colvar_output'], 
+                         "colvar_list_from_time_point_%s_to_time_point_%s.txt" % 
+                         (str(time_point), str(time_point)))
+
+                lmp.command("velocity all create 1.0 %s" % kseed)
+                # Adding the colvar option and perfoming the steering
+                if time_point != time_points[0]:
+                    lmp.command("unfix 4")
+                print "#fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output']
+                sys.stdout.flush()
+                lmp.command("fix 4 all colvars %s tstat 2" % time_dependent_steering_pairs['colvar_output'])
+                lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]*0.1))
+
+        # Time dependent steering
+        restraints = {}
+        #for i in xrange(time_points[0],time_points[-1]):
+        for time_point in time_points[0:-1]:
+            lmp.command("reset_timestep %i" % 0)    
+            # Change to_dump with some way to load the conformations you want to store in TADbit
+            if to_dump:
+                lmp.command("undump 1")
+                lmp.command("dump    1       all    custom    %i   %ssteered_MD_from_time_point_%s_to_time_point_%s.XYZ  id  xu yu zu" % (to_dump, lammps_folder, time_point, time_point+1))
+                lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+
+            restraints[time_point] = {}
             print "# Step %s - %s" % (time_point, time_point+1)
+            sys.stdout.flush()            
+            # Compute the current distance between any two particles
+            xc = np.array(lmp.gather_atoms("x",1,3))
+            current_distances = compute_particles_distance(xc)
 
-            for pair in set(time_dependent_restraints[time_point].keys()+time_dependent_restraints[time_point+1].keys()):
+            for pair in set(time_dependent_restraints[time_point].keys()+time_dependent_restraints[time_point+1].keys()):                
+                r = 0
+                
+                # Strategy changing gradually the spring constant
+                # Case 1: The restraint is present at time point 0 and time point 1:
+                if pair     in time_dependent_restraints[time_point] and pair     in time_dependent_restraints[time_point+1]:
+                    # Case A: The restrainttype is the same at time point 0 and time point 1 ->
+                    # The spring force changes, and the equilibrium distance is the one at time_point+1
+                    if time_dependent_restraints[time_point][pair][0]   == time_dependent_restraints[time_point+1][pair][0]:
+                        r += 1
+                        restraints[time_point][pair] = [
+                            # Restraint type
+                            [time_dependent_restraints[time_point+1][pair][0]], 
+                            # Initial spring constant 
+                            [time_dependent_restraints[time_point][pair][1]  *time_dependent_steering_pairs['k_factor']], 
+                            # Final spring constant 
+                            [time_dependent_restraints[time_point+1][pair][1]*time_dependent_steering_pairs['k_factor']], 
+                            # Initial equilibrium distance
+                            [time_dependent_restraints[time_point][pair][2]], 
+                            # Final equilibrium distance
+                            [time_dependent_restraints[time_point+1][pair][2]], 
+                            # Number of timesteps for the gradual change
+                            [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])]]
+                    # Case B: The restrainttype is different between time point 0 and time point 1
+                    if time_dependent_restraints[time_point][pair][0]   != time_dependent_restraints[time_point+1][pair][0]:
+                        # Case a: The restrainttype is "Harmonic" at time point 0 
+                        # and "LowerBoundHarmonic" at time point 1                        
+                        if time_dependent_restraints[time_point][pair][0] == "Harmonic":
+                            r += 1
+                            restraints[time_point][pair] = [
+                                # Restraint type
+                                [time_dependent_restraints[time_point][pair][0], time_dependent_restraints[time_point+1][pair][0]], 
+                                # Initial spring constant 
+                                [time_dependent_restraints[time_point][pair][1]*time_dependent_steering_pairs['k_factor'], 0.0],
+                                # Final spring constant 
+                                [0.0, time_dependent_restraints[time_point+1][pair][1]*time_dependent_steering_pairs['k_factor']],
+                                # Initial equilibrium distance
+                                [time_dependent_restraints[time_point][pair][2], time_dependent_restraints[time_point][pair][2]],
+                                # Final equilibrium distance
+                                [time_dependent_restraints[time_point+1][pair][2], time_dependent_restraints[time_point+1][pair][2]],
+                                # Number of timesteps for the gradual change
+                                #[int(time_dependent_steering_pairs['timesteps_per_k_change']), int(time_dependent_steering_pairs['timesteps_per_k_change'])]]
+                                [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]), int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])]]
+                        # Case b: The restrainttype is "LowerBoundHarmonic" at time point 0 
+                        # and "Harmonic" at time point 1
+                        if time_dependent_restraints[time_point][pair][0] == "HarmonicLowerBound":
+                            r += 1
+                            restraints[time_point][pair] = [
+                                # Restraint type
+                                [time_dependent_restraints[time_point][pair][0], time_dependent_restraints[time_point+1][pair][0]], 
+                                # Initial spring constant 
+                                [time_dependent_restraints[time_point][pair][1]*time_dependent_steering_pairs['k_factor'], 0.0],
+                                # Final spring constant 
+                                [0.0, time_dependent_restraints[time_point+1][pair][1]*time_dependent_steering_pairs['k_factor']],
+                                # Initial equilibrium distance
+                                [time_dependent_restraints[time_point][pair][2], time_dependent_restraints[time_point][pair][2]],
+                                # Final equilibrium distance
+                                [time_dependent_restraints[time_point+1][pair][2], time_dependent_restraints[time_point+1][pair][2]],
+                                # Number of timesteps for the gradual change
+                                #[int(time_dependent_steering_pairs['timesteps_per_k_change']), int(time_dependent_steering_pairs['timesteps_per_k_change'])]]
+                                [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]), int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])]]
 
-                if   pair     in time_dependent_restraints[time_point] and pair not in time_dependent_restraints[time_point+1]:
-                    restraints[pair] = [time_dependent_restraints[time_point][pair][0],      # Restraint type
-                                        0.0,                                                 # Target equilibrium distance
-                                        time_dependent_restraints[time_point][pair][1]*10.,  # Initial spring constant
-                                        0.0,                                                 # Final spring constant
-                                        int(time_dependent_steering_pairs['timesteps_per_k_change']*0.5)] 
-                    #print "#USED",pair,time_point,time_dependent_restraints[time_point][pair],time_point+1,["None",0.0,0.0],restraints[pair]
+                # Case 2: The restraint is not present at time point 0, but it is at time point 1:                            
                 elif pair not in time_dependent_restraints[time_point] and pair     in time_dependent_restraints[time_point+1]:
-                    restraints[pair] = [time_dependent_restraints[time_point+1][pair][0],      # Restraint type
-                                        time_dependent_restraints[time_point+1][pair][2],      # Target equilibrium distance 
-                                        0.0,                                                   # Initial spring constant
-                                        time_dependent_restraints[time_point+1][pair][1]*10., # Final spring constant 
-                                        int(time_dependent_steering_pairs['timesteps_per_k_change']*0.5)] 
-                    #print "#USED",pair,time_point,["None",0.0,0.0],time_point+1,time_dependent_restraints[time_point+1][pair],restraints[pair]
-                elif pair     in time_dependent_restraints[time_point] and pair     in time_dependent_restraints[time_point+1]:
-                    restraints[pair] = [time_dependent_restraints[time_point+1][pair][0],      # Restraint type
-                                        time_dependent_restraints[time_point+1][pair][2],      # Target equilibrium distance
-                                        time_dependent_restraints[time_point][pair][1]*10.,   # Initial spring constant
-                                        time_dependent_restraints[time_point+1][pair][1]*10., # Final spring constant
-                                        int(time_dependent_steering_pairs['timesteps_per_k_change']*0.5)]
-                    #print "#USED",pair,time_point,time_dependent_restraints[time_point][pair],time_point+1,time_dependent_restraints[time_point+1][pair],restraints[pair]
+                    # List content: restraint_type,kforce,distance
+                    r += 1
+                    restraints[time_point][pair] = [
+                        # Restraint type -> Is the one at time point time_point+1
+                        [time_dependent_restraints[time_point+1][pair][0]],
+                        # Initial spring constant 
+                        [0.0],
+                        # Final spring constant 
+                        [time_dependent_restraints[time_point+1][pair][1]*time_dependent_steering_pairs['k_factor']], 
+                        # Initial equilibrium distance 
+                        [time_dependent_restraints[time_point+1][pair][2]], 
+                        # Final equilibrium distance 
+                        [time_dependent_restraints[time_point+1][pair][2]], 
+                        # Number of timesteps for the gradual change
+                        [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])]] 
+
+                # Case 3: The restraint is     present at time point 0, but it is not at time point 1:                            
+                elif pair     in time_dependent_restraints[time_point] and pair not in time_dependent_restraints[time_point+1]:
+                    # List content: restraint_type,kforce,distance
+                    r += 1
+                    restraints[time_point][pair] = [
+                        # Restraint type -> Is the one at time point time_point
+                        [time_dependent_restraints[time_point][pair][0]], 
+                        # Initial spring constant 
+                        [time_dependent_restraints[time_point][pair][1]*time_dependent_steering_pairs['k_factor']],                         
+                        # Final spring constant 
+                        [0.0],
+                        # Initial equilibrium distance 
+                        [time_dependent_restraints[time_point][pair][2]],                         
+                        # Final equilibrium distance 
+                        [time_dependent_restraints[time_point][pair][2]], 
+                        # Number of timesteps for the gradual change
+                        [int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])]]
+                
+                    #current_distances[pair],                          
                 else:
+                    print "#ERROR None of the previous conditions is matched!"
+                    if pair     in time_dependent_restraints[time_point]:
+                        print "# Pair %s at timepoint %s %s  " % (pair, time_point, time_dependent_restraints[time_point][pair])
+                    if pair     in time_dependent_restraints[time_point+1]:
+                        print "# Pair %s at timepoint %s %s  " % (pair, time_point+1, time_dependent_restraints[time_point+1][pair])
                     continue
 
-            generate_time_dependent_colvars_list(restraints, time_dependent_steering_pairs['colvar_output'])
-            copyfile(time_dependent_steering_pairs['colvar_output'], "colvar_list_time_point_%s.txt" % time_point)
+                if r > 1:
+                    print "#ERROR Two of the previous conditions are matched!"
 
-            lmp.command("velocity all create 1.0 424242")
+                #if pair     in time_dependent_restraints[time_point]:
+                #    print "# Pair %s at timepoint %s %s  " % (pair, time_point, time_dependent_restraints[time_point][pair])
+                #else:
+                #    print "# Pair %s at timepoint %s None" % (pair, time_point)
+
+                #if pair     in time_dependent_restraints[time_point+1]:
+                #    print "# Pair %s at timepoint %s %s  " % (pair, time_point+1, time_dependent_restraints[time_point+1][pair])
+                #else:
+                #    print "# Pair %s at timepoint %s None" % (pair, time_point+1)
+                #print restraints[pair]
+                #print ""
+
+            generate_time_dependent_colvars_list(restraints[time_point], time_dependent_steering_pairs['colvar_output'], time_dependent_steering_pairs['colvar_dump_freq'])
+            copyfile(time_dependent_steering_pairs['colvar_output'], 
+                     "%scolvar_list_from_time_point_%s_to_time_point_%s.txt" % 
+                     (lammps_folder, str(time_point), str(time_point+1)))
+
+            lmp.command("velocity all create 1.0 %s" % kseed)
             # Adding the colvar option and perfoming the steering
-            if i != 0:
+            if time_point != time_points[0]:
                 lmp.command("unfix 4")
             print "#fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output']
-            lmp.command("fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output'])                
-            lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change']*1.0))
-            copyfile(out.colvars.traj, "restrained_pairs_equilibrium_distance_vs_timestep_at_time_point_%s.txt" % time_point)
+            sys.stdout.flush()
+            lmp.command("fix 4 all colvars %s tstat 2" % time_dependent_steering_pairs['colvar_output'])
+            lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]))
 
-            # Computing the number of satysfied constraints at each iteration!
-            xc = np.array(lmp.gather_atoms("x",1,3))
-            #print "#Restraints", restraints
-            compute_the_percentage_of_satysfied_restraints(xc, 
-                                                           restraints,
-                                                           confining_environment,
-                                                           time_point,
-                                                           time_dependent_steering_pairs['timesteps_per_k_change'],
-                                                           "percentage_of_established_restraints.txt",
-                                                           pbc)
+            if time_point > 0:
+                if exists("%sout.colvars.traj.BAK" % lammps_folder):
+
+                    copyfile("%sout.colvars.traj.BAK" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point-1), str(time_point)))
+            
+                    os.remove("%sout.colvars.traj.BAK" % lammps_folder)
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if loop_extrusion_dynamics:
@@ -868,6 +1089,27 @@ def run_lammps(kseed, lammps_folder, run_time,
     xc = np.array(lmp.gather_atoms("x",1,3))
     lmp.close()
     
+    # Post-processing analysis
+    if time_dependent_steering_pairs:
+        copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
+
+
+        os.remove("%sout.colvars.traj" % lammps_folder)
+        os.remove(time_dependent_steering_pairs['colvar_output'])
+        for time_point in time_points[0:-1]:
+            # Compute energy associated to the restraints: something like the IMP objective function
+            compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                           "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                           time_point,
+                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+        
+            # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
+            compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                           restraints[time_point],
+                                                           "%spercentage_of_established_restraints_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                           time_point,
+                                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+        
     result = LAMMPSmodel({'x'          : [],
                           'y'          : [],
                           'z'          : [],
@@ -884,6 +1126,8 @@ def run_lammps(kseed, lammps_folder, run_time,
             result['y'].append(xc[i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
             result['z'].append(xc[i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
 
+    #os.remove("%slog.cite" % lammps_folder)
+     
     return result
 
 ########## Part to perform the restrained dynamics ##########
@@ -1155,12 +1399,14 @@ harmonicWalls {
 
 def generate_time_dependent_colvars_list(steering_pairs,
                                          outfile,
-                                         colvars_header='# collective variable: monitor distances\n\ncolvarsTrajFrequency 500 # output every 500 steps\ncolvarsRestartFrequency 10000000\n',
+                                         colvar_dump_freq,
+                                         colvars_header='# collective variable: monitor distances\n\ncolvarsTrajFrequency %i # output every %i steps\ncolvarsRestartFrequency 1000000\n',
                                          colvars_template='''
 
 colvar {
   name %s
   # %s %s %i
+  width 1.0
   distance {
       group1 {
         atomNumbers %i
@@ -1175,25 +1421,53 @@ colvar {
 harmonic {
   name h_pot_%s
   colvars %s
-  centers %s
-  forceConstant %f # This is the force constant at time_point
-  targetForceConstant %f  # This is the force constant at time_point+1    
-  targetNumSteps %d # This is the number of timesteps between time_point and time_point+1
+  forceConstant %f       
+  targetForceConstant %f 
+  centers %s             
+  targetCenters %s       
+  targetNumSteps %s
+  outputEnergy   yes
 }\n''',
                                          colvars_harmonic_lower_bound_tail = '''
-
 harmonicWalls {
   name hlb_pot_%s
   colvars %s
-  lowerWalls %s
-  forceConstant %f # This is the force constant at time_point
-  lowerWallConstant 1.0
-  targetForceConstant %f  # This is the force constant at time_point+1    
-  targetNumSteps %d # This is the number of timesteps between time_point and time_point+1
-}\n''',
-
+  forceConstant %f
+  targetForceConstant %f
+  centers %f
+  targetCenters %f
+  targetNumSteps %s
+  outputEnergy   yes
+}\n'''
                             ):
+
+
     """
+    harmonicWalls {
+    name hlb_pot_%s
+    colvars %s
+    forceConstant %f       # This is the force constant at time_point
+    targetForceConstant %f # This is the force constant at time_point+1
+    centers %f             # This is the equilibrium distance at time_point+1
+    targetCenters %f      # This is the equilibrium distance at time_point+1
+    targetNumSteps %d      # This is the number of timesteps between time_point and time_point+1
+    outputEnergy   yes
+    }\n''',
+
+
+    colvars_harmonic_lower_bound_tail = '''
+    
+    harmonicWalls {
+    name hlb_pot_%s
+    colvars %s
+    forceConstant %f       # This is the force constant at time_point
+    targetForceConstant %f # This is the force constant at time_point+1
+    centers %f             # This is the equilibrium distance at time_point+1
+    targetCenters %f      # This is the equilibrium distance at time_point+1
+    targetNumSteps %d      # This is the number of timesteps between time_point and time_point+1
+    outputEnergy   yes
+    }\n''',
+    
     Generates lammps colvars file http://lammps.sandia.gov/doc/PDF/colvars-refman-lammps.pdf
     
     :param dict steering_pairs: dictionary containing all the information to write down the
@@ -1204,30 +1478,51 @@ harmonicWalls {
 
     """
 
+    #restraints[pair] = [time_dependent_restraints[time_point+1][pair][0],     # Restraint type -> Is the one at time point time_point+1
+    #time_dependent_restraints[time_point][pair][1]*10.,                       # Initial spring constant 
+    #time_dependent_restraints[time_point+1][pair][1]*10.,                     # Final spring constant 
+    #time_dependent_restraints[time_point][pair][2],                           # Initial equilibrium distance 
+    #time_dependent_restraints[time_point+1][pair][2],                         # Final equilibrium distance 
+    #int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point])] # Number of timesteps for the gradual change
+
     outf = open(outfile,'w')
-    outf.write(colvars_header)
+    #tfreq=10000
+    #for pair in steering_pairs:
+    #    if len(steering_pairs[pair][5]) >= 1:
+    #        tfreq = int(steering_pairs[pair][5][0]/100)
+    #        break
+    
+    tfreq = colvar_dump_freq
+    outf.write(colvars_header % (tfreq, tfreq))
     # Defining the particle pairs
     for pair in steering_pairs:
-        if steering_pairs[pair][1] == 0.0:
-            continue
-        name    = "pair_%s_%s" % (int(pair[0])+1, int(pair[1])+1)
-        seqdist = abs(int(pair[1])-int(pair[0])) 
-        region1 = "particle_%s" % (int(pair[0])+1)
-        region2 = "particle_%s" % (int(pair[1])+1)
 
-        outf.write(colvars_template % (name,region1,region2,seqdist,int(pair[0])+1,int(pair[1])+1))
+        print steering_pairs[pair]
+        sys.stdout.flush()
+        for i in xrange(len(steering_pairs[pair][0])):
+            name    = "%s_%s_%s" % (i, int(pair[0])+1, int(pair[1])+1)
+            seqdist = abs(int(pair[1])-int(pair[0])) 
+            region1 = "particle_%s" % (int(pair[0])+1)
+            region2 = "particle_%s" % (int(pair[1])+1)
+            
+            outf.write(colvars_template % (name,region1,region2,seqdist,int(pair[0])+1,int(pair[1])+1))
 
-        centre                 = steering_pairs[pair][1]
-        kappa_start            = steering_pairs[pair][2]
-        kappa_stop             = steering_pairs[pair][3]
-        timesteps_per_k_change = int(steering_pairs[pair][4])
+            restraint_type         = steering_pairs[pair][0][i]
+            kappa_start            = steering_pairs[pair][1][i]
+            kappa_stop             = steering_pairs[pair][2][i]
+            centre_start           = steering_pairs[pair][3][i]
+            centre_stop            = steering_pairs[pair][4][i]
+            timesteps_per_k_change = steering_pairs[pair][5][i]     
 
-        if steering_pairs[pair][0] == "Harmonic":
-            outf.write(colvars_harmonic_tail % (name,name,centre,kappa_start,kappa_stop,timesteps_per_k_change))
+            if restraint_type == "Harmonic":
+                outf.write(colvars_harmonic_tail             % (name,name,kappa_start,kappa_stop,centre_start,centre_stop,timesteps_per_k_change))
+                
+            if restraint_type == "HarmonicLowerBound":
+                outf.write(colvars_harmonic_lower_bound_tail % (name,name,kappa_start,kappa_stop,centre_start,centre_stop,timesteps_per_k_change))
 
-        if steering_pairs[pair][0] == "HarmonicLowerBound":
-            outf.write(colvars_harmonic_lower_bound_tail % (name,name,centre,kappa_start,kappa_stop,timesteps_per_k_change))            
 
+
+                    
     outf.flush()
     
     outf.close()  
@@ -1245,14 +1540,15 @@ def get_time_dependent_colvars_list(time_dependent_steering_pairs):
 
     # Getting the input
     # XXXThe target_pairs_file could be also a list as the one in output of get_HiCbased_restraintsXXX
-    target_pairs_file            = time_dependent_steering_pairs['colvar_input'] 
-    outfile                      = time_dependent_steering_pairs['colvar_output'] 
-    chrlength                    = time_dependent_steering_pairs['chrlength']
-    #copies                       = time_dependent_steering_pairs['copies']
+    target_pairs            = time_dependent_steering_pairs['colvar_input'] 
+    outfile                      = time_dependent_steering_pairs['colvar_output']
+    if 'chrlength' in time_dependent_steering_pairs:
+        chrlength                    = time_dependent_steering_pairs['chrlength']
     binsize                      = time_dependent_steering_pairs['binsize']
-    #percentage_enforced_contacts = time_dependent_steering_pairs['perc_enfor_contacts']
-
-    #print target_pairs_file, outfile, chrlength, copies, binsize, percentage_enforced_contacts
+    if 'percentage_enforced_contacts' in time_dependent_steering_pairs:
+        percentage_enforced_contacts = time_dependent_steering_pairs['perc_enfor_contacts']
+    else:
+        percentage_enforced_contacts = 100
 
     # HiCbasedRestraints is a list of restraints returned by this function.
     # Each entry of the list is a list of 5 elements describing the details of the restraint:
@@ -1264,31 +1560,81 @@ def get_time_dependent_colvars_list(time_dependent_steering_pairs):
    
     # Here we extract from all the restraints only a random sub-sample
     # of percentage_enforced_contacts/100*totcolvars
-    time_dependent_restraints = {}
-    tfp = open(target_pairs_file)
-    with open(target_pairs_file) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith('#') or line == "":
-                continue
-         
-            cols_vals = line.split()
-            if int(cols_vals[1]) < int(cols_vals[2]):                
-                pair = (int(cols_vals[1]), int(cols_vals[2]))
-            else:
-                pair = (int(cols_vals[2]), int(cols_vals[1]))
-
-            try:
-                if pair    in time_dependent_restraints[int(cols_vals[0])]:
-                    print "WARNING: Check your restraint list! pair %s is repeated in time point %s!" % (pair, int(cols_vals[0]))
-                time_dependent_restraints[int(cols_vals[0])][pair] = [cols_vals[3],
-                                                                      float(cols_vals[4]),
-                                                                      float(cols_vals[5])]
-            except:
-                time_dependent_restraints[int(cols_vals[0])] = {}
-                time_dependent_restraints[int(cols_vals[0])][pair] = [cols_vals[3],
-                                                                      float(cols_vals[4]),
-                                                                      float(cols_vals[5])]
+    rand_lines = []
+    i=0
+    j=0
+    if isinstance(target_pairs, str):    
+        time_dependent_restraints = {}
+        totcolvars = linecount(target_pairs)
+        ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
+        
+        #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        rand_positions = sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sorted(rand_positions)
+        
+        with open(target_pairs) as f:
+            for line in f:
+                line = line.strip()
+                if j >= ncolvars:
+                    break
+                if line.startswith('#') or line == "":
+                    continue
+                
+                # Line format: timepoint,particle1,particle2,restraint_type,kforce,distance
+                cols_vals = line.split()
+                
+                if int(cols_vals[1]) < int(cols_vals[2]):                
+                    pair = (int(cols_vals[1]), int(cols_vals[2]))
+                else:
+                    pair = (int(cols_vals[2]), int(cols_vals[1]))
+            
+                try:
+                    if pair    in time_dependent_restraints[int(cols_vals[0])]:
+                        print "WARNING: Check your restraint list! pair %s is repeated in time point %s!" % (pair, int(cols_vals[0]))
+                    # List content: restraint_type,kforce,distance
+                    time_dependent_restraints[int(cols_vals[0])][pair] = [cols_vals[3],
+                                                                          float(cols_vals[4]),
+                                                                          float(cols_vals[5])]
+                except:
+                    time_dependent_restraints[int(cols_vals[0])] = {}
+                    # List content: restraint_type,kforce,distance
+                    time_dependent_restraints[int(cols_vals[0])][pair] = [cols_vals[3],
+                                                                          float(cols_vals[4]),
+                                                                          float(cols_vals[5])]
+                if i == rand_positions[j]:
+                    rand_lines.append(line)
+                    j += 1
+                i += 1
+    elif isinstance(target_pairs, list):
+        time_dependent_restraints = dict((i,{}) for i in xrange(len(target_pairs)))
+        for time_point, HiCR in enumerate(target_pairs):
+            rand_lines = HiCR.get_hicbased_restraints()
+            totcolvars = len(rand_lines)
+            ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
+            
+            #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+            rand_positions = sample(list(range(totcolvars)), ncolvars)
+            rand_positions = sorted(rand_positions)
+            
+            for cols_vals in rand_lines:
+                
+                if cols_vals[2] != "Harmonic" and cols_vals[2] != "HarmonicLowerBound":
+                    continue
+                if int(cols_vals[0]) < int(cols_vals[1]):                
+                    pair = (int(cols_vals[0]), int(cols_vals[1]))
+                else:
+                    pair = (int(cols_vals[1]), int(cols_vals[0]))
+            
+                if pair in time_dependent_restraints[time_point]:
+                    print "WARNING: Check your restraint list! pair %s is repeated in time point %s!" % (pair, time_point)
+                # List content: restraint_type,kforce,distance
+                time_dependent_restraints[time_point][pair] = [cols_vals[2],
+                                                                      float(cols_vals[3]),
+                                                                      float(cols_vals[4])]
+        
+    else:
+        print "Unknown target_pairs"
+        return 
 
     for time_point in sorted(time_dependent_restraints.keys()):
         for pair in time_dependent_restraints[time_point]:
@@ -1303,7 +1649,8 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
                                                     seed_of_the_random_number_generator=1 ,
                                                     number_of_conformations=1,
                                                     outfile="Initial_random_walk_conformation.dat",
-                                                    pbc=False):
+                                                    pbc=False,
+                                                    center=None):
     """
     Generates lammps initial conformation file by random walks
     
@@ -1332,7 +1679,8 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
         final_random_walks = generate_random_walks(chromosome_particle_numbers,
                                                    particle_radius,
                                                    confining_environment,
-                                                   pbc=pbc)
+                                                   pbc=pbc,
+                                                   center=center)
 
         # Writing the final_random_walks conformation
         #print "Succesfully generated conformation number %d\n" % (cnt+1)
@@ -1827,6 +2175,7 @@ def generate_rods_random_conformation_with_pbc(rosettes_lengths, rosette_radius,
 def generate_random_walks(chromosome_particle_numbers,
                           particle_radius,
                           confining_environment,
+                          center,
                           pbc=False):
     # Construction of the random walks initial conformation 
     random_walks = []
@@ -1920,6 +2269,33 @@ def generate_random_walks(chromosome_particle_numbers,
         random_walks.append(random_walk)
 
     #print "Successfully generated random walk conformation!"
+    if center:
+        for random_walk in random_walks:
+            x_com, y_com, z_com = (0.0,0.0,0.0)
+            cnt = 0
+            for (x,y,z) in zip(random_walk['x'],random_walk['y'],random_walk['z']):
+                x_com += x
+                y_com += y
+                z_com += z
+                cnt += 1
+            x_com, y_com, z_com = (x_com/cnt,y_com/cnt,z_com/cnt)
+            print "#Old COM ",x_com,y_com,z_com
+
+            for i in xrange(len(random_walk['x'])):
+                random_walk['x'][i] -= x_com
+                random_walk['y'][i] -= y_com
+                random_walk['z'][i] -= z_com
+            
+            x_com, y_com, z_com = (0.0,0.0,0.0)
+            cnt = 0
+            for (x,y,z) in zip(random_walk['x'],random_walk['y'],random_walk['z']):
+                x_com += x
+                y_com += y
+                z_com += z
+                cnt += 1
+            x_com, y_com, z_com = (x_com/cnt,y_com/cnt,z_com/cnt)
+            print "#New COM ",x_com,y_com,z_com
+            
     return random_walks
 
 ##########
@@ -2553,54 +2929,179 @@ def get_maximum_number_of_extruded_particles(target_loops, initial_loops):
 
 ##########
 
-def compute_the_percentage_of_satysfied_restraints(xc, 
-                                                   restraints,
-                                                   confining_environment,
-                                                   time_point,
-                                                   timesteps_per_k_change,
-                                                   outfile,
-                                                   pbc):
+def compute_particles_distance(xc):
     
-    out = open(outfile, "a")
     particles = []
-    nestablished_contacts = 0.
-    ncontacts = 0.
+    distances = {}
 
-    # Getting the particles
+    # Getting the coordiantes of the particles
     for i in xrange(0,len(xc),3):
-        x = xc[i]   #+ ix * confining_environment[1] 
-        y = xc[i+1] #+ iy * confining_environment[1] 
-        z = xc[i+2] #+ iz * confining_environment[1] 
+        x = xc[i]  
+        y = xc[i+1]
+        z = xc[i+2]
         particles.append((x, y, z))
 
     # Checking whether the restraints are satisfied
-    print "LenRestraints", len(restraints)
-    for pair in restraints:
-        if restraints[pair][1] == 0.0:
-            continue
+    for pair in combinations(xrange(len(particles)), 2):
         dist = distance(particles[pair[0]][0],
                         particles[pair[0]][1],
                         particles[pair[0]][2],
                         particles[pair[1]][0],
                         particles[pair[1]][1],
                         particles[pair[1]][2])
-        #out.write("# %s %lf\n" % (pair, dist))
-        sqrt_k = sqrt(restraints[pair][1])
+        distances[pair] = dist
 
-        if restraints[pair][0] == "Harmonic":
-            limit1 = restraints[pair][1]*(1.-1./sqrt_k)       
-            limit2 = restraints[pair][1]*(1.+1./sqrt_k)        
-            if dist >= limit1 and dist <= limit2:
-                nestablished_contacts += 1.0
-            else:
-                print "#NOESTABLISHED",time_point,pair,restraints[pair],limit1,dist,limit2
-        if restraints[pair][0] == "HarmonicLowerBound":
-            if dist >= restraints[pair][1]:
-                nestablished_contacts += 1.0
-            else:
-                print "#NOESTABLISHED",time_point,pair,restraints[pair],dist,restraints[pair][1]
-        ncontacts += 1.0
+    return distances
 
-    out.write("%d %lf %d\n" % (time_point*timesteps_per_k_change, nestablished_contacts/ncontacts, ncontacts))
-            
+##########
 
+def compute_the_percentage_of_satysfied_restraints(input_file_name,
+                                                   restraints,
+                                                   output_file_name,
+                                                   time_point,
+                                                   timesteps_per_k_change):
+
+    ### Change this function to use a posteriori the out.colvars.traj file similar to the obj funct calculation ###
+    infile  = open(input_file_name , "r")
+    outfile = open(output_file_name, "w")
+    if os.path.getsize(output_file_name) == 0:
+        outfile.write("#%s %s %s %s\n" % ("timestep","satisfied", "satisfiedharm", "satisfiedharmLowBound"))
+
+    #restraints[pair] = [time_dependent_restraints[time_point+1][pair][0], # Restraint type -> Is the one at time point time_point+1
+    #time_dependent_restraints[time_point][pair][1]*10.,                   # Initial spring constant 
+    #time_dependent_restraints[time_point+1][pair][1]*10.,                 # Final spring constant 
+    #time_dependent_restraints[time_point][pair][2],                       # Initial equilibrium distance 
+    #time_dependent_restraints[time_point+1][pair][2],                     # Final equilibrium distance 
+    #int(time_dependent_steering_pairs['timesteps_per_k_change']*0.5)]     # Number of timesteps for the gradual change
+
+    # Write statistics on the restraints
+    nharm = 0
+    nharmLowBound = 0        
+    ntot  = 0
+    for pair in restraints:
+        for i in xrange(len(restraints[pair][0])):
+            if restraints[pair][0][i] == "Harmonic":
+                nharm += 1
+                ntot  += 1
+            if restraints[pair][0][i] == "HarmonicLowerBound":
+                nharmLowBound += 1
+                ntot  += 1
+    outfile.write("#NumOfRestraints = %s , Harmonic = %s , HarmonicLowerBound = %s\n" % (ntot, nharm, nharmLowBound))
+
+    # Memorizing the restraint
+    restraints_parameters = {}
+    for pair in restraints:
+        for i in xrange(len(restraints[pair][0])):
+            #E_hlb_pot_p_106_189
+            if restraints[pair][0][i] == "Harmonic":
+                name  = "E_h_pot_%d_%d_%d" % (i, int(pair[0])+1, int(pair[1])+1)
+            if restraints[pair][0][i] == "HarmonicLowerBound":
+                name  ="E_hlb_pot_%d_%d_%d" % (i, int(pair[0])+1, int(pair[1])+1)
+            restraints_parameters[name] = [restraints[pair][0][i],
+                                           restraints[pair][1][i],
+                                           restraints[pair][2][i],
+                                           restraints[pair][3][i],
+                                           restraints[pair][4][i],
+                                           restraints[pair][5][i]]
+    #print restraints_parameters
+    
+    # Checking whether the restraints are satisfied
+    columns_to_consider = {}
+    for line in infile.readlines():
+        nsatisfied             = 0.
+        nsatisfiedharm         = 0.
+        nsatisfiedharmLowBound = 0.
+        ntot                   = 0.
+        ntotharm               = 0.
+        ntotharmLowBound       = 0.
+
+        line = line.strip().split()        
+        
+        # Checking which columns contain the pairwise distance
+        if line[0][0] == "#":            
+            for column in xrange(2,len(line)):
+                # Get the columns with the distances
+                if "_pot_" not in line[column]:
+                    columns_to_consider[column-1] = line[column]
+                    #print columns_to_consider
+        else:
+            for column in xrange(1,len(line)):
+                if column in columns_to_consider:
+                    dist = float(line[column])
+                    
+                    # Get which restraints are between the 2 particles
+                    for name in ["E_h_pot_"+columns_to_consider[column], "E_hlb_pot_"+columns_to_consider[column]]:
+                        if name not in restraints_parameters:
+                            #print "Restraint %s not present" % name
+                            continue
+                        else:
+                            pass
+                            #print name, restraints_parameters[name] 
+                    
+                        restrainttype = restraints_parameters[name][0]
+                        restraintd0   = float(restraints_parameters[name][3]) + float(line[0])/float(restraints_parameters[name][5])*(float(restraints_parameters[name][4]) - float(restraints_parameters[name][3]))
+                        restraintk    = float(restraints_parameters[name][1]) + float(line[0])/float(restraints_parameters[name][5])*(float(restraints_parameters[name][2]) - float(restraints_parameters[name][1]))
+                        sqrt_k = sqrt(restraintk)                    
+                        limit1 = restraintd0 - 2./sqrt_k
+                        limit2 = restraintd0 + 2./sqrt_k
+
+                        if restrainttype == "Harmonic":
+                            if dist >= limit1 and dist <= limit2:
+                                nsatisfied     += 1.0
+                                nsatisfiedharm += 1.0
+                                #print "#ESTABLISHED",time_point,name,restraints_parameters[name],limit1,dist,limit2
+                            else:
+                                pass
+                                #print "#NOESTABLISHED",time_point,name,restraints_parameters[name],limit1,dist,limit2
+                            ntotharm += 1.0
+                        if restrainttype == "HarmonicLowerBound":
+                            if dist >= restraintd0:
+                                nsatisfied             += 1.0
+                                nsatisfiedharmLowBound += 1.0
+                                #print "#ESTABLISHED",time_point,name,restraints_parameters[name],dist,restraintd0
+                            else:
+                                pass
+                                #print "#NOESTABLISHED",time_point,name,restraints_parameters[name],dist,restraintd0
+                            ntotharmLowBound += 1.0
+                        ntot += 1.0
+                        #print int(line[0])+(time_point)*timesteps_per_k_change, nsatisfied, ntot, nsatisfiedharm, ntotharm, nsatisfiedharmLowBound, ntotharmLowBound
+            if ntotharm         == 0.:
+                ntotharm         = 1.0
+            if ntotharmLowBound == 0.:
+                ntotharmLowBound = 1.0
+
+
+            outfile.write("%d %lf %lf %lf\n" % (int(line[0])+(time_point)*timesteps_per_k_change, nsatisfied/ntot*100., nsatisfiedharm/ntotharm*100., nsatisfiedharmLowBound/ntotharmLowBound*100.))
+
+##########
+
+def compute_the_objective_function(input_file_name,
+                                   output_file_name,
+                                   time_point,
+                                   timesteps_per_k_change):
+    
+    
+    infile  = open(input_file_name , "r")
+    outfile = open(output_file_name, "w")
+    if os.path.getsize(output_file_name) == 0:
+        outfile.write("#Timestep obj_funct\n")
+
+    columns_to_consider = []
+
+    # Checking which columns contain the energies to sum
+    for line in infile.readlines():
+        line = line.strip().split()        
+        
+        # Checking which columns contain the energies to sum
+        if line[0][0] == "#":            
+            for column in xrange(len(line)):
+                if "_pot_" in line[column]:
+                    columns_to_consider.append(column-1)
+        else:
+            obj_funct = 0.0
+            for column in columns_to_consider:
+                obj_funct += float(line[column])
+            outfile.write("%d %s\n" % (int(line[0])+timesteps_per_k_change*(time_point), obj_funct))
+
+    infile.close()
+    outfile.close()

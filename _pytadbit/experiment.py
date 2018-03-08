@@ -184,7 +184,7 @@ class Experiment(object):
         self._normalization  = None
         self._filtered_cols  = False
         self._zeros          = {}
-        self._zscores        = {}
+        self._zscores        = []
         if hic_data:
             self.load_hic_data(hic_data, parser, **kw_descr)
         if norm_data:
@@ -767,7 +767,7 @@ class Experiment(object):
             self._normalization = 'visibility'
 
 
-    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
+    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True, index=0):
         """
         Normalize the Hi-C raw data. The result will be stored into
         the private Experiment._zscore list.
@@ -777,11 +777,16 @@ class Experiment(object):
         :param True zscored: calculate the z-score of the data
         :param False remove_zeros: remove null interactions. Dangerous, null
            interaction are informative.
+        :param 0 index: hic_data index or norm index from where to produce the zscores
 
         """
         values = {}
         zeros  = {}
-        self._zscores = {}
+        if not normalized and (not self.hic_data or len(self.hic_data) <= index):
+            raise Exception('ERROR: No Hi-C data loaded\n')
+        if normalized and (not self.norm or len(self.norm) <= index):
+            raise Exception('ERROR: No normalized data loaded\n')
+        zscores = {}
         if normalized:
             for i in xrange(self.size):
                 # zeros are rows or columns having a zero in the diagonal
@@ -814,14 +819,20 @@ class Experiment(object):
                     continue
                 if (i, j) in zeros and remove_zeros:
                     continue
-                self._zscores.setdefault(str(i), {})
-                self._zscores[str(i)][str(j)] = values[(i, j)]
-
+                zscores.setdefault(str(i), {})
+                zscores[str(i)][str(j)] = values[(i, j)]
+                
+        if len(self._zscores) > index:
+            self._zscores[index] = zscores
+        else:
+            self._zscores.append(zscores)
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG,
-                     container=None,tool='imp',tmp_folder=None,timeout_job=10800):
+                     outfile=None, config=CONFIG, container=None,
+                     tool='imp',tmp_folder=None,timeout_job=10800,
+                     stages=0, initial_conformation='tadbit',
+                     timesteps_per_k=10000, kfactor=1, adaptation_step=False):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -885,18 +896,31 @@ class Experiment(object):
               # How much space (radius in nm) ocupies a nucleotide
               'scale'     : 0.005
               }
-        :param None tmp_folder: for lammps simulation, path to a temporary file created during
-           the clustering computation. Default will be created in /tmp/ folder
+        :param imp tool: use imp for montecarlo simulated annealing or lammps for 
+            molecular dynamics 
+        :param None tmp_folder: for lammps simulation, path to a temporary file 
+            created during the clustering computation. Default will be created 
+            in /tmp/ folder
+        :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
+            of lammps before is killed
+        :param 0 stages: index of the hic_data/norm data to model. For lammps a list of 
+            indexes is allowed to perform dynamics between stages
+        :param tadbit initial_conformation: initial structure for lammps dynamics.
+            'tadbit' to compute the initial conformation with montecarlo simulated annealing
+            'random' to compute the initial conformation as a 3D random walk
            
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
+        if isinstance(stages, list) and tool == 'imp':
+            stderr.write('ERROR: tool imp does not allow dynamics\n')
+            return
         if not self._normalization:
             stderr.write('WARNING: not normalized data, should run ' +
                          'Experiment.normalize_hic()\n')
         if not end:
             end = self.size
-        zscores, values, zeros = self._sub_experiment_zscore(start, end)
+        zscores, values, zeros = self._sub_experiment_zscore(start, end, stages)
         if self.hic_data and self.hic_data[0].chromosomes:
             coords = []
             tot = 0
@@ -930,8 +954,8 @@ class Experiment(object):
         if verbose:
             stderr.write('Preparing to model %s particles\n' % nloci)
         if tool=='imp':
-            return generate_3d_models(zscores, self.resolution, nloci,
-                                      values=values, n_models=n_models,
+            return generate_3d_models(zscores[0], self.resolution, nloci,
+                                      values=values[0], n_models=n_models,
                                       outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                       verbose=verbose, keep_all=keep_all, first=0,
                                       close_bins=close_bins, config=config, container=container,
@@ -942,7 +966,11 @@ class Experiment(object):
                                       outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                       verbose=verbose, first=0,
                                       close_bins=close_bins, config=config, container=container,
-                                      experiment=self, coords=coords, zeros=zeros,tmp_folder=tmp_folder,timeout_job=timeout_job)
+                                      experiment=self, coords=coords, zeros=zeros,
+                                      tmp_folder=tmp_folder,timeout_job=timeout_job,
+                                      initial_conformation=initial_conformation,
+                                      timesteps_per_k=timesteps_per_k, kfactor=kfactor, 
+                                      adaptation_step=adaptation_step)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
@@ -1037,7 +1065,7 @@ class Experiment(object):
         return optimizer
 
 
-    def _sub_experiment_zscore(self, start, end):
+    def _sub_experiment_zscore(self, start, end, index=0):
         """
         Get the z-score of a sub-region of an  experiment.
 
@@ -1045,64 +1073,80 @@ class Experiment(object):
 
         :param start: first bin to model (bin number)
         :param end: first bin to model (bin number)
+        :param 0 index: hic_data index or norm index from where to compute 
+            the zscores. A list is allowed to compute several zscores at the
+            same time
 
-        :returns: z-score, raw values and zzeros of the experiment
+        :returns: z-score, raw values and zeros of the experiment
         """
+        if isinstance(index, list):
+            idx = index
+        else:
+            idx = [index]
         if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
-            self.normalize_hic()
+            for i in idx:
+                self.normalize_hic(index=idx)
         from pytadbit import Chromosome
         if start < 1:
             raise ValueError('ERROR: start should be higher than 0\n')
         start -= 1 # things starts at 0 for python. we keep the end coordinate
                    # at its original value because it is inclusive
         siz = self.size
+        tmp = Chromosome('tmp')
+        tmp.add_experiment('exp1', resolution=self.resolution, filter_columns=False)
+        exp = tmp.experiments[0]
+        tmp_matrix = []
+        exp.norm = []
         try:
-            matrix = self.get_hic_matrix()
-            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
-                          for j in xrange(start, end)]
-            tmp = Chromosome('tmp')
-            tmp.add_experiment('exp1', hic_data=[new_matrix],
-                               resolution=self.resolution, filter_columns=False)
-            exp = tmp.experiments[0]
-            # We want the weights and zeros calculated in the full chromosome
-            exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
-                         for j in xrange(start, end)]]
+            for id in idx:
+                matrix = self.get_hic_matrix(index=id)
+                new_matrix = [[matrix[i][j] for i in xrange(start, end)]
+                              for j in xrange(start, end)]
+                tmp_matrix.append(new_matrix)
+                # We want the weights and zeros calculated in the full chromosome
+                exp.norm.append([self.norm[id][i + siz * j] for i in xrange(start, end)
+                         for j in xrange(start, end)])
+            exp.load_hic_data(hic_data=tmp_matrix)
         except TypeError: # no Hi-C data provided
-            matrix = self.get_hic_matrix(normalized=True)
-            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
-                           for j in xrange(start, end)]
-            tmp = Chromosome('tmp')
-            tmp.add_experiment('exp1', norm_data=[new_matrix],
-                               resolution=self.resolution, filter_columns=False)
-            exp = tmp.experiments[0]
+            for id in idx:
+                matrix = self.get_hic_matrix(normalized=True,index=id)
+                new_matrix = [[matrix[i][j] for i in xrange(start, end)]
+                               for j in xrange(start, end)]
+                tmp_matrix.append(new_matrix)
+            exp.load_norm_data(norm_data=tmp_matrix)
         exp._zeros = dict([(z - start, None) for z in self._zeros
                            if start <= z <= end - 1])
         if len(exp._zeros) == (end - start):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
-        exp.get_hic_zscores()
-        values = [[float('nan') for _ in xrange(exp.size)]
-                  for _ in xrange(exp.size)]
-        for i in xrange(exp.size):
-            # zeros are rows or columns having a zero in the diagonal
-            if i in exp._zeros:
-                continue
-            for j in xrange(i + 1, exp.size):
-                if j in exp._zeros:
+        vals = []
+        for id in idx:
+            exp.get_hic_zscores(index=id)
+            values = [[float('nan') for _ in xrange(exp.size)]
+                      for _ in xrange(exp.size)]
+            
+            for i in xrange(exp.size):
+                # zeros are rows or columns having a zero in the diagonal
+                if i in exp._zeros:
                     continue
-                if (not exp.norm[0][i * exp.size + j]
-                    or not exp.norm[0][i * exp.size + j]):
-                    continue
-                values[i][j] = exp.norm[0][i * exp.size + j]
-                values[j][i] = exp.norm[0][i * exp.size + j]
-        return exp._zscores, values, exp._zeros
+                for j in xrange(i + 1, exp.size):
+                    if j in exp._zeros:
+                        continue
+                    if (not exp.norm[id][i * exp.size + j]
+                        or not exp.norm[id][i * exp.size + j]):
+                        continue
+                    values[i][j] = exp.norm[id][i * exp.size + j]
+                    values[j][i] = exp.norm[id][i * exp.size + j]
+            vals.append(values)
+        return exp._zscores, vals, exp._zeros
 
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
                                 diagonal=False, cutoff=None, header=False,
                                 true_position=False, uniq=True,
-                                remove_zeros=False, focus=None, format='tsv'):
+                                remove_zeros=False, focus=None, format='tsv',
+                                index=0):
         """
         Creates a tab separated file with all the pairwise interactions.
 
@@ -1118,11 +1162,12 @@ class Experiment(object):
            passed to this parameter.
         :param 'tsv' format: in which to write the file, can be tab separated
            (tsv) or JSON (json)
+        :param 0 index: hic_data index or norm index
 
         """
-        if not self._zscores and zscored:
-            self.get_hic_zscores()
-        if not self.norm and normalized:
+        if (not self._zscores or len(self.norm) < index) and zscored:
+            self.get_hic_zscores(index=index)
+        if (not self.norm or len(self.norm) < index) and normalized:
             raise Exception('Experiment not normalized.')
         # write to file
         if isinstance(fname, str):
@@ -1178,17 +1223,17 @@ class Experiment(object):
                     continue
                 if zscored:
                     try:
-                        if self._zscores[str(i)][str(j)] < cutoff:
+                        if self._zscores[index][str(i)][str(j)] < cutoff:
                             continue
-                        if self._zscores[str(i)][str(j)] == -99:
+                        if self._zscores[index][str(i)][str(j)] == -99:
                             continue
                     except KeyError:
                         continue
-                    val = self._zscores[str(i)][str(j)]
+                    val = self._zscores[index][str(i)][str(j)]
                 elif normalized:
-                    val = self.norm[0][self.size*i+j]
+                    val = self.norm[index][self.size*i+j]
                 else:
-                    val = self.hic_data[0][self.size*i+j]
+                    val = self.hic_data[index][self.size*i+j]
                 if remove_zeros and not val:
                     continue
                 if true_position:
@@ -1212,7 +1257,7 @@ class Experiment(object):
         out.close()
 
 
-    def get_hic_matrix(self, focus=None, diagonal=True, normalized=False):
+    def get_hic_matrix(self, focus=None, diagonal=True, normalized=False, index=0):
         """
         Return the Hi-C matrix.
 
@@ -1220,19 +1265,20 @@ class Experiment(object):
            matrix starting at start, and ending at end (all inclusive).
         :param True diagonal: replace the values in the diagonal by one. Used
            for the filtering in order to smooth the distribution of mean values
-        :para False normalized: returns normalized data instead of raw Hi-C
-
+        :param False normalized: returns normalized data instead of raw Hi-C
+        :param 0 index: hic_data index or norm index from where to get the matrix
+        
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
         siz = self.size
         if normalized:
             try:
-                hic = self.norm[0]
+                hic = self.norm[index]
             except TypeError:
                 raise Exception('ERROR: experiment not normalized yet')
         else:
-            hic = self.hic_data[0]
+            hic = self.hic_data[index]
         if focus:
             start, end = focus
             start -= 1
@@ -1250,21 +1296,26 @@ class Experiment(object):
             return mtrx
 
 
-    def print_hic_matrix(self, print_it=True, normalized=False, zeros=False):
+    def print_hic_matrix(self, print_it=True, normalized=False, zeros=False, index=0):
         """
         Return the Hi-C matrix as string
 
         :param True print_it: Otherwise, returns the string
         :param False normalized: returns normalized data, instead of raw Hi-C
         :param False zeros: take into account filtered columns
+        :param 0 index: hic_data index or norm index from where to print the matrix
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
         siz = self.size
-        if normalized:
-            hic = self.norm[0]
-        else:
-            hic = self.hic_data[0]
+        try:
+            if normalized:
+                hic = self.norm[index]
+            else:
+                hic = self.hic_data[index]
+        except TypeError:
+            raise Exception('ERROR: no hic_data with index ',index)
+        
         if zeros:
             out = '\n'.join(['\t'.join(
                 ['nan' if (i in self._zeros or j in self._zeros) else
@@ -1283,7 +1334,7 @@ class Experiment(object):
     def view(self, tad=None, focus=None, paint_tads=False, axe=None,
              show=True, logarithm=True, normalized=False, relative=True,
              decorate=True, savefig=None, where='both', clim=None,
-             cmap='jet'):
+             cmap='jet', index=0):
         """
         Visualize the matrix of Hi-C interactions
 
@@ -1320,6 +1371,7 @@ class Experiment(object):
            scale. I.e. clim=(-4, 10)
         :param 'jet' cmap: color map from matplotlib. Can also be a
            preconfigured cmap object.
+        :param 0 index: hic_data index or norm index
         """
         if logarithm==True:
             fun = log2
@@ -1355,24 +1407,28 @@ class Experiment(object):
         else:
             start =  1
             end   = size
-        if normalized:
-            norm_data = self.norm
-        else:
-            hic_data = self.hic_data
+        try:
+            if normalized:
+                hic = self.norm[index]
+            else:
+                hic = self.hic_data[index]
+        except TypeError:
+            raise Exception('ERROR: no hic_data with index ',index)
+        
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
-                mini = min([i for i in norm_data[0].values() if i])
+                mini = min([i for i in hic.values() if i])
                 if mini == int(mini):
-                    vmin = min(norm_data[0].values())
+                    vmin = min(hic.values())
                 else:
                     vmin = mini
                 vmin = fun(vmin or (1 if logarithm else 0))
-                vmax = fun(max(norm_data[0].values()))
+                vmax = fun(max(hic.values()))
             else:
-                vmin = fun(min(hic_data[0].values()) or
+                vmin = fun(min(hic.values()) or
                            (1 if logarithm else 0))
-                vmax = fun(max(hic_data[0].values()))
+                vmax = fun(max(hic.values()))
         elif clim:
             vmin, vmax = clim
         if axe is None:
@@ -1382,14 +1438,14 @@ class Experiment(object):
             if start > -1:
                 if normalized:
                     matrix = [
-                        [norm_data[0][i+size*j]
+                        [hic[i+size*j]
                          if (not i in self._zeros
                              and not j in self._zeros) else float('nan')
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
                 else:
                     matrix = [
-                        [hic_data[0][i+size*j]
+                        [hic[i+size*j]
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
             elif isinstance(tad, list):
@@ -1402,13 +1458,13 @@ class Experiment(object):
                 pass
         else:
             if normalized:
-                matrix = [[norm_data[0][i+size*j]
+                matrix = [[hic[i+size*j]
                            if (not i in self._zeros
                                and not j in self._zeros) else float('nan')
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
-                matrix = [[hic_data[0][i+size*j]\
+                matrix = [[hic[i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
         if where == 'up':
@@ -1511,7 +1567,7 @@ class Experiment(object):
         return img
 
 
-    def write_tad_borders(self, density=False, savedata=None, normalized=False):
+    def write_tad_borders(self, density=False, savedata=None, normalized=False, index=0):
         """
         Print a table summarizing the TADs found by tadbit. This function outputs
         something similar to the R function.
@@ -1523,17 +1579,22 @@ class Experiment(object):
            generated (1 column per step + 1 for particle number). If None, print
            a table.
         :param False normalized: uses normalized data to calculate the density
+        :param 0 index: hic_data index or norm index
         """
-        if normalized and self.norm:
-            norms = self.norm[0]
-        elif self.hic_data:
-            if normalized:
-                warn("WARNING: weights not available, using raw data")
-            norms = self.hic_data[0]
-        else:
-            warn("WARNING: raw Hi-C data not available, " +
-                 "TAD's height fixed to 1")
-            norms = None
+        try:
+            if normalized and self.norm:
+                norms = self.norm[index]
+            elif self.hic_data:
+                if normalized:
+                    warn("WARNING: weights not available, using raw data")
+                norms = self.hic_data[index]
+            else:
+                warn("WARNING: raw Hi-C data not available, " +
+                     "TAD's height fixed to 1")
+                norms = None
+        except TypeError:
+            raise Exception('ERROR: no hic_data with index ',index)
+        
         zeros = self._zeros or {}
         table = ''
         table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score',

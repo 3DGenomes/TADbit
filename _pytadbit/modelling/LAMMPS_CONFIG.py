@@ -44,7 +44,7 @@ thermo = 1000 #int(float(run)/100)
 PurelyRepulsiveLJepsilon = 1.0
 PurelyRepulsiveLJsigma   = 1.0
 #PurelyRepulsiveLJcutoff  = PurelyRepulsiveLJsigma * 1.12246152962189
-PurelyRepulsiveLJcutoff  = 2.0 * 1.12246152962189
+PurelyRepulsiveLJcutoff  = 1.0 * 1.12246152962189
 # Chain connectivity term: FENE potential
 #########################################################
 # Fene potential + Lennard Jones 12-6:                  #
@@ -73,7 +73,7 @@ timestep = 0.001
 HiC = {
     'dmel_01': {
         # use these paramaters with the Hi-C data from:
-        'reference' : 'victor corces dataset 2013',
+        'reference' : 'sample reference',
         
         # Force applied to the restraints inferred to neighbor particles
         'kforce'    : 5,
