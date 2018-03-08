@@ -44,7 +44,7 @@ thermo = 1000 #int(float(run)/100)
 PurelyRepulsiveLJepsilon = 1.0
 PurelyRepulsiveLJsigma   = 1.0
 #PurelyRepulsiveLJcutoff  = PurelyRepulsiveLJsigma * 1.12246152962189
-PurelyRepulsiveLJcutoff  = 1.0 * 1.12246152962189
+PurelyRepulsiveLJcutoff  = 2.0 * 1.12246152962189
 # Chain connectivity term: FENE potential
 #########################################################
 # Fene potential + Lennard Jones 12-6:                  #

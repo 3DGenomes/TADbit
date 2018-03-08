@@ -43,7 +43,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
                        initial_conformation='tadbit', timesteps_per_k=10000,
-                       kfactor=1, adaptation_step=False):
+                       kfactor=1, adaptation_step=False, cleanup=True):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -132,7 +132,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
            the clustering computation. Default will be created in /tmp/ folder
     :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
             of lammps before is killed
-    
+    :param True cleanup: delete lammps folder after completion
          
 
     :returns: a StructuralModels object
@@ -211,13 +211,14 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         container = ['cube',1000.0] # http://lammps.sandia.gov/threads/msg48683.html
     
     ini_conf = None
+    ini_model = None
     if(initial_conformation == 'tadbit'):
         sm = generate_3d_models(zscores[0], resolution, nloci,
               values=values[0], n_models=n_models, n_keep=1, n_cpus=1,
               verbose=verbose, first=first, close_bins=close_bins, 
               config=config, container=container,
               coords=coords, zeros=zeros)
-        
+        ini_model = sm[0].copy()
         sm_diameter = float(resolution * CONFIG.HiC['scale'])
         for i in xrange(len(sm[0]['x'])):
             sm[0]['x'][i] /= sm_diameter
@@ -242,7 +243,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              steering_pairs=steering_pairs, time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=ini_seed, 
                              n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, 
-                             confining_environment=container, timeout_job=timeout_job)
+                             confining_environment=container, timeout_job=timeout_job,
+                             cleanup=cleanup)
 
     try:
         xpr = experiment
@@ -278,11 +280,17 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         dump((models), out)
         out.close()
     else:
+        stages = {}
+        if len(HiCRestraints)>1:
+            stages[0] = xrange(n_models)
+        for timepoints in xrange(len(HiCRestraints)-1):
+            stages[timepoints+1] = [(t+(timepoints+1)*n_models) for t in xrange(n_models)]
+            
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values,
             zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
             restraints=HiCRestraints[0]._get_restraints(),
-            description=description)
+            description=description, stages=stages)
 # Initialize the lammps simulation with standard polymer physics based
 # interactions: chain connectivity (FENE) ; excluded volume (WLC) ; and
 # bending rigidity (KP)
@@ -412,7 +420,7 @@ def lammps_simulate(lammps_folder, run_time,
                     confining_environment=['cube',100.],
                     steering_pairs=None,
                     time_dependent_steering_pairs=None,
-                    loop_extrusion_dynamics=None,                    
+                    loop_extrusion_dynamics=None, cleanup = True,                    
                     to_dump=100000, pbc=False, timeout_job=3600):
 
     """
@@ -499,7 +507,18 @@ def lammps_simulate(lammps_folder, run_time,
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
-        jobs[k] = run_lammps(k, k_folder, run_time,
+#        jobs[k] = run_lammps(k, k_folder, run_time,
+#                                              initial_conformation, connectivity,
+#                                              neighbor,
+#                                              tethering, minimize,
+#                                              compress_with_pbc, compress_without_pbc,
+#                                              confining_environment, 
+#                                              steering_pairs,
+#                                              time_dependent_steering_pairs,
+#                                              loop_extrusion_dynamics,
+#                                              to_dump, pbc,)
+        jobs[k] = pool.schedule(run_lammps,
+                                        args=(k, k_folder, run_time,
                                               initial_conformation, connectivity,
                                               neighbor,
                                               tethering, minimize,
@@ -508,18 +527,7 @@ def lammps_simulate(lammps_folder, run_time,
                                               steering_pairs,
                                               time_dependent_steering_pairs,
                                               loop_extrusion_dynamics,
-                                              to_dump, pbc,)
-#             jobs[k] = pool.schedule(run_lammps,
-#                                            args=(k, k_folder, run_time,
-#                                                  initial_conformation, connectivity,
-#                                                  neighbor,
-#                                                  tethering, minimize,
-#                                                  compress_with_pbc, compress_without_pbc,
-#                                                  confining_environment, 
-#                                                  steering_pairs,
-#                                                  time_dependent_steering_pairs,
-#                                                  loop_extrusion_dynamics,
-#                                                  to_dump, pbc,), timeout=timeout_job)
+                                              to_dump, pbc,), timeout=timeout_job)
 
     pool.close()
     pool.join()
@@ -527,8 +535,9 @@ def lammps_simulate(lammps_folder, run_time,
     results = []
     
     for k in kseeds:
-        #results.append((k, jobs[k].get()))
+        
         try:
+            #results.append((k, jobs[k].get()))
             results.append((k, jobs[k].result()))
         except TimeoutError:
             print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
@@ -538,18 +547,24 @@ def lammps_simulate(lammps_folder, run_time,
             jobs[k].cancel()
         
   
-    nloci = 0
+    #nloci = 0
     models = {}
-    for i, (_, m) in enumerate(
-        sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
-        models[i] = m
-        nloci = len(m['x'])
+    timepoints = 1
+    if time_dependent_steering_pairs: 
+        timepoints = len(time_dependent_steering_pairs['colvar_input'])
+    for t in xrange(timepoints):
+        timepointres = [r for r in results[t]]
+        for i, (_, m) in enumerate(
+            sorted(timepointres, key=lambda x: x[1]['objfun'])[:n_keep]):
+            models[i+t] = m
+            #nloci = len(m['x'])
     
-    for k in kseeds:
-        k_folder = lammps_folder + '/lammps_' + str(k) + '/'
-        if os.path.exists(k_folder):
-            shutil.rmtree(k_folder)
-    
+    if cleanup:
+        for k in kseeds:
+            k_folder = lammps_folder + '/lammps_' + str(k) + '/'
+            if os.path.exists(k_folder):
+                shutil.rmtree(k_folder)
+        
     return models
 
     
@@ -629,7 +644,7 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     """
     
-    lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps'])
+    lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps','-nocite'])
     
     if not initial_conformation:    
         initial_conformation = lammps_folder+'initial_conformation.dat'
@@ -750,6 +765,7 @@ def run_lammps(kseed, lammps_folder, run_time,
         print "# New particle density (nparticles/volume)", lmp.get_natoms()/volume
         print ""
 
+    xc = []
     # Setup the pairs to co-localize using the COLVARS plug-in
     if steering_pairs:
 
@@ -777,13 +793,12 @@ def run_lammps(kseed, lammps_folder, run_time,
 
             # Adding the colvar option
             #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
-            lmp.command("fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder))
+            lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
 
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
-
         #if exists("objective_function_profile.txt"):
         #    os.remove("objective_function_profile.txt")
 
@@ -840,7 +855,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                     lmp.command("unfix 4")
                 print "#fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output']
                 sys.stdout.flush()
-                lmp.command("fix 4 all colvars %s tstat 2" % time_dependent_steering_pairs['colvar_output'])
+                lmp.command("fix 4 all colvars %s tstat 2 output %sout" % (time_dependent_steering_pairs['colvar_output'],lammps_folder))
                 lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]*0.1))
 
         # Time dependent steering
@@ -858,8 +873,8 @@ def run_lammps(kseed, lammps_folder, run_time,
             print "# Step %s - %s" % (time_point, time_point+1)
             sys.stdout.flush()            
             # Compute the current distance between any two particles
-            xc = np.array(lmp.gather_atoms("x",1,3))
-            current_distances = compute_particles_distance(xc)
+            xc_tmp = np.array(lmp.gather_atoms("x",1,3))
+            current_distances = compute_particles_distance(xc_tmp)
 
             for pair in set(time_dependent_restraints[time_point].keys()+time_dependent_restraints[time_point+1].keys()):                
                 r = 0
@@ -994,10 +1009,11 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("unfix 4")
             print "#fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output']
             sys.stdout.flush()
-            lmp.command("fix 4 all colvars %s tstat 2" % time_dependent_steering_pairs['colvar_output'])
+            lmp.command("fix 4 all colvars %s tstat 2 output %sout" % (time_dependent_steering_pairs['colvar_output'],lammps_folder))
             lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]))
-
+            
             if time_point > 0:
+                    
                 if exists("%sout.colvars.traj.BAK" % lammps_folder):
 
                     copyfile("%sout.colvars.traj.BAK" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point-1), str(time_point)))
@@ -1085,10 +1101,6 @@ def run_lammps(kseed, lammps_folder, run_time,
     #    lmp.command("dump    1       all    custom    %i   langevin_dynamics_*.XYZ  id  xu yu zu" % to_dump)
     #    lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
-    # Managing the final model
-    xc = np.array(lmp.gather_atoms("x",1,3))
-    lmp.close()
-    
     # Post-processing analysis
     if time_dependent_steering_pairs:
         copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
@@ -1110,6 +1122,15 @@ def run_lammps(kseed, lammps_folder, run_time,
                                                            time_point,
                                                            time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
         
+        for time_point in time_points[0:-1]:        
+            xc.append(np.array(read_trajectory_file("%ssteered_MD_from_time_point_%s_to_time_point_%s.XYZ" % (lammps_folder, time_point, time_point+1))))
+    
+    else:    
+        # Managing the final model
+        xc.append(np.array(lmp.gather_atoms("x",1,3)))
+        
+    lmp.close()    
+    
     result = LAMMPSmodel({'x'          : [],
                           'y'          : [],
                           'z'          : [],
@@ -1120,15 +1141,30 @@ def run_lammps(kseed, lammps_folder, run_time,
     
     if pbc:
         store_conformation_with_pbc(xc, result, confining_environment)    
-    else:        
-        for i in xrange(0,len(xc),3):
-            result['x'].append(xc[i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-            result['y'].append(xc[i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-            result['z'].append(xc[i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+    else:
+        for timepoint in xrange(len(xc)):        
+            for i in xrange(0,len(xc[timepoint]),3):
+                result['x'].append(xc[timepoint][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                result['y'].append(xc[timepoint][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                result['z'].append(xc[timepoint][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
 
     #os.remove("%slog.cite" % lammps_folder)
      
     return result
+
+def read_trajectory_file(fname):
+
+    coords=[]
+    with open(fname) as f:
+        for line in f:
+            line = line.strip()
+            if not line.startswith('ITEM: ATOMS'):
+                continue
+            if len(line) == 0:
+                continue
+            line_vals = line.split()
+            coords += [line_vals[1],line_vals[2],line_vals[3]]
+    return coords    
 
 ########## Part to perform the restrained dynamics ##########
 # I should add here: The steered dynamics (Irene's and Hi-C based models) ; 

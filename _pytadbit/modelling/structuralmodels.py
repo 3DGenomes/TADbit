@@ -122,7 +122,7 @@ class StructuralModels(object):
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
                  config=None, experiment=None, zeros=None, restraints=None,
-                 description=None):
+                 description=None, stages=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -136,6 +136,7 @@ class StructuralModels(object):
         self.experiment     = experiment
         self._restraints    = restraints
         self.description    = description
+        self.stages         = stages or {}
 
     def __getitem__(self, nam):
         if isinstance(nam, str):
