@@ -218,7 +218,6 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
               verbose=verbose, first=first, close_bins=close_bins, 
               config=config, container=container,
               coords=coords, zeros=zeros)
-        ini_model = sm[0].copy()
         sm_diameter = float(resolution * CONFIG.HiC['scale'])
         for i in xrange(len(sm[0]['x'])):
             sm[0]['x'][i] /= sm_diameter
@@ -229,6 +228,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             sm[0]['x'][i] -= cm0['x']
             sm[0]['y'][i] -= cm0['y']
             sm[0]['z'][i] -= cm0['z']
+        ini_model = sm[0].copy()
             
         print "Succesfully generated tadbit initial conformation \n"
         chromosome_particle_numbers = [int(x) for x in [len(LOCI)]]
@@ -282,9 +282,22 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     else:
         stages = {}
         if len(HiCRestraints)>1:
-            stages[0] = xrange(n_models)
+            for i in xrange(len(ini_model['x'])):
+                ini_model['x'][i] *= sm_diameter
+                ini_model['y'][i] *= sm_diameter
+                ini_model['z'][i] *= sm_diameter
+            lammps_model = LAMMPSmodel({'x'          : ini_model['x'],
+                              'y'          : ini_model['y'],
+                              'z'          : ini_model['z'],
+                              'cluster'    : 'Singleton',
+                              'objfun'     : ini_model['objfun'],
+                              'log_objfun' : ini_model['log_objfun'],
+                              'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
+                              'rand_init'  : str(ini_seed)})
+            stages[0] = [0]
+            models[0] = lammps_model
         for timepoints in xrange(len(HiCRestraints)-1):
-            stages[timepoints+1] = [(t+(timepoints+1)*n_models) for t in xrange(n_models)]
+            stages[timepoints+1] = [(t+1+timepoints*n_models) for t in xrange(n_models)]
             
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values,
@@ -494,11 +507,16 @@ def lammps_simulate(lammps_folder, run_time,
         seed(initial_seed)
 
     #pool = mu.Pool(n_cpus)
+    timepoints = 1
+    if time_dependent_steering_pairs: 
+        timepoints = len(time_dependent_steering_pairs['colvar_input'])
     
     kseeds = []
-    for k in xrange(n_models):
-        kseeds.append(randint(1,100000000))
-    
+    while len(kseeds) < n_models:
+        rnd = randint(1,100000000)
+        if all([(abs(ks - rnd) > timepoints) for ks in kseeds]):
+            kseeds.append(rnd)
+        
     pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
     
     jobs = {}
@@ -507,16 +525,16 @@ def lammps_simulate(lammps_folder, run_time,
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
-#        jobs[k] = run_lammps(k, k_folder, run_time,
-#                                              initial_conformation, connectivity,
-#                                              neighbor,
-#                                              tethering, minimize,
-#                                              compress_with_pbc, compress_without_pbc,
-#                                              confining_environment, 
-#                                              steering_pairs,
-#                                              time_dependent_steering_pairs,
-#                                              loop_extrusion_dynamics,
-#                                              to_dump, pbc,)
+#         jobs[k] = run_lammps(k, k_folder, run_time,
+#                                               initial_conformation, connectivity,
+#                                               neighbor,
+#                                               tethering, minimize,
+#                                               compress_with_pbc, compress_without_pbc,
+#                                               confining_environment, 
+#                                               steering_pairs,
+#                                               time_dependent_steering_pairs,
+#                                               loop_extrusion_dynamics,
+#                                               to_dump, pbc,)
         jobs[k] = pool.schedule(run_lammps,
                                         args=(k, k_folder, run_time,
                                               initial_conformation, connectivity,
@@ -537,7 +555,7 @@ def lammps_simulate(lammps_folder, run_time,
     for k in kseeds:
         
         try:
-            #results.append((k, jobs[k].get()))
+            #results.append((k, jobs[k]))
             results.append((k, jobs[k].result()))
         except TimeoutError:
             print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
@@ -549,16 +567,23 @@ def lammps_simulate(lammps_folder, run_time,
   
     #nloci = 0
     models = {}
-    timepoints = 1
-    if time_dependent_steering_pairs: 
-        timepoints = len(time_dependent_steering_pairs['colvar_input'])
-    for t in xrange(timepoints):
-        timepointres = [r for r in results[t]]
+    if timepoints > 1:
+        for t in xrange(timepoints-1):
+            time_models = []
+            for res in results:
+                (k,restarr) = res
+                time_models.append(restarr[t])
+            for i, m in enumerate(time_models[:n_keep]):
+                models[i+t*len(time_models[:n_keep])+1] = m
+            #for i, (_, m) in enumerate(
+            #    sorted(time_models.items(), key=lambda x: x[1]['objfun'])[:n_keep]):
+            #    models[i+t+1] = m
+            
+    else:
         for i, (_, m) in enumerate(
-            sorted(timepointres, key=lambda x: x[1]['objfun'])[:n_keep]):
-            models[i+t] = m
-            #nloci = len(m['x'])
-    
+            sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
+            models[i] = m
+
     if cleanup:
         for k in kseeds:
             k_folder = lammps_folder + '/lammps_' + str(k) + '/'
@@ -1131,22 +1156,24 @@ def run_lammps(kseed, lammps_folder, run_time,
         
     lmp.close()    
     
-    result = LAMMPSmodel({'x'          : [],
-                          'y'          : [],
-                          'z'          : [],
-                          'cluster'    : 'Singleton',
-                          'objfun'     : 0,
-                          'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
-                          'rand_init'  : str(kseed)})
+    result = []
+    for timepoint in xrange(len(xc)):
+        lammps_model = LAMMPSmodel({'x'          : [],
+                              'y'          : [],
+                              'z'          : [],
+                              'cluster'    : 'Singleton',
+                              'objfun'     : 0,
+                              'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
+                              'rand_init'  : str(kseed+timepoint)})
     
-    if pbc:
-        store_conformation_with_pbc(xc, result, confining_environment)    
-    else:
-        for timepoint in xrange(len(xc)):        
+        if pbc:
+            store_conformation_with_pbc(xc, lammps_model, confining_environment)    
+        else:
             for i in xrange(0,len(xc[timepoint]),3):
-                result['x'].append(xc[timepoint][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-                result['y'].append(xc[timepoint][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-                result['z'].append(xc[timepoint][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                lammps_model['x'].append(xc[timepoint][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                lammps_model['y'].append(xc[timepoint][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                lammps_model['z'].append(xc[timepoint][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+        result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
      
@@ -1155,15 +1182,24 @@ def run_lammps(kseed, lammps_folder, run_time,
 def read_trajectory_file(fname):
 
     coords=[]
-    with open(fname) as f:
-        for line in f:
-            line = line.strip()
-            if not line.startswith('ITEM: ATOMS'):
-                continue
-            if len(line) == 0:
-                continue
-            line_vals = line.split()
-            coords += [line_vals[1],line_vals[2],line_vals[3]]
+    fhandler = open(fname)
+    line = fhandler.next()
+    while not line.startswith('ITEM: ATOMS'):
+        line = fhandler.next()
+    if line.startswith('ITEM: ATOMS'):
+        line = fhandler.next()
+        try:
+            while True:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                line_vals = line.split()
+                coords += [float(line_vals[1]),float(line_vals[2]),float(line_vals[3])]
+                line = fhandler.next()
+        except StopIteration:
+            pass
+    fhandler.close()        
+            
     return coords    
 
 ########## Part to perform the restrained dynamics ##########
@@ -3063,6 +3099,8 @@ def compute_the_percentage_of_satysfied_restraints(input_file_name,
         else:
             for column in xrange(1,len(line)):
                 if column in columns_to_consider:
+                    if column >= len(line):
+                        continue
                     dist = float(line[column])
                     
                     # Get which restraints are between the 2 particles
@@ -3136,7 +3174,8 @@ def compute_the_objective_function(input_file_name,
         else:
             obj_funct = 0.0
             for column in columns_to_consider:
-                obj_funct += float(line[column])
+                if column < len(line):
+                    obj_funct += float(line[column])
             outfile.write("%d %s\n" % (int(line[0])+timesteps_per_k_change*(time_point), obj_funct))
 
     infile.close()

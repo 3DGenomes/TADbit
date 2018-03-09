@@ -84,13 +84,13 @@ def load_structuralmodels(path_f):
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
             zeros=svd['zeros'], restraints=svd.get('restraints', None),
-            description=svd.get('description', None))
+            description=svd.get('description', None), stages=svd.get('stages', None))
     except KeyError:  # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            restraints=svd.get('restraints', None))
+            restraints=svd.get('restraints', None), stages=svd.get('stages', None))
 
 
 class StructuralModels(object):
@@ -1834,9 +1834,9 @@ class StructuralModels(object):
         self.view_models(tool='plot', show='highlighted', highlight='centroid',
                          **kwargs)
 
-    def view_models(self, models=None, cluster=None, tool='chimera',
-                    show='all', highlight='centroid', savefig=None,
-                    cmd=None, color='index', align=True, **kwargs):
+    def view_models(self, models=None, cluster=None, stage=None, dynamics=None,
+                    tool='chimera', show='all', highlight='centroid', 
+                    savefig=None, cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1846,6 +1846,10 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the visualization only for the models in the
            cluster number 'cluster'
+        :param None stage: compute the visualization only for the models in
+            stage number 'stage'
+        :param None dynamics: compute the visualization for all the stages of the
+            replica number 'dynamics'
         :param 'chimera' tool: path to the external tool used to visualize the
            model. Can also be 'plot', to use matplotlib.
         :param None savefig: path to a file where to save the image OR movie
@@ -1927,6 +1931,10 @@ class StructuralModels(object):
                       if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        elif stage > -1 and stage in self.stages:
+            models = [m for m in self.stages[stage]]
+        elif dynamics > -1:
+            models = self.stages[0] + [self.stages[s+1][dynamics] for s in xrange(len(self.stages)-1)]
         else:
             models = [m for m in self.__models]
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
@@ -2736,6 +2744,7 @@ class StructuralModels(object):
         to_save['zscore']        = {} if minimal else self._zscores
         to_save['restraints']    = {} if minimal else self._restraints
         to_save['zeros']         = self._zeros
+        to_save['stages']         = self.stages
 
         return to_save
 
