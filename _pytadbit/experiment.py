@@ -832,7 +832,8 @@ class Experiment(object):
                      outfile=None, config=CONFIG, container=None,
                      tool='imp',tmp_folder=None,timeout_job=10800,
                      stages=0, initial_conformation='tadbit',
-                     timesteps_per_k=10000, kfactor=1, adaptation_step=False):
+                     timesteps_per_k=10000, kfactor=1, adaptation_step=False,
+                     cleanup=True):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -970,7 +971,7 @@ class Experiment(object):
                                       tmp_folder=tmp_folder,timeout_job=timeout_job,
                                       initial_conformation=initial_conformation,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor, 
-                                      adaptation_step=adaptation_step)
+                                      adaptation_step=adaptation_step, cleanup=cleanup)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,

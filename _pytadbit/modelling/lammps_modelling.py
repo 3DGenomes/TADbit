@@ -192,10 +192,10 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'colvar_output'             : colvars,
             'chrlength'                 : nloci,
             'binsize'                   : resolution,
-            'timesteps_per_k_change'    : [timesteps_per_k]*6,
+            'timesteps_per_k_change'    : [float(timesteps_per_k)]*6,
             'k_factor'                  : kfactor,
             'perc_enfor_contacts'       : 100.,
-            'colvar_dump_freq'          : int(timesteps_per_k/100.),
+            'colvar_dump_freq'          : int(timesteps_per_k/100),
             'adaptation_step'           : adaptation_step,
         }
     else:
