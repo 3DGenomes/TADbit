@@ -195,7 +195,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'timesteps_per_k_change'    : [timesteps_per_k]*6,
             'k_factor'                  : kfactor,
             'perc_enfor_contacts'       : 100.,
-            'colvar_dump_freq'          : int(timesteps_per_k/100),
+            'colvar_dump_freq'          : int(timesteps_per_k/100.),
             'adaptation_step'           : adaptation_step,
         }
     else:
@@ -244,7 +244,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              initial_seed=ini_seed, 
                              n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, 
                              confining_environment=container, timeout_job=timeout_job,
-                             cleanup=cleanup)
+                             cleanup=cleanup, to_dump=int(timesteps_per_k/100.))
 
     try:
         xpr = experiment
