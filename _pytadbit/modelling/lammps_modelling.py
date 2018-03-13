@@ -294,16 +294,17 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                               'log_objfun' : ini_model['log_objfun'],
                               'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
                               'rand_init'  : str(ini_seed)})
-            stages[0] = [0]
+            stages[0] = [0]*n_models
             models[0] = lammps_model
-        for timepoints in xrange(len(HiCRestraints)-1):
-            stages[timepoints+1] = [(t+1+timepoints*n_models) for t in xrange(n_models)]
-            
+            timepoints = time_dependent_steering_pairs['colvar_dump_freq']
+            for timepoint in xrange((len(HiCRestraints)-1)*timepoints):
+                stages[timepoint+1] = [(t+1+timepoint*n_models) for t in xrange(n_models)]
+                
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values,
             zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
             restraints=HiCRestraints[0]._get_restraints(),
-            description=description, stages=stages)
+            description=description, stages=stages, models_per_step=timepoints)
 # Initialize the lammps simulation with standard polymer physics based
 # interactions: chain connectivity (FENE) ; excluded volume (WLC) ; and
 # bending rigidity (KP)
@@ -320,7 +321,7 @@ def init_lammps_run(lmp, initial_conformation,
 
     """
 
-    #lmp.command("log none")
+    lmp.command("log none")
     #os.remove("log.lammps")
 
     #######################################################
@@ -509,7 +510,7 @@ def lammps_simulate(lammps_folder, run_time,
     #pool = mu.Pool(n_cpus)
     timepoints = 1
     if time_dependent_steering_pairs: 
-        timepoints = len(time_dependent_steering_pairs['colvar_input'])
+        timepoints = (len(time_dependent_steering_pairs['colvar_input'])-1)*time_dependent_steering_pairs['colvar_dump_freq']
     
     kseeds = []
     while len(kseeds) < n_models:
@@ -568,7 +569,7 @@ def lammps_simulate(lammps_folder, run_time,
     #nloci = 0
     models = {}
     if timepoints > 1:
-        for t in xrange(timepoints-1):
+        for t in xrange(timepoints):
             time_models = []
             for res in results:
                 (k,restarr) = res
@@ -790,6 +791,7 @@ def run_lammps(kseed, lammps_folder, run_time,
         print "# New particle density (nparticles/volume)", lmp.get_natoms()/volume
         print ""
 
+    timepoints = 1
     xc = []
     # Setup the pairs to co-localize using the COLVARS plug-in
     if steering_pairs:
@@ -824,6 +826,8 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
+        timepoints = time_dependent_steering_pairs['colvar_dump_freq']
+    
         #if exists("objective_function_profile.txt"):
         #    os.remove("objective_function_profile.txt")
 
@@ -1153,27 +1157,28 @@ def run_lammps(kseed, lammps_folder, run_time,
     else:    
         # Managing the final model
         xc.append(np.array(lmp.gather_atoms("x",1,3)))
-        
+            
     lmp.close()    
-    
+        
     result = []
-    for timepoint in xrange(len(xc)):
-        lammps_model = LAMMPSmodel({'x'          : [],
-                              'y'          : [],
-                              'z'          : [],
-                              'cluster'    : 'Singleton',
-                              'objfun'     : 0,
-                              'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
-                              'rand_init'  : str(kseed+timepoint)})
-    
-        if pbc:
-            store_conformation_with_pbc(xc, lammps_model, confining_environment)    
-        else:
-            for i in xrange(0,len(xc[timepoint]),3):
-                lammps_model['x'].append(xc[timepoint][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-                lammps_model['y'].append(xc[timepoint][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-                lammps_model['z'].append(xc[timepoint][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
-        result.append(lammps_model)
+    for stg in xrange(len(xc)):
+        for timepoint in range(1,timepoints+1):
+            lammps_model = LAMMPSmodel({'x'          : [],
+                                  'y'          : [],
+                                  'z'          : [],
+                                  'cluster'    : 'Singleton',
+                                  'objfun'     : 0,
+                                  'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
+                                  'rand_init'  : str(kseed+timepoint)})
+        
+            if pbc:
+                store_conformation_with_pbc(xc[stg], lammps_model, confining_environment)    
+            else:
+                for i in range(timepoint*len(LOCI)*3,(timepoint+1)*len(LOCI)*3,3):
+                    lammps_model['x'].append(xc[stg][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                    lammps_model['y'].append(xc[stg][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+                    lammps_model['z'].append(xc[stg][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
+            result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
      
@@ -1184,20 +1189,21 @@ def read_trajectory_file(fname):
     coords=[]
     fhandler = open(fname)
     line = fhandler.next()
-    while not line.startswith('ITEM: ATOMS'):
-        line = fhandler.next()
-    if line.startswith('ITEM: ATOMS'):
-        line = fhandler.next()
-        try:
-            while True:
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                line_vals = line.split()
-                coords += [float(line_vals[1]),float(line_vals[2]),float(line_vals[3])]
-                line = fhandler.next()
-        except StopIteration:
-            pass
+    try:
+        while True:
+            if line.startswith('ITEM: TIMESTEP'):
+                while not line.startswith('ITEM: ATOMS'):
+                    line = fhandler.next()
+                if line.startswith('ITEM: ATOMS'):
+                    line = fhandler.next()
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            line_vals = line.split()
+            coords += [float(line_vals[1]),float(line_vals[2]),float(line_vals[3])]
+            line = fhandler.next()
+    except StopIteration:
+        pass
     fhandler.close()        
             
     return coords    
@@ -1569,7 +1575,7 @@ harmonicWalls {
     # Defining the particle pairs
     for pair in steering_pairs:
 
-        print steering_pairs[pair]
+        #print steering_pairs[pair]
         sys.stdout.flush()
         for i in xrange(len(steering_pairs[pair][0])):
             name    = "%s_%s_%s" % (i, int(pair[0])+1, int(pair[1])+1)
@@ -1708,9 +1714,9 @@ def get_time_dependent_colvars_list(time_dependent_steering_pairs):
         print "Unknown target_pairs"
         return 
 
-    for time_point in sorted(time_dependent_restraints.keys()):
-        for pair in time_dependent_restraints[time_point]:
-            print "#Time_dependent_restraints", time_point,pair, time_dependent_restraints[time_point][pair]
+#     for time_point in sorted(time_dependent_restraints.keys()):
+#         for pair in time_dependent_restraints[time_point]:
+#             print "#Time_dependent_restraints", time_point,pair, time_dependent_restraints[time_point][pair]
     return time_dependent_restraints
 
 ### TODO Add the option to add also spheres of different radii (e.g. to simulate nucleoli)

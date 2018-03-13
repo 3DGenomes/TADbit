@@ -6,8 +6,9 @@ from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn
 from string                           import uppercase as uc, lowercase as lc
-from random                           import random
-from os.path                          import exists
+from random                           import random, randint
+from os.path                          import exists, isdir
+from os                               import system 
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
@@ -84,13 +85,15 @@ def load_structuralmodels(path_f):
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
             zeros=svd['zeros'], restraints=svd.get('restraints', None),
-            description=svd.get('description', None), stages=svd.get('stages', None))
+            description=svd.get('description', None), stages=svd.get('stages', None),
+            models_per_step=svd.get('models_per_step', 0))
     except KeyError:  # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            restraints=svd.get('restraints', None), stages=svd.get('stages', None))
+            restraints=svd.get('restraints', None), stages=svd.get('stages', None),
+            models_per_step=svd.get('models_per_step', 0))
 
 
 class StructuralModels(object):
@@ -122,7 +125,7 @@ class StructuralModels(object):
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
                  config=None, experiment=None, zeros=None, restraints=None,
-                 description=None, stages=None):
+                 description=None, stages=None, models_per_step=0):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -137,6 +140,7 @@ class StructuralModels(object):
         self._restraints    = restraints
         self.description    = description
         self.stages         = stages or {}
+        self.models_per_step = models_per_step
 
     def __getitem__(self, nam):
         if isinstance(nam, str):
@@ -176,10 +180,17 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
-    def _extend_models(self, models):
+    def _extend_models(self, models, stages=None):
         """
         add new models to structural models
         """
+        if isinstance(models, StructuralModels):
+            stages = models.stages
+            models = models.__models
+        if not isinstance(models, dict):
+            warn('ERROR: models has to be a StructuralModels object '
+                     'or a dictionary')
+            return
         nbest = len(self.__models)
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
@@ -187,15 +198,34 @@ class StructuralModels(object):
         for m in models.keys():
             if models[m]['rand_init'] in ids:
                 warn('WARNING: found model with same random seed number, '
-                     'SKIPPPING')
-                del(models[m])
+                     'CHANGING rand_init')
+                models[m]['rand_init'] += '-' + str(randint(1,10000))
+                #del(models[m]) # why?
         new_models = {}
-        for i, m in enumerate(sorted(models.values() + self.__models.values(),
-                                     key=lambda x: x['objfun'])):
-            new_models[i] = m
-        self.__models = new_models
-        # keep the same number of best models
-        self.define_best_models(nbest)
+        if len(self.stages) > 1:
+            if stages and len(set(stages.keys()) & set(self.stages.keys())) == len(self.stages):
+                new_stages = {}
+                offset= 0
+                for stg in self.stages:
+                    new_stages[stg] = []
+                    stage_models = [self.__models[m] for m in set(self.stages[stg])] + [models[m] for m in set(stages[stg])] 
+                    for i, m in enumerate(stage_models):
+                        new_models[i+offset] = m
+                        new_stages[stg].append(i+offset)
+                    offset += len(stage_models)
+            else:
+                warn('WARNING: we need the same number of stages '
+                     'to extend the structural models')
+                return
+            self.stages = new_stages
+            self.__models = new_models
+        else:
+            for i, m in enumerate(sorted(models.values() + self.__models.values(),
+                                         key=lambda x: x['objfun'])):
+                new_models[i] = m
+            self.__models = new_models
+            # keep the same number of best models
+            self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
@@ -558,7 +588,7 @@ class StructuralModels(object):
         return d
 
     def get_contact_matrix(self, models=None, cluster=None, 
-                           stage=None, dynamics=None, cutoff=None,
+                           stage=None, cutoff=None,
                            distance=False):
         """
         Returns a matrix with the number of interactions observed below a given
@@ -571,8 +601,6 @@ class StructuralModels(object):
            the cluster number 'cluster'
         :param None stage: compute the contact matrix only for the models in
             stage number 'stage'
-        :param None dynamics: compute the contact for all the stages of the
-            replica number 'dynamics'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
            Cutoff can also be a list of values, in wich case the returned object
@@ -589,8 +617,6 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         elif stage > -1 and stage in self.stages:
             models = [m for m in self.stages[stage]]
-        elif dynamics > -1:
-            models = self.stages[0] + [self.stages[s+1][dynamics] for s in xrange(len(self.stages)-1)]
         else:
             models = [m for m in self.__models]
         cutoff_list = True
@@ -623,15 +649,7 @@ class StructuralModels(object):
                     if squared_distance_matrix[i][j] <= c:
                         matrix[c][i][j] += frac  # * 100
                         matrix[c][j][i] += frac  # * 100
-            if dynamics > -1:
-                all_matrix.append(matrix)
-                matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
-                            for _ in xrange(self.nloci)]) for c in cutoff])
-        
-        if dynamics > -1:
-            if cutoff_list:
-                return all_matrix
-            return [m.values()[0] for m in all_matrix]
+            
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -875,8 +893,8 @@ class StructuralModels(object):
         else:
             plt.show()
 
-    def contact_map(self, models=None, cluster=None, cutoff=None, axe=None,
-                    savefig=None, savedata=None):
+    def contact_map(self, models=None, cluster=None, dynamics=False, cutoff=None, 
+                    axe=None, savefig=None, savedata=None):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -886,6 +904,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
+        :param None dynamics: compute the contact map for all the stages
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -898,41 +917,73 @@ class StructuralModels(object):
            of models where these two particles are in contact)
 
         """
+        if dynamics: 
+            if not (savefig or savedata):
+                raise Exception('ERROR: dynamics should only be called ' +
+                                'with savefig or savedata option.\n')
+                return
+            if (savefig and not isdir(savefig)) or (savedata and not isdir(savedata)):
+                raise Exception('ERROR: savefig or savedata should ' +
+                                'be a folder with dynamics option.\n')
+                return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
-        matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
+        matrices = []
+        if dynamics:
+            for stg in self.stages:
+                matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
+        else:
+            matrices.append(self.get_contact_matrix(models, cluster, cutoff=cutoff))
         show = False
         if savedata:
-            out = open(savedata, 'w')
-            out.write('#Particle1\tParticle2\tModels_percentage\n')
-            for i in xrange(len(matrix)):
-                for j in xrange(i + 1, len(matrix)):
-                    out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
-            out.close()
+            for nbr, matrix in enumerate(matrices):
+                if dynamics:
+                    out = open(savedata+'/stage_'+str(nbr)+'.txt', 'w')
+                else:
+                    out = open(savedata, 'w')
+                out.write('#Particle1\tParticle2\tModels_percentage\n')
+                for i in xrange(len(matrix)):
+                    for j in xrange(i + 1, len(matrix)):
+                        out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
+                out.close()
         if not savefig and not show and not axe:
             return  # stop here, we do not want to display anything
-        if not axe:
-            fig = plt.figure(figsize=(8, 6))
-            axe = fig.add_subplot(111)
-            show = True
-        else:
-            fig = axe.get_figure()
-        cmap = plt.get_cmap('jet')
-        cmap.set_bad('darkgrey', 1)
-        ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
-                         vmin=0, vmax=1, cmap=cmap,
-                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        axe.set_ylabel('Particle')
-        axe.set_xlabel('Particle')
-        cbar = axe.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
-        cbar.ax.set_ylabel('Percentage of models with particles at <' +
-                           '%s nm' % (cutoff))
-        axe.set_title('Contact map')
-        if savefig:
-            tadbit_savefig(savefig)
-        elif show:
-            plt.show()
+        cbar = None
+        for nbr, matrix in enumerate(matrices):
+            if not axe:
+                fig = plt.figure(figsize=(8, 6))
+                axe = fig.add_subplot(111)
+                show = True
+            else:
+                fig = axe.get_figure()
+            cmap = plt.get_cmap('jet')
+            cmap.set_bad('darkgrey', 1)
+            ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
+                             vmin=0, vmax=1, cmap=cmap,
+                             extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+            axe.set_ylabel('Particle')
+            axe.set_xlabel('Particle')
+            if not cbar:
+                cbar = axe.figure.colorbar(ims)
+                cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+                cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                                   '%s nm' % (cutoff))
+            if dynamics:
+                axe.set_title('Contact map stage %s' % str(nbr))
+            else:
+                axe.set_title('Contact map')
+            if savefig:
+                if dynamics:
+                    tadbit_savefig(savefig+'/contact_map_stage_'+str(nbr)+'.png')
+                else:
+                    tadbit_savefig(savefig)
+            elif show and not dynamics:
+                plt.show()
+        if dynamics:
+            try:
+                system('ffmpeg -r 10 -i '+savefig+'/contact_map_stage_%d.png -vcodec mpeg4 -y '+savefig+'/contact_map_all_stages.mp4')
+            except:
+                pass
 
     def accessibility(self, radius, models=None, cluster=None, nump=100,
                       superradius=200, savefig=None, savedata=None, axe=None,
@@ -1673,7 +1724,7 @@ class StructuralModels(object):
 
 
     def correlate_with_real_data(self, models=None, cluster=None, 
-                                 stage=None, cutoff=None,
+                                 dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
                                  log_corr=True, contact_matrix=None):
@@ -1686,8 +1737,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the correlation only for the models in the
            cluster number 'cluster'
-        :param None stage: compute the correlation only for the models in
-            stage number 'stage'
+        :param None dynamics: compute the correlation for all the stages
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param None savefig: path to a file where to save the image generated;
@@ -1704,42 +1754,34 @@ class StructuralModels(object):
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
         """
+        if dynamics:
+            if not savefig:
+                raise Exception('ERROR: dynamics should only be called ' +
+                                'with savefig option.\n')
+                return
+            if not isdir(savefig):
+                raise Exception('ERROR: savefig should ' +
+                                'be a folder with dynamics option.\n')
+                return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         if contact_matrix:
             all_model_matrix = [contact_matrix]
         else:
-            if len(self.stages) > 0:
+            if dynamics:
                 all_model_matrix = []
                 all_original_data = []
-                if models:
-                    mods = models
-                elif cluster > -1 and len(self.clusters) > 0:
-                    mods = [self[str(m)]['index'] for m in self.clusters[cluster]]
-                elif stage > -1 and stage in self.stages:
-                    mods = [m for m in self.stages[stage]]
-                else:
-                    mods = [m for m in self.__models]
-                
-                for st in self.stages:
-                    models_stage = []
-                    for m in mods:
-                        if m in self.stages[st]:
-                            models_stage.append(m)
+                for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
                     all_original_data.append(st)
-                    if(len(models_stage) > 0):
-                        all_model_matrix.append(self.get_contact_matrix(models=models_stage, cutoff=cutoff))
-                    else:
-                        all_model_matrix.append([])
+                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff))
             else:
                 all_original_data = [0]
                 all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,
-                                                   stage=stage,
                                                    cutoff=cutoff)]
-        oridata = []
-        moddata = []
         correl = {}
         for model_matrix, od in zip(all_model_matrix,all_original_data):
+            oridata = []
+            moddata = []
             if len(model_matrix) == 0:
                 correl[od] = 'Nan'
                 continue
@@ -1767,6 +1809,7 @@ class StructuralModels(object):
             if len(correl) < 2:
                 return correl[next(iter(correl))]
             return correl
+        cbar = None
         for model_matrix, od in zip(all_model_matrix,all_original_data):
             if correl[od] == 'Nan':
                 continue
@@ -1786,10 +1829,11 @@ class StructuralModels(object):
                              extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
             ax.set_ylabel('Particle')
             ax.set_xlabel('Particle')
-            cbar = ax.figure.colorbar(ims)
-            cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
-            cbar.ax.set_ylabel('Percentage of models with particles at <' +
-                               '%s nm' % (cutoff))
+            if not cbar:
+                cbar = ax.figure.colorbar(ims)
+                cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+                cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                                   '%s nm' % (cutoff))
             ax.set_title('Contact map')        # correlation
     
             ax = fig.add_subplot(132)
@@ -1875,7 +1919,11 @@ class StructuralModels(object):
             cbar = ax.figure.colorbar(ims)
             cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
             if savefig:
-                tadbit_savefig(od+'_'+savefig)
+                if dynamics:
+                    tadbit_savefig(savefig+'/correlation_plot_stage_'+str(od)+'.png')
+                else:
+                    tadbit_savefig(savefig)
+                
             elif not axe:
                 plt.show()
         plt.close('all')
@@ -2804,10 +2852,11 @@ class StructuralModels(object):
         to_save['restraints']    = {} if minimal else self._restraints
         to_save['zeros']         = self._zeros
         to_save['stages']         = self.stages
+        to_save['models_per_step']= self.models_per_step
 
         return to_save
 
-    def _get_models(self, models, cluster):
+    def _get_models(self, models, cluster, stage=None):
         """
         Internal function to transform cluster name, model name, or model list
         into proper list of models processable by StructuralModels functions
@@ -2817,6 +2866,8 @@ class StructuralModels(object):
                       if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        elif stage > -1 and stage in self.stages:
+            models = [m for m in self.stages[stage]]
         else:
             models = [m for m in self.__models]
         return models
