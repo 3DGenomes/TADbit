@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Compare Eigenvectors of A/B compartments between two experiments
+Compare eigenvectors of A/B compartments between two experiments
 """
 
 import os
@@ -20,7 +20,8 @@ from serutils.stats.correlate import get_confidence
 
 
 def nice_contour_plot(xx, yy, f, f_cor, cond1, cond2, ax=None, t_contours=None,
-                      steps=None, signx=None, signy=None):
+                      steps=None, signx=None, signy=None, total_len=None,
+                      cut=0.95):
     """
     Modified Bland-Altman density plot (no logs)
 
@@ -35,6 +36,8 @@ def nice_contour_plot(xx, yy, f, f_cor, cond1, cond2, ax=None, t_contours=None,
     :param None steps: labels for steps at which to draw line in contour plot
     :param None signx: X coordinates of significant differences
     :param None signy: Y coordinates of significant differences
+    :param None total_len: total number of bins
+    :param 0.95 cut: cutoff to difine significant differences
     :param None ax: matplotlib Axe object
     """
     plt.axis('off')
@@ -79,16 +82,19 @@ def nice_contour_plot(xx, yy, f, f_cor, cond1, cond2, ax=None, t_contours=None,
         fmt = {}
         for l, s in zip(c_set.levels, steps):
             fmt[l] = str(int(s * 100)) + '%'
-        axup.clabel(c_set, inline=1, fontsize=11, fmt=fmt, colors='k')
+        axup.clabel(c_set, inline=1, fontsize=9, fmt=fmt, colors='k')
 
     # Label plot
     axe.set_ylabel("LOESS normalized difference of Eigenvectors (%s - %s)" % (
         cond1, cond2))
     axe.set_xlabel('Average of %s and %s Eigenvectors' % (cond1, cond2))
     if signx:
-        ax.legend(dots, ['Most different EigenVectors (<5% in null model)'],
+        ax.legend(dots, [
+            '%.1f%% of the bins more different than %.1f%% of null model)' %
+            (len(signx) * 100. / total_len, cut * 100.)],
                   bbox_to_anchor=(0.9, 1.03),
                   frameon=False)
+    return axe
 
 
 def ba_plot(x, y, pred, cond1, cond2, alpha=float('nan'), df=0, ax=None):
@@ -121,8 +127,8 @@ def ba_plot(x, y, pred, cond1, cond2, alpha=float('nan'), df=0, ax=None):
               loc='upper right', frameon=False, bbox_to_anchor=[1, 1])
 
 
-def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
-                       plot='all', alpha=0.75, kernel_density=200):
+def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
+                       confidence=0.95, alpha=0.75, kernel_density=200):
     """
     Compare two eigenvectors (from two conditions), using as null, or
        background, model the differences between each pair of neighbor bins.
@@ -147,6 +153,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
        normalization, and density map), the same two for null mode. If 'final'
        only a single plot with density maps of observed data and null model. If
        'none', no plot will be generated.
+    :param 0.95 confidence: confidence level for definition of bins with
+       significantly different compartments
 
     :returns: a dictionary with, as keys, the input ids, and as values, a tuple
        with two value: 1- the probabilities (or Cumulative Densities) of each
@@ -179,8 +187,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
         df = 0
     # plot
     axes = []
-    xlims = []
-    ylims = []
     if plot == 'all':
         _ = plt.figure(figsize=(18, 27))
     elif plot == 'final':
@@ -190,8 +196,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
         axes[-1].set_title('Bland-Altman plot of EigenVectors (%s vs %s)' % (
             cond1, cond2))
         ba_plot(x, y, pred, cond1, cond2, alpha, df, axes[-1])
-        xlims.append(axes[-1].get_xlim())
-        ylims.append(axes[-1].get_ylim())
 
     # LOESS normalization
     y = y - pred
@@ -210,8 +214,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
         axes[-1].set_title(('LOESS normalized BA plot of EigenVectors '
                             '(%s vs %s)') % (cond1, cond2))
         ba_plot(x, y, pred, cond1, cond2, alpha, df, axes[-1])
-        xlims.append(axes[-1].get_xlim())
-        ylims.append(axes[-1].get_ylim())
 
     # Definition of null model
     print 'Defining Null model'
@@ -241,8 +243,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
             '{0} even bins ($n$) vs odd ($n+1$) and {1} even '
             'bins ($n$) vs odd ($n+1$)\n').format(cond1, cond2))
         ba_plot(x_cor, y_cor, pred_cor, cond1, cond2, alpha, df, axes[-1])
-        xlims.append(axes[-1].get_xlim())
-        ylims.append(axes[-1].get_ylim())
 
     # LOESS normalization
     y_cor = y_cor - pred_cor
@@ -263,11 +263,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
              '{0} and {1} together, even bins ($n$) vs odd ($n+1$)\n').format(
                  cond1, cond2))
         ba_plot(x_cor, y_cor, pred_cor, cond1, cond2, alpha, df, axes[-1])
-        xlims.append(axes[-1].get_xlim())
-        ylims.append(axes[-1].get_ylim())
-
-        xlim = (min(i for i, _ in xlims), max(i for _, i in xlims))
-        ylim = (min(i for i, _ in ylims), max(i for _, i in ylims))
 
     print 'Perform the kernel density estimate for null model'
     # Perform the kernel density estimate for null model
@@ -305,7 +300,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
     invff = interpolate.interp1d(t, integral)
 
     # significant bins in Null model
-    cut = 0.99
+    cut = confidence
 
     # significant bins observed data
     print 'Computing significant changes in observed data'
@@ -332,29 +327,32 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess',
 
     # plot Null model
     if plot == 'all':
-        axes.append(plt.subplot(3, 2, 5))
+        axe = plt.subplot(3, 2, 5)
         print 'Plotting densities'
         plt.title(('LOESS normalized BA density plot of EigenVectors (Null '
                    'model)\n{0} and {1} together, even bins ($n$) vs odd '
                    '($n+1$)\n').format(cond1, cond2))
-        nice_contour_plot(xx, yy, f_cor, f_cor, cond1, cond2, ax=axes[-1],
-                          t_contours=t_contours, steps=steps)
+        axes.append(nice_contour_plot(
+            xx, yy, f_cor, f_cor, cond1, cond2, ax=axe,
+            t_contours=t_contours, steps=steps))
         # plot Observed data
     if plot in ['all', 'final']:
         if plot == 'all':
-            axes.append(plt.subplot(3, 2, 6))
+            axe = plt.subplot(3, 2, 6)
         else:
-            axes.append(plt.subplot(111))
+            axe = plt.subplot(111)
         plt.title(('LOESS normalized BA density plot of EigenVectors\n'
                    '({0} vs {1} plotted over null model)\n').format(
                        cond1, cond2))
-        nice_contour_plot(xx, yy, f, f_cor, cond1, cond2, ax=axes[-1],
-                          signx=signx, signy=signy, t_contours=t_contours,
-                          steps=steps)
-        if plot == 'all':
-            for axe in axes:
-                axe.set_xlim(xlim)
-                axe.set_ylim(ylim)
+        axes.append(nice_contour_plot(
+            xx, yy, f, f_cor, cond1, cond2, ax=axe, total_len=len(x), cut=cut,
+            signx=signx, signy=signy, t_contours=t_contours, steps=steps))
+
+        xlim = (min((x.min(), x_cor.min())), max((x.max(), x_cor.max())))
+        ylim = (min((y.min(), y_cor.min())), max((y.max(), y_cor.max())))
+        for axe in axes:
+            axe.set_xlim(xlim)
+            axe.set_ylim(ylim)
     return result
 
 
@@ -397,16 +395,18 @@ def main():
     ev2 = (ev2 - np.mean(ev2)) / np.std(ev2) / 3
 
     result = get_significant_ev(ev1, ev2, names, opts.name1, opts.name2,
-                                alpha=opts.alpha,
+                                alpha=opts.alpha, confidence=opts.conf,
                                 plot=opts.plot, norm=opts.norm,
                                 kernel_density=opts.kernel_density)
     os.system('mkdir -p %s' % opts.outdir)
     plt.savefig(os.path.join(opts.outdir,
-                             'differential_analysis_plot.%s' % (opts.format)),
+                             'differential_analysis_plot_%s-%s.%s' % (
+                                 opts.name1, opts.name2, opts.format)),
                 format=opts.format)
-    plt.show()
 
-    out = open(os.path.join(opts.outdir, 'comparison.tsv'), 'w')
+    out = open(os.path.join(opts.outdir,
+                            'comparison_%s-%s.tsv' % (opts.name1,
+                                                      opts.name2)), 'w')
     out.write('\n'.join('%s\t%s\t%f\t%f' % (a, b, pv, diff)
                         for (a, b), (pv, diff) in result.iteritems()) + '\n')
     out.close()
@@ -455,6 +455,10 @@ def get_options():
                         help='''[%(default)s] alpha (smoothing parameter) for
                         LOESS fitting (0 pass through all points, 1, straight
                         line).''')
+    parser.add_argument('--conf', dest='conf',  default=0.95,
+                        type=float,
+                        help='''[%(default)s] confidence level for definition
+                        of bins with significantly different compartments.''')
     opts = parser.parse_args()
     return opts
 
