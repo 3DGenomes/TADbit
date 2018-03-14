@@ -62,7 +62,7 @@ Methods implemented in TADbit
 -----------------------------
 In addition to the general citation for the TADbit library, please cite these articles if you used TADbit for:
 
-- Mapping and read filtering [Imakaev2012]_ [Ay2015]_
+- Mapping and read filtering [Marco-Sola2012]_ [Imakaev2012]_ [Ay2015]_
 - Hi-C normalization [Imakaev2012]_ [Rao2014]_
 - A/B compartment calling [Lieberman-Aiden2009]_
 - Model assessemnt [Trussart2015]_
@@ -145,6 +145,8 @@ Bibliography
 .. [Le_Dily2014] Le Dily, F., Baù, D., Pohl, A., Vicent, G.P., Serra, F., Soronellas, D., Castellano, G., Wright, R.H.G., Ballare, C., Filion, G., Marti-Renom, M.A. and Beato, M. 2014. Distinct structural transitions of chromatin topological domains correlate with coordinated hormone-induced gene regulation. Genes & Development 28(19), pp. 2151–2162.
 
 .. [Lieberman-Aiden2009] Lieberman-Aiden, E., van Berkum, N.L., Williams, L., Imakaev, M., Ragoczy, T., Telling, A., Amit, I., Lajoie, B.R., Sabo, P.J., Dorschner, M.O., Sandstrom, R., Bernstein, B., Bender, M.A., Groudine, M., Gnirke, A., Stamatoyannopoulos, J., Mirny, L.A., Lander, E.S. and Dekker, J. 2009. Comprehensive mapping of long-range interactions reveals folding principles of the human genome. Science 326(5950), pp. 289–293.
+
+.. [Marco-Sola2012] Marco-Sola, S., Sammeth, M., Guigo, R. and Ribeca, P. 2012. The GEM mapper: fast, accurate and versatile alignment by filtration. Nat Methods 9(12), pp. 1185-1188.
 
 .. [Rao2014] Rao, S.S.P., Huntley, M.H., Durand, N.C., Stamenova, E.K., Bochkov, I.D., Robinson, J.T., Sanborn, A.L., Machol, I., Omer, A.D., Lander, E.S. and Aiden, E.L. 2014. A 3D map of the human genome at kilobase resolution reveals principles of chromatin looping. Cell 159(7), pp. 1665–1680.
 
