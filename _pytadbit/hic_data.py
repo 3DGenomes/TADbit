@@ -1153,10 +1153,10 @@ class HiC_data(dict):
                     savefig + '/chr' + str(sec) + suffix + '.png' if savefig else None,
                     vmin=vmin, vmax=vmax, whichpc=ev_num,showAB=show_compartment_labels)
 
-        if label_compartments == 'cluster' or label_compartments == 'hmm':
-          plot_compartments_summary(
-                    sec, cmprts, show,
-                    savefig + '/chr' + str(sec) + suffix + '_summ.png' if savefig else None)
+                if label_compartments == 'cluster' or label_compartments == 'hmm':
+                    plot_compartments_summary(
+                        sec, cmprts, show,
+                        savefig + '/chr' + str(sec) + suffix + '_summ.png' if savefig else None)
             count += 1
 
         if label_compartments == 'hmm':
