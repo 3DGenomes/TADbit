@@ -396,11 +396,8 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
 
     :returns: slope, intercept and R square of each of the 3 correlations
     """
-    resolution = resolution or 1
-    if isinstance(data, dict):
-        dist_intr = dict([(d, [data[d]]) for d in data
-                          if max_diff > d >= min_diff])
-    elif isinstance(data, basestring):
+    if isinstance(data, basestring):
+        resolution = resolution or 1
         dist_intr = dict([(i, {})
                           for i in xrange(min_diff, max_diff)])
         fhandler = open(data)

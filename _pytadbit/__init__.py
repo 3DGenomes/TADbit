@@ -1,8 +1,18 @@
-
+from pytadbit._version import __version__
 from os import environ
 from subprocess import Popen, PIPE, check_call, CalledProcessError
+import locale
 
-from pytadbit._version import __version__
+# make sure that we are comparing strings in the same way as the bash sort
+# command used in mapping
+try:
+    locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
+except:
+    environ["LANG"] = "en_US.UTF-8"
+    try:
+        locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
+    except:
+        pass
 
 # ## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
 # if not "DISPLAY" in environ:
