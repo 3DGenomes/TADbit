@@ -795,11 +795,11 @@ class Experiment(object):
                 for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
-                    if (not self.norm[0][i * self.size + j]
+                    if (not self.norm[index][i * self.size + j]
                         and remove_zeros):
                         zeros[(i, j)] = None
                         continue
-                    values[(i, j)] = self.norm[0][i * self.size + j]
+                    values[(i, j)] = self.norm[index][i * self.size + j]
         else:
             for i in xrange(self.size):
                 if i in self._zeros:
@@ -807,7 +807,7 @@ class Experiment(object):
                 for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
-                    values[(i, j)] = self.hic_data[0][i * self.size + j]
+                    values[(i, j)] = self.hic_data[index][i * self.size + j]
         # compute Z-score
         if zscored:
             zscore(values)

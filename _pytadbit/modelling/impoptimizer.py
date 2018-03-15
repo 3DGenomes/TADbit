@@ -322,8 +322,8 @@ class IMPoptimizer(object):
                             use_HiC=use_HiC, use_confining_environment=use_confining_environment,
                             use_excluded_volume=use_excluded_volume)
                     elif self.tool=='lammps':
-                        tdm = generate_lammps_models(self.zscores[i], self.resolution, self.nloci,
-                                          values=self.values[i], n_models=self.n_models,
+                        tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
+                                          values=self.values, n_models=self.n_models,
                                           n_keep=self.n_keep,
                                           n_cpus=n_cpus,
                                           verbose=verbose, first=0,coords = self.coords,

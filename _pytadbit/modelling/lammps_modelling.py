@@ -42,8 +42,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
-                       initial_conformation='tadbit', timesteps_per_k=10000,
-                       kfactor=1, adaptation_step=False, cleanup=True):
+                       initial_conformation=None, timesteps_per_k=10000,
+                       kfactor=1, adaptation_step=False, cleanup=False):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -198,6 +198,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'colvar_dump_freq'          : int(timesteps_per_k/100),
             'adaptation_step'           : adaptation_step,
         }
+        if not initial_conformation:
+            initial_conformation = 'tadbit'
     else:
         steering_pairs = {       
             'colvar_input': HiCRestraints[0],
@@ -206,6 +208,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'timesteps_per_k'           : timesteps_per_k,
             'timesteps_relaxation'      : int(timesteps_per_k*10)
         }
+        if not initial_conformation:
+            initial_conformation = 'random'
     
     if not container:
         container = ['cube',1000.0] # http://lammps.sandia.gov/threads/msg48683.html
@@ -321,7 +325,7 @@ def init_lammps_run(lmp, initial_conformation,
 
     """
 
-    lmp.command("log none")
+    #lmp.command("log none")
     #os.remove("log.lammps")
 
     #######################################################

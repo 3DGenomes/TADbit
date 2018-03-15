@@ -893,8 +893,8 @@ class StructuralModels(object):
         else:
             plt.show()
 
-    def contact_map(self, models=None, cluster=None, dynamics=False, cutoff=None, 
-                    axe=None, savefig=None, savedata=None):
+    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
+                    cutoff=None, axe=None, savefig=None, savedata=None):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -905,6 +905,8 @@ class StructuralModels(object):
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
         :param None dynamics: compute the contact map for all the stages
+        :param None stage: compute the contact map only for the models in
+            stage number 'stage'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -931,9 +933,10 @@ class StructuralModels(object):
         matrices = []
         if dynamics:
             for stg in self.stages:
-                matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
+                if stg != 0:
+                    matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
         else:
-            matrices.append(self.get_contact_matrix(models, cluster, cutoff=cutoff))
+            matrices.append(self.get_contact_matrix(models, cluster, stage=stage, cutoff=cutoff))
         show = False
         if savedata:
             for nbr, matrix in enumerate(matrices):

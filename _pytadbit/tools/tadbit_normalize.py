@@ -94,6 +94,12 @@ def run(opts):
         line = fh.next()
         crmM, begM, endM, val = line.split()
         crm = crmM
+        if crmM not in mappability:
+            print('     skipping %s' % crmM) 
+            while crmM not in mappability:
+                line = fh.next()
+                crmM, begM, endM, val = line.split()
+                crm = crmM
         while any(not mappability[c] for c in mappability):
             for begB in xrange(0, len(genome[crmM]), opts.reso):
                 endB = begB + opts.reso
@@ -165,7 +171,7 @@ def run(opts):
                                     opts.reso, param_hash))
 
     # get and plot decay
-    if not opts.normalize_only:
+    if not opts.normalize_only and len(refs) > 1:
         printime('  - Computing interaction decay vs genomic distance')
         (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
             decay, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
