@@ -549,10 +549,14 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
+    try:
+        if already_run(opts):
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(path.join(dbdir, dbfile))
+            exit('WARNING: exact same job already computed, see JOBs table above')
+    except IOError:  # new working directory
+        pass
+
 
 def nice(reso):
     if reso >= 1000000:
