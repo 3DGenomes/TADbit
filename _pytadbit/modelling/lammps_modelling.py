@@ -298,11 +298,13 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                               'log_objfun' : ini_model['log_objfun'],
                               'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
                               'rand_init'  : str(ini_seed)})
-            stages[0] = [0]*n_models
-            models[0] = lammps_model
+            
             timepoints = time_dependent_steering_pairs['colvar_dump_freq']
+            nbr_produced_models = len(models)/(timepoints*(len(HiCRestraints)-1))
+            stages[0] = [0]*nbr_produced_models
+            models[0] = lammps_model
             for timepoint in xrange((len(HiCRestraints)-1)*timepoints):
-                stages[timepoint+1] = [(t+1+timepoint*n_models) for t in xrange(n_models)]
+                stages[timepoint+1] = [(t+1+timepoint*nbr_produced_models) for t in xrange(nbr_produced_models)]
                 
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values,
@@ -325,7 +327,7 @@ def init_lammps_run(lmp, initial_conformation,
 
     """
 
-    #lmp.command("log none")
+    lmp.command("log none")
     #os.remove("log.lammps")
 
     #######################################################
@@ -1136,25 +1138,29 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     # Post-processing analysis
     if time_dependent_steering_pairs:
-        copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
-
-
-        os.remove("%sout.colvars.traj" % lammps_folder)
-        os.remove(time_dependent_steering_pairs['colvar_output'])
-        for time_point in time_points[0:-1]:
-            # Compute energy associated to the restraints: something like the IMP objective function
-            compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                           "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                           time_point,
-                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
-        
-            # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
-            compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                                           restraints[time_point],
-                                                           "%spercentage_of_established_restraints_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                                           time_point,
-                                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
-        
+        try:
+            copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
+    
+    
+            os.remove("%sout.colvars.traj" % lammps_folder)
+            os.remove(time_dependent_steering_pairs['colvar_output'])
+            for time_point in time_points[0:-1]:
+                # Compute energy associated to the restraints: something like the IMP objective function
+                compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                               "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                               time_point,
+                                               time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+            
+                # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
+                compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                               restraints[time_point],
+                                                               "%spercentage_of_established_restraints_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                               time_point,
+                                                               time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+        except Exception as e:
+            print "Error in post-analysis"
+            print e
+            
         for time_point in time_points[0:-1]:        
             xc.append(np.array(read_trajectory_file("%ssteered_MD_from_time_point_%s_to_time_point_%s.XYZ" % (lammps_folder, time_point, time_point+1))))
     

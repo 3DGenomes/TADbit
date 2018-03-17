@@ -171,7 +171,7 @@ def run(opts):
                                     opts.reso, param_hash))
 
     # get and plot decay
-    if not opts.normalize_only and len(refs) > 1:
+    if not opts.normalize_only:
         printime('  - Computing interaction decay vs genomic distance')
         (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
             decay, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
