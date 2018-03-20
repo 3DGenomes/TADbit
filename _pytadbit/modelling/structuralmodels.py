@@ -1,7 +1,7 @@
 """
 19 Jul 2013
 """
-from cPickle                          import load, dump
+from cPickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn
@@ -900,7 +900,9 @@ class StructuralModels(object):
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        oldlabels = cbar.ax.get_yticklabels()
+        newlabels = map(lambda x: str(int(100 * float(x.get_text()))), oldlabels)
+        cbar.ax.set_yticklabels(newlabels)
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
         axe.set_title('Contact map')
@@ -2697,7 +2699,7 @@ class StructuralModels(object):
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out)
+        dump(self._reduce_models(), out, HIGHEST_PROTOCOL)
         out.close()
 
     def _reduce_models(self, minimal=False):
