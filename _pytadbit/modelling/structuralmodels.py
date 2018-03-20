@@ -968,7 +968,7 @@ class StructuralModels(object):
             if not cbar:
                 cbar = axe.figure.colorbar(ims)
                 oldlabels = cbar.ax.get_yticklabels()
-                newlabels = map(lambda x: str(int(100 * float(x.get_text()))), oldlabels)
+                newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
                 cbar.ax.set_yticklabels(newlabels)
                 cbar.ax.set_ylabel('Percentage of models with particles at <' +
                                    '%s nm' % (cutoff))
@@ -985,7 +985,7 @@ class StructuralModels(object):
                 plt.show()
         if dynamics:
             try:
-                system('ffmpeg -r 10 -i '+savefig+'/contact_map_stage_%d.png -vb 20M -y '+savefig+'/contact_map_all_stages.mpeg')
+                system('ffmpeg -r 50 -i '+savefig+'/contact_map_stage_%d.png -vb 20M -y '+savefig+'/contact_map_all_stages.mpeg')
             except:
                 pass
 
