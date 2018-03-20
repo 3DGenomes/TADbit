@@ -901,7 +901,7 @@ class StructuralModels(object):
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
         oldlabels = cbar.ax.get_yticklabels()
-        newlabels = map(lambda x: str(int(100 * float(x.get_text()))), oldlabels)
+        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
         cbar.ax.set_yticklabels(newlabels)
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
