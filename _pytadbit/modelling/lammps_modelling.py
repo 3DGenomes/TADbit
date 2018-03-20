@@ -1138,28 +1138,25 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     # Post-processing analysis
     if time_dependent_steering_pairs:
-        try:
-            copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
-    
-    
-            os.remove("%sout.colvars.traj" % lammps_folder)
-            os.remove(time_dependent_steering_pairs['colvar_output'])
-            for time_point in time_points[0:-1]:
-                # Compute energy associated to the restraints: something like the IMP objective function
-                compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                               "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                               time_point,
-                                               time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
-            
-                # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
-                compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                                               restraints[time_point],
-                                                               "%spercentage_of_established_restraints_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                                               time_point,
-                                                               time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
-        except Exception as e:
-            print "Error in post-analysis"
-            print e
+        
+        copyfile("%sout.colvars.traj" % lammps_folder, "%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)))
+
+
+        os.remove("%sout.colvars.traj" % lammps_folder)
+        os.remove(time_dependent_steering_pairs['colvar_output'])
+        for time_point in time_points[0:-1]:
+            # Compute energy associated to the restraints: something like the IMP objective function
+            compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                           "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                           time_point,
+                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+        
+            # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
+            compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                           restraints[time_point],
+                                                           "%spercentage_of_established_restraints_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+                                                           time_point,
+                                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
             
         for time_point in time_points[0:-1]:        
             xc.append(np.array(read_trajectory_file("%ssteered_MD_from_time_point_%s_to_time_point_%s.XYZ" % (lammps_folder, time_point, time_point+1))))
@@ -1517,7 +1514,7 @@ harmonic {
   outputEnergy   yes
 }\n''',
                                          colvars_harmonic_lower_bound_tail = '''
-harmonicWalls {
+harmonicBound {
   name hlb_pot_%s
   colvars %s
   forceConstant %f
@@ -1545,7 +1542,7 @@ harmonicWalls {
 
     colvars_harmonic_lower_bound_tail = '''
     
-    harmonicWalls {
+    harmonicBound {
     name hlb_pot_%s
     colvars %s
     forceConstant %f       # This is the force constant at time_point
@@ -3162,6 +3159,8 @@ def compute_the_percentage_of_satysfied_restraints(input_file_name,
 
 
             outfile.write("%d %lf %lf %lf\n" % (int(line[0])+(time_point)*timesteps_per_k_change, nsatisfied/ntot*100., nsatisfiedharm/ntotharm*100., nsatisfiedharmLowBound/ntotharmLowBound*100.))
+    infile.close()
+    outfile.close()
 
 ##########
 

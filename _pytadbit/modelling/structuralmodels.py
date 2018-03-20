@@ -1,7 +1,7 @@
 """
 19 Jul 2013
 """
-from cPickle                          import load, dump
+from cPickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn
@@ -933,8 +933,7 @@ class StructuralModels(object):
         matrices = []
         if dynamics:
             for stg in self.stages:
-                if stg != 0:
-                    matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
+                matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
         else:
             matrices.append(self.get_contact_matrix(models, cluster, stage=stage, cutoff=cutoff))
         show = False
@@ -968,7 +967,9 @@ class StructuralModels(object):
             axe.set_xlabel('Particle')
             if not cbar:
                 cbar = axe.figure.colorbar(ims)
-                cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+                oldlabels = cbar.ax.get_yticklabels()
+                newlabels = map(lambda x: str(int(100 * float(x.get_text()))), oldlabels)
+                cbar.ax.set_yticklabels(newlabels)
                 cbar.ax.set_ylabel('Percentage of models with particles at <' +
                                    '%s nm' % (cutoff))
             if dynamics:
@@ -984,7 +985,7 @@ class StructuralModels(object):
                 plt.show()
         if dynamics:
             try:
-                system('ffmpeg -r 10 -i '+savefig+'/contact_map_stage_%d.png -vcodec mpeg4 -y '+savefig+'/contact_map_all_stages.mp4')
+                system('ffmpeg -r 10 -i '+savefig+'/contact_map_stage_%d.png -vb 20M -y '+savefig+'/contact_map_all_stages.mpeg')
             except:
                 pass
 
@@ -2824,7 +2825,7 @@ class StructuralModels(object):
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out)
+        dump(self._reduce_models(), out, protocol=HIGHEST_PROTOCOL)
         out.close()
 
     def _reduce_models(self, minimal=False):
