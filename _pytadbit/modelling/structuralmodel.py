@@ -13,10 +13,18 @@ from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.tadmaths        import newton_raphson
 from pytadbit                       import __version__ as version
+from pytadbit.utils.extraviews      import tadbit_savefig
+from scipy.interpolate              import spline
 from math                           import sqrt, pi
+from warnings                       import warn
+from numpy                          import linspace
 import sha
 
-
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
+    
 def model_header(model):
     """
     Defines the header to write in output files for a given model
@@ -909,3 +917,60 @@ class StructuralModel(dict):
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      center_of_mass=center_of_mass, gyradius=gyradius)
+
+    def objective_function(self, log=False, smooth=False,
+                           axe=None, savefig=None):
+        """
+        This function plots the objective function value per each Monte-Carlo
+        step.
+
+        :param False log: log plot
+        :param True smooth: curve smoothing
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+
+        """
+        show = False
+        if not axe:
+            fig = plt.figure(figsize=(7, 7))
+            axe = fig.add_subplot(111)
+            show = True
+            axe.patch.set_facecolor('lightgrey')
+            axe.patch.set_alpha(0.4)
+            axe.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            axe.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            axe.set_axisbelow(True)
+            axe.minorticks_on() # always on, not only for log
+            # remove tick marks
+            axe.tick_params(axis='both', direction='out', top=False,
+                            right=False, left=False, bottom=False)
+            axe.tick_params(axis='both', direction='out', top=False,
+                            right=False, left=False, bottom=False,
+                            which='minor')
+        else:
+            fig = axe.get_figure()
+        # text
+        plt.xlabel('Iteration number')
+        plt.ylabel('Model Objective Function Value')
+        plt.title('Model ' + str(self['rand_init']))
+        # smooth
+        nrjz = self['log_objfun'][1:]
+        if smooth:
+            xnew = linspace(0, len(nrjz), 10000)
+            nrjz_smooth = spline(range(len(nrjz)), nrjz, xnew,
+                                 order=3)
+            axe.plot(xnew, nrjz_smooth, color='darkred')
+        else:
+            axe.plot(nrjz, color='darkred')
+        # plot
+        axe.plot(nrjz, color='darkred', marker='o', alpha=.5, ms=4, ls='None')
+        # log
+        if log:
+            axe.set_yscale('log')
+        if savefig:
+            tadbit_savefig(savefig)
+        elif show:
+            plt.show()

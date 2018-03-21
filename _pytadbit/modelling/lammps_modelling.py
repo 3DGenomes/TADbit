@@ -206,6 +206,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'colvar_output': colvars,
             'binsize': resolution,
             'timesteps_per_k'           : timesteps_per_k,
+            'colvar_dump_freq'          : int(timesteps_per_k/100),
             'timesteps_relaxation'      : int(timesteps_per_k*10)
         }
         if not initial_conformation:
@@ -285,6 +286,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         out.close()
     else:
         stages = {}
+        timepoints = None
         if len(HiCRestraints)>1:
             for i in xrange(len(ini_model['x'])):
                 ini_model['x'][i] *= sm_diameter
@@ -588,8 +590,8 @@ def lammps_simulate(lammps_folder, run_time,
             
     else:
         for i, (_, m) in enumerate(
-            sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
-            models[i] = m
+            sorted(results, key=lambda x: x[1][0]['objfun'])[:n_keep]):
+            models[i] = m[0]
 
     if cleanup:
         for k in kseeds:
@@ -805,7 +807,8 @@ def run_lammps(kseed, lammps_folder, run_time,
         # Start relaxation step
         lmp.command("reset_timestep 0")
         lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
-
+        lmp.command("reset_timestep %i" % 0)
+        
         # Start Steered Langevin dynamics
         if to_dump:
             lmp.command("undump 1")
@@ -828,6 +831,13 @@ def run_lammps(kseed, lammps_folder, run_time,
             #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
             lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
 
+            if to_dump:
+                lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
+                lmp.command("thermo_modify norm no flush yes")
+                lmp.command("variable step equal step")
+                lmp.command("variable objfun equal f_4")
+                lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+                
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
 
     # Setup the pairs to co-localize using the COLVARS plug-in
@@ -1045,6 +1055,13 @@ def run_lammps(kseed, lammps_folder, run_time,
             print "#fix 4 all colvars %s" % time_dependent_steering_pairs['colvar_output']
             sys.stdout.flush()
             lmp.command("fix 4 all colvars %s tstat 2 output %sout" % (time_dependent_steering_pairs['colvar_output'],lammps_folder))
+            if to_dump:
+                lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
+                lmp.command("thermo_modify norm no flush yes")
+                lmp.command("variable step equal step")
+                lmp.command("variable objfun equal f_4")
+                lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (time_dependent_steering_pairs['colvar_dump_freq'],lammps_folder,str(time_point), str(time_point+1)))
+            
             lmp.command("run %i" % int(time_dependent_steering_pairs['timesteps_per_k_change'][time_point]))
             
             if time_point > 0:
@@ -1146,10 +1163,10 @@ def run_lammps(kseed, lammps_folder, run_time,
         os.remove(time_dependent_steering_pairs['colvar_output'])
         for time_point in time_points[0:-1]:
             # Compute energy associated to the restraints: something like the IMP objective function
-            compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                           "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
-                                           time_point,
-                                           time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
+            #compute_the_objective_function("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+            #                               "%sobjective_function_profile_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
+            #                               time_point,
+            #                               time_dependent_steering_pairs['timesteps_per_k_change'][time_point])
         
             # Compute the % of satysfied constraints between 2. sigma = 2./sqrt(k)
             compute_the_percentage_of_satysfied_restraints("%srestrained_pairs_equilibrium_distance_vs_timestep_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(time_point), str(time_point+1)),
@@ -1169,19 +1186,21 @@ def run_lammps(kseed, lammps_folder, run_time,
         
     result = []
     for stg in xrange(len(xc)):
+        log_objfun = read_objective_function("%sobj_fun_from_time_point_%s_to_time_point_%s.txt" % (lammps_folder, str(stg), str(stg+1)))
         for timepoint in range(1,timepoints+1):
             lammps_model = LAMMPSmodel({'x'          : [],
                                   'y'          : [],
                                   'z'          : [],
                                   'cluster'    : 'Singleton',
-                                  'objfun'     : 0,
+                                  'log_objfun' : log_objfun,
+                                  'objfun'     : log_objfun[-1],
                                   'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
                                   'rand_init'  : str(kseed+timepoint)})
         
             if pbc:
                 store_conformation_with_pbc(xc[stg], lammps_model, confining_environment)    
             else:
-                for i in range(timepoint*len(LOCI)*3,(timepoint+1)*len(LOCI)*3,3):
+                for i in range((timepoint)*len(LOCI)*3,(timepoint+1)*len(LOCI)*3,3):
                     lammps_model['x'].append(xc[stg][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
                     lammps_model['y'].append(xc[stg][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
                     lammps_model['z'].append(xc[stg][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
@@ -3162,6 +3181,29 @@ def compute_the_percentage_of_satysfied_restraints(input_file_name,
     infile.close()
     outfile.close()
 
+##########
+
+def read_objective_function(fname):
+    
+    obj_func=[]
+    fhandler = open(fname)
+    line = fhandler.next()
+    try:
+        while True:
+            if line.startswith('#'):
+                line = fhandler.next()
+                continue
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            line_vals = line.split()
+            obj_func.append(float(line_vals[1]))
+            line = fhandler.next()
+    except StopIteration:
+        pass
+    fhandler.close()        
+            
+    return obj_func      
 ##########
 
 def compute_the_objective_function(input_file_name,
