@@ -94,6 +94,12 @@ def run(opts):
         line = fh.next()
         crmM, begM, endM, val = line.split()
         crm = crmM
+        if crmM not in mappability:
+            print('     skipping %s' % crmM) 
+            while crmM not in mappability:
+                line = fh.next()
+                crmM, begM, endM, val = line.split()
+                crm = crmM
         while any(not mappability[c] for c in mappability):
             for begB in xrange(0, len(genome[crmM]), opts.reso):
                 endB = begB + opts.reso
