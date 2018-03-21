@@ -51,15 +51,15 @@ def run(opts):
     if not opts.tmp:
         temp_dir = opts.workdir + '_tmp_r%d_%s' % (opts.read, param_hash)
     else:
-        temp_dir = path.join(opts.tmp, 
+        temp_dir = path.join(opts.tmp,
                              'TADbit_tmp_r%d_%s' % (opts.read, param_hash))
-    
+
     # QC plot
-    fig_path = path.join(opts.workdir, 
-                            '%s_%s_%s.png' % (path.split(opts.fastq)[-1], 
+    fig_path = path.join(opts.workdir,
+                            '%s_%s_%s.png' % (path.split(opts.fastq)[-1],
                                               '-'.join(opts.renz), param_hash))
     logging.info('Generating Hi-C QC plot')
-    
+
     dangling_ends, ligated = quality_plot(opts.fastq, r_enz=opts.renz,
                                             nreads=100000, paired=False,
                                             savefig=fig_path)
@@ -346,9 +346,9 @@ def save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, fi
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',         '%s',          '%s',       %d,              %d,      %d)
      """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,
-            opts.read, '-'.join(opts.renz), 
-            ' '.join('%s:%.3f%%' % (r, dangling_ends[r]) for r in opts.renz), 
-            ' '.join('%s:%.3f%%' % ('-'.join(r), ligated[r]) for r in ligated), 
+            opts.read, '-'.join(opts.renz),
+            ' '.join('%s:%.3f%%' % (r, dangling_ends[r]) for r in opts.renz),
+            ' '.join('%s:%.3f%%' % ('-'.join(r), ligated[r]) for r in ligated),
             get_path_id(cur, opts.workdir),
             get_path_id(cur, out, opts.workdir),
             get_path_id(cur, opts.index, opts.workdir)))
