@@ -1200,7 +1200,10 @@ def run_lammps(kseed, lammps_folder, run_time,
             if pbc:
                 store_conformation_with_pbc(xc[stg], lammps_model, confining_environment)    
             else:
-                for i in range((timepoint)*len(LOCI)*3,(timepoint+1)*len(LOCI)*3,3):
+                skip_first = 0
+                if time_dependent_steering_pairs:
+                    skip_first = 1
+                for i in range((timepoint-1+skip_first)*len(LOCI)*3,(timepoint+skip_first)*len(LOCI)*3,3):
                     lammps_model['x'].append(xc[stg][i]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
                     lammps_model['y'].append(xc[stg][i+1]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
                     lammps_model['z'].append(xc[stg][i+2]*float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale']))
