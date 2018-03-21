@@ -28,3 +28,4 @@ testset
 .idea
 *.xyz
 *.models
+.vscode

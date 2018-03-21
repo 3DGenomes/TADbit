@@ -66,23 +66,24 @@ def tadbit_savefig(savefig):
     plt.savefig(savefig, format=form)
 
 
-def nicer(res, sep=' ', coma=False):
+def nicer(res, sep=' ', comma='', allowed_decimals=0):
     """
     writes resolution number for human beings.
+
+    :param ' ' sep: character between number and unit (e.g. default: '125 kb')
+    :param '' comma: character to separate groups of thousands
+    :param 0 allowed_decimals: if 1 '1900 kb' would be written as '1.9 Mb'
     """
-    if coma:
-        format = lambda x: '{:,}'.format(x)
-    else:
-        format = lambda x: '{}'.format(x)
+    format = lambda x: '{:,g}'.format(x).replace(',', comma)
 
     if not res:
         return format(res) + sep + 'b'
-    if not res % 1000000000:
-        return format(res / 1000000000) + sep + 'Gb'
-    if not res % 1000000:
-        return format(res / 1000000) + sep + 'Mb'
-    if not res % 1000:
-        return format(res / 1000) + sep + 'kb'
+    if not res % 10**(9 - allowed_decimals):
+        return format(res / 10.**9) + sep + 'Gb'
+    if not res % 10**(6 - allowed_decimals):
+        return format(res / 10.**6) + sep + 'Mb'
+    if not res % 10**(3 - allowed_decimals):
+        return format(res / 10.**3) + sep + 'kb'
     return format(res) + sep + 'b'
 
 
