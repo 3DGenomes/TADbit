@@ -127,7 +127,7 @@ In addition to the general citation for the TADbit library, please cite these ar
 - Mapping and read filtering [Imakaev2012]_ [Ay2015]_
 - Hi-C normalization [Imakaev2012]_ [Rao2014]_
 - A/B compartment calling [Lieberman-Aiden2009]_
-- Model assessemnt [Trussart2015]_
+- Model assessement [Trussart2015]_
 - Chromatin 3D Model Building [BaùMarti-Renom2012]_
 
 Applications
