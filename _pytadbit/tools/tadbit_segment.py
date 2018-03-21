@@ -294,9 +294,9 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                        (richA_stats[crm] if crm in richA_stats
                         and richA_stats[crm] is not None else 'NULL'),
                        eindex, evalue, crm, reso))
-            print_db(cur, 'PATHs')
-            print_db(cur, 'JOBs')
-            print_db(cur, 'SEGMENT_OUTPUTs')
+        print_db(cur, 'PATHs')
+        print_db(cur, 'JOBs')
+        print_db(cur, 'SEGMENT_OUTPUTs')
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
