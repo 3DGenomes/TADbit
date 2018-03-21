@@ -181,7 +181,7 @@ def run(opts):
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
-                                           nicer(opts.reso).replace(' ', ''),
+                                           nicer(opts.reso, sep=''),
                                            ('_' + param_hash))
                 out_files[norm_string] = path.join(outdir, fnam)
                 out = open(path.join(outdir, fnam), 'w')
@@ -208,7 +208,7 @@ def run(opts):
                     cmap.set_bad('grey', 1.)
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s.%s' % (norm, name,
-                                          nicer(opts.reso).replace(' ', ''),
+                                          nicer(opts.reso, sep=''),
                                           ('_' + param_hash), opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
                 if opts.interactive:
@@ -234,19 +234,25 @@ def run(opts):
                 if len(regions) <= 2:
                     pltbeg1 = 0 if start1 is None else start1
                     pltend1 = sections[regions[0]] if end1 is None else end1
-                    pltbeg2 = pltbeg1 if len(regions) == 1 else 0 if start2 is None else start2
-                    pltend2 = pltend1 if len(regions) == 1 else sections[regions[-1]] if end2 is None else end2
+                    pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                               0 if start2 is None else start2)
+                    pltend2 = (pltend1 if len(regions) == 1 else
+                               sections[regions[-1]] if end2 is None else end2)
 
-                    ax1.set_xlabel('{}:{:,}-{:,}'.format(regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
-                    ax1.set_ylabel('{}:{:,}-{:,}'.format(regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+                    ax1.set_xlabel('{}:{:,}-{:,}'.format(
+                        regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+                    ax1.set_ylabel('{}:{:,}-{:,}'.format(
+                        regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
 
                     def format_xticks(tickstring, _=None):
                         tickstring = int(tickstring * opts.reso + pltbeg1)
-                        return nicer(tickstring if tickstring else 1, coma=True)
+                        return nicer(tickstring if tickstring else 1,
+                                     comma=',', allowed_decimals=1)
 
                     def format_yticks(tickstring, _=None):
                         tickstring = int(tickstring * opts.reso + pltbeg2)
-                        return nicer(tickstring if tickstring else 1, coma=True)
+                        return nicer(tickstring if tickstring else 1,
+                                     comma=',', allowed_decimals=1)
 
                     ax1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
                     ax1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
@@ -265,8 +271,9 @@ def run(opts):
                     vals.append(section_pos[crm][1] / opts.reso)
                     ax1.set_yticks(vals)
                     ax1.set_yticklabels('')
-                    ax1.set_yticks([float(vals[i]+vals[i+1])/2
-                                    for i in xrange(len(vals) - 1)], minor=True)
+                    ax1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                                    for i in xrange(len(vals) - 1)],
+                                   minor=True)
                     ax1.set_yticklabels(keys, minor=True)
                     for t in ax1.yaxis.get_minor_ticks():
                         t.tick1On = False
@@ -275,7 +282,8 @@ def run(opts):
                     ax1.set_xticks(vals)
                     ax1.set_xticklabels('')
                     ax1.set_xticks([float(vals[i]+vals[i+1])/2
-                                    for i in xrange(len(vals) - 1)], minor=True)
+                                    for i in xrange(len(vals) - 1)],
+                                   minor=True)
                     ax1.set_xticklabels(keys, minor=True)
                     for t in ax1.xaxis.get_minor_ticks():
                         t.tick1On = False
@@ -287,9 +295,11 @@ def run(opts):
                 data = [i for d in matrix for i in d if isfinite(i)]
                 mindata = nanmin(data)
                 maxdata = nanmax(data)
-                gradient = linspace(maxdata, mindata, max((len(matrix), len(matrix[0]))))
+                gradient = linspace(maxdata, mindata, max((len(matrix),
+                                                           len(matrix[0]))))
                 gradient = dstack((gradient, gradient))[0]
-                h  = ax2.hist(data, color='darkgrey', linewidth=2, orientation='horizontal',
+                h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                              orientation='horizontal',
                               bins=50, histtype='step', normed=True)
                 _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                                 extent=(0, max(h[0]), mindata, maxdata))
@@ -318,7 +328,6 @@ def run(opts):
             nchunks=opts.nchunks, verbose=not opts.quiet,
             extra=param_hash, clean=clean))
 
-      
     if clean:
         printime('Cleaning')
         system('rm -rf %s '% tmpdir)
