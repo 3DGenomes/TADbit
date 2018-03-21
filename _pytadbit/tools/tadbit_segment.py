@@ -445,7 +445,7 @@ def populate_args(parser):
 
     cmopts.add_argument('--rich_in_A', dest='rich_in_A', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='''path to a BAD or bedGraph file with list of
+                        help='''path to a BED or bedGraph file with list of
                         protein coding gene or other active epigenetic mark,
                         to be used to label compartments instead of using
                         the relative interaction count.''')
