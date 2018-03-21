@@ -176,12 +176,12 @@ class StructuralModels(object):
                 '  %s modeling used this parameters:\n' +
                 '%s\n' +
                 '  Models where clustered into %s clusters') % (
-            model_type,
             len(self.__models),
             self.nloci,
             int(self.__models[0]['objfun']),
             int(self.__models[len(self.__models) - 1]['objfun']),
             len(self.__models) + len(self._bad_models),
+            model_type,
             '\n'.join(['   - %-12s: %s' % (k, v)
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
