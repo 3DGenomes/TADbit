@@ -40,6 +40,7 @@ from pytadbit.utils.extraviews        import tad_coloring
 from pytadbit.utils.extraviews        import tad_border_coloring
 from pytadbit.utils.extraviews        import color_residues
 from pytadbit.modelling.impmodel      import IMPmodel
+from pytadbit.modelling.lammpsmodel   import LAMMPSmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
 from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
@@ -165,12 +166,17 @@ class StructuralModels(object):
         return len(self.__models)
 
     def __repr__(self):
+        model_type = 'IMP'
+        if isinstance(self.__models[0],LAMMPSmodel):
+            model_type = 'LAMMPS'
+            
         return ('StructuralModels with %s models of %s particles\n' +
                 '   (objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
-                '  IMP modeling used this parameters:\n' +
+                '  %s modeling used this parameters:\n' +
                 '%s\n' +
                 '  Models where clustered into %s clusters') % (
+            model_type,
             len(self.__models),
             self.nloci,
             int(self.__models[0]['objfun']),

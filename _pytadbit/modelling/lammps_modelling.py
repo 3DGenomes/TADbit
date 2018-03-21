@@ -1,5 +1,5 @@
 """
-07 Nov 2016
+21 Mar 2018
 
 
 """
@@ -12,7 +12,6 @@ from pytadbit.modelling.restraints import HiCBasedRestraints
 from os.path import exists
 from random import randint, seed, random, sample, shuffle
 from cPickle import load, dump
-import multiprocessing as mu
 from pebble import ProcessPool
 from concurrent.futures import TimeoutError
 
