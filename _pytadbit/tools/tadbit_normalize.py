@@ -29,6 +29,7 @@ from pytadbit.mapping.analyze             import plot_distance_vs_interactions
 from pytadbit.mapping.filter              import MASKED
 from pytadbit.parsers.hic_bam_parser      import printime, print_progress
 from pytadbit.parsers.hic_bam_parser      import filters_to_bin
+from pytadbit.parsers.bed_parser          import parse_mappability_bedGraph
 from pytadbit.utils.extraviews            import nicer
 from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
@@ -89,49 +90,10 @@ def run(opts):
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
-        fh = open(opts.mappability)
-        mappability = dict((c, []) for c in refs)
-        line = fh.next()
-        crmM, begM, endM, val = line.split()
-        crm = crmM
-        if crmM not in mappability:
-            print('     skipping %s' % crmM) 
-            while crmM not in mappability:
-                line = fh.next()
-                crmM, begM, endM, val = line.split()
-                crm = crmM
-        while any(not mappability[c] for c in mappability):
-            for begB in xrange(0, len(genome[crmM]), opts.reso):
-                endB = begB + opts.reso
-                tmp = 0
-                try:
-                    while True:
-                        crmM, begM, endM, val = line.split()
-                        if crm != crmM:
-                            try:
-                                while crmM not in refs:
-                                    line = fh.next()
-                                    crmM, _ = line.split('\t', 1)
-                            except StopIteration:
-                                pass
-                            break
-                        begM = int(begM)
-                        endM = int(endM)
-                        if endM > endB:
-                            weight = endB - begM
-                            if weight >= 0:
-                                tmp += weight * float(val)
-                            break
-                        weight = endM - (begM if begM > begB else begB)
-                        if weight < 0:
-                            break
-                        tmp += weight * float(val)
-                        line = fh.next()
-                except StopIteration:
-                    pass
-                mappability[crm].append(tmp / opts.reso)
-                crm = crmM
-        mappability = reduce(lambda x, y: x + y, (mappability[c] for c in refs))
+        mappability = parse_mappability_bedGraph(
+            opts.mappability, opts.reso, wanted_chrom=None)
+        mappability = reduce(lambda x, y: x + y,
+                             (mappability.get(c, []) for c in refs))
 
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,

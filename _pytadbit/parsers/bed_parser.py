@@ -91,3 +91,51 @@ def parse_bed(fnam, resolution=1):
         dico[crm][pos] += val
 
     return dico
+
+
+def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
+    fh = open(fname)
+    line = fh.next()
+    crmM, begM, endM, val = line.split()
+    crm = crmM
+    if wanted_chrom:
+        if crmM != wanted_chrom:
+            print('     skipping %s' % crmM)
+            while crmM != wanted_chrom:
+                line = fh.next()
+                crmM, begM, endM, val = line.split()
+                crm = crmM
+    mappability = {}
+    mappability[crm] = []
+    begB = 0
+    while True:
+        endB = begB + resolution
+        tmp = 0
+        try:
+            while True:
+                crmM, begM, endM, val = line.split()
+                if crm != crmM:
+                    mappability[crmM] = []
+                    begB = -resolution
+                    if wanted_chrom:
+                        raise StopIteration
+                    break
+                begM = int(begM)
+                endM = int(endM)
+                if endM > endB:
+                    weight = endB - begM
+                    if weight >= 0:
+                        tmp += weight * float(val)
+                    break
+                weight = endM - (begM if begM > begB else begB)
+                if weight < 0:
+                    break
+                tmp += weight * float(val)
+                line = fh.next()
+        except StopIteration:
+            mappability[crm].append(tmp / resolution)
+            break
+        mappability[crm].append(tmp / resolution)
+        crm = crmM
+        begB +=  resolution
+    return mappability
