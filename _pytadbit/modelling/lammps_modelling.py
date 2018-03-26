@@ -36,7 +36,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, 
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None,tmp_folder=None,timeout_job=10800):
+                       first=None, container=None,tmp_folder=None,timeout_job=10800,
+		       remove_rstrn=[]):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -123,7 +124,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     :param None tmp_folder: path to a temporary file created during
            the clustering computation. Default will be created in /tmp/ folder
-         
+    :param [] remove_rstrn: list of particles which must not have restrains     
 
     :returns: a StructuralModels object
 
@@ -164,7 +165,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
     
     HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution,zscores,
-                 chromosomes=coords, close_bins=close_bins,first=first)
+                 chromosomes=coords, close_bins=close_bins,first=first,
+		 remove_rstrn=remove_rstrn)
     
     
     run_time = 1000

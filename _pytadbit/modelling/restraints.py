@@ -63,11 +63,12 @@ class HiCBasedRestraints(object):
        neighbors (e.g. 1 means consecutive particles)
     :param None first: particle number at which model should start (0 should be
        used inside TADbit)
-
+    :param None remove_rstrn: list of particles which must not have restrains
 
     """
     def __init__(self, nloci, particle_radius,CONFIG,resolution,zscores,
-                 chromosomes, close_bins=1,first=None, min_seqdist=0):
+                 chromosomes, close_bins=1,first=None, min_seqdist=0,
+		 remove_rstrn=[]):
 
         self.particle_radius       = particle_radius
         self.nloci          = nloci
@@ -76,6 +77,7 @@ class HiCBasedRestraints(object):
         self.nnkforce       = CONFIG['kforce']
         self.min_seqdist     = min_seqdist
         self.chromosomes     = OrderedDict()
+	self.remove_rstrn    = remove_rstrn
         if chromosomes:
             if isinstance(chromosomes,dict):
                 self.chromosomes[chromosomes['crm']] = chromosomes['end'] - chromosomes['start'] + 1
@@ -139,10 +141,11 @@ class HiCBasedRestraints(object):
         # 4 - the equilibrium (or maximum or minimum respectively) distance associated to the restraint
     
         HiCbasedRestraints = []
-    
-        for i in range(self.nloci):
-            chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
-            for j in range(i+1,self.nloci):
+	nlocis = list(sorted(set(range(self.nloci)) - set(self.remove_rstrn)))
+
+	for ni, i in enumerate(nlocis):
+	    chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
+            for j in nlocis[ni+1:]:
                 chr2 = [k for k,v in self.chromosomes.items() if v > j][0]
                 # Compute the sequence separation (in particles) depending on it the restraint changes
                 seqdist = abs(j - i)          
