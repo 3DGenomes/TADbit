@@ -65,7 +65,7 @@ matrix W of size N:
 #===============================================================================
 
 import csv
-import subprocess
+from subprocess import Popen, PIPE
 from os import path
 
 from numpy import genfromtxt
@@ -136,7 +136,9 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     out_csv = path.join(tmp_dir,'biases.csv')
 
     proc_par.append(out_csv)
-    subprocess.call (proc_par)
+    proc = Popen(proc_par, stderr=PIPE)
+    err = proc.stderr.readlines()
+    print '\n'.join(err)
 
     biases_oneD = genfromtxt(out_csv, delimiter=',', dtype=float)
     #with open(out_csv, 'rb') as f:
