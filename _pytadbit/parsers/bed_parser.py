@@ -94,6 +94,23 @@ def parse_bed(fnam, resolution=1):
 
 
 def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
+    """
+    parse BEDgraph containing mappability.
+    GEM mappability file obtained with:
+
+        gem-indexer -i hg38.fa -o hg38
+        gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
+        gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
+        wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw
+        bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph
+
+    :param fnam: path to BED file with mappability
+    :param resolution: to bin the resulting dictionary
+    :param wanted_chrom: in case only one chromosome is needed
+
+    :returns: a dictionary with chromosomes as keys, with average mappability
+       per bin.
+    """
     fh = open(fname)
     line = fh.next()
     crmM, begM, endM, val = line.split()

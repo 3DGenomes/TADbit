@@ -135,6 +135,17 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
 
 
 def get_gc_content(genome, resolution, chromosomes=None, n_cpus=None, by_chrom=False):
+    """
+    Get GC content by bins of a given size. Ns are nottaken into account in the
+       calculation, only the number of Gs and Cs over As, Ts, Gs and Cs
+
+    :param genome: a TADbit parsed genome object
+    :param resolution:
+    :param None chromosomes: GC content only calculated over these chromosomes
+    :param None n_cpus: parallelize (can't parallelize more than the number of
+       chromosomes)
+    :param False by_chrom: if False returns a unique list for the full genome
+    """
     chromosomes = chromosomes if chromosomes else genome.keys()
     if not n_cpus:
         n_cpus = mu.cpu_count()
