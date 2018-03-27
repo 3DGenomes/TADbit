@@ -137,13 +137,13 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
                     if wanted_chrom:
                         raise StopIteration
                     break
-                begM = int(begM)
                 endM = int(endM)
                 if endM > endB:
-                    weight = endB - begM
+                    weight = endB - int(begM)
                     if weight >= 0:
                         tmp += weight * float(val)
                     break
+                begM = int(begM)
                 weight = endM - (begM if begM > begB else begB)
                 if weight < 0:
                     break
