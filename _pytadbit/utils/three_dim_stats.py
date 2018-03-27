@@ -75,13 +75,13 @@ def mass_center(x, y, z, zeros):
         x[i] -= xm
         y[i] -= ym
         z[i] -= zm
-    
+
 
 # def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
 #     """
 #     Returns list of 3d coordinates of points on a circle using the
 #     Rodrigues rotation formula.
-#    
+#
 #     see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*
 #     for details
 #
@@ -161,7 +161,7 @@ def generate_circle_points(x, y, z, u, v, w, n):
     """
     Returns list of 3d coordinates of points on a circle using the
     Rodrigues rotation formula.
-    
+
     see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*
     for details
 
@@ -208,7 +208,7 @@ def generate_circle_points(x, y, z, u, v, w, n):
 def square_distance(part1, part2):
     """
     Calculates the square distance between two particles.
-    
+
     :param part1: coordinate (dict format with x, y, z keys)
     :param part2: coordinate (dict format with x, y, z keys)
 
@@ -249,7 +249,7 @@ def distance(part1, part2):
 def angle_between_3_points(point1, point2, point3):
     """
     Calculates the angle between 3 particles
-    
+
     Given three particles A, B and C, the angle g (angle ACB, shown below):
 
     ::
@@ -280,7 +280,7 @@ def angle_between_3_points(point1, point2, point3):
     :param point3: list of 3 coordinate for x, y and z
 
     :returns: angle in radians
-    
+
     """
     a = distance(point2, point3)
     c = distance(point1, point2)
@@ -313,7 +313,7 @@ def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
     Calculates the RMSD, dRMSD, the number of equivalent positions and a score
     combining these three measures. The measure are done between a group of
     models in a one against all manner.
-    
+
     :param nloci: number of particles per model
     :param zeros: list of True/False representing particles to skip
     :param 200 dcutoff: distance in nanometer from which it is considered
@@ -329,13 +329,13 @@ def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
     :returns: a score of each pairwise comparison according to:
 
        .. math::
-                                     
+
          score_i = eqvs_i \\times \\frac{dRMSD_i / max(dRMSD)}
                                          {RMSD_i / max(RMSD)}
 
        where :math:`eqvs_i` is the number of equivalent position for the ith
        pairwise model comparison.
-       
+
     """
     what = what.lower()
     if not what in ['score', 'rmsd', 'drmsd', 'eqv']:
@@ -419,7 +419,7 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
         if i:
             modelx_1 = xis[i-1]
             modely_1 = yis[i-1]
-            modelz_1 = zis[i-1]            
+            modelz_1 = zis[i-1]
         point = [modelx, modely, modelz]
         points.append(point)
         # get minimum length from next particle to display the sphere dot

@@ -300,7 +300,7 @@ def run(opts):
                 gradient = dstack((gradient, gradient))[0]
                 h  = ax2.hist(data, color='darkgrey', linewidth=2,
                               orientation='horizontal',
-                              bins=50, histtype='step', normed=True)
+                              bins=50, histtype='step', density=True)
                 _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                                 extent=(0, max(h[0]), mindata, maxdata))
                 ax2.yaxis.tick_right()
