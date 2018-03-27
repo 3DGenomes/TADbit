@@ -91,7 +91,16 @@ def run(opts):
         # get mappability ~2 min
         printime('  - Parsing mappability')
         mappability = parse_mappability_bedGraph(
-            opts.mappability, opts.reso, wanted_chrom=None)
+            opts.mappability, opts.reso,
+            wanted_chrom=refs[0] if len(refs)==1 else None)
+        # resize chomosomes
+        for c in refs:
+            if not c in mappability:
+                mappability[c] = [float('nan')] * (len(refs) / opts.reso + 1)
+            if len(mappability[c]) < len(refs) / opts.reso + 1:
+                mappability[c] += [float('nan')] * (
+                    (len(refs) / opts.reso + 1) - len(mappability[c]))
+        # concatenates
         mappability = reduce(lambda x, y: x + y,
                              (mappability.get(c, []) for c in refs))
 
