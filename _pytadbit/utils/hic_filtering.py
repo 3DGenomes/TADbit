@@ -287,7 +287,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
     nwins = min((1000, size / 10))
     if nwins < 100:
         warn('WARNING: matrix probably too small to automatically filter out bins\n')
-    win_size = 0
+    win_size = 1
     prevn = 0
     count = 0
     # iterate over possible window sizes (use logspace to gain some time)
@@ -397,7 +397,11 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         else:
             passed = 0
     else:
-        raise Exception('ERROR: left cutoff not found!!!')
+        if min_perc is None:
+            raise Exception('ERROR: left cutoff not found!!!\n'
+                            '  define it by hand with min_perc')
+        else:
+            cutoffL = min_perc / 100. * size + consecutive
     cutoffL -= consecutive  # rescale, we asked for XX consecutive
 
     # right
@@ -413,7 +417,11 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         else:
             passed = 0
     else:
-        raise Exception('ERROR: right cutoff not found!!!')
+        if max_perc is None:
+            raise Exception('ERROR: right cutoff not found!!!\n'
+                            '  define it by hand with max_perc')
+        else:
+            cutoffR = max_perc / 100. * size - consecutive
     cutoffR += consecutive  # rescale, we asked for XX consecutive
 
     if min_perc:
@@ -442,17 +450,18 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         fig = plt.figure(figsize=(20,11))
         ax1 = fig.add_subplot(111)
         plt.subplots_adjust(left=0.25, bottom=0.2)
-        line1 = ax1.plot([float(cisprc.get(i, [0, 0])[0]) / cisprc.get(i, [1, 1])[1]
-                          for i in indices],
-                         '.', color='grey', alpha=0.2,
-                         label='cis interactions ratio by bin', zorder=1)
-        line2 = ax1.plot(range(0, len(indices), 20),
-                         [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
-                                                  for j in indices[k:k+win_size]) / win_size
-                                                      for k in xrange(0, len(indices), 20)],
-                         '.', color='k', alpha=0.3,
-                         label='cis interactions ratio by %d bin' % win_size,
-                         zorder=1)
+        line1 = ax1.plot(
+            [float(cisprc.get(i, [0, 0])[0]) / cisprc.get(i, [1, 1])[1]
+             for i in indices],
+            '.', color='grey', alpha=0.2,
+            label='cis interactions ratio by bin', zorder=1)
+        line2 = ax1.plot(
+            range(0, len(indices), 20),
+            [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
+                 for j in indices[k:k+win_size]) / win_size
+             for k in xrange(0, len(indices), 20)],
+            '.', color='k', alpha=0.3,
+            label='cis interactions ratio by %d bin' % win_size, zorder=1)
 
         for k, (p, n) in enumerate(zip(errors_pos[::size / 100], errors_neg[::size / 100])):
             ax1.vlines(k * (size / 100), (p + n) / 2, p, color='red', alpha=0.6)
