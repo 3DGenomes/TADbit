@@ -230,7 +230,9 @@ class StructuralModels(object):
                                          key=lambda x: x['objfun'])):
                 new_models[i] = m
             self.__models = new_models
-            # keep the same number of best models
+            # keep the same number of best models if best models were not all
+            if len(self._bad_models) == 0:
+                nbest = len(new_models) 
             self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,

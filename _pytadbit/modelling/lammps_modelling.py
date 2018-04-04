@@ -205,6 +205,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             'colvar_output': colvars,
             'binsize': resolution,
             'timesteps_per_k'           : timesteps_per_k,
+            'k_factor'                  : kfactor,
             'colvar_dump_freq'          : int(timesteps_per_k/100),
             'timesteps_relaxation'      : int(timesteps_per_k*10)
         }
@@ -1427,7 +1428,7 @@ harmonicWalls {
                     continue
                  
                 centre                 = cols_vals[5]
-                kappa                  = cols_vals[4]
+                kappa                  = cols_vals[4]*steering_pairs['k_factor']
                  
                 if cols_vals[3] == "Harmonic":
                     outf.write(colvars_tail % (name,name,centre,kappa))
