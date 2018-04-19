@@ -22,6 +22,7 @@ from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
 from scipy.stats                      import spearmanr, pearsonr, chisquare
+from scipy.stats                      import kendalltau
 from scipy.stats                      import linregress
 from scipy.stats                      import normaltest, norm as sc_norm
 from scipy.cluster.hierarchy          import linkage, fcluster
@@ -422,9 +423,9 @@ class StructuralModels(object):
                 solutions, key=lambda x: solutions[x]['score'])
                 if solutions[s]['score'] > 0][-1]['out']
             # sort clusters, the more populated, the first.
-            clusters = dict([(i + 1, j) for i, j in
-                             enumerate(sorted(clusters.values(),
-                                              key=len, reverse=True))])
+            clusters = dict((i + 1, j) for i, j in
+                            enumerate(sorted(clusters.values(),
+                                             key=len, reverse=True)))
             if external:
                 return clusters
             self.clusters = ClusterOfModels()
@@ -625,9 +626,9 @@ class StructuralModels(object):
         """
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
-        self.__models = dict([(i, tmp_models[i]) for i in xrange(nbest)])
-        self._bad_models = dict([(i, tmp_models[i]) for i in
-                                 xrange(nbest, len(tmp_models))])
+        self.__models = dict((i, tmp_models[i]) for i in xrange(nbest))
+        self._bad_models = dict((i, tmp_models[i]) for i in
+                                xrange(nbest, len(tmp_models)))
 
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
@@ -1697,6 +1698,8 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
+        elif corr == 'kendall':
+            corr = kendalltau(moddata, oridata)
         elif corr == 'logpearson':
             corr = pearsonr(nozero_log_list(moddata), nozero_log_list(oridata))
         elif corr == 'chi2':
@@ -2242,8 +2245,51 @@ class StructuralModels(object):
         self[model].objective_function(log=log, smooth=smooth, axe=axe,
                                        savefig=savefig)
 
+    def infer_unrestrained_particle_coords(self, xcoords, ycoords, zcoords):
+        """
+        if a given particle (and direct neighbors) have no restraints. Infer
+           the coordinates by linear interpolation using closest particles with
+           restraints.
+        :param xcoords: list of x coordinates
+        :param ycoords: list of y coordinates
+        :param zcoords: list of z coordinates
+
+        :transforms: three input lists corresponding to the x, y and z
+           coordinates of the FULL model
+        """
+        gaps = []
+        gap = 0
+        for pos in xrange(self.nloci):
+            if not self._zeros[pos]:
+                gap += 1
+            elif gap > 1:
+                if gap > 3:
+                    beg, end = pos - gap - 1, pos
+                    gaps.append((beg, end))
+                gap = 0
+            else:
+                gap = 0
+
+        for beg, end in gaps:
+            x1 = xcoords[beg]
+            y1 = ycoords[beg]
+            z1 = zcoords[beg]
+            x2 = xcoords[end]
+            y2 = ycoords[end]
+            z2 = zcoords[end]
+
+            div = end - beg - 1
+            xstep = (x2 - x1) / div
+            ystep = (y2 - y1) / div
+            zstep = (z2 - z1) / div
+            for pos, i in enumerate(range(beg + 1, end), 1):
+                xcoords[i] = x1 + xstep * pos
+                ycoords[i] = y1 + ystep * pos
+                zcoords[i] = z1 + zstep * pos
+
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
-                  color='index', rndname=True, **kwargs):
+                  color='index', rndname=True, infer_unrestrained=False,
+                  **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -2278,6 +2324,7 @@ class StructuralModels(object):
                Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
+
         """
         if model_num > -1:
             models = [model_num]
@@ -2297,7 +2344,7 @@ class StructuralModels(object):
                             model_num=model_num, **kwargs)
 
     def write_json(self, filename, color='index', models=None, cluster=None,
-                   title=None, **kwargs):
+                   title=None, infer_unrestrained=False, **kwargs):
         """
         Save a model in the json format, read by TADkit.
 
@@ -2329,6 +2376,10 @@ class StructuralModels(object):
                Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
+        :param False infer_unrestrained: infer unrestrained particle
+           coordinates by linear interpolation using closest particles with
+           restraints
+
         """
         if isinstance(color, str):
             if color == 'index':
@@ -2380,15 +2431,15 @@ class StructuralModels(object):
         fil['title']   = title or "Sample TADbit data"
         fil['scale']   = str(self._config['scale'])
         versions = get_dependencies_version(dico=True)
-        fil['dep'] = str(dict([(k.strip(), v.strip()) for k, v in versions.items()
-                               if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
+        fil['dep'] = str(dict((k.strip(), v.strip()) for k, v in versions.items()
+                              if k in ['  TADbit', 'IMP', 'MCL'])).replace("'", '"')
         ukw = 'UNKNOWN'
 
         def tocamel(key):
             key = ''.join([(w[0].upper() + w[1:]) if i else w
                            for i, w in enumerate(key.split('_'))])
-            key = ''.join([(w[0].upper() + w[1:]) if i else w
-                           for i, w in enumerate(key.split(' '))])
+            key = ''.join((w[0].upper() + w[1:]) if i else w
+                          for i, w in enumerate(key.split(' ')))
             return key
         try:
             try:
@@ -2417,19 +2468,19 @@ class StructuralModels(object):
             my_descr['chrom_start'] = my_descr['chrom_start'] if isinstance(my_descr['chrom_start'], list) else [my_descr['chrom_start']]
             my_descr['chrom_end'  ] = my_descr['chrom_end'  ] if isinstance(my_descr['chrom_end'], list) else [my_descr['chrom_end']]
 
-            fil['descr']   = ',\n'.join([
+            fil['descr']   = ',\n'.join(
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
                                             if not (isinstance(v, int) or
                                                     isinstance(v, list) or
                                                     isinstance(v, float))
                                             else str(v).replace("'", '"'))
-                for k, v in my_descr.items()])
+                for k, v in my_descr.items())
             if fil['descr']:
                 fil['descr'] += ','
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
-        
+
         if self.__models:
             aligned_coords = self.align_models(models=models, cluster=cluster)
         if models:
@@ -2442,36 +2493,43 @@ class StructuralModels(object):
         fil['xyz'] = []
         for m_idx in xrange(len(models)):
             m = models[m_idx]
-            model = {'rand_init':self[models[m_idx]]['rand_init'],'x':aligned_coords[m_idx][0],'y':aligned_coords[m_idx][1],'z':aligned_coords[m_idx][2]}
+            if infer_unrestrained:
+                self.infer_unrestrained_particle_coords(
+                    aligned_coords[m_idx][0],
+                    aligned_coords[m_idx][1],
+                    aligned_coords[m_idx][2])
+            model = {'rand_init': self[models[m_idx]]['rand_init'],
+                     'x': aligned_coords[m_idx][0],
+                     'y': aligned_coords[m_idx][1],
+                     'z': aligned_coords[m_idx][2]}
             fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % (
                 model['rand_init']) + ','.join(
-                    ['%.0f,%.0f,%.0f' % (model['x'][i],
-                                         model['y'][i],
-                                         model['z'][i])
-                     for i in xrange(len(model['x']))]) + ']}')
+                    '%.0f,%.0f,%.0f' % (model['x'][i], model['y'][i], model['z'][i])
+                    for i in xrange(len(model['x']))) + ']}')
         fil['xyz'] = ',\n'.join(fil['xyz'])
         # creates a UUID for this particular set of coordinates AND for TADbit version
         fil['sha'] = str(uuid5(UUID(md5(versions['  TADbit']).hexdigest()),
                                fil['xyz']))
         try:
-            fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
+            fil['restr']  = '[' + ','.join('[%s,%s,"%s",%f]' % (
                 k[0], k[1], self._restraints[k][0], self._restraints[k][2])
-                for k in self._restraints]) + ']'
+                for k in self._restraints) + ']'
         except:
             fil['restr'] = '[]'
-        fil['cluster'] = '[' + ','.join(['[' + ','.join(self.clusters[c]) + ']'
-                                         for c in self.clusters]) + ']'
+        fil['cluster'] = '[' + ','.join('[' + ','.join(self.clusters[c]) + ']'
+                                        for c in self.clusters) + ']'
         fil['centroid'] = '[' + ','.join(
             [self[self.centroid_model(cluster=c)]['rand_init']
              for c in self.clusters]) + ']'
         fil['len_hic_data'] = len(self._original_data)
         try:
-            fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']*self.resolution),
-                                    str(self.experiment.tads[tad]['end']*self.resolution),
-                                    str(self.experiment.tads[tad]['score'])])+']'
-                                       for i,tad in enumerate(self.experiment.tads)
-                                        if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0]
-                                            and self.experiment.tads[tad]['end']*self.resolution <= my_descr['chrom_end'][0]])
+            fil['tad_def'] = ','.join(
+                '[' + ','.join(str(i), str(self.experiment.tads[tad]['start'] * self.resolution),
+                               str(self.experiment.tads[tad]['end'] * self.resolution),
+                               str(self.experiment.tads[tad]['score'])) + ']'
+                for i,tad in enumerate(self.experiment.tads)
+                if self.experiment.tads[tad]['start'] * self.resolution >= my_descr['chrom_start'][0]
+                and self.experiment.tads[tad]['end'] * self.resolution <= my_descr['chrom_end'][0])
         except:
             fil['tad_def'] = ''
         out_f = open(filename, 'w')
@@ -2575,7 +2633,7 @@ class StructuralModels(object):
                                            get_path=get_path, rndname=rndname)
         if get_path:
             return path_f
-    
+
     def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
                                plot=True):
         """

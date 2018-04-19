@@ -18,7 +18,7 @@ def tad_breaker(tads, cluster, resolution, bins=20, show_plot=False,
     """
     Find out if TAD boundaries are breaking clusters of colocalizing
     (epi)genetic elements.
-    
+
     :param tads:
     :param cluster: cluster of elements
     :param title: for plotting
@@ -118,8 +118,8 @@ def main():
         cluster[i] = min(cluster[i]), max(cluster[i])
     tad_breaker(exp.tads, cluster, exp.resolution, show_plot=True, bins=5,
                 title='Proportion of HOX genes according to position in a TAD')
-    
-    
-    
+
+
+
 if __name__ == "__main__":
     exit(main())

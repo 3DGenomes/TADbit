@@ -298,9 +298,14 @@ def run(opts):
                 gradient = linspace(maxdata, mindata, max((len(matrix),
                                                            len(matrix[0]))))
                 gradient = dstack((gradient, gradient))[0]
-                h  = ax2.hist(data, color='darkgrey', linewidth=2,
-                              orientation='horizontal',
-                              bins=50, histtype='step', density=True)
+                try:
+                    h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                                  orientation='horizontal',
+                                  bins=50, histtype='step', density=True)
+                except AttributeError:  # older versions of matplotlib
+                    h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                                  orientation='horizontal',
+                                  bins=50, histtype='step')
                 _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                                 extent=(0, max(h[0]), mindata, maxdata))
                 ax2.yaxis.tick_right()

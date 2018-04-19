@@ -69,7 +69,6 @@ class IMPoptimizer(object):
         self.container      = container
         self.results = {}
 
-
     def run_grid_search(self,
                         scale_range=0.01,
                         kbending_range=0.0,  # TODO: Choose values of kbending that should be explored by default!!!
@@ -246,9 +245,8 @@ class IMPoptimizer(object):
                 ][0]
                 result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, k[-1])]
                 if verbose:
-                    verb = '  %-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s\n' % (
+                    verb = '  %-5s\t%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s\t' % (
                         'xx', scale, kbending, maxdist, lowfreq, upfreq, k[-1])
-
                     if verbose == 2:
                         stderr.write(verb + str(round(result, 4)) + '\n')
                     else:
@@ -289,7 +287,6 @@ class IMPoptimizer(object):
                         result = sub_result
                         cutoff = my_round(float(cut) / self.resolution / float(scale))
 
-
             except Exception, e:
                 print '  SKIPPING: %s' % e
                 result = 0
@@ -320,7 +317,6 @@ class IMPoptimizer(object):
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
         self.dcutoff_range.sort(key=float)
-
 
     def load_grid_search_OLD(self, filenames, corr='spearman', off_diag=1,
                          verbose=True, n_cpus=1):
@@ -373,7 +369,6 @@ class IMPoptimizer(object):
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
         self.dcutoff_range.sort(key=float)
-
 
     def load_grid_search(self, filenames, corr='spearman', off_diag=1,
                          verbose=True, n_cpus=1):
@@ -431,8 +426,6 @@ class IMPoptimizer(object):
 
         self.dcutoff_range.sort(key=float)
 
-
-
     def get_best_parameters_dict(self, reference=None, with_corr=False):
         """
         :param None reference: a description of the dataset optimized
@@ -474,7 +467,6 @@ class IMPoptimizer(object):
                          ('upfreq'   , float(best[0][4])),
                          ('dcutoff'  , float(best[0][5])),
                          ('reference', reference or ''), ('kforce', 5)))
-
 
     def plot_2d_OLD(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
                 show_best=0, skip=None, savefig=None,clim=None):
@@ -529,8 +521,6 @@ class IMPoptimizer(object):
                                      results), dcutoff=self.dcutoff_range, axes=axes, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
-
-
     def plot_3d_OLD(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):
         """
         A grid of heatmaps representing the result of the optimization.
@@ -547,8 +537,6 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.upfreq_range],
                                       [float(i) for i in self.lowfreq_range]),
                                      results), axes=axes)
-
-
 
     def _result_to_array_OLD(self):
         # This auxiliary method organizes the results of the grid optimization in a
@@ -575,8 +563,6 @@ class IMPoptimizer(object):
                         except KeyError:
                             results[w, x, y, z] = float('nan')
         return results
-
-
 
     def _result_to_array(self):
         # This auxiliary method organizes the results of the grid optimization in a
@@ -631,8 +617,6 @@ class IMPoptimizer(object):
         """
         return results
 
-
-
     def write_result(self, f_name):
         """
         This function writes a log file of all the values tested for each
@@ -674,7 +658,6 @@ class IMPoptimizer(object):
                 print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
                 continue
         out.close()
-
 
     def load_from_file_OLD(self, f_name):
         """
@@ -734,8 +717,6 @@ class IMPoptimizer(object):
         self.upfreq_range.sort(  key=float)
         self.dcutoff_range.sort( key=float)
 
-
-
     def load_from_file(self, f_name):
         """
         Loads the optimized parameters from a file generated with the function:
@@ -765,8 +746,8 @@ class IMPoptimizer(object):
             scale    = my_round(scale, val=5)
             kbending = my_round(kbending)
             maxdist  = my_round(maxdist)
-            lowfreq  = my_round(upfreq)
-            upfreq   = my_round(lowfreq)
+            lowfreq  = my_round(lowfreq)
+            upfreq   = my_round(upfreq)
             dcutoff  = my_round(dcutoff)
             self.results[(scale, kbending, maxdist, lowfreq, upfreq, dcutoff)] = float(result)
             if not scale in self.scale_range:
@@ -789,11 +770,9 @@ class IMPoptimizer(object):
         self.dcutoff_range.sort( key=float)
 
 
-
 def my_round(num, val=4):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
-
 
 
 def _mu_correlate(svd, corr, off_diag, scale, kbending, maxdist, lowfreq, upfreq,

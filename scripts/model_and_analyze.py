@@ -283,7 +283,6 @@ tmp.close()
         optpar, cc = results.get_best_parameters_dict(
             reference='Optimized for %s' % (name), with_corr=True)
 
-    print optpar
     sc = optpar['scale']
     md = optpar['maxdist']
     uf = optpar['upfreq']
