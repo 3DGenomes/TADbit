@@ -868,7 +868,7 @@ class Experiment(object):
               # and less that lowfreq will be include, whereas all the others will be rejected
               'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
-              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+              'lowfreq'   : -0.7, # OPTIMIZATION: min/max Z-score
 
               # How much space (radius in nm) ocupies a nucleotide
               'scale'     : 0.005
