@@ -98,21 +98,23 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None, **kwargs
     script_path = which('normalize_oneD.R')
     proc_par = ["Rscript", "--vanilla", script_path]
 
-    csvfile = open('tot.csv', 'w')
+    in_csv = path.join(tmp_dir, 'tot.csv')
+    proc_par.append(in_csv)
+
+    csvfile = open(in_csv, 'w')
     headers = sorted(kwargs.keys())
     csvfile.write(','.join(headers) + '\n')
     csvfile.write('\n'.join(','.join(str(kwargs[k][i]) for k in headers)
                             for i in xrange(len(kwargs['tot']))) + '\n')
     csvfile.close()
 
-    out_csv = path.join(tmp_dir,'biases.csv')
-
+    out_csv = path.join(tmp_dir, 'biases.csv')
     proc_par.append(out_csv)
 
     proc_par.append('"%s"' % (form))
 
     if p_fit:
-        proc_par.append(p_fit)
+        proc_par.append(str(p_fit))
 
     proc = Popen(proc_par, stderr=PIPE)
     err = proc.stderr.readlines()
