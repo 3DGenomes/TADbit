@@ -131,8 +131,10 @@ def run(opts):
         mreads, filter_exclude, opts.reso, min_count=opts.min_count, sigma=2,
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
-        cg_content=gc_content, n_rsites=n_rsites, min_perc=opts.min_perc, max_perc=opts.max_perc,
-        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs, extra_bads=opts.badcols)
+        p_fit=opts.p_fit, cg_content=gc_content, n_rsites=n_rsites,
+        min_perc=opts.min_perc, max_perc=opts.max_perc,
+        normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
+        extra_bads=opts.badcols)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
@@ -439,6 +441,12 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         normalization (can be used to weight experiments before
                         merging)''')
 
+    normpt.add_argument('--prop_data', dest='p_fit', metavar="FLOAT",
+                        action='store', default=None, type=float,
+                        help=('''[1] Only for oneD normalization: proportion of
+                        data to be used in fitting (for very large datasets).
+                        Number between 0 and 1.'''))
+
     bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float,
                         help=('[%(default)s%%] maximum percentage of zeroes '
@@ -643,7 +651,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
-             extra_out='', only_valid=False, normalize_only=False,
+             extra_out='', only_valid=False, normalize_only=False, p_fit=None,
              max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
@@ -785,7 +793,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             raise Exception('Error: not all arrays have the same size')
         tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
-        biases = oneD(tmp_dir=tmp_oneD, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
     else:

@@ -64,7 +64,6 @@ matrix W of size N:
 #     pass
 #===============================================================================
 
-import csv
 from subprocess import Popen, PIPE
 from os import path
 
@@ -73,7 +72,7 @@ from numpy import genfromtxt
 from pytadbit.utils.file_handling import which
 
 
-def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
+def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None, **kwargs):
     """
     Normalizes according to oneD normalization that takes into account the GC
     content, mappability and the number of restriction sites per bin.
@@ -83,6 +82,8 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
     bioRxiv. http://doi.org/10.1101/148254
 
     :param form: string representing an R Formulae
+    :param None p_fit: proportion of data to be used in fitting (for very
+       large datasets). Number between 0 and 1
     :param kwargs: dictionary with keys present in the formula and values being
        lists of equal length.
        for example:
@@ -91,61 +92,38 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', **kwargs):
                 res=[1,2,3...],
                 cg =[1,2,3...])
 
-
     :returns: list of biases to use to normalize the raw matrix of interactions
     """
-#===============================================================================
-#     try:
-#         form = robjects.Formula(form)
-#     except NameError:
-#         raise Exception('ERROR: dryhic (https://github.com/qenvio/dryhic) not '
-#                         'installed, OneD normalization not available')
-#
-#     info = robjects.DataFrame(dict((k, robjects.FloatVector(kwargs[k]))
-#                                    for k in kwargs))
-#
-#     return map(float64, dryhic.oned(info, form))
-#===============================================================================
+
     script_path = which('normalize_oneD.R')
     proc_par = ["Rscript", "--vanilla", script_path]
 
-    csvfile = path.join(tmp_dir,'tot.csv')
-    proc_par.append(csvfile)
-    with open(csvfile, "w") as output:
-        writer = csv.writer(output, lineterminator='\n')
-        writer.writerow(kwargs['tot'])
+    in_csv = path.join(tmp_dir, 'tot.csv')
+    proc_par.append(in_csv)
 
-    csvfile = path.join(tmp_dir,'map.csv')
-    proc_par.append(csvfile)
-    with open(csvfile, "w") as output:
-        writer = csv.writer(output, lineterminator='\n')
-        writer.writerow(kwargs['map'])
+    csvfile = open(in_csv, 'w')
+    headers = sorted(kwargs.keys())
+    csvfile.write(','.join(headers) + '\n')
+    csvfile.write('\n'.join(','.join(str(kwargs[k][i]) for k in headers)
+                            for i in xrange(len(kwargs['tot']))) + '\n')
+    csvfile.close()
 
-    csvfile = path.join(tmp_dir,'res.csv')
-    proc_par.append(csvfile)
-    with open(csvfile, "w") as output:
-        writer = csv.writer(output, lineterminator='\n')
-        writer.writerow(kwargs['res'])
-
-    csvfile = path.join(tmp_dir,'cg.csv')
-    proc_par.append(csvfile)
-    with open(csvfile, "w") as output:
-        writer = csv.writer(output, lineterminator='\n')
-        writer.writerow(kwargs['cg'])
-
-    out_csv = path.join(tmp_dir,'biases.csv')
-
+    out_csv = path.join(tmp_dir, 'biases.csv')
     proc_par.append(out_csv)
+
+    proc_par.append('"%s"' % (form))
+
+    if p_fit:
+        proc_par.append(str(p_fit))
+
     proc = Popen(proc_par, stderr=PIPE)
     err = proc.stderr.readlines()
     print '\n'.join(err)
 
     biases_oneD = genfromtxt(out_csv, delimiter=',', dtype=float)
-    #with open(out_csv, 'rb') as f:
-    #    reader = csv.reader(f)
-    #    biases_oneD = list(reader)
 
     return biases_oneD
+
 
 def _update_S(W):
     S = {}

@@ -3,22 +3,29 @@ simple BED and BEDgraph parser
 """
 
 from pytadbit.utils.file_handling import magic_open
+from pytadbit.utils.extraviews import nicer
+from os import path
+
 
 def _bed_float(line):
     crm, beg, end, _, val, _ =  line.split('\t', 5)
     return crm, int(beg), int(end), float(val)
 
+
 def _bed_one(line):
     crm, beg, end, _ =  line.split('\t', 3)
     return crm, int(beg), int(end), 1
+
 
 def _bedgraph_float(line):
     crm, beg, end, val =  line.split()
     return crm, int(beg), int(end), float(val)
 
+
 def _3_col(line):
     crm, beg, end =  line.split()
     return crm, int(beg), int(end), 1
+
 
 def _2_col(line):
     crm, beg =  line.split()
@@ -93,7 +100,8 @@ def parse_bed(fnam, resolution=1):
     return dico
 
 
-def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
+def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
+                               save_cache=True, reload_cache=False):
     """
     parse BEDgraph containing mappability.
     GEM mappability file obtained with:
@@ -107,10 +115,20 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
     :param fnam: path to BED file with mappability
     :param resolution: to bin the resulting dictionary
     :param wanted_chrom: in case only one chromosome is needed
+    :param True save_cache: save a cached version of this file for faster
+       loadings (depends on the resolution)
+    :param False reload_cache: reload cached genome
 
     :returns: a dictionary with chromosomes as keys, with average mappability
        per bin.
     """
+    tadbit_fname = fname + '_mappability_%s.TADbit' % (nicer(resolution, sep=''))
+    if path.exists(tadbit_fname) and not reload_cache:
+        def read_line(line):
+            crm, elements = line.split()
+            return crm, map(float, elements.split(','))
+        return dict(read_line(l) for l in open(tadbit_fname))
+
     fh = open(fname)
     line = fh.next()
     crmM, begM, endM, val = line.split()
@@ -155,4 +173,10 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None):
         mappability[crm].append(tmp / resolution)
         crm = crmM
         begB +=  resolution
+    print "     saving mappabilty to cache..."
+    if save_cache:
+        out = open(tadbit_fname, 'w')
+        for crm in mappability:
+            out.write(crm + '\t' + ','.join(map(str, mappability[crm])) + '\n')
+        out.close()
     return mappability
