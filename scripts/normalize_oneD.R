@@ -1,54 +1,45 @@
 #!/usr/bin/env Rscript
 
+# example usages:
+# $ Rscript --vanilla normalize_oneD.R input.csv
+# $ Rscript --vanilla normalize_oneD.R input.csv output.tsv  0.1
+# $ Rscript --vanilla normalize_oneD.R input.csv output.tsv
+# $ Rscript --vanilla normalize_oneD.R input.csv 0.1
+# $ Rscript --vanilla normalize_oneD.R input.csv output.tsv "tot ~ s(map) + s(cg)" 0.1
+
 library("dryhic")
 
+# parse arguments
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)<4) {
-  stop("At least four arguments must be supplied (tot,map,res,cg).n", call.=FALSE)
-} else if (length(args)==4) {
-  # default output file
-  args[5] = "oneD_biases.csv"
+if (length(args)<1) {
+  stop("At least two arguments must be supplied (tot,map,res,cg).n", call.=FALSE)
 }
 
-tot = read.csv(args[1], head=FALSE,sep=",")
-map = read.csv(args[2], head=FALSE,sep=",")
-res = read.csv(args[3], head=FALSE,sep=",")
-cg  = read.csv(args[4], head=FALSE,sep=",")
+output <- "oneD_biases.csv"
+p_fit <- NA
+form <- "tot ~ s(map) + s(cg) + s(res)"
 
-info = data.frame(t(tot),t(map),t(res),t(cg))
-colnames(info) = c("tot","map","res","cg")
+if (length(args) > 1){
+    for (i in seq(2, length(args), 1)) {
+        if (grepl("~", args[i])){
+            form <- args[i]
+        }else if(!suppressWarnings(is.na(as.numeric(args[i])))){
+            p_fit <- as.numeric(args[i])
+        }else{
+            output <- args[i]
+        }
+    }
+}
 
-info_oned <- oned(info)
+form <- as.formula(form)
 
-write.table(info_oned, file = args[5],row.names = FALSE,col.names = FALSE,sep = ',')
+# get data
+info <- read.csv(args[1],sep=",")
 
-# TODO: use directly the function:
-# Compute oned correction
-# #'
-# #' This function takes a \code{data.frame} with bin information and returns a vector of  biases to correct for
-# #' @importFrom mgcv gam
-# #' @importFrom mgcv negbin
-# #' @importFrom mgcv nb
-# #' @param dat A \code{data.frame} with one bin per row containing the total number of contacts and the potential biases as columns.
-# #' @param form A \code{formula} describing the  total number of contacts on LHS and the smoothed biases on the RHS (should be compatible with \code{\link{mgcv::gam}})
-# #' @return A vector of length \code{nrow(dat)} with the biases to correct for.
-# #' @details Please note that the biases returned are the squarerooted so one can directly apply \code{\link{correct_mat_from_b}}
-# #' @export
-# #' @examples
-# #' plot(0)
-#
-# oned <- function(dat, form = tot ~ s(map) + s(cg) + s(res)){
-#
-#     fit <- mgcv::gam(as.formula(form), data = dat, family = mgcv::nb())
-#
-#     out <- predict(fit, newdata = dat, type = "response")
-#
-#     i_na <- is.na(dat[, all.vars(form)[1]])
-#
-#     out[which(i_na)] <- NA
-#
-#     as.numeric(sqrt(out / mean(out, na.rm = T)))
-#
-# }
-#}
+# run oneD
+info_oned <- oned(info, form=form, p_fit=p_fit)
+
+# write results
+write.table(info_oned, file=output, row.names=FALSE,
+            col.names=FALSE, sep = ',')
