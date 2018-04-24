@@ -22,6 +22,7 @@ import copy
 from numpy import sin, cos, arccos, sqrt, fabs, asarray, pi, zeros
 from itertools import combinations, product
 from shutil import copyfile
+from __builtin__ import isinstance
 
 try:
     from pytadbit.modelling.imp_modelling import generate_3d_models
@@ -42,7 +43,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
                        initial_conformation=None, timesteps_per_k=10000,
-                       kfactor=1, adaptation_step=False, cleanup=False):
+                       kfactor=1, adaptation_step=False, cleanup=False,
+                       remove_rstrn=[]):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -128,14 +130,14 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
        used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     :param None tmp_folder: path to a temporary file created during
-           the clustering computation. Default will be created in /tmp/ folder
+        the clustering computation. Default will be created in /tmp/ folder
     :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
-            of lammps before is killed
+        of lammps before is killed
     :param True cleanup: delete lammps folder after completion
+    :param [] remove_rstrn: list of particles which must not have restrains
          
 
     :returns: a StructuralModels object
-
     """
     
     if not tmp_folder:
@@ -176,7 +178,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     #VERBOSE = 3
     
     HiCRestraints = [HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution, zs,
-                 chromosomes=coords, close_bins=close_bins,first=first) for zs in zscores]
+                 chromosomes=coords, close_bins=close_bins,first=first,
+                 remove_rstrn=remove_rstrn) for zs in zscores]
     
     run_time = 1000
     ini_seed = randint(1,100000)
@@ -217,12 +220,19 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     ini_conf = None
     ini_model = None
-    if(initial_conformation == 'tadbit'):
-        sm = generate_3d_models(zscores[0], resolution, nloci,
-              values=values[0], n_models=n_models, n_keep=1, n_cpus=1,
-              verbose=verbose, first=first, close_bins=close_bins, 
-              config=config, container=container,
-              coords=coords, zeros=zeros)
+    if initial_conformation != 'random':
+        if isinstance(initial_conformation, dict):
+            sm = [initial_conformation]
+            sm[0]['x'] = sm[0]['x'][0:nloci]
+            sm[0]['y'] = sm[0]['y'][0:nloci]
+            sm[0]['z'] = sm[0]['z'][0:nloci] 
+        elif initial_conformation == 'tadbit':
+            sm = generate_3d_models(zscores[0], resolution, nloci,
+                  values=values[0], n_models=n_models, n_keep=1, n_cpus=1,
+                  verbose=verbose, first=first, close_bins=close_bins, 
+                  config=config, container=container,
+                  coords=coords, zeros=zeros)
+            print "Succesfully generated tadbit initial conformation \n"
         sm_diameter = float(resolution * CONFIG.HiC['scale'])
         for i in xrange(len(sm[0]['x'])):
             sm[0]['x'][i] /= sm_diameter
@@ -234,8 +244,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             sm[0]['y'][i] -= cm0['y']
             sm[0]['z'][i] -= cm0['z']
         ini_model = sm[0].copy()
-            
-        print "Succesfully generated tadbit initial conformation \n"
+
         chromosome_particle_numbers = [int(x) for x in [len(LOCI)]]
         chromosome_particle_numbers.sort(key=int,reverse=True)
         ini_conf = '%sinitial_conformation.dat' % tmp_folder

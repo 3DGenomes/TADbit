@@ -909,6 +909,8 @@ class Experiment(object):
         :param tadbit initial_conformation: initial structure for lammps dynamics.
             'tadbit' to compute the initial conformation with montecarlo simulated annealing
             'random' to compute the initial conformation as a 3D random walk
+            {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
+                e.g an IMPModel or LAMMPSModel object
            
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
