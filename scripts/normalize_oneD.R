@@ -48,11 +48,8 @@ form <- as.formula(form)
 # get data
 info <- read.csv(args[1],sep=",")
 
-# initialize seed
-set.seed(seed)
-
 # run oneD
-info_oned <- oned(info, form=form, p_fit=p_fit)
+info_oned <- oned(info, form=form, p_fit=p_fit, seed=seed)
 
 # write results
 write.table(info_oned, file=output, row.names=FALSE,
