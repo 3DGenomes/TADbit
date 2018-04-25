@@ -72,7 +72,8 @@ from numpy import genfromtxt
 from pytadbit.utils.file_handling import which
 
 
-def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None, **kwargs):
+def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None, 
+         seed=1, **kwargs):
     """
     Normalizes according to oneD normalization that takes into account the GC
     content, mappability and the number of restriction sites per bin.
@@ -115,6 +116,9 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None, **kwargs
 
     if p_fit:
         proc_par.append(str(p_fit))
+
+    if seed > 1:
+        proc_par.append(str(seed))
 
     proc = Popen(proc_par, stderr=PIPE)
     err = proc.stderr.readlines()

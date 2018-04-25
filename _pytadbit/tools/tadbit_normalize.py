@@ -132,7 +132,7 @@ def run(opts):
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
         p_fit=opts.p_fit, cg_content=gc_content, n_rsites=n_rsites,
-        min_perc=opts.min_perc, max_perc=opts.max_perc,
+        min_perc=opts.min_perc, max_perc=opts.max_perc, seed=opts.seed,
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
         extra_bads=opts.badcols)
 
@@ -447,6 +447,12 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         data to be used in fitting (for very large datasets).
                         Number between 0 and 1.'''))
 
+    normpt.add_argument('--seed', dest='seed', metavar="INT",
+                        action='store', default=None, type=int,
+                        help=('''[1] Only for oneD normalization: seed number for 
+                        the randome picking of data when using the "prop_data" 
+                        parameter'''))
+
     bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float,
                         help=('[%(default)s%%] maximum percentage of zeroes '
@@ -650,7 +656,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
 
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
              normalization='Vanilla', mappability=None, n_rsites=None,
-             cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.',
+             cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
              max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
     bamfile = AlignmentFile(inbam, 'rb')
@@ -793,7 +799,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             raise Exception('Error: not all arrays have the same size')
         tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
-        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability, res=n_rsites, cg=cg_content)
+        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability, 
+                      res=n_rsites, cg=cg_content, seed=seed)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
     else:
