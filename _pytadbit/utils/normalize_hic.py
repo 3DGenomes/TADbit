@@ -120,7 +120,8 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None,
     if seed > 1:
         proc_par.append(str(seed))
     elif seed < 1:
-        raise Exception('ERROR: seed number should be an interger greater than 1 (because of R)')
+        raise Exception(('ERROR: seed number (currently: %d) should be an '
+                         'interger greater than 1 (because of R)') % (seed))
 
     proc = Popen(proc_par, stderr=PIPE)
     err = proc.stderr.readlines()

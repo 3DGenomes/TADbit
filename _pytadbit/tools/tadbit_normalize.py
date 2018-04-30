@@ -448,8 +448,8 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         Number between 0 and 1.'''))
 
     normpt.add_argument('--seed', dest='seed', metavar="INT",
-                        action='store', default=None, type=int,
-                        help=('''[1] Only for oneD normalization: seed number for 
+                        action='store', default=1, type=int,
+                        help=('''[%(default)s] Only for oneD normalization: seed number for 
                         the randome picking of data when using the "prop_data" 
                         parameter'''))
 
