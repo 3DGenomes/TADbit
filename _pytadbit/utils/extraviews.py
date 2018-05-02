@@ -788,7 +788,7 @@ def plot_2d_optimization_result(result,
             grid[cell].tick_params(axis='both', direction='out', top=False,
                                    right=False, left=False, bottom=False)
 
-            for j, best  in enumerate(sort_result[:-1]):
+            for j, best  in enumerate(sort_result[:-1], 1):
                 if best[1] == vax[row[0]] and best[2] == wax[row[1]] and best[3] == zax[column]:
                     #print j, best, vax[row[0]], wax[row[1]], zax[column]
                     grid[cell].text(xax.index(best[5]), yax.index(best[4]), str(j),
@@ -817,15 +817,15 @@ def plot_2d_optimization_result(result,
         # Define the rectangles for
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
-        grid[cell-1].text(len(xax)+.25, 0.0,
+        grid[cell-1].text(len(xax) + 0.4, len(yax) / 2.,
                           str(my_round(vax[row[0]], 3)) + '\n' +
                           str(my_round(wax[row[1]], 3)),
                           {'ha':'center', 'va':'center'},
                           rotation=90, size=8)
 
-    grid[cell-1].text(len(xax)+.25, len(yax)/2.-2.0,
+    grid[cell-1].text(len(xax) - 0.2, len(yax) + 1.2,
                       axes[0] + '\n' + axes[1],
-                      {'ha':'center', 'va':'center'},
+                      {'ha':'left', 'va':'center'},
                       rotation=90, size=8)
 
     #
