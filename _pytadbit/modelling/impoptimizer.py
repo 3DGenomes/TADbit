@@ -468,34 +468,8 @@ class IMPoptimizer(object):
                          ('dcutoff'  , float(best[0][5])),
                          ('reference', reference or ''), ('kforce', 5)))
 
-    def plot_2d_OLD(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                show_best=0, skip=None, savefig=None,clim=None):
-        """
-        A grid of heatmaps representing the result of the optimization.
-
-        :param 'scale','maxdist','upfreq','lowfreq' axes: list of axes to be
-           represented in the plot. The order will define which parameter will
-           be placed on the x, y, z or w axe.
-        :param 0 show_best: number of best correlation values to highlight in
-           the plot
-        :param None skip: if passed (as a dictionary), fix a given axe,
-           e.g.: {'scale': 0.001, 'maxdist': 500}
-        :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
-
-        """
-        results = self._result_to_array()
-        plot_2d_optimization_result((('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                     ([float(i) for i in self.scale_range],
-                                      [float(i) for i in self.maxdist_range],
-                                      [float(i) for i in self.upfreq_range],
-                                      [float(i) for i in self.lowfreq_range]),
-                                     results), axes=axes, dcutoff=self.dcutoff_range, show_best=show_best,
-                                    skip=skip, savefig=savefig,clim=clim)
-
     def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'),
-                show_best=0, skip=None, savefig=None,clim=None):
+                show_best=0, skip=None, savefig=None,clim=None, cmap='inferno'):
         """
         A grid of heatmaps representing the result of the optimization.
 
@@ -509,6 +483,8 @@ class IMPoptimizer(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param None clim: color scale. If None, the max and min values of the input are used.
+        :param inferno cmap: matplotlib colormap
         """
 
         results = self._result_to_array()
@@ -519,50 +495,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.lowfreq_range],
                                       [float(i) for i in self.upfreq_range]),
                                      results), dcutoff=self.dcutoff_range, axes=axes, show_best=show_best,
-                                    skip=skip, savefig=savefig,clim=clim)
-
-    def plot_3d_OLD(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):
-        """
-        A grid of heatmaps representing the result of the optimization.
-
-        :param 'scale','maxdist','upfreq','lowfreq' axes: tuple of axes to be
-           represented in the plot. The order will define which parameter will
-           be placed on the x, y, z or w axe.
-
-        """
-        results = self._result_to_array()
-        plot_3d_optimization_result((('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                     ([float(i) for i in self.scale_range],
-                                      [float(i) for i in self.maxdist_range],
-                                      [float(i) for i in self.upfreq_range],
-                                      [float(i) for i in self.lowfreq_range]),
-                                     results), axes=axes)
-
-    def _result_to_array_OLD(self):
-        # This auxiliary method organizes the results of the grid optimization in a
-        # Numerical array to be passed to the plot_2d_OLD and plot_3d functions above
-
-        results = np.empty((len(self.scale_range), len(self.maxdist_range),
-                            len(self.upfreq_range), len(self.lowfreq_range)))
-
-        for w, scale in enumerate(self.scale_range):
-            for x, maxdist in enumerate(self.maxdist_range):
-                for y, upfreq in enumerate(self.upfreq_range):
-                    for z, lowfreq in enumerate(self.lowfreq_range):
-                        try:
-                            cut = [c for c in self.dcutoff_range
-                                   if (scale, maxdist, upfreq, lowfreq, c)
-                                   in self.results][0]
-                        except IndexError:
-                            results[w, x, y, z] = float('nan')
-                            continue
-                        #
-                        try:
-                            results[w, x, y, z] = self.results[
-                                (scale, maxdist, upfreq, lowfreq, cut)]
-                        except KeyError:
-                            results[w, x, y, z] = float('nan')
-        return results
+                                    skip=skip, savefig=savefig,clim=clim, cmap=cmap)
 
     def _result_to_array(self):
         # This auxiliary method organizes the results of the grid optimization in a

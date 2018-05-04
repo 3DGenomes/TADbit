@@ -600,10 +600,10 @@ def my_round(num, val):
 
 
 def plot_2d_optimization_result(result,
-                                axes=('scale', 'kbending', 'maxdist', 'lowfreq',
-                                      'upfreq'),
-                                dcutoff=None,
-                                show_best=0, skip=None, savefig=None,clim=None):
+                                axes=('scale', 'kbending', 'maxdist',
+                                      'lowfreq', 'upfreq'), dcutoff=None,
+                                show_best=0, skip=None, savefig=None,
+                                clim=None, cmap='inferno'):
 
     """
     A grid of heatmaps representing the result of the optimization. In the optimization
@@ -628,12 +628,11 @@ def plot_2d_optimization_result(result,
        If None, the image will be displayed using matplotlib GUI. NOTE: the extension
        of the file name will automatically determine the desired format.
     :param None clim: color scale. If None, the max and min values of the input are used.
-
+    :param inferno cmap: matplotlib colormap
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
-    from matplotlib.cm import jet
 
     ori_axes, axes_range, result = result
 
@@ -691,7 +690,7 @@ def plot_2d_optimization_result(result,
     result = result.transpose(trans)
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
-    cmap = jet
+    cmap = plt.get_cmap(cmap)
     cmap.set_bad('w', 1.)
 
     # defines axes
