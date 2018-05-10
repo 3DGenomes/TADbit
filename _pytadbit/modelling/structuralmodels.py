@@ -2751,12 +2751,12 @@ class StructuralModels(object):
 
         return persistence_length[0]
 
-    def save_models(self, outfile, minimal=False):
+    def save_models(self, outfile, minimal=()):
         """
         Saves all the models in pickle format (python object written to disk).
 
         :param path_f: path where to save the pickle file
-        :param None minimal: list of items to exclude from save. Options:
+        :param () minimal: list of items to exclude from save. Options:
           - 'restraints': used for modeling common to all models
           - 'zscores': used generate restraints common to all models
           - 'original_data': used generate Z-scores common to all models
@@ -2768,11 +2768,11 @@ class StructuralModels(object):
         dump(self._reduce_models(minimal=minimal), out, HIGHEST_PROTOCOL)
         out.close()
 
-    def _reduce_models(self, minimal=None):
+    def _reduce_models(self, minimal=()):
         """
         reduce structural models objects to a dictionary to be saved
 
-        :param None minimal: list of items to exclude from save. Options:
+        :param () minimal: list of items to exclude from save. Options:
           - 'restraints': used for modeling common to all models
           - 'zscores': used generate restraints common to all models
           - 'original_data': used generate Z-scores common to all models
