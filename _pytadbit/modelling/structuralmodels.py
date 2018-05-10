@@ -180,6 +180,8 @@ class StructuralModels(object):
         """
         add new models to structural models
         """
+        if isinstance(models, StructuralModels):
+            models = models._StructuralModels__models + self._bad_models
         nbest = len(self.__models)
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)

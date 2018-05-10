@@ -36,6 +36,9 @@ A log file will be generated, repeating the message appearing on console, with
 line-specific flags allowing to identify from which step of the computation
 belongs the message.
 """
+import matplotlib
+matplotlib.use('Agg')
+
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
@@ -353,24 +356,30 @@ models =  generate_3d_models(zscores, opts.res, nloci,
                              values=values, n_models=opts.nmodels_mod,
                              n_keep=opts.nkeep_mod,
                              n_cpus=opts.ncpus,
-                             keep_all=True,
-                             first=%s, container=opts.container,
+                             keep_all=True, first=%s,  # seed
+                             container=opts.container,
                              config=optpar, coords=coords, zeros=zeros)
 # Save models
 models.save_models(
     os.path.join(opts.outdir, "%s", "%s" + "%s" + ".models"),
     minimal=%s)
 
-    ''' % (tmp_name, seed, name, name, ('_%d' % (seed)) if seed else ''),
-              'None' if seed==0 else '["restraints", "zscores", "original_data"]')
+    ''' % (tmp_name,
+           seed,
+           name,
+           name,
+           ('_sub-from-seed-%d' % (seed)) if seed else '',
+           'None' if seed==0 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
     os.system('rm -f _tmp_zscore_%s' % (tmp_name))
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
+    if seed != 0:
+        return None
     models = load_structuralmodels(
-        os.path.join(opts.outdir, name, name + '.models'))
+        os.path.join(opts.outdir, name, name + ('_sub-from-seed-%d' % (seed)) if seed else '' + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
@@ -497,17 +506,24 @@ def main():
         ########################################################################
         # function for loading models
         try:
+            logging.info("\tLoading StructuralModels")
             models = load_structuralmodels(
                 os.path.join(opts.outdir, name, name + '.models'))
         except IOError:
             pass
+        for fnam in os.listdir(os.path.join(opts.outdir, name)):
+            if fnam.endswith('.models') and '_sub-from-seed-' in fnam:
+                logging.info("\t  Loading extra StructuralModels from %s" % (fnam))
+                models._extend_models(load_structuralmodels(
+                    os.path.join(opts.outdir, name, fnam)))
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
-        models = model_region(exp, optpar, opts, name, opts.seed)
-        for line in repr(models).split('\n'):
-            logging.info(line)
+        models = model_region(exp, optpar, opts, name, seed=opts.seed)
+        if models:
+            for line in repr(models).split('\n'):
+                logging.info(line)
 
     if opts.seed:
         exit()
