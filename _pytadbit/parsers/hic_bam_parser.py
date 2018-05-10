@@ -171,7 +171,6 @@ def _map2sam_long(line, flag):
     return r1r2
 
 
-
 def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='samtools'):
     """
     function adapted from Enrique Vidal <enrique.vidal@crg.eu> scipt to convert

@@ -2749,29 +2749,38 @@ class StructuralModels(object):
 
         return persistence_length[0]
 
-    def save_models(self, outfile):
+    def save_models(self, outfile, minimal=False):
         """
         Saves all the models in pickle format (python object written to disk).
 
         :param path_f: path where to save the pickle file
+        :param None minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'log_objfun': generated during modeling model specific
+
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out, HIGHEST_PROTOCOL)
+        dump(self._reduce_models(minimal=minimal), out, HIGHEST_PROTOCOL)
         out.close()
 
-    def _reduce_models(self, minimal=False):
+    def _reduce_models(self, minimal=None):
         """
-        reduce strural models objects to a dictionary to be saved
+        reduce structural models objects to a dictionary to be saved
 
-        :param False minimal: do not save info about log_objfun decay nor
-           zscores
+        :param None minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'objfun': generated during modeling model specific
 
         :returns: this dictionary
         """
         to_save = {}
 
-        if minimal:
+        if 'objfun' in minimal:
             for m in self.__models:
                 self.__models[m]['log_objfun'] = None
             to_save['models']    = self.__models
@@ -2782,10 +2791,10 @@ class StructuralModels(object):
         to_save['nloci']         = self.nloci
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution
-        to_save['original_data'] = self._original_data
+        to_save['original_data'] = None if 'original_data' in minimal else self._original_data
         to_save['config']        = self._config
-        to_save['zscore']        = {} if minimal else self._zscores
-        to_save['restraints']    = {} if minimal else self._restraints
+        to_save['zscore']        = {} if 'zscores' in minimal else self._zscores
+        to_save['restraints']    = {} if 'restraints' in minimal else self._restraints
         to_save['zeros']         = self._zeros
 
         return to_save
@@ -2793,7 +2802,8 @@ class StructuralModels(object):
     def _get_models(self, models, cluster):
         """
         Internal function to transform cluster name, model name, or model list
-        into proper list of models processable by StructuralModels functions
+        into proper list of models that can be processed by StructuralModels
+        functions
         """
         if models:
             models = [m if isinstance(m, int) else self[m]['index']

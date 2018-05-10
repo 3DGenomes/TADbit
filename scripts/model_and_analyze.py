@@ -309,7 +309,7 @@ tmp.close()
                           # like this
     return optpar
 
-def model_region(exp, optpar, opts, name):
+def model_region(exp, optpar, opts, name, seed=0):
     """
     generate structural models
     """
@@ -354,13 +354,15 @@ models =  generate_3d_models(zscores, opts.res, nloci,
                              n_keep=opts.nkeep_mod,
                              n_cpus=opts.ncpus,
                              keep_all=True,
-                             first=0, container=opts.container,
+                             first=%s, container=opts.container,
                              config=optpar, coords=coords, zeros=zeros)
 # Save models
 models.save_models(
-    os.path.join(opts.outdir, "%s", "%s" + ".models"))
+    os.path.join(opts.outdir, "%s", "%s" + "%s" + ".models"),
+    minimal=%s)
 
-''' % (tmp_name, name, name))
+    ''' % (tmp_name, seed, name, name, ('_%d' % (seed)) if seed else ''),
+              'None' if seed==0 else '["restraints", "zscores", "original_data"]')
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
@@ -503,10 +505,12 @@ def main():
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
-        models = model_region(exp, optpar, opts, name)
+        models = model_region(exp, optpar, opts, name, opts.seed)
         for line in repr(models).split('\n'):
             logging.info(line)
 
+    if opts.seed:
+        exit()
 
     dcutoff = int(models._config['dcutoff'] *
                   models._config['scale']   *
@@ -894,6 +898,9 @@ def get_options():
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
+    modelo.add_argument('--seed', dest='seed', metavar="INT",
+                        default=0, type=int,
+                        help=('[%(default)s] seed number from which to start modeling'))
 
     #########################################
     # OPTIMIZATION
