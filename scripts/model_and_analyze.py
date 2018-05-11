@@ -379,8 +379,9 @@ models.save_models(
     if seed != 0:
         return None
     models = load_structuralmodels(
-        os.path.join(opts.outdir, name, name + ('_sub-from-seed-%d' % (seed))
-                     if seed else '' + '.models'))
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed else '') + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
