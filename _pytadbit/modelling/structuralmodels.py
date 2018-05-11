@@ -61,7 +61,7 @@ def R2_vs_L(L, P):
     <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
 
     with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
-    the genomic dstance in bp and :math:`c` the linear mass density of the
+    the genomic distance in bp and :math:`c` the linear mass density of the
     chromatin (in bp/nm).
 
     :returns: persistence length, or 2 times the Kuhn length
@@ -176,20 +176,35 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
-    def _extend_models(self, models):
+    def _extend_models(self, models, nbest=None, different_stage=False):
         """
-        add new models to structural models
+        Add new models to structural models to current StructuralModel.
+
+        :param models: list of StructuralModels or StructuralModels instance
+        :param None nbest: number of StructuralModels to be considered as
+           'good'
+        :param False different_stage: by default, only models with new unique
+           random initial numbers will be added. If added data corresponds to
+           a different stage (experiment, time points...) than random_init
+           numbers will extended with a specific hash.
         """
         if isinstance(models, StructuralModels):
             models = models._StructuralModels__models + self._bad_models
-        nbest = len(self.__models)
+        nbest = len(self.__models) if nbest is None else nbest
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
+        if different_stage:
+            # TODO David: remove version from sha, and replace it with time step
+            sha = str(uuid5(UUID(md5(
+                get_dependencies_version(dico=True)['  TADbit']).hexdigest()),
+                            models._restraints))[:8]
+            for m in models.keys():
+                models[m]['rand_init'] += '_%s' % (sha)
         ids = set(self.__models[m]['rand_init'] for m in self.__models)
         for m in models.keys():
             if models[m]['rand_init'] in ids:
                 warn('WARNING: found model with same random seed number, '
-                     'SKIPPPING')
+                     'SKIPPING')
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(models.values() + self.__models.values(),

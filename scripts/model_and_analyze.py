@@ -522,6 +522,7 @@ def main():
                 models._extend_models(load_structuralmodels(fpath))
                 files.append(fpath)
         if len(file) > 1:
+            models.define_best_models(opts.nkeep_mod)
             logging.info("\tSaving joined StructuralModels at %s" % (fnam))
             fpath = files[0]
             os.rename(fpath, fpath + '_tmp')
