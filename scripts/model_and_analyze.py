@@ -369,7 +369,7 @@ models.save_models(
            name,
            name,
            ('_sub-from-seed-%d' % (seed)) if seed else '',
-           'None' if seed==0 else '["restraints", "zscores", "original_data"]'))
+           '()' if seed==0 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
@@ -379,7 +379,8 @@ models.save_models(
     if seed != 0:
         return None
     models = load_structuralmodels(
-        os.path.join(opts.outdir, name, name + ('_sub-from-seed-%d' % (seed)) if seed else '' + '.models'))
+        os.path.join(opts.outdir, name, name + ('_sub-from-seed-%d' % (seed))
+                     if seed else '' + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
@@ -394,15 +395,16 @@ models.save_models(
               "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
               "end"  : int(opts.end*opts.res + opts.chrom_start)}
     crm = exp.crm
-    description = {'identifier'     : exp.identifier,
-                   'chromosome'     : coords['crm'],
-                   'start'          : coords['start'] if coords['start'] else None,
-                   'end'            : coords['end'] if coords['end'  ] else None,
-                   'species'        : crm.species,
-                   'cell type'      : exp.cell_type,
-                   'experiment type': exp.exp_type,
-                   'resolution'     : exp.resolution,
-                   'assembly'       : crm.assembly}
+    description = {
+        'identifier'     : exp.identifier,
+        'chromosome'     : coords['crm'],
+        'start'          : coords['start'] if coords['start'] else None,
+        'end'            : coords['end'] if coords['end'  ] else None,
+        'species'        : crm.species,
+        'cell type'      : exp.cell_type,
+        'experiment type': exp.exp_type,
+        'resolution'     : exp.resolution,
+        'assembly'       : crm.assembly}
     for key in opts.description:
         description[key] = opts.description[key]
     for desc in exp.description:
