@@ -507,17 +507,28 @@ def main():
     if opts.analyze_only:
         ########################################################################
         # function for loading models
+        files = []
         try:
             logging.info("\tLoading StructuralModels")
-            models = load_structuralmodels(
-                os.path.join(opts.outdir, name, name + '.models'))
+            fpath = os.path.join(opts.outdir, name, name + '.models')
+            models = load_structuralmodels(fpath)
+            files.append(fpath)
         except IOError:
             pass
         for fnam in os.listdir(os.path.join(opts.outdir, name)):
             if fnam.endswith('.models') and '_sub-from-seed-' in fnam:
-                logging.info("\t  Loading extra StructuralModels from %s" % (fnam))
-                models._extend_models(load_structuralmodels(
-                    os.path.join(opts.outdir, name, fnam)))
+                fpath = os.path.join(opts.outdir, name, fnam)
+                logging.info("\t  Grouping with extra StructuralModels from %s" % (fnam))
+                models._extend_models(load_structuralmodels(fpath))
+                files.append(fpath)
+        if len(file) > 1:
+            logging.info("\tSaving joined StructuralModels at %s" % (fnam))
+            fpath = files[0]
+            os.rename(fpath, fpath + '_tmp')
+            files[0] = fpath + '_tmp'
+            models.save_models(fpath, minimal=())
+            for fpath in files:
+                os.remove(fpath)
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
