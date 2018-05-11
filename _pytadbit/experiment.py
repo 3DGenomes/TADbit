@@ -833,7 +833,8 @@ class Experiment(object):
                      tool='imp',tmp_folder=None,timeout_job=10800,
                      stages=0, initial_conformation='tadbit',
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
-                     cleanup=True):
+                     cleanup=True, anchored_particles=None, use_HiC=True,
+                     start_seed=1):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -962,7 +963,10 @@ class Experiment(object):
                                       outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                       verbose=verbose, keep_all=keep_all, first=0,
                                       close_bins=close_bins, config=config, container=container,
-                                      experiment=self, coords=coords, zeros=zeros)
+                                      experiment=self, coords=coords, zeros=zeros, 
+                                      anchored_particles=anchored_particles,
+                                      initial_conformation=initial_conformation,
+                                      use_HiC=use_HiC, start=start_seed)
         elif tool=='lammps':
             return generate_lammps_models(zscores, self.resolution, nloci,
                                       values=values, n_models=n_models,
@@ -973,7 +977,8 @@ class Experiment(object):
                                       tmp_folder=tmp_folder,timeout_job=timeout_job,
                                       initial_conformation=initial_conformation,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor, 
-                                      adaptation_step=adaptation_step, cleanup=cleanup)
+                                      adaptation_step=adaptation_step, cleanup=cleanup,
+                                      use_HiC=use_HiC)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,

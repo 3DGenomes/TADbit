@@ -47,7 +47,7 @@ class IMPoptimizer(object):
     """
     def __init__(self, experiment, start, end, n_models=500,
                  n_keep=100, close_bins=1, container=None, tool='imp',
-                 tmp_folder=None, index=0):
+                 tmp_folder=None, index=0, anchored_particles=None):
 
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end, index=index)
@@ -92,6 +92,7 @@ class IMPoptimizer(object):
 
         self.tool = tool
         self.tmp_folder = tmp_folder
+        self.anchored_particles = anchored_particles
 
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
@@ -317,10 +318,11 @@ class IMPoptimizer(object):
                             n_keep=self.n_keep, config=config_tmp,
                             n_cpus=n_cpus, first=0,
                             values=self.values[i], container=self.container,
-                            coords = self.chromosomes,
+                            coords = self.coords,
                             close_bins=self.close_bins, zeros=self.zeros,
                             use_HiC=use_HiC, use_confining_environment=use_confining_environment,
-                            use_excluded_volume=use_excluded_volume)
+                            use_excluded_volume=use_excluded_volume,
+                            anchored_particles=self.anchored_particles)
                     elif self.tool=='lammps':
                         tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
                                           values=self.values, n_models=self.n_models,

@@ -553,7 +553,15 @@ class StructuralModel(dict):
                 'g=\"1\" b=\"1\" radius=\"' + str(self['radius']/10.) +
                 # str(self['radius']/2) +
                 '\"/>\n')
+        break_chroms = [1]
+        try:
+            for beg, end in zip(self['description']['start'],self['description']['end']):
+                break_chroms.append((end - beg)/self['description']['resolution']+break_chroms[-1])
+        except:
+            pass
         for i in xrange(1, len(self['x'])):
+            if i in break_chroms[1:]:
+                continue
             out += form % (i, i + 1)
         out += '</marker_set>\n'
 

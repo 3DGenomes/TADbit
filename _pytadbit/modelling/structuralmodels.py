@@ -1778,6 +1778,7 @@ class StructuralModels(object):
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         if contact_matrix:
+            all_original_data = [0]
             all_model_matrix = [contact_matrix]
         else:
             if dynamics:
@@ -1797,7 +1798,10 @@ class StructuralModels(object):
             if len(model_matrix) == 0:
                 correl[od] = 'Nan'
                 continue
-            original_data = self._original_data[od]
+            if dynamics:
+                original_data = self._original_data[od]
+            else:
+                original_data = self._original_data
             for i in xrange(len(original_data)):
                 for j in xrange(i + off_diag, len(original_data)):
                     if not model_matrix[i][j] > 0 or not original_data[i][j] > 0:
