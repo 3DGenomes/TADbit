@@ -192,7 +192,7 @@ class StructuralModels(object):
         """
         if isinstance(models, StructuralModels):
             stages = models.stages
-            models = models.__models
+            models = models._StructuralModels__models
         if not isinstance(models, dict):
             warn('ERROR: models has to be a StructuralModels object '
                      'or a dictionary')

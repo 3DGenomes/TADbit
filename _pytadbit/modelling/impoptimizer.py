@@ -118,8 +118,8 @@ class IMPoptimizer(object):
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
-                        use_excluded_volume=True,
-                        timeout_job=300):
+                        use_excluded_volume=True, kforce=5,
+                        ev_kforce=5, timeout_job=300):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -298,7 +298,8 @@ class IMPoptimizer(object):
                         print verb + str(round(result, 4))
                 continue
 
-            config_tmp = {'kforce'   : 5,
+            config_tmp = {'kforce'   : float(kforce),
+                          'ev_kforce': float(ev_kforce),
                           'scale'    : float(scale),
                           'kbending' : float(kbending),
                           #'lowrdist' : 1.0, # This parameters is fixed to XXX

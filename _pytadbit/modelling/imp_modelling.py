@@ -338,7 +338,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
     if use_excluded_volume:
         # print "\nEnforcing the excluded_volume_restraints"
         # This function is specific for IMP
-        excluded_volume_kforce = CONFIG['kforce']
+        excluded_volume_kforce = CONFIG['ev_kforce'] if 'ev_kforce' in CONFIG else CONFIG['kforce']
         evr = add_excluded_volume_restraint(model, model['particles'], excluded_volume_kforce)
 
     if verbose == 1:
