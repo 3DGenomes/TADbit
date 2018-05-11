@@ -189,22 +189,22 @@ class StructuralModels(object):
            numbers will extended with a specific hash.
         """
         if isinstance(models, StructuralModels):
-            models = models._StructuralModels__models + self._bad_models
+            models = models._StructuralModels__models
+            models.update(self._bad_models)
         nbest = len(self.__models) if nbest is None else nbest
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
         if different_stage:
-            # TODO David: remove version from sha, and replace it with time step
-            sha = str(uuid5(UUID(md5(
-                get_dependencies_version(dico=True)['  TADbit']).hexdigest()),
-                            models._restraints))[:8]
+            chars = list(lc) + map(str, range(10))
+            sha = ''.join(chars[int(random() * len(chars))] for _ in xrange(12))
             for m in models.keys():
                 models[m]['rand_init'] += '_%s' % (sha)
         ids = set(self.__models[m]['rand_init'] for m in self.__models)
         for m in models.keys():
             if models[m]['rand_init'] in ids:
-                warn('WARNING: found model with same random seed number, '
-                     'SKIPPING')
+                warn(('WARNING: model with seed: %s already here (use '
+                      'different_stage=True, to force extesion)\n  '
+                      'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(models.values() + self.__models.values(),

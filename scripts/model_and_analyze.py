@@ -312,7 +312,7 @@ tmp.close()
                           # like this
     return optpar
 
-def model_region(exp, optpar, opts, name, seed=0):
+def model_region(exp, optpar, opts, name, seed=1):
     """
     generate structural models
     """
@@ -356,7 +356,7 @@ models =  generate_3d_models(zscores, opts.res, nloci,
                              values=values, n_models=opts.nmodels_mod,
                              n_keep=opts.nkeep_mod,
                              n_cpus=opts.ncpus,
-                             keep_all=True, first=%s,  # seed
+                             keep_all=True, start=%s,  # seed
                              container=opts.container,
                              config=optpar, coords=coords, zeros=zeros)
 # Save models
@@ -369,14 +369,14 @@ models.save_models(
            name,
            name,
            ('_sub-from-seed-%d' % (seed)) if seed else '',
-           '()' if seed==0 else '["restraints", "zscores", "original_data"]'))
+           '()' if seed==1 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
     os.system('rm -f _tmp_zscore_%s' % (tmp_name))
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
-    if seed != 0:
+    if seed != 1:
         return None
     models = load_structuralmodels(
         os.path.join(opts.outdir, name,
@@ -462,7 +462,7 @@ def main():
             crm.add_experiment(exp)
         else:
             exp = crm.experiments[0]
-    
+
     if  not opts.tad_only and not opts.analyze_only and not opts.norm:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
@@ -522,7 +522,7 @@ def main():
                 logging.info("\t  Grouping with extra StructuralModels from %s" % (fnam))
                 models._extend_models(load_structuralmodels(fpath))
                 files.append(fpath)
-        if len(file) > 1:
+        if len(files) > 1:
             models.define_best_models(opts.nkeep_mod)
             logging.info("\tSaving joined StructuralModels at %s" % (fnam))
             fpath = files[0]
@@ -930,7 +930,7 @@ def get_options():
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
     modelo.add_argument('--seed', dest='seed', metavar="INT",
-                        default=0, type=int,
+                        default=1, type=int,
                         help=('[%(default)s] seed number from which to start modeling'))
 
     #########################################
