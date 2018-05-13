@@ -368,7 +368,7 @@ models.save_models(
            seed,
            name,
            name,
-           ('_sub-from-seed-%d' % (seed)) if seed else '',
+           ('_sub-from-seed-%d' % (seed)) if seed != 1 else '',
            '()' if seed==1 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
@@ -376,12 +376,10 @@ models.save_models(
     os.system('rm -f _tmp_zscore_%s' % (tmp_name))
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
-    if seed != 1:
-        return None
     models = load_structuralmodels(
         os.path.join(opts.outdir, name,
                      name + (('_sub-from-seed-%d' % (seed))
-                             if seed else '') + '.models'))
+                             if seed != 1 else '') + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
@@ -416,6 +414,13 @@ models.save_models(
         m['index'] = i
         m['description'] = description
     models.description = description
+    models.save_models(
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed != 1 else '') + '.models'),
+        minimal=() if seed==1 else ["restraints", "zscores", "original_data"])
+    if seed != 1:
+        return None
     return models
 
 
@@ -539,8 +544,8 @@ def main():
         if models:
             for line in repr(models).split('\n'):
                 logging.info(line)
-
-    if opts.seed:
+        logging.info('\tSaved models.')
+    if opts.seed != 1:
         exit()
 
     dcutoff = int(models._config['dcutoff'] *

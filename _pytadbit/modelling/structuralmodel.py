@@ -682,7 +682,7 @@ class StructuralModel(dict):
         fil['version'] = version
         fil['descr']   = ''.join('\n', ',\n'.join([
             '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, str) else v)
-            for k, v in self['description'].items()]), '\n')
+            for k, v in self.get('description', {}).items()]), '\n')
         fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
                                                          self['z'][i])
                                    for i in xrange(len(self['x']))])

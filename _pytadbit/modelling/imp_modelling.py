@@ -223,7 +223,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         for i, m in enumerate(models.values() + bad_models.values()):
             m['index'] = i
             m['description'] = description
-    except AttributeError: # case we are doing optimization
+    except AttributeError:  # case we are doing optimization
         description = None
         for i, m in enumerate(models.values() + bad_models.values()):
             m['index'] = i

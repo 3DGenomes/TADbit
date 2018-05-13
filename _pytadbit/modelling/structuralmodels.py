@@ -189,8 +189,8 @@ class StructuralModels(object):
            numbers will extended with a specific hash.
         """
         if isinstance(models, StructuralModels):
+            models.define_best_models(len(models) + len(models._bad_models))
             models = models._StructuralModels__models
-            models.update(self._bad_models)
         nbest = len(self.__models) if nbest is None else nbest
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
@@ -199,7 +199,7 @@ class StructuralModels(object):
             sha = ''.join(chars[int(random() * len(chars))] for _ in xrange(12))
             for m in models.keys():
                 models[m]['rand_init'] += '_%s' % (sha)
-        ids = set(self.__models[m]['rand_init'] for m in self.__models)
+        ids = set(self.__models[m]['rand_init'] for m in self.__models.keys())
         for m in models.keys():
             if models[m]['rand_init'] in ids:
                 warn(('WARNING: model with seed: %s already here (use '
@@ -643,6 +643,7 @@ class StructuralModels(object):
         """
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
+        nbest = min(len(tmp_models), nbest)
         self.__models = dict((i, tmp_models[i]) for i in xrange(nbest))
         self._bad_models = dict((i, tmp_models[i]) for i in
                                 xrange(nbest, len(tmp_models)))
