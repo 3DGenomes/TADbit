@@ -31,7 +31,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       anchored_particles=None, first=None, container=None, use_HiC=True,
+                       single_particle_restraints=None, first=None, container=None, use_HiC=True,
                        use_confining_environment=True, use_excluded_volume=True,
                        initial_conformation=None):
     """
@@ -177,7 +177,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, HiCRestraints,
         use_HiC=use_HiC, use_confining_environment=use_confining_environment, 
-        use_excluded_volume=use_excluded_volume, anchored_particles=anchored_particles,
+        use_excluded_volume=use_excluded_volume,
+        single_particle_restraints=single_particle_restraints,
         initial_conformation=initial_conformation)
 
     try:
@@ -223,7 +224,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestraints, use_HiC=True,
                                    use_confining_environment=True, use_excluded_volume=True,
-                                   anchored_particles=None, initial_conformation=None):
+                                   single_particle_restraints=None, initial_conformation=None):
     """
     Parallelize the
     :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
@@ -238,7 +239,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
                                            args=(rand_init, HiCRestraints, use_HiC,
                                                  use_confining_environment, use_excluded_volume,
-                                                 anchored_particles, initial_conformation))
+                                                 single_particle_restraints, initial_conformation))
 
     pool.close()
     pool.join()
@@ -261,7 +262,8 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
 
 
 def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_environment=True,
-                      use_excluded_volume=True, anchored_particles=None, initial_conformation=None):
+                      use_excluded_volume=True, single_particle_restraints=None,
+                      initial_conformation=None):
     """
     Generates one IMP model
 
@@ -319,12 +321,12 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
         add_bending_rigidity_restraint(model, theta0, bending_kforce)
 
     # Anchor particles to fixed points in the model
-    if anchored_particles:
-        for ap in anchored_particles:
-            ap['center'] = [c/(float(CONFIG['resolution'] * CONFIG['scale'])) for c in ap['center']]
-            ap['radius'] /= float(CONFIG['resolution'] * CONFIG['scale'])
+    if single_particle_restraints:
+        for ap in single_particle_restraints:
+            ap[1] = [c/(float(CONFIG['resolution'] * CONFIG['scale'])) for c in ap[1]]
+            ap[4] /= float(CONFIG['resolution'] * CONFIG['scale'])
         # This function is specific for IMP
-        add_anchored_restraints(model, anchored_particles)
+        add_single_particle_restraints(model, single_particle_restraints)
 
     # Separated function fot the HiC-based restraints
     if use_HiC:
@@ -429,8 +431,6 @@ def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints
         except:
             model['restraints'].add_restraint(brr) # 2.6.1 compat
 
-
-
 def add_confining_environment(model): #, restraints):
     model['container'] = CONFIG['container']
 
@@ -459,16 +459,32 @@ def add_confining_environment(model): #, restraints):
     # else:
     #     print "ERROR the shape",model['container']['shape'],"is currently not defined!"
 
-def add_anchored_restraints(model, anchored_particles):
+def add_single_particle_restraints(model, single_particle_restraints):
 
-    for restraint in anchored_particles:
+    for restraint in single_particle_restraints:
 
-        if int(restraint['particle']) >= len(LOCI):
+        if int(restraint[0]) >= len(LOCI):
             continue
-        p = model['particles'].get_particle(int(restraint['particle']))
-        ub = IMP.core.HarmonicUpperBound(restraint['radius'], restraint['kforce'])
-        ss = IMP.core.DistanceToSingletonScore(ub, IMP.algebra.Vector3D(restraint['center']))
-        ar = IMP.core.SingletonRestraint(model['model'], ss, p)
+
+        p1 = model['particles'].get_particle(int(restraint[0]))
+        pos = IMP.algebra.Vector3D(restraint[1])
+
+        kforce = float(restraint[3])
+        dist   = float(restraint[4])
+
+        if restraint[2]  == 'Harmonic':
+            rb = IMP.core.Harmonic(dist, kforce)
+        elif restraint[2] == 'HarmonicUpperBound':
+            rb = IMP.core.HarmonicUpperBound(dist, kforce)
+        elif restraint[2] == 'HarmonicLowerBound':
+            rb = IMP.core.HarmonicLowerBound(dist, kforce)
+        else:
+            print "ERROR: RestraintType",restraint[2],"does not exist!"
+            return
+
+        ss = IMP.core.DistanceToSingletonScore(rb, pos)
+        ar = IMP.core.SingletonRestraint(model['model'], ss, p1)
+        ar.set_name("%sSingleDistanceRestraint%s" % (restraint[2], restraint[0]))
         try:
             model['model'].add_restraint(ar)
         except:

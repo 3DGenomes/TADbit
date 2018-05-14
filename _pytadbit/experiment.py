@@ -833,7 +833,7 @@ class Experiment(object):
                      tool='imp',tmp_folder=None,timeout_job=10800,
                      stages=0, initial_conformation='tadbit',
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
-                     cleanup=True, anchored_particles=None, use_HiC=True,
+                     cleanup=True, single_particle_restraints=None, use_HiC=True,
                      start_seed=1):
         """
         Generates of three-dimensional models using IMP, for a given segment of
@@ -964,7 +964,7 @@ class Experiment(object):
                                       verbose=verbose, keep_all=keep_all, first=0,
                                       close_bins=close_bins, config=config, container=container,
                                       experiment=self, coords=coords, zeros=zeros, 
-                                      anchored_particles=anchored_particles,
+                                      single_particle_restraints=single_particle_restraints,
                                       initial_conformation=initial_conformation,
                                       use_HiC=use_HiC, start=start_seed)
         elif tool=='lammps':
