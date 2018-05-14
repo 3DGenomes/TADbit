@@ -229,6 +229,7 @@ class StructuralModels(object):
             for i, m in enumerate(sorted(models.values() + self.__models.values(),
                                          key=lambda x: x['objfun'])):
                 new_models[i] = m
+                new_models[i]['index'] = i
             self.__models = new_models
             # keep the same number of best models if best models were not all
             if len(self._bad_models) == 0:
