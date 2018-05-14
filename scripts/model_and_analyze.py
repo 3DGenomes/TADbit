@@ -36,6 +36,9 @@ A log file will be generated, repeating the message appearing on console, with
 line-specific flags allowing to identify from which step of the computation
 belongs the message.
 """
+import matplotlib
+matplotlib.use('Agg')
+
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
@@ -309,7 +312,7 @@ tmp.close()
                           # like this
     return optpar
 
-def model_region(exp, optpar, opts, name):
+def model_region(exp, optpar, opts, name, seed=1):
     """
     generate structural models
     """
@@ -353,14 +356,20 @@ models =  generate_3d_models(zscores, opts.res, nloci,
                              values=values, n_models=opts.nmodels_mod,
                              n_keep=opts.nkeep_mod,
                              n_cpus=opts.ncpus,
-                             keep_all=True,
-                             first=0, container=opts.container,
+                             keep_all=True, start=%s,  # seed
+                             container=opts.container,
                              config=optpar, coords=coords, zeros=zeros)
 # Save models
 models.save_models(
-    os.path.join(opts.outdir, "%s", "%s" + ".models"))
+    os.path.join(opts.outdir, "%s", "%s" + "%s" + ".models"),
+    minimal=%s)
 
-''' % (tmp_name, name, name))
+    ''' % (tmp_name,
+           seed,
+           name,
+           name,
+           ('_sub-from-seed-%d' % (seed)) if seed != 1 else '',
+           '()' if seed==1 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
@@ -368,7 +377,9 @@ models.save_models(
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
     models = load_structuralmodels(
-        os.path.join(opts.outdir, name, name + '.models'))
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed != 1 else '') + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
@@ -383,15 +394,16 @@ models.save_models(
               "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
               "end"  : int(opts.end*opts.res + opts.chrom_start)}
     crm = exp.crm
-    description = {'identifier'     : exp.identifier,
-                   'chromosome'     : coords['crm'],
-                   'start'          : coords['start'] if coords['start'] else None,
-                   'end'            : coords['end'] if coords['end'  ] else None,
-                   'species'        : crm.species,
-                   'cell type'      : exp.cell_type,
-                   'experiment type': exp.exp_type,
-                   'resolution'     : exp.resolution,
-                   'assembly'       : crm.assembly}
+    description = {
+        'identifier'     : exp.identifier,
+        'chromosome'     : coords['crm'],
+        'start'          : coords['start'] if coords['start'] else None,
+        'end'            : coords['end'] if coords['end'  ] else None,
+        'species'        : crm.species,
+        'cell type'      : exp.cell_type,
+        'experiment type': exp.exp_type,
+        'resolution'     : exp.resolution,
+        'assembly'       : crm.assembly}
     for key in opts.description:
         description[key] = opts.description[key]
     for desc in exp.description:
@@ -402,6 +414,13 @@ models.save_models(
         m['index'] = i
         m['description'] = description
     models.description = description
+    models.save_models(
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed != 1 else '') + '.models'),
+        minimal=() if seed==1 else ["restraints", "zscores", "original_data"])
+    if seed != 1:
+        return None
     return models
 
 
@@ -448,7 +467,7 @@ def main():
             crm.add_experiment(exp)
         else:
             exp = crm.experiments[0]
-    
+
     if  not opts.tad_only and not opts.analyze_only and not opts.norm:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
@@ -494,19 +513,40 @@ def main():
     if opts.analyze_only:
         ########################################################################
         # function for loading models
+        files = []
         try:
-            models = load_structuralmodels(
-                os.path.join(opts.outdir, name, name + '.models'))
+            logging.info("\tLoading StructuralModels")
+            fpath = os.path.join(opts.outdir, name, name + '.models')
+            models = load_structuralmodels(fpath)
+            files.append(fpath)
         except IOError:
             pass
+        for fnam in os.listdir(os.path.join(opts.outdir, name)):
+            if fnam.endswith('.models') and '_sub-from-seed-' in fnam:
+                fpath = os.path.join(opts.outdir, name, fnam)
+                logging.info("\t  Grouping with extra StructuralModels from %s" % (fnam))
+                models._extend_models(load_structuralmodels(fpath))
+                files.append(fpath)
+        if len(files) > 1:
+            models.define_best_models(opts.nkeep_mod)
+            logging.info("\tSaving joined StructuralModels at %s" % (fnam))
+            fpath = files[0]
+            os.rename(fpath, fpath + '_tmp')
+            files[0] = fpath + '_tmp'
+            models.save_models(fpath, minimal=())
+            for fpath in files:
+                os.remove(fpath)
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
-        models = model_region(exp, optpar, opts, name)
-        for line in repr(models).split('\n'):
-            logging.info(line)
-
+        models = model_region(exp, optpar, opts, name, seed=opts.seed)
+        if models:
+            for line in repr(models).split('\n'):
+                logging.info(line)
+        logging.info('\tSaved models.')
+    if opts.seed != 1:
+        exit()
 
     dcutoff = int(models._config['dcutoff'] *
                   models._config['scale']   *
@@ -894,6 +934,9 @@ def get_options():
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
+    modelo.add_argument('--seed', dest='seed', metavar="INT",
+                        default=1, type=int,
+                        help=('[%(default)s] seed number from which to start modeling'))
 
     #########################################
     # OPTIMIZATION

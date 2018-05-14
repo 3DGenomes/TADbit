@@ -92,7 +92,7 @@ def merge_2d_beds(path1, path2, outpath):
     fh2.close()
     out.close()
     return nreads
-    
+
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     Merges the two files corresponding to each reads sides. Reads found in both
@@ -119,8 +119,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
        the number of multiple contacts (keys of the dictionary being the number of
        fragment cought together, can be 3, 4, 5..)
     """
-    
-    # Get the headers of the two files 
+
+    # Get the headers of the two files
     reads1 = magic_open(fname1)
     line1 = reads1.next()
     header1 = ''
@@ -319,4 +319,3 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
     else:
         r1, r2, idx = _loc_reads(line1.strip().split('\t'), line2.strip().split('\t'))
         buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
-

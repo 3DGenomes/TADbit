@@ -61,7 +61,7 @@ def R2_vs_L(L, P):
     <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
 
     with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
-    the genomic dstance in bp and :math:`c` the linear mass density of the
+    the genomic distance in bp and :math:`c` the linear mass density of the
     chromatin (in bp/nm).
 
     :returns: persistence length, or 2 times the Kuhn length
@@ -176,23 +176,40 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
-    def _extend_models(self, models):
+    def _extend_models(self, models, nbest=None, different_stage=False):
         """
-        add new models to structural models
+        Add new models to structural models to current StructuralModel.
+
+        :param models: list of StructuralModels or StructuralModels instance
+        :param None nbest: number of StructuralModels to be considered as
+           'good'
+        :param False different_stage: by default, only models with new unique
+           random initial numbers will be added. If added data corresponds to
+           a different stage (experiment, time points...) than random_init
+           numbers will extended with a specific hash.
         """
-        nbest = len(self.__models)
+        if isinstance(models, StructuralModels):
+            models.define_best_models(len(models) + len(models._bad_models))
+            models = models._StructuralModels__models
+        nbest = len(self.__models) if nbest is None else nbest
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
-        ids = set(self.__models[m]['rand_init'] for m in self.__models)
+        if different_stage:
+            chars = list(lc) + map(str, range(10))
+            sha = ''.join(chars[int(random() * len(chars))] for _ in xrange(12))
+            for m in models.keys():
+                models[m]['rand_init'] += '_%s' % (sha)
+        ids = set(self.__models[m]['rand_init'] for m in self.__models.keys())
         for m in models.keys():
             if models[m]['rand_init'] in ids:
-                warn('WARNING: found model with same random seed number, '
-                     'SKIPPPING')
+                warn(('WARNING: model with seed: %s already here (use '
+                      'different_stage=True, to force extesion)\n  '
+                      'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(models.values() + self.__models.values(),
                                      key=lambda x: x['objfun'])):
-            new_models[i] = m
+            new_models[i]['index'] = new_models[i] = m
         self.__models = new_models
         # keep the same number of best models
         self.define_best_models(nbest)
@@ -626,6 +643,7 @@ class StructuralModels(object):
         """
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
+        nbest = min(len(tmp_models), nbest)
         self.__models = dict((i, tmp_models[i]) for i in xrange(nbest))
         self._bad_models = dict((i, tmp_models[i]) for i in
                                 xrange(nbest, len(tmp_models)))
@@ -2749,29 +2767,38 @@ class StructuralModels(object):
 
         return persistence_length[0]
 
-    def save_models(self, outfile):
+    def save_models(self, outfile, minimal=()):
         """
         Saves all the models in pickle format (python object written to disk).
 
         :param path_f: path where to save the pickle file
+        :param () minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'log_objfun': generated during modeling model specific
+
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out, HIGHEST_PROTOCOL)
+        dump(self._reduce_models(minimal=minimal), out, HIGHEST_PROTOCOL)
         out.close()
 
-    def _reduce_models(self, minimal=False):
+    def _reduce_models(self, minimal=()):
         """
-        reduce strural models objects to a dictionary to be saved
+        reduce structural models objects to a dictionary to be saved
 
-        :param False minimal: do not save info about log_objfun decay nor
-           zscores
+        :param () minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'objfun': generated during modeling model specific
 
         :returns: this dictionary
         """
         to_save = {}
 
-        if minimal:
+        if 'objfun' in minimal:
             for m in self.__models:
                 self.__models[m]['log_objfun'] = None
             to_save['models']    = self.__models
@@ -2782,10 +2809,10 @@ class StructuralModels(object):
         to_save['nloci']         = self.nloci
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution
-        to_save['original_data'] = self._original_data
+        to_save['original_data'] = None if 'original_data' in minimal else self._original_data
         to_save['config']        = self._config
-        to_save['zscore']        = {} if minimal else self._zscores
-        to_save['restraints']    = {} if minimal else self._restraints
+        to_save['zscore']        = {} if 'zscores' in minimal else self._zscores
+        to_save['restraints']    = {} if 'restraints' in minimal else self._restraints
         to_save['zeros']         = self._zeros
 
         return to_save
@@ -2793,7 +2820,8 @@ class StructuralModels(object):
     def _get_models(self, models, cluster):
         """
         Internal function to transform cluster name, model name, or model list
-        into proper list of models processable by StructuralModels functions
+        into proper list of models that can be processed by StructuralModels
+        functions
         """
         if models:
             models = [m if isinstance(m, int) else self[m]['index']

@@ -600,10 +600,10 @@ def my_round(num, val):
 
 
 def plot_2d_optimization_result(result,
-                                axes=('scale', 'kbending', 'maxdist', 'lowfreq',
-                                      'upfreq'),
-                                dcutoff=None,
-                                show_best=0, skip=None, savefig=None,clim=None):
+                                axes=('scale', 'kbending', 'maxdist',
+                                      'lowfreq', 'upfreq'), dcutoff=None,
+                                show_best=0, skip=None, savefig=None,
+                                clim=None, cmap='inferno'):
 
     """
     A grid of heatmaps representing the result of the optimization. In the optimization
@@ -628,12 +628,11 @@ def plot_2d_optimization_result(result,
        If None, the image will be displayed using matplotlib GUI. NOTE: the extension
        of the file name will automatically determine the desired format.
     :param None clim: color scale. If None, the max and min values of the input are used.
-
+    :param inferno cmap: matplotlib colormap
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
-    from matplotlib.cm import jet
 
     ori_axes, axes_range, result = result
 
@@ -691,7 +690,7 @@ def plot_2d_optimization_result(result,
     result = result.transpose(trans)
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
-    cmap = jet
+    cmap = plt.get_cmap(cmap)
     cmap.set_bad('w', 1.)
 
     # defines axes
@@ -788,7 +787,7 @@ def plot_2d_optimization_result(result,
             grid[cell].tick_params(axis='both', direction='out', top=False,
                                    right=False, left=False, bottom=False)
 
-            for j, best  in enumerate(sort_result[:-1]):
+            for j, best  in enumerate(sort_result[:-1], 1):
                 if best[1] == vax[row[0]] and best[2] == wax[row[1]] and best[3] == zax[column]:
                     #print j, best, vax[row[0]], wax[row[1]], zax[column]
                     grid[cell].text(xax.index(best[5]), yax.index(best[4]), str(j),
@@ -817,15 +816,15 @@ def plot_2d_optimization_result(result,
         # Define the rectangles for
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
-        grid[cell-1].text(len(xax)+.25, 0.0,
+        grid[cell-1].text(len(xax) + 0.4, len(yax) / 2.,
                           str(my_round(vax[row[0]], 3)) + '\n' +
                           str(my_round(wax[row[1]], 3)),
                           {'ha':'center', 'va':'center'},
                           rotation=90, size=8)
 
-    grid[cell-1].text(len(xax)+.25, len(yax)/2.-2.0,
+    grid[cell-1].text(len(xax) - 0.2, len(yax) + 1.2,
                       axes[0] + '\n' + axes[1],
-                      {'ha':'center', 'va':'center'},
+                      {'ha':'left', 'va':'center'},
                       rotation=90, size=8)
 
     #
