@@ -43,7 +43,8 @@ class IMPoptimizer(object):
        container = ['cylinder', 3000, 0, 50]
     """
     def __init__(self, experiment, start, end, n_models=500,
-                 n_keep=100, close_bins=1, container=None):
+                 n_keep=100, close_bins=1, container=None,
+                 single_particle_restraints=None):
 
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end)
@@ -55,7 +56,38 @@ class IMPoptimizer(object):
         self.n_models   = n_models
         self.n_keep     = n_keep
         self.close_bins = close_bins
+        self.chromosomes = None
+        if experiment.hic_data and experiment.hic_data[0].chromosomes:
+            self.chromosomes = experiment.hic_data[0].chromosomes
+            self.coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = 1
+            chrom_offset_end = 0
+            for k, v in experiment.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            for k in chrs:
+                self.coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : experiment.hic_data[0].chromosomes[k]})
+            self.coords[0]['start'] = chrom_offset_start
+            self.coords[-1]['end'] -= chrom_offset_end
 
+        else:
+            self.coords = {'crm'  : experiment.crm.name,
+                      'start': start,
+                      'end'  : end}
+
+        self.single_particle_restraints = single_particle_restraints
+        
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
         self.scale_range    = []
@@ -75,7 +107,7 @@ class IMPoptimizer(object):
                         maxdist_range=(400, 1500, 100),
                         lowfreq_range=(-1, 0, 0.1),
                         upfreq_range=(0, 1, 0.1),
-                        dcutoff_range=2,
+                        dcutoff_range=None,
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
@@ -215,7 +247,11 @@ class IMPoptimizer(object):
                                        self.upfreq_range)
         # dcutoff
         if not self.dcutoff_range:
-            self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
+            if dcutoff_arange is None or len(dcutoff_arange) == 0:
+                self.dcutoff_range = [int(2 * self.resolution * float(sc)) for sc in self.scale_range]
+                dcutoff_arange = self.dcutoff_range
+            else:
+                self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
         else:
             self.dcutoff_range = sorted([my_round(i) for i in dcutoff_arange
                                          if not my_round(i) in self.dcutoff_range] +
@@ -269,14 +305,16 @@ class IMPoptimizer(object):
                     n_keep=self.n_keep, config=config_tmp,
                     n_cpus=n_cpus, first=0,
                     values=self.values, container=self.container,
-                    close_bins=self.close_bins, zeros=self.zeros,
-                    use_HiC=use_HiC, use_confining_environment=use_confining_environment,
-                    use_excluded_volume=use_excluded_volume)
+                    coords = self.coords, close_bins=self.close_bins,
+                    zeros=self.zeros, use_HiC=use_HiC,
+                    use_confining_environment=use_confining_environment,
+                    use_excluded_volume=use_excluded_volume,
+                    single_particle_restraints=self.single_particle_restraints)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
-
+                
                 matrices = tdm.get_contact_matrix(
-                    cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
+                    cutoff=[int(i) for i in dcutoff_arange])
                 for m in matrices:
                     cut = int(m**0.5)
                     sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
@@ -523,8 +561,8 @@ class IMPoptimizer(object):
 
                             # Case in which there is more than 1 distance cutoff (dcutoff)
                             try:
-                                cut = [c for c in self.dcutoff_range
-                                       if (scale, kbending, maxdist, lowfreq, upfreq, c)
+                                cut = [int(c) for c in self.dcutoff_range
+                                       if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
                                        in self.results][0]
                             except IndexError:
                                 results[v, w, x, y, z] = float('nan')
