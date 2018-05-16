@@ -1745,7 +1745,10 @@ class StructuralModels(object):
         ax.set_ylabel('Particle')
         ax.set_xlabel('Particle')
         cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        oldlabels = cbar.ax.get_yticklabels()
+        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+        cbar.ax.set_yticklabels(newlabels)
+        # cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
         ax.set_title('Contact map')        # correlation
