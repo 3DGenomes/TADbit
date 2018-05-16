@@ -233,11 +233,13 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         dump((models, bad_models), out)
         out.close()
     else:
+        hicrestraints = HiCRestraints._get_restraints()
+        hicrestraints = dict((r,(hicrestraints[r][0],hicrestraints[r][1]*SCALE, hicrestraints[r][2])) 
+                             for r in hicrestraints)
         return StructuralModels(
             len(LOCI), models, bad_models, resolution, original_data=values,
             zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros,
-            restraints=HiCRestraints._get_restraints(),
-            description=description)
+            restraints=hicrestraints, description=description)
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestraints, use_HiC=True,
                                    use_confining_environment=True, use_excluded_volume=True,
