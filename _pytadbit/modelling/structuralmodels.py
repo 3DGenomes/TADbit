@@ -2508,13 +2508,15 @@ class StructuralModels(object):
             if 'chrom_start' not in my_descr:
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
-                         str([m for m in my_descr['start']])))
-                my_descr['chrom_start'] = [m for m in my_descr['start']]
+                         str([m for m in my_descr['start']]
+                             if isinstance(my_descr['start'], list) else my_descr['start'])))
+                my_descr['chrom_start'] = [m for m in my_descr['start']] if isinstance(my_descr['start'], list) else my_descr['start']
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
-                         str([m for m in my_descr['end']])))
-                my_descr['chrom_end'] = [m for m in my_descr['end']]
+                         str([m for m in my_descr['end']]
+                              if isinstance(my_descr['end'], list) else my_descr['end'])))
+                my_descr['chrom_end'] = [m for m in my_descr['end']] if isinstance(my_descr['end'], list) else my_descr['end']
             if not my_descr['species']:
                 warn("WARNING: species wasn't set, The resulting JSON will not work properly in TADkit.")
             # coordinates inside an array in case different models
