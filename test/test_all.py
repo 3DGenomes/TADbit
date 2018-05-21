@@ -467,7 +467,7 @@ class TestTadbit(unittest.TestCase):
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.01, 'kbending': 0.0,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
-        models.save_models('models.pick')
+        #models.save_models('models.pick')
 
         avg = models.average_model()
         nmd = len(models)
@@ -483,6 +483,15 @@ class TestTadbit(unittest.TestCase):
         model = min([(k, dev[(k, nmd)] )
                      for k in range(nmd)], key=lambda x: x[1])[0]
         self.assertEqual(centroid["rand_init"], models[model]["rand_init"])
+        
+        refmodels = load_structuralmodels(PATH + "/models.pick")
+        refrestraints = refmodels._restraints
+        refrestraints = dict((r,(refrestraints[r][0],round(refrestraints[r][1],2),
+                                 round(refrestraints[r][2],2))) for r in refrestraints)
+        restraints = models._restraints
+        restraints = dict((r,(restraints[r][0],round(restraints[r][1],2),
+                              round(restraints[r][2],2))) for r in restraints)
+        self.assertEqual(refrestraints,restraints)
         if CHKTIME:
             print "13", time() - t0
 
@@ -495,7 +504,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         if find_executable("mcl"):
             models.cluster_models(method="mcl", fact=0.9, verbose=False,
                                   dcutoff=200)
@@ -512,10 +521,10 @@ class TestTadbit(unittest.TestCase):
         # fetching models
         models.define_best_models(5)
         m = models.fetch_model_by_rand_init("1", all_models=True)
-        self.assertEqual(m, 6)
+        self.assertEqual(m, 8)
         models.define_best_models(25)
         m = models.fetch_model_by_rand_init("1", all_models=False)
-        self.assertEqual(m, 6)
+        self.assertEqual(m, 8)
         if CHKTIME:
             print "14", time() - t0
 
@@ -528,7 +537,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         models.cluster_models(method="ward", verbose=False)
         # density
         models.density_plot(savedata="lala", plot=False)
@@ -561,7 +570,7 @@ class TestTadbit(unittest.TestCase):
         lines = open("lala").readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/15, 0) for i in lines[1].split("\t")],
-                         [0, 2, 3, 3, 3])
+                         [0, 2, 2, 3, 4])
         self.assertEqual([round(float(i)/15, 0) for i in lines[15].split("\t")],
                          [1, 5, 6, 7, 7])
         # measure angle
@@ -570,14 +579,11 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.angle_between_3_particles(19,20,21), 0),
                          60)
         self.assertEqual(round(models.angle_between_3_particles(15,14,11)/5, 0),
-                         13)
-        # coordinates
-        self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
-                         [2098.32, 1565.63, -4319.62])
+                         14)
         # dihedral_angle
         self.assertTrue (round(models.dihedral_angle(2 ,  8, 15,  8, 16, [0])[0], 2), -13.44)
         self.assertEqual(round(models.dihedral_angle(15, 19, 20, 19, 21, [0])[0], 0),  76)
-        self.assertEqual(round(models.dihedral_angle(15, 14, 11, 14, 12, [0])[0], 2),   0.07)
+        self.assertEqual(round(models.dihedral_angle(15, 14, 11, 14, 12, [0])[0], 2),   2.07)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
                          15)
@@ -588,25 +594,25 @@ class TestTadbit(unittest.TestCase):
         # accessibility
         models.accessibility(radius=75, nump=10, plot=False, savedata="model.acc")
         vals = [l.split() for l in open("model.acc").readlines()[1:]]
-        self.assertEqual(vals[0][1:3], ["0.68", "0.933"])
+        self.assertEqual(vals[0][1:3], ["0.56", "0.993"])
         self.assertEqual(vals[20][1:3], ["1.0", "0.0"])
         # contact map
         models.contact_map(savedata="model.contacts")
         vals = [l.split() for l in open("model.contacts").readlines()[1:]]
         self.assertEqual(vals[0], ["0", "1", "1.0"])
-        self.assertEqual(vals[1], ["0", "2", "0.96"])
+        self.assertEqual(vals[1], ["0", "2", "0.72"])
         self.assertEqual(vals[192], ["14", "18", "0.12"])
         # interactions
         models.interactions(plot=False, savedata="model.inter")
         vals = [[float(i) for i in l.split()] for l in open("model.inter").readlines()[1:]]
-        self.assertEqual(vals[2], [3.0, 4.92, 1.12, 3.88, 0.65, 4.69, 0.82, 4.01, 0.62, 4.81, 0.5])
+        self.assertEqual(vals[2], [3.0, 4.68, 1.23, 3.78, 0.7, 4.65, 0.87, 3.92, 0.72, 4.74, 0.57])
         # walking angle
         models.walking_angle(savedata="model.walkang")
         vals = [[round(float(i), 2) if i != "None" else i for i in l.split()] for l in open("model.walkang").readlines()[1:]]
-        self.assertEqual(vals[17], [18.0, -45.42, 100.0, -14.14, 137.0],)
-        self.assertEqual(vals[3],  [4.0, 125.36, 273.0, 1.96, 253.0],)
-        self.assertEqual(vals[16], [17.0, -70.14, 200.0, -2.5, 84.0])
-        self.assertEqual(vals[15], [16.0, -134.88, 287.0, -20.48, 121.0])
+        self.assertEqual(vals[17], [18.0, -45.42, 100.0, -9.78, 135.0],)
+        self.assertEqual(vals[3],  [4.0, 124.97, 274.0, 2.05, 254.0],)
+        self.assertEqual(vals[16], [17.0, -62.84, 201.0, -3.2, 77.0])
+        self.assertEqual(vals[15], [16.0, -132.38, 286.0, -12.7, 124.0])
         # write cmm
         models.write_cmm(".", model_num=2)
         models.write_cmm(".", models=range(5))
@@ -632,7 +638,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         # write cmm
         models.write_cmm(".", model_num=2)
         model = load_impmodel_from_cmm("model.%s.cmm" % models[2]["rand_init"])
@@ -647,7 +653,7 @@ class TestTadbit(unittest.TestCase):
         self.assertTrue(21 <= round((model.shortest_axe() +
                                      model.longest_axe()) / 100,
                                     0) <= 22)
-        self.assertEqual([11, 15, 16], model.inaccessible_particles(1000))
+        self.assertEqual([15, 16], model.inaccessible_particles(1000))
 
         acc, num, acc_area, tot_area, bypt = model.accessible_surface(
             150, superradius=200, nump=150)
@@ -767,8 +773,8 @@ class TestTadbit(unittest.TestCase):
         a, b = insert_sizes("lala-map~")
         self.assertEqual([int(a),int(b)], [43, 1033])
 
-        hic_data1 = read_matrix("20Kb/chrT/chrT_A.tsv", resolution=20000)
-        hic_data2 = read_matrix("20Kb/chrT/chrT_B.tsv", resolution=20000)
+        hic_data1 = read_matrix(PATH + "/20Kb/chrT/chrT_A.tsv", resolution=20000)
+        hic_data2 = read_matrix(PATH + "/20Kb/chrT/chrT_B.tsv", resolution=20000)
 
         corr = correlate_matrices(hic_data1, hic_data2)
         corr =  [round(i,3) for i in corr[0]]
