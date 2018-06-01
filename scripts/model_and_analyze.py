@@ -178,7 +178,7 @@ def load_optimal_imp_parameters(opts, name, exp):
     return results
 
 
-def optimize(results, opts, name):
+def optimize(results, opts, name, no_load=False):
     """
     Optimize IMP parameters
     """
@@ -493,17 +493,40 @@ def main():
     #######################  LOAD OPTIMAL IMP PARAMETERS #######################
     ############################################################################
 
-    if not opts.analyze_only:
+    if not opts.analyze_only and not opts.model_only:
         results = load_optimal_imp_parameters(opts, name, exp)
 
     ############################################################################
     #########################  OPTIMIZE IMP PARAMETERS #########################
     ############################################################################
 
-    if not opts.analyze_only:
+    if not opts.analyze_only and not opts.model_only:
         optpar = optimize(results, opts, name)
         if opts.optimize_only:
             exit()
+    elif opts.model_only:
+        scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
+                   if ':' in opts.scale   else float(opts.scale)  )
+        maxdist = (tuple([int(i) for i in opts.maxdist.split(':')])
+                   if ':' in opts.maxdist else int(opts.maxdist))
+        upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
+                   if ':' in opts.upfreq  else float(opts.upfreq) )
+        lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
+                   if ':' in opts.lowfreq else float(opts.lowfreq))
+        dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
+                   if ':' in opts.dcutoff else float(opts.dcutoff))
+        try:
+            optpar = {}
+            optpar['scale'    ] = float(scale)
+            optpar['kbending' ] = 0.0
+            optpar['maxdist'  ] = int(maxdist)
+            optpar['upfreq'   ] = float(upfreq)
+            optpar['lowfreq'  ] = float(lowfreq)
+            optpar['dcutoff'  ] = float(dcutoff)
+            optpar['reference'] = 'Optimized for %s' % (name)
+        except TypeError:
+            raise Exception(('ERROR: to skip optimization you should input '
+                             'single values for parameters, not ranges'))
 
     ############################################################################
     ##############################  MODEL REGION ###############################
@@ -540,6 +563,7 @@ def main():
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
+        print optpar
         models = model_region(exp, optpar, opts, name, seed=opts.seed)
         if models:
             for line in repr(models).split('\n'):
@@ -848,6 +872,9 @@ def get_options():
     parser.add_argument('--optimize_only', dest='optimize_only', default=False,
                         action='store_true',
                         help='do the optimization of the region and exit')
+    parser.add_argument('--model_only', dest='model_only', default=False,
+                        action='store_true',
+                        help='skip optimization, model with inputparameters only.')
     parser.add_argument('--tad_only', dest='tad_only', action="store_true",
                         default=False,
                         help='[%(default)s] exit after searching for TADs')
