@@ -365,7 +365,7 @@ class StructuralModels(object):
 
     def cluster_models(self, fact=0.75, dcutoff=None, method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                       mclargs=None, external=False, what='score'):
+                       mclargs=None, external=False, what='score', region=None):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison. The result will be stored in
@@ -404,13 +404,46 @@ class StructuralModels(object):
            storing it as StructuralModels.clusters
         :param 'score' what: Statistic used for clustering. Can be one of
            'score', 'rmsd', 'drmsd' or 'eqv'.
+        :param None region: coordinates of the region to base the clustering. 
+            Can be either one chromosome name, or the coordinate in
+            the form: "chr3:110000000-120000000"
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
-        scores = calc_eqv_rmsd(self.__models, self.nloci, self._zeros, dcutoff,
+        crm = None
+        beg = 0
+        end = self.nloci
+        if region:
+            if ':' in region:
+                crm, pos = region.split(':') 
+                beg, end = map(int, pos.split('-'))
+            else:
+                crm = region
+                end = None
+            try:
+                my_descr = dict(self.description)
+            except TypeError:
+                raise Exception('ERROR: chromosome not in StructuralModels\n')
+
+            chrom_start = 0
+            if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list):
+                if crm not in my_descr['chromosome']:
+                    raise Exception('ERROR: chromosome not in StructuralModels\n')
+                chrom_start += sum([(n-m) for i,(m,n) in enumerate(zip(my_descr['start'],my_descr['end'])) 
+                                    if i < my_descr['chromosome'].index(crm)])
+            else:
+                if my_descr.get('chromosome', 'Chromosome') != crm:
+                    raise Exception('ERROR: chromosome not in StructuralModels\n')
+                
+            if not end:
+                end = my_descr['end'][my_descr['chromosome'].index(crm)]  
+            beg = int(float(beg + chrom_start) / self.resolution)
+            end = int(float(end + chrom_start) / self.resolution)
+        nloci = end - beg
+        scores = calc_eqv_rmsd(self.__models, beg, end, self._zeros, dcutoff,
                                what=what, normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
@@ -425,7 +458,7 @@ class StructuralModels(object):
             matrix = [[0.0 for _ in xrange(len(self))]
                       for _ in xrange(len(self))]
             for (i, j), score in scores.iteritems():
-                matrix[i][j] = score if score > fact * self.nloci else 0.0
+                matrix[i][j] = score if score > fact * nloci else 0.0
             clust = linkage(matrix, method='ward')
             # score each possible cut in hierarchical clustering
             solutions = {}
@@ -456,7 +489,7 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
-            cut = fact * (self.nloci - self._zeros.count(False))
+            cut = fact * (nloci - self._zeros[beg:end].count(False))
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
                 if score >= cut:
@@ -517,6 +550,7 @@ class StructuralModels(object):
                         # the first one found is the best :)
                         break
                 matrix[i][j + i + 1] = calc_eqv_rmsd({0: md1, 1: md2},
+                                                     0,
                                                      self.nloci,
                                                      self._zeros, one=True)
         return clust_count, objfun, matrix
@@ -2477,22 +2511,27 @@ class StructuralModels(object):
             if 'chrom_start' not in my_descr:
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
-                         str(my_descr['start'])))
-                my_descr['chrom_start'] = my_descr['start']
+                         str([m for m in my_descr['start']]
+                             if isinstance(my_descr['start'], list) else my_descr['start'])))
+                my_descr['chrom_start'] = [m for m in my_descr['start']] if isinstance(my_descr['start'], list) else my_descr['start']
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix (%s)" % (
-                         str(my_descr['end'])))
-                my_descr['chrom_end'] = (my_descr['end'])
+                         str([m for m in my_descr['end']]
+                              if isinstance(my_descr['end'], list) else my_descr['end'])))
+                my_descr['chrom_end'] = [m for m in my_descr['end']] if isinstance(my_descr['end'], list) else my_descr['end']
+            if not my_descr['species']:
+                warn("WARNING: species wasn't set, The resulting JSON will not work properly in TADkit.")
             # coordinates inside an array in case different models
             # from different places in the genome
-            my_descr['chrom_start'] = my_descr['chrom_start'] if isinstance(my_descr['chrom_start'], list) else [my_descr['chrom_start']]
-            my_descr['chrom_end'  ] = my_descr['chrom_end'  ] if isinstance(my_descr['chrom_end'], list) else [my_descr['chrom_end']]
+            if not isinstance(my_descr['chrom_start'],list):
+                my_descr['chrom_start'] = [my_descr['chrom_start']]
+                my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
 
             fil['descr']   = ',\n'.join(
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
-                                            if not (isinstance(v, int) or
+                                            if not ((isinstance(v, int) and not isinstance(v, bool)) or
                                                     isinstance(v, list) or
                                                     isinstance(v, float))
                                             else str(v).replace("'", '"'))

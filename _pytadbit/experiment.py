@@ -808,8 +808,8 @@ class Experiment(object):
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG,
-                     container=None):
+                     outfile=None, config=CONFIG, container=None,
+                     single_particle_restraints=None, use_HiC=True):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -874,6 +874,17 @@ class Experiment(object):
               'scale'     : 0.005
               }
 
+        :param True use_HiC: apply hic data restraints to the model
+        :param: None single_particle_restraints: a list containing restraints to single particles.
+            Each restraint in the list is itself a list with the following information:
+                [bin, [position_x, position_y, position_z], type, kforce, radius]
+                bin: bin number of the particle to restraint
+                [position_x, position_y, position_z](nm): center of the sphere of the restraint.
+                    The center of the coordinate system is the center of the base of the
+                    cylinder defined as the container.
+                type: 'Harmonic', 'HarmonicLowerBound', 'HarmonicUpperBound'
+                kforce: weigth of the restraint
+                radius (nm): radius of the sphere
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
@@ -883,9 +894,32 @@ class Experiment(object):
         if not end:
             end = self.size
         zscores, values, zeros = self._sub_experiment_zscore(start, end)
-        coords = {'crm'  : self.crm.name,
-                  'start': start,
-                  'end'  : end}
+        if self.hic_data and self.hic_data[0].chromosomes:
+            coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = 1
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            for k in chrs:
+                coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : self.hic_data[0].chromosomes[k]})
+            coords[0]['start'] = chrom_offset_start
+            coords[-1]['end'] -= chrom_offset_end
+        else:
+            coords = {'crm'  : self.crm.name,
+                      'start': start,
+                      'end'  : end}
         zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         nloci = end - start + 1
         if verbose:
@@ -895,11 +929,13 @@ class Experiment(object):
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                   verbose=verbose, keep_all=keep_all, first=0,
                                   close_bins=close_bins, config=config, container=container,
-                                  experiment=self, coords=coords, zeros=zeros)
-
+                                  experiment=self, coords=coords, zeros=zeros,
+                                  single_particle_restraints=single_particle_restraints,
+                                  use_HiC=use_HiC)
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
+                               kbending_range=0.0,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
                                maxdist_range=(400, 1400, 100),
@@ -975,6 +1011,7 @@ class Experiment(object):
                                  n_models=n_models, close_bins=close_bins,
                                  container=container)
         optimizer.run_grid_search(maxdist_range=maxdist_range,
+                                  kbending_range=kbending_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range,

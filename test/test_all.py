@@ -467,7 +467,7 @@ class TestTadbit(unittest.TestCase):
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.01, 'kbending': 0.0,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
-        models.save_models('models.pick')
+        #models.save_models('models.pick')
 
         avg = models.average_model()
         nmd = len(models)
@@ -483,6 +483,15 @@ class TestTadbit(unittest.TestCase):
         model = min([(k, dev[(k, nmd)] )
                      for k in range(nmd)], key=lambda x: x[1])[0]
         self.assertEqual(centroid["rand_init"], models[model]["rand_init"])
+        
+        refmodels = load_structuralmodels(PATH + "/models.pick")
+        refrestraints = refmodels._restraints
+        refrestraints = dict((r,(refrestraints[r][0],round(refrestraints[r][1],2),
+                                 round(refrestraints[r][2],2))) for r in refrestraints)
+        restraints = models._restraints
+        restraints = dict((r,(restraints[r][0],round(restraints[r][1],2),
+                              round(restraints[r][2],2))) for r in restraints)
+        self.assertEqual(refrestraints,restraints)
         if CHKTIME:
             print "13", time() - t0
 
@@ -495,7 +504,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         if find_executable("mcl"):
             models.cluster_models(method="mcl", fact=0.9, verbose=False,
                                   dcutoff=200)
@@ -528,7 +537,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         models.cluster_models(method="ward", verbose=False)
         # density
         models.density_plot(savedata="lala", plot=False)
@@ -566,14 +575,11 @@ class TestTadbit(unittest.TestCase):
                          [1, 5, 6, 7, 7])
         # measure angle
         self.assertTrue(13 <= round(models.angle_between_3_particles(2,8,15)/10,
-                                    0) <= 13)
+                                    0) <= 14)
         self.assertEqual(round(models.angle_between_3_particles(19,20,21), 0),
                          60)
         self.assertEqual(round(models.angle_between_3_particles(15,14,11)/5, 0),
                          14)
-        # coordinates
-        self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
-                         [3199.84, 4361.61, -4695.41])
         # dihedral_angle
         self.assertTrue (round(models.dihedral_angle(2 ,  8, 15,  8, 16, [0])[0], 2), -13.44)
         self.assertEqual(round(models.dihedral_angle(15, 19, 20, 19, 21, [0])[0], 0),  76)
@@ -632,7 +638,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels("models.pick")
+        models = load_structuralmodels(PATH + "/models.pick")
         # write cmm
         models.write_cmm(".", model_num=2)
         model = load_impmodel_from_cmm("model.%s.cmm" % models[2]["rand_init"])
@@ -767,8 +773,8 @@ class TestTadbit(unittest.TestCase):
         a, b = insert_sizes("lala-map~")
         self.assertEqual([int(a),int(b)], [43, 1033])
 
-        hic_data1 = read_matrix("20Kb/chrT/chrT_A.tsv", resolution=20000)
-        hic_data2 = read_matrix("20Kb/chrT/chrT_B.tsv", resolution=20000)
+        hic_data1 = read_matrix(PATH + "/20Kb/chrT/chrT_A.tsv", resolution=20000)
+        hic_data2 = read_matrix(PATH + "/20Kb/chrT/chrT_B.tsv", resolution=20000)
 
         corr = correlate_matrices(hic_data1, hic_data2)
         corr =  [round(i,3) for i in corr[0]]
