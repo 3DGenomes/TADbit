@@ -34,14 +34,15 @@ before_script:
   - python --version
 
 # command to run tests, e.g. python setup.py test
-script: cd test; coverage run --source=pytadbit test_all.py; coverage report
+script: cd test; coverage run --source=pytadbit test_all.py
 
 # after_success:
-#    coveralls
+coveralls
 
 branches:
   only:
     - master
+    - dev
 
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
