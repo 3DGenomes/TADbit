@@ -455,13 +455,18 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
-        if not opts.force:
-            if 'tmpdb' in opts and opts.tmpdb:
-                remove(path.join(dbdir, dbfile))
-            exit('WARNING: exact same job already computed, see JOBs table above')
-        else:
-            warn('WARNING: exact same job already computed, overwritting...')
+    try:
+        if already_run(opts):
+            if not opts.force:
+                if 'tmpdb' in opts and opts.tmpdb:
+                    remove(path.join(dbdir, dbfile))
+                    exit('WARNING: exact same job already computed, see JOBs table above')
+            else:
+                warn('WARNING: exact same job already computed, overwritting...')
+    except IOError:
+        warn((""
+              "\nWARNING:\n  new working directory created. It's ok... "
+              "but next time use TADbit from the beginning!! :)"))
 
 
 def populate_args(parser):

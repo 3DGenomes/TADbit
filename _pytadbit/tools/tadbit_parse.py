@@ -306,7 +306,7 @@ def populate_args(parser):
                         help='In case only one of the reads needs to be parsed')
 
     glopts.add_argument('--filter_chrom', dest='filter_chrom',
-                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$",
+                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?(_dna)?$",
                         help='[%(default)s] regexp to consider only chromosome names passing')
 
     glopts.add_argument('--skip', dest='skip', action='store_true',
@@ -328,7 +328,7 @@ def populate_args(parser):
                         type=str,
                         help='''paths to file(s) with FASTA files of the
                         reference genome. If many, files will be concatenated.
-                        I.e.: --fasta chr_1.fa chr_2.fa
+                        I.e.: --genome chr_1.fa chr_2.fa
                         In this last case, order is important or the rest of the
                         analysis. Note: it can also be the path to a previously
                         parsed genome in pickle format.''')
