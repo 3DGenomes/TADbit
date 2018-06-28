@@ -360,14 +360,14 @@ def _header_to_section(header, resolution):
             if '-' in h[1]:
                 a, b = map(int, h[1].split('-'))
                 if resolution==1:
-                    resolution = abs(b - a)
-                elif resolution != abs(b - a):
+                    resolution = abs(b - a) + 1
+                elif resolution != abs(b - a) + 1:
                     raise Exception('ERROR: found different resolution, ' +
                                     'check headers')
             else:
                 a = int(h[1])
                 if resolution==1 and i:
-                    resolution = abs(a - b)
+                    resolution = abs(a - b) + 1
                 elif resolution == 1:
                     b = a
             sections[(h[0], a / resolution)] = i
