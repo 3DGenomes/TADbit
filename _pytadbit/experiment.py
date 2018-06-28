@@ -972,8 +972,8 @@ class Experiment(object):
         :param [0.01] scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
-        :param None dcutoff_range: upper and lower bounds used to search for
-           the optimal distance cutoff parameter (distance, in nm,
+        :param [2] dcutoff_range: upper and lower bounds used to search for
+           the optimal distance cutoff parameter (distance, in number of beads,
            from which to consider 2 beads as being close). The last value of the
            input tuple is the incremental step for scale parameter values
         :param None container: restrains particle to be within a given object. Can
