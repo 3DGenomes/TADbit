@@ -529,7 +529,7 @@ class HiC_data(dict):
                                                for k in self.bads.keys()
                                                if start1 <= k <= end1])))
         rownam = ['%s\t%d-%d' % (k[0],
-                                 k[1] * self.resolution,
+                                 k[1] * self.resolution + 1,
                                  (k[1] + 1) * self.resolution)
                   for k in sorted(self.sections,
                                   key=lambda x: self.sections[x])
