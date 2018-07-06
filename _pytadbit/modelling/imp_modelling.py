@@ -301,7 +301,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
              'model'      : Model(),
              'particles'  : None,
              'restraints' : None} # 2.6.1 compat
-    model['particles'] = ListSingletonContainer(
+    model['particles'] = ListSingletonContainer(model['model'],
         IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/SCALE))  # last number is box size
 
     try:
