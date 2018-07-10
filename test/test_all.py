@@ -483,7 +483,7 @@ class TestTadbit(unittest.TestCase):
         model = min([(k, dev[(k, nmd)] )
                      for k in range(nmd)], key=lambda x: x[1])[0]
         self.assertEqual(centroid["rand_init"], models[model]["rand_init"])
-        
+
         refmodels = load_structuralmodels(PATH + "/models.pick")
         refrestraints = refmodels._restraints
         refrestraints = dict((r,(refrestraints[r][0],round(refrestraints[r][1],2),
@@ -702,11 +702,11 @@ class TestTadbit(unittest.TestCase):
             if 13436 == int(random()*100000):
                 same_seed = True
                 genome = generate_random_ali(ali)
-                genome_bis = parse_fasta("test.fa~", verbose=False)
+                genome_bis = parse_fasta("test.fa~", verbose=False, save_cache=False)
                 self.assertEqual(genome, genome_bis)
             else:
                 same_seed = False
-                genome = parse_fasta("test.fa~")
+                genome = parse_fasta("test.fa~", save_cache=False)
             # PARSE SAM
             if ali == "map":
                 from pytadbit.parsers.map_parser import parse_map as parser
