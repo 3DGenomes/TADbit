@@ -3,6 +3,11 @@ sudo: false
 
 python:
   - 2.7
+  - 3.6
+
+matrix:
+  allow_failures:
+    - python: 3.6
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 
@@ -10,9 +15,9 @@ install:
     # We do this conditionally because it saves us some downloading if the
     # version is the same.
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+        wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
       else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
       fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
@@ -28,10 +33,15 @@ install:
     - yes | python setup.py install
     - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
     - conda install -y -q -c https://conda.anaconda.org/salilab imp
-    - pip install coveralls
+    - pip install coveralls flake8
 
 before_script:
   - python --version
+  # stop the build if there are Python syntax errors or undefined names
+  - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
+  - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
 
 # command to run tests, e.g. python setup.py test
 script: cd test; coverage run --source=pytadbit test_all.py; coverage report
