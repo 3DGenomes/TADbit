@@ -11,7 +11,7 @@ from sys                                  import exc_info, stdout
 from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile, rmtree
-from collections                          import OrderedDict
+from collections                          import OrderedDict, defaultdict
 from cPickle                              import dump, load
 from traceback                            import print_exc
 from multiprocessing                      import cpu_count
@@ -21,7 +21,7 @@ import time
 
 from pysam                                import AlignmentFile
 from numpy                                import nanmean, isnan, nansum, seterr
-
+import math
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling         import mkdir
@@ -134,7 +134,7 @@ def run(opts):
         p_fit=opts.p_fit, cg_content=gc_content, n_rsites=n_rsites,
         min_perc=opts.min_perc, max_perc=opts.max_perc, seed=opts.seed,
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
-        extra_bads=opts.badcols)
+        extra_bads=opts.badcols, biases_path=opts.biases_path)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
@@ -156,6 +156,7 @@ def run(opts):
 
     printime('  - Saving biases and badcol columns')
     # biases
+        
     bias_file = path.join(outdir, 'biases_%s_%s.pickle' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
     out = open(bias_file, 'w')
@@ -410,9 +411,11 @@ def populate_args(parser):
 
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='Vanilla', type=str,
-                        choices=['Vanilla', 'oneD'],
+                        choices=['Vanilla', 'oneD', 'custom'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
+    normpt.add_argument('--biases_path',dest='biases_path',type=str, default=None, 
+                        help='biases file to compute decay. Require format of one column with header')
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
@@ -469,6 +472,7 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         action='store', default=None, type=float,
                         help=('''[%(default)s] lower percentile from which
                         consider bins as good.'''))
+
 
     bfiltr.add_argument('--max_perc', dest='max_perc', metavar="INT",
                         action='store', default=None, type=float,
@@ -654,7 +658,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
-def read_bam(inbam, filter_exclude, resolution, min_count=2500,
+def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
@@ -746,8 +750,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     elif min_count is None and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
-            size=total, savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
-                nicer(resolution).replace(' ', ''), extra_out)))
+            size=total, savefig=None)
     else:
         print ('      -> too few interactions defined as less than %9d '
                'interactions') % (min_count)
@@ -803,10 +806,32 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                       res=n_rsites, cg=cg_content, seed=seed)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
+    elif normalization=='custom':
+        n_pos = 0
+        biases = {}
+        print 'Using provided biases...'
+        with open(biases_path, 'r') as r:
+            r.next()
+            for line in r:
+                if line[0] == 'N':
+                    #b = float('nan')
+                    badcol[n_pos] = 0
+                    biases[n_pos] = float('nan')
+                else:
+                    b = float(line)
+                    if b == 0:
+                        badcol[n_pos] = 0
+                        biases[n_pos] = float('nan')
+                    else:
+                        biases[n_pos] = b
+                n_pos += 1
+        for add in range(max(biases.keys()), total + 1):
+            biases[add] = float('nan')
+        
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
-
+        
     # collect subset-matrices and write genomic one
     # out = open(os.path.join(outdir,
     #                         'hicdata_%s.abc' % (nicer(resolution).replace(' ', ''))), 'w')
@@ -827,7 +852,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
-
+    
     if not normalize_only:
         printime('  - Computing Cis percentage')
         # Calculate Cis percentage
