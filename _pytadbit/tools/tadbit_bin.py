@@ -563,7 +563,7 @@ def populate_args(parser):
     pltopt.add_argument('--zrange', dest='zrange', action='store',
                         default=None,
                         help='''Range, in log2 scale of the color scale.
-                        i.e.: --zrange 2,-2''')
+                        i.e.: --zrange=-2,2''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to

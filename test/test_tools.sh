@@ -41,6 +41,7 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz
 echo ''
 echo ' - uncompressing Yeast genome' | tee -a $LOG
 tar xzvf chromFa.tar.gz --to-stdout > $tmpdir/db/yeast.fa
+rm -f chromFa.tar.gz
 
 echo ''
 echo ' - indexing' | tee -a $LOG
@@ -138,3 +139,5 @@ echo $((END-START)) | awk '{print "TADbit done in: " int($1/60)"m "int($1%60)"s"
 echo "\n\n -> Found" `grep -ic error $LOG` "errors\n" | tee -a $LOG
 
 echo "Done." | tee -a $LOG
+
+rm -rf $tmpdir

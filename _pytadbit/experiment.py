@@ -976,8 +976,6 @@ class Experiment(object):
            the optimal distance cutoff parameter (distance, in number of beads,
            from which to consider 2 beads as being close). The last value of the
            input tuple is the incremental step for scale parameter values
-        :param None cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not, default is 2 times resolution, times scale.
         :param None container: restrains particle to be within a given object. Can
            only be a 'cylinder', which is, in fact a cylinder of a given height to
            which are added hemispherical ends. This cylinder is defined by a radius,
