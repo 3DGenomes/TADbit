@@ -136,8 +136,17 @@ END=$(date +%s)
 
 echo $((END-START)) | awk '{print "TADbit done in: " int($1/60)"m "int($1%60)"s"}' | tee -a $LOG
 
-echo "\n\n -> Found" `grep -ic error $LOG` "errors\n" | tee -a $LOG
+errors=`grep -ic error $LOG`
+
+echo "\n\n -> Found" $errors "errors\n" | tee -a $LOG
+
+
+if [ $errors -eq 0 ]
+then
+    echo 'Cleanning temporary directory'
+    rm -rf $tmpdir
+else
+    echo '  ==>> Check LOG in: ' $LOG 'for details'
+fi
 
 echo "Done." | tee -a $LOG
-
-rm -rf $tmpdir
