@@ -156,7 +156,6 @@ def run(opts):
 
     printime('  - Saving biases and badcol columns')
     # biases
-        
     bias_file = path.join(outdir, 'biases_%s_%s.pickle' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
     out = open(bias_file, 'w')
@@ -414,13 +413,15 @@ def populate_args(parser):
                         choices=['Vanilla', 'oneD', 'custom'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
-    normpt.add_argument('--biases_path',dest='biases_path',type=str, default=None, 
-                        help='biases file to compute decay. Require format of one column with header')
+    normpt.add_argument('--biases_path', dest='biases_path', type=str,
+                        default=None, help='''biases file to compute decay.
+                        REQUIRED with "custom" normalization. Format: single
+                        column with header''')
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''R|Path to mappability bedGraph file, required for oneD normalization.
-Mappability file can be generated with GEM (example from the genomic fasta file hg38.fa):\n
+Mappability file can be generated with GEM (example from the genomic FASTA file hg38.fa):\n
      gem-indexer -i hg38.fa -o hg38
      gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
      gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
@@ -429,7 +430,7 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
 
     normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
                         metavar='PATH', type=str,
-                        help='''Path to fasta file with genome sequence, to compute
+                        help='''Path to FASTA file with genome sequence, to compute
                         GC content and number of restriction sites per bin.
                         Required for oneD normalization''')
 
@@ -452,8 +453,8 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
 
     normpt.add_argument('--seed', dest='seed', metavar="INT",
                         action='store', default=1, type=int,
-                        help=('''[%(default)s] Only for oneD normalization: seed number for 
-                        the randome picking of data when using the "prop_data" 
+                        help=('''[%(default)s] Only for oneD normalization: seed number for
+                        the random picking of data when using the "prop_data"
                         parameter'''))
 
     bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
@@ -514,6 +515,13 @@ def check_options(opts):
 
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
+
+    # check custom normalization
+    if opts.normalization=='custom':
+        if not opts.biases_path:
+            raise IOError('ERROR: biases file required for "custom" normalization.')
+        elif not path.exists(opts.biases_path):
+            raise IOError('ERROR: biases not found at path: %s' % opts.biases_path)
 
     # check resume
     if not path.exists(opts.workdir):
@@ -802,7 +810,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
             raise Exception('Error: not all arrays have the same size')
         tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
-        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability, 
+        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability,
                       res=n_rsites, cg=cg_content, seed=seed)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
@@ -827,11 +835,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
                 n_pos += 1
         for add in range(max(biases.keys()), total + 1):
             biases[add] = float('nan')
-        
+
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
-        
+
     # collect subset-matrices and write genomic one
     # out = open(os.path.join(outdir,
     #                         'hicdata_%s.abc' % (nicer(resolution).replace(' ', ''))), 'w')
@@ -852,7 +860,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
 
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
-    
+
     if not normalize_only:
         printime('  - Computing Cis percentage')
         # Calculate Cis percentage
@@ -960,8 +968,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
                 val = tmpdec  # backup of tmpdec kept for last ones outside the loop
                 try:
                     ratio = val / ndiag
-                    for k in previous:
-                        nrmdec[crm][k] = ratio
+                    for l in previous:
+                        nrmdec[crm][l] = ratio
                 except ZeroDivisionError:  # all columns at this distance are "bad"
                     pass
                 previous = []
