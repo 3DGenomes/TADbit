@@ -11,7 +11,7 @@ from sys                                  import exc_info, stdout
 from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile, rmtree
-from collections                          import OrderedDict
+from collections                          import OrderedDict, defaultdict
 from cPickle                              import dump, load
 from traceback                            import print_exc
 from multiprocessing                      import cpu_count
@@ -21,7 +21,7 @@ import time
 
 from pysam                                import AlignmentFile
 from numpy                                import nanmean, isnan, nansum, seterr
-
+import math
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling         import mkdir
@@ -134,7 +134,7 @@ def run(opts):
         p_fit=opts.p_fit, cg_content=gc_content, n_rsites=n_rsites,
         min_perc=opts.min_perc, max_perc=opts.max_perc, seed=opts.seed,
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
-        extra_bads=opts.badcols)
+        extra_bads=opts.badcols, biases_path=opts.biases_path)
 
     bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
@@ -410,14 +410,18 @@ def populate_args(parser):
 
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='Vanilla', type=str,
-                        choices=['Vanilla', 'oneD'],
+                        choices=['Vanilla', 'oneD', 'custom'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: [%(choices)s]''')
+    normpt.add_argument('--biases_path', dest='biases_path', type=str,
+                        default=None, help='''biases file to compute decay.
+                        REQUIRED with "custom" normalization. Format: single
+                        column with header''')
 
     normpt.add_argument('--mappability', dest='mappability', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''R|Path to mappability bedGraph file, required for oneD normalization.
-Mappability file can be generated with GEM (example from the genomic fasta file hg38.fa):\n
+Mappability file can be generated with GEM (example from the genomic FASTA file hg38.fa):\n
      gem-indexer -i hg38.fa -o hg38
      gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
      gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
@@ -426,7 +430,7 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
 
     normpt.add_argument('--fasta', dest='fasta', action='store', default=None,
                         metavar='PATH', type=str,
-                        help='''Path to fasta file with genome sequence, to compute
+                        help='''Path to FASTA file with genome sequence, to compute
                         GC content and number of restriction sites per bin.
                         Required for oneD normalization''')
 
@@ -449,8 +453,8 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
 
     normpt.add_argument('--seed', dest='seed', metavar="INT",
                         action='store', default=1, type=int,
-                        help=('''[%(default)s] Only for oneD normalization: seed number for 
-                        the randome picking of data when using the "prop_data" 
+                        help=('''[%(default)s] Only for oneD normalization: seed number for
+                        the random picking of data when using the "prop_data"
                         parameter'''))
 
     bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
@@ -469,6 +473,7 @@ Mappability file can be generated with GEM (example from the genomic fasta file 
                         action='store', default=None, type=float,
                         help=('''[%(default)s] lower percentile from which
                         consider bins as good.'''))
+
 
     bfiltr.add_argument('--max_perc', dest='max_perc', metavar="INT",
                         action='store', default=None, type=float,
@@ -510,6 +515,13 @@ def check_options(opts):
 
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
+
+    # check custom normalization
+    if opts.normalization=='custom':
+        if not opts.biases_path:
+            raise IOError('ERROR: biases file required for "custom" normalization.')
+        elif not path.exists(opts.biases_path):
+            raise IOError('ERROR: biases not found at path: %s' % opts.biases_path)
 
     # check resume
     if not path.exists(opts.workdir):
@@ -654,7 +666,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
-def read_bam(inbam, filter_exclude, resolution, min_count=2500,
+def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
@@ -746,8 +758,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     elif min_count is None and len(bamfile.references) > 1:
         badcol = filter_by_cis_percentage(
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
-            size=total, savefig=path.join(outdir, 'filtered_bins_%s_%s.png' % (
-                nicer(resolution).replace(' ', ''), extra_out)))
+            size=total, savefig=None)
     else:
         print ('      -> too few interactions defined as less than %9d '
                'interactions') % (min_count)
@@ -799,10 +810,32 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
             raise Exception('Error: not all arrays have the same size')
         tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
-        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability, 
+        biases = oneD(tmp_dir=tmp_oneD, p_fit=p_fit, tot=biases, map=mappability,
                       res=n_rsites, cg=cg_content, seed=seed)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
+    elif normalization=='custom':
+        n_pos = 0
+        biases = {}
+        print 'Using provided biases...'
+        with open(biases_path, 'r') as r:
+            r.next()
+            for line in r:
+                if line[0] == 'N':
+                    #b = float('nan')
+                    badcol[n_pos] = 0
+                    biases[n_pos] = float('nan')
+                else:
+                    b = float(line)
+                    if b == 0:
+                        badcol[n_pos] = 0
+                        biases[n_pos] = float('nan')
+                    else:
+                        biases[n_pos] = b
+                n_pos += 1
+        for add in range(max(biases.keys()), total + 1):
+            biases[add] = float('nan')
+
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)
@@ -935,8 +968,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 val = tmpdec  # backup of tmpdec kept for last ones outside the loop
                 try:
                     ratio = val / ndiag
-                    for k in previous:
-                        nrmdec[crm][k] = ratio
+                    for l in previous:
+                        nrmdec[crm][l] = ratio
                 except ZeroDivisionError:  # all columns at this distance are "bad"
                     pass
                 previous = []
