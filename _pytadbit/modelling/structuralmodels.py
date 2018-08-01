@@ -11,6 +11,7 @@ from os.path                          import exists
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
+from copy                             import deepcopy
 
 from numpy                            import exp as np_exp
 from numpy                            import median as np_median
@@ -18,6 +19,7 @@ from numpy                            import mean as np_mean
 from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace
+from numpy                            import nanmin, nanmax
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
@@ -46,7 +48,7 @@ from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation
 
 try:
     from matplotlib import pyplot as plt
-    from matplotlib.cm import jet, bwr
+    from matplotlib.cm import viridis, Reds, Blues, bwr
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -849,7 +851,7 @@ class StructuralModels(object):
                     axes.set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
-        cbar = fig.colorbar(ims, cax=cell, cmap=jet)
+        cbar = fig.colorbar(ims, cax=cell, cmap=viridis)
         cbar.set_ticks([float(k) / 100
                         for k in xrange(-100, 150, 50)])
         cbar.set_ticklabels(['%3s%% ' % (p)
@@ -946,7 +948,7 @@ class StructuralModels(object):
             show = True
         else:
             fig = axe.get_figure()
-        cmap = plt.get_cmap('jet')
+        cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
         ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
                          vmin=0, vmax=1, cmap=cmap,
@@ -1583,34 +1585,31 @@ class StructuralModels(object):
                 try:
                     zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
                 except KeyError:
-                    continue
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if zsc_mtrx[i][j]:
-                    zsc_mtrx[j][i] = zsc_mtrx[i][j]
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if (self._config['lowfreq'] < zsc_mtrx[i][j] <
-                    self._config['upfreq']):
-                    zsc_mtrx[j][i] = float('nan')
-                    zsc_mtrx[i][j] = float('nan')
+                    try:
+                        zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
+                    except KeyError:
+                        zsc_mtrx[i][j] = 0
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        cmap = jet
+        masked_array_top = ma.array (
+            masked_array, mask=masked_array < self._config['upfreq'])
+        masked_array_bot = ma.array (
+            masked_array, mask=self._config['lowfreq'] < masked_array)
+        cmap = viridis
         cmap.set_bad('w', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
             fig = axe.get_figure()
         ax = fig.add_subplot(131)
-        ims = ax.imshow(masked_array, origin='lower',
+        ims = ax.imshow(zsc_mtrx, origin='lower',
                         interpolation="nearest", cmap=cmap)
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the normalized Hi-C count')
         cbar = ax.figure.colorbar(ims, cmap=cmap)
         cbar.ax.set_ylabel('Z-score value')
-        #
-        ax = plt.axes([.43, 0.11, .22, .61])
+
+        ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
                               [self._zscores[v].values()
                                for v in self._zscores.keys()]))
@@ -1624,9 +1623,9 @@ class StructuralModels(object):
                                         for v in self._zscores.keys()]),
             bins=25, linewidth=2, facecolor='none', edgecolor='k',
             histtype='stepfilled', normed=True)
-        red = cmap(int(255 * (.8 + 1.2) / 2.4))
-        blue = cmap(int(255 * (-.5 + 1.2) / 2.4))
         height1 = height2 = 0
+        minv = nanmin(masked_array)
+        maxv = nanmax(masked_array)
         for thispatch in patches:
             beg = thispatch.get_x()
             end = thispatch.get_x() + thispatch.get_width()
@@ -1636,20 +1635,20 @@ class StructuralModels(object):
                              min(end, self._config['lowfreq' ])
                              if beg < self._config['lowfreq'] else end,
                              color=(
-                                 blue if beg < self._config['lowfreq'] else
-                                 red if end > self._config['upfreq']
+                                 Blues(beg / minv) if beg < self._config['lowfreq'] else
+                                 Reds (end / maxv) if end > self._config['upfreq']
                                  else 'w'))
             if end > self._config['lowfreq' ] and beg < self._config['lowfreq']:
                 height1 = thispatch.get_height()
             elif beg < self._config['upfreq'] and end > self._config['upfreq' ]:
                 height2 = thispatch.get_height()
         labels = []
-        p1 = plt.Rectangle((0, 0), 1, 1, fc=blue, color='k')
+        p1 = plt.Rectangle((0, 0), 1, 1, fc=Blues(0.7), color='k')
         labels.append('< %.2f (force particles apart)' % (
             self._config['lowfreq']))
         p2 = plt.Rectangle((0, 0), 1, 1, fc="w", color='k')
         labels.append('Not used (no constraints)')
-        p3 = plt.Rectangle((0, 0), 1, 1, fc=red, color='k')
+        p3 = plt.Rectangle((0, 0), 1, 1, fc=Reds(0.7), color='k')
         labels.append('> %.2f (force particles together)' % (
             self._config['upfreq']))
         try:
@@ -1667,27 +1666,17 @@ class StructuralModels(object):
                 frameon=False,
                 bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         ax.set_xlabel('Z-scores')
-        ax.set_ylabel('Number of particles')
-        ax.vlines(self._config['lowfreq'], 0, height1, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        ax.vlines(self._config['upfreq'] , 0, height2, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        #
+        ax.set_ylabel('Proportion of particles')
+        ax.vlines(self._config['lowfreq'], 0, height1, color='k',
+                  linestyle='-', lw=2, alpha=1)
+        ax.vlines(self._config['upfreq'] , 0, height2, color='k',
+                  linestyle='-', lw=2, alpha=1)
+
         ax = fig.add_subplot(133)
-        masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        for i in masked_array:
-            for j in xrange(len(i)):
-                try:
-                    i[j].mask
-                    continue
-                except AttributeError:
-                    pass
-                if i[j] > self._config['upfreq']:
-                    i[j] = .8
-                elif i[j] < self._config['lowfreq']:
-                    i[j] = -.5
-        ims = ax.imshow(masked_array, origin='lower', vmin=-1.2, vmax=1.2,
-                        interpolation="nearest", cmap=cmap)
+        _ = ax.imshow(masked_array_top, origin='lower',
+                      interpolation="nearest", cmap='Reds')
+        _ = ax.imshow(masked_array_bot, origin='lower',
+                      interpolation="nearest", cmap='Blues')
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax = plt.axes([.42, 0.11, .48, .79])
@@ -1772,7 +1761,7 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        cmap = plt.get_cmap('jet')
+        cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
                          vmin=0, vmax=1, cmap=cmap,
@@ -1860,7 +1849,7 @@ class StructuralModels(object):
             # axmidl.patch.set_visible(False)
         ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
-        cmap = plt.get_cmap('jet')
+        cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest", cmap=cmap,

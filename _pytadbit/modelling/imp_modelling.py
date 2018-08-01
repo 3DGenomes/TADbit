@@ -138,22 +138,22 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     # Main config parameters
     global CONFIG
-    
+
     # Setup CONFIG
     if isinstance(config, dict):
         CONFIG.update(config)
     elif config:
         raise Exception('ERROR: "config" must be a dictionary')
-    
+
     CONFIG['resolution'] = resolution
-    
+
     # scale factor
     global SCALE
     SCALE = float(resolution * CONFIG['scale'])
-    
+
     # scale maxdist
     CONFIG['maxdist'] = CONFIG['maxdist'] / SCALE
-    
+
     # Setup and scale CONFIG['container']
     try:
         CONFIG['container'] = {'shape' : container[0],
@@ -234,7 +234,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         out.close()
     else:
         hicrestraints = HiCRestraints._get_restraints()
-        hicrestraints = dict((r,(hicrestraints[r][0],hicrestraints[r][1]*SCALE, hicrestraints[r][2])) 
+        hicrestraints = dict((r,(hicrestraints[r][0],hicrestraints[r][1]*SCALE, hicrestraints[r][2]))
                              for r in hicrestraints)
         return StructuralModels(
             len(LOCI), models, bad_models, resolution, original_data=values,
@@ -394,7 +394,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
     # gets radius from last particle, assuming that all are the same
     # include in the loop when radius changes... should be a list then
     result['radius'] = part.get_value(radius)
-    result['radius'] = SCALE / 2 
+    result['radius'] = SCALE / 2
     #for log_energy in log_energies:
     #    print "%.30f" % log_energy
     #print rand_init, log_energies[-1]

@@ -141,7 +141,7 @@ errors=`grep -ic error $LOG`
 echo "\n\n -> Found" $errors "errors\n" | tee -a $LOG
 
 
-if [ $errors -eq 0]
+if [ $errors -eq 0 ]
 then
     echo 'Cleanning temporary directory'
     rm -rf $tmpdir
