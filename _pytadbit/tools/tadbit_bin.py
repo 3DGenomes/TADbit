@@ -307,7 +307,8 @@ def run(opts):
                                   orientation='horizontal',
                                   bins=50, histtype='step')
                 _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
-                                extent=(0, max(h[0]), mindata, maxdata))
+                                extent=(0, max(h[0]), mindata, maxdata),
+                                vmin=vmin, vmax=vmax)
                 ax2.yaxis.tick_right()
                 ax2.yaxis.set_label_position("right")
                 ax2.set_xticks([])
