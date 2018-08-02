@@ -105,6 +105,11 @@ def run(opts):
             start2  = None
             end2    = None
 
+    if (opts.plot or opts.interactive) and not opts.force_plot:
+        max_size = 1500**2
+    else:
+        max_size = None
+
     outdir = path.join(opts.workdir, '05_sub-matrices')
     mkdir(outdir)
     tmpdir = path.join(opts.workdir, '05_sub-matrices',
@@ -163,7 +168,7 @@ def run(opts):
                     tmpdir=tmpdir, ncpus=opts.cpus,
                     return_headers=True,
                     nchunks=opts.nchunks, verbose=not opts.quiet,
-                    clean=clean)
+                    clean=clean, max_size=max_size)
             except NotImplementedError:
                 if norm == "raw&decay":
                     warn('WARNING: raw&decay normalization not implemeted for '
@@ -481,7 +486,7 @@ def check_options(opts):
     # transform filtering reads option
     opts.filter = filters_to_bin(opts.filter)
 
-    # enlight plotting parameter writing
+    # enlighten plotting parameter writing
     if opts.only_plot:
         opts.plot = True
     if opts.interactive:
@@ -497,7 +502,7 @@ def check_options(opts):
         raise NotImplementedError('ERROR: triangular is only available for '
                                   'symmetric matrices.')
 
-    # for lustre file system....
+    # for LUSTRE file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
         # tmp file
@@ -523,7 +528,7 @@ def check_options(opts):
                     remove(path.join(dbdir, dbfile))
                     exit('WARNING: exact same job already computed, see JOBs table above')
             else:
-                warn('WARNING: exact same job already computed, overwritting...')
+                warn('WARNING: exact same job already computed, overwriting...')
     except IOError:
         warn((""
               "\nWARNING:\n  new working directory created. It's ok... "
@@ -602,7 +607,12 @@ def populate_args(parser):
 
     pltopt.add_argument('--plot', dest='plot', action='store_true',
                         default=False,
-                        help='[%(default)s] Plot matrix in desired format.')
+                        help='Plot matrix in desired format.')
+
+    pltopt.add_argument('--force_plot', dest='force_plot', action='store_true',
+                        default=False,
+                        help=('Force plotting even with demoniacally big '
+                              'matrices (more than 1500x1500).'))
 
     outopt.add_argument('--only_plot', dest='only_plot', action='store_true',
                         default=False,
@@ -615,7 +625,9 @@ def populate_args(parser):
 
     pltopt.add_argument('--triangular', dest='triangular', action='store_true',
                         default=False,
-                        help='''[%(default)s] represents only half matrix.''')
+                        help='''[%(default)s] represents only half matrix. Note
+                        that this also results in truly vectorial images of matrix
+                        and is thus more resource consuming.''')
 
     pltopt.add_argument('--xtick_rotation', dest='xtick_rotation',
                         default=-25, type=int,
