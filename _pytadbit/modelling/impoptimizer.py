@@ -87,7 +87,7 @@ class IMPoptimizer(object):
                       'end'  : end}
 
         self.single_particle_restraints = single_particle_restraints
-        
+
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
         self.scale_range    = []
@@ -308,7 +308,7 @@ class IMPoptimizer(object):
                     single_particle_restraints=self.single_particle_restraints)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
-                
+
                 matrices = tdm.get_contact_matrix(
                     cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
                 for m in matrices:
@@ -325,7 +325,7 @@ class IMPoptimizer(object):
                             stderr.write(verb + str(round(result, 4)) + '\n')
                         else:
                             print verb + str(round(result, 4))
-        
+
                     # Store the correlation for the TADbit parameters set
                     self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
             except Exception, e:
