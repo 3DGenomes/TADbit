@@ -70,17 +70,21 @@ def R2_vs_L(L, P):
     """
     return 2.0 * P * ( L - P * ( 1.0 - np_exp( - L / P ) ) )
 
-def load_structuralmodels(path_f):
+def load_structuralmodels(input_):
     """
     Loads :class:`pytadbit.modelling.structuralmodels.StructuralModels` from a file
     (generated with
     :class:`pytadbit.modelling.structuralmodels.StructuralModels.save_models`).
 
-    :param path: to the pickled StructuralModels object.
+    :param input: path to the pickled StructuralModels object or dictionary
+       containing all the information.
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
-    svd = load(open(path_f))
+    if isinstance(input_, str):
+        svd = load(open(input_))
+    else:
+        svd = input_
     try:
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
