@@ -15,14 +15,13 @@ from cPickle                         import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
-from itertools                       import product
 import time
 
 import sqlite3 as lite
 from numpy                           import zeros_like, min as np_min
-from numpy                           import nonzero, array, linspace, dot
+from numpy                           import nonzero, array, linspace
 from numpy                           import nanmin, nanmax, ma, isfinite
-from numpy                           import flipud, log2, dstack
+from numpy                           import log2, dstack
 from matplotlib                      import pyplot as plt
 from matplotlib.ticker               import FuncFormatter
 from pysam                           import AlignmentFile
@@ -34,6 +33,7 @@ from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
+from pytadbit.utils.extraviews       import plot_HiC_matrix
 
 
 DESC = 'bin Hi-C data into matrices'
@@ -105,8 +105,11 @@ def run(opts):
             start2  = None
             end2    = None
 
-    if (opts.plot or opts.interactive) and not opts.force_plot:
-        max_size = 1500**2
+    if opts.plot and not opts.force_plot:
+        if opts.interactive:
+            max_size = 1500**2
+        else:
+            max_size = 5000**2
     else:
         max_size = None
 
@@ -171,8 +174,8 @@ def run(opts):
                     clean=clean, max_size=max_size)
             except NotImplementedError:
                 if norm == "raw&decay":
-                    warn('WARNING: raw&decay normalization not implemeted for '
-                         'matrices\n... skipping\n')
+                    warn('WARNING: raw&decay normalization not implemented '
+                         'for matrices\n... skipping\n')
                     continue
                 raise
             b1, e1, b2, e2 = bin_coords
@@ -210,9 +213,21 @@ def run(opts):
                                         for j in xrange(b2, e2)) + '\n')
                 out.close()
             if opts.plot:
-                cmap = plt.get_cmap(opts.cmap)
-                if norm != 'raw':
-                    cmap.set_bad('grey', 1.)
+                # transform matrix
+                matrix = array([array([matrix.get((i, j), 0)
+                                       for i in xrange(b1, e1)])
+                                for j in xrange(b2, e2)])
+                try:
+                    mini = min(matrix[nonzero(matrix)]) / 2.
+                except ValueError:
+                    mini = 0.
+                matrix[matrix==0] = mini
+                m = zeros_like(matrix)
+                for bad1 in bads1:
+                    m[:,bad1] = 1
+                    for bad2 in bads2:
+                        m[bad2,:] = 1
+                matrix = log2(ma.masked_array(matrix, m))
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s%s.%s' % (
                     norm, name, nicer(opts.reso, sep=''),
@@ -229,134 +244,25 @@ def run(opts):
                         _ = plt.figure(figsize=(16, 10))
                     else:
                         _ = plt.figure(figsize=(16, 14))
-                # ax1 = plt.subplot(111)
-                if opts.triangular:
-                    ax1 = plt.axes([0.05, 0.15, 0.9, 0.72])
-                    ax2 = plt.axes([0.63, 0.775, 0.32, 0.07])
-                else:
-                    ax1 = plt.axes([0.1, 0.1, 0.7, 0.8])
-                    ax2 = plt.axes([0.82, 0.1, 0.07, 0.8])
-                matrix = array([array([matrix.get((i, j), 0) for i in xrange(b1, e1)])
-                                for j in xrange(b2, e2)])
-                mini = np_min(matrix[nonzero(matrix)]) / 2.
-                matrix[matrix==0] = mini
-                m = zeros_like(matrix)
-                for bad1 in bads1:
-                    m[:,bad1] = 1
-                    for bad2 in bads2:
-                        m[bad2,:] = 1
-                matrix = log2(ma.masked_array(matrix, m))
-                if opts.triangular:
-                    pcolormesh_45deg(matrix, vmin=vmin, vmax=vmax, axe=ax1,
-                                     cmap=cmap)
-                else:
-                    ax1.imshow(matrix, interpolation='None', origin='lower',
-                               cmap=cmap, vmin=vmin, vmax=vmax)
-
-                if len(regions) <= 2:
-                    pltbeg1 = 0 if start1 is None else start1
-                    pltend1 = sections[regions[0]] if end1 is None else end1
-                    pltbeg2 = (pltbeg1 if len(regions) == 1 else
-                               0 if start2 is None else start2)
-                    pltend2 = (pltend1 if len(regions) == 1 else
-                               sections[regions[-1]] if end2 is None else end2)
-
-                    ax1.set_xlabel('{}:{:,}-{:,}'.format(
-                        regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
-                    if not opts.triangular:
-                        ax1.set_ylabel('{}:{:,}-{:,}'.format(
-                            regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
-
-                    def format_xticks(tickstring, _=None):
-                        tickstring = int(tickstring * opts.reso + pltbeg1)
-                        return nicer(tickstring if tickstring else 1,
-                                     comma=',', allowed_decimals=1)
-
-                    def format_yticks(tickstring, _=None):
-                        tickstring = int(tickstring * opts.reso + pltbeg2)
-                        return nicer(tickstring if tickstring else 1,
-                                     comma=',', allowed_decimals=1)
-
-                    ax1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
-                    ax1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
-                    if opts.triangular:
-                        ax1.set_yticks([])
-
-                    labels = ax1.get_xticklabels()
-                    plt.setp(labels, rotation=opts.xtick_rotation,
-                             ha='left' if opts.xtick_rotation else 'center')
-                else:
-                    vals = [0]
-                    keys = ['']
-                    for crm in regions:
-                        vals.append(section_pos[crm][0] / opts.reso)
-                        keys.append(crm)
-                    vals.append(section_pos[crm][1] / opts.reso)
-                    ax1.set_yticks(vals)
-                    ax1.set_yticklabels('')
-                    ax1.set_yticks([float(vals[i]+vals[i + 1]) / 2
-                                    for i in xrange(len(vals) - 1)],
-                                   minor=True)
-                    ax1.set_yticklabels(keys, minor=True)
-                    for t in ax1.yaxis.get_minor_ticks():
-                        t.tick1On = False
-                        t.tick2On = False
-
-                    ax1.set_xticks(vals)
-                    ax1.set_xticklabels('')
-                    ax1.set_xticks([float(vals[i]+vals[i+1])/2
-                                    for i in xrange(len(vals) - 1)],
-                                   minor=True)
-                    ax1.set_xticklabels(keys, minor=True)
-                    for t in ax1.xaxis.get_minor_ticks():
-                        t.tick1On = False
-                        t.tick2On = False
-                    ax1.set_xlabel('Chromosomes')
-                    ax1.set_ylabel('Chromosomes')
-                ax1.set_xlim(0 - 0.5, len(matrix[0]) - 0.5)
-                if opts.triangular:
-                    ax1.set_ylim(0, len(matrix))
-                else:
-                    ax1.set_ylim(-0.5, len(matrix) - 0.5)
-                data = [i for d in matrix for i in d if isfinite(i)]
-                mindata = nanmin(data)
-                maxdata = nanmax(data)
-                gradient = linspace(maxdata, mindata, max((len(matrix),
-                                                           len(matrix[0]))))
-                if not opts.triangular:
-                    gradient = dstack((gradient, gradient))[0]
-                else:
-                    gradient = [gradient[::-1]]
-                try:
-                    h  = ax2.hist(data, color='darkgrey', linewidth=2,
-                                  orientation='vertical' if opts.triangular else 'horizontal',
-                                  bins=50, histtype='step', density=True)
-                except AttributeError:  # older versions of matplotlib
-                    h  = ax2.hist(data, color='darkgrey', linewidth=2,
-                                  orientation='vertical' if opts.triangular else 'horizontal',
-                                  bins=50, histtype='step')
-                _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
-                                extent=((mindata, maxdata, 0, max(h[0]))
-                                        if opts.triangular else
-                                        (0, max(h[0]), mindata, maxdata)),
-                                vmin=vmin, vmax=vmax)
-                if opts.triangular:
-                    ax2.set_yticks([])
-                    ax2.set_xlabel('Hi-C Log2 interactions%s' % (
-                        '\n(Forced color range %s-%s)' % (vmin, vmax) if
-                        opts.zrange else ''))
-                    ax2.set_ylabel('Count')
-                else:
-                    ax2.yaxis.tick_right()
-                    ax2.yaxis.set_label_position("right")
-                    ax2.set_xticks([])
-                    ax2.set_ylabel('Hi-C Log2 interactions%s' % (
-                        '\n(Forced color range %s-%s)' % (vmin, vmax) if
-                        opts.zrange else ''), rotation=-90,
-                                   labelpad=20 if opts.zrange else 10)
-                    ax2.set_xlabel('Count')
+                pltbeg1 = 0 if start1 is None else start1
+                pltend1 = sections[regions[0]] if end1 is None else end1
+                pltbeg2 = 0 if start2 is None else start2
+                pltend2 = sections[regions[-1]] if end2 is None else end2
+                xlabel = '{}:{:,}-{:,}'.format(
+                    regions[0], pltbeg1 if pltbeg1 else 1, pltend1)
+                ylabel = '{}:{:,}-{:,}'.format(
+                    regions[-1], pltbeg2 if pltbeg2 else 1, pltend2)
+                section_pos = dict((k, section_pos[k]) for k in section_pos
+                                   if k in regions)
+                ax1, _ = plot_HiC_matrix(
+                    matrix, triangular=opts.triangular,
+                    vmin=vmin, vmax=vmax, cmap=opts.cmap,
+                    bad_color=opts.bad_color if norm != 'raw' else None)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
+                _format_axes(ax1, start1, end1, start2, end2, opts.reso,
+                             regions, section_pos, sections,
+                             opts.xtick_rotation, triangular=False)
                 if opts.interactive:
                     plt.show()
                     plt.close('all')
@@ -385,23 +291,69 @@ def run(opts):
         save_to_db(opts, launch_time, finish_time, out_files, out_plots)
 
 
-def pcolormesh_45deg(C, axe=None, **kwargs):
-    if axe is None:
-        axe = kwargs.get('axe', plt.subplot(111))
-    n = C.shape[0]
-    # create rotation/scaling matrix
-    t = array([[1,0.5],[-1,0.5]])
-    # create coordinate matrix and transform it
-    A = dot(array([(j, i) for i, j in product(range(n, -1, -1),
-                                              range(0, n+1, 1))]), t)
-    # plot
-    im = axe.pcolormesh(A[:,1].reshape(n+1,n+1) - 0.5,
-                        A[:,0].reshape(n+1,n+1),
-                        flipud(C), norm=None, **kwargs)
-    axe.spines['right'].set_visible(False)
-    axe.spines['left'].set_visible(False)
-    axe.spines['top'].set_visible(False)
-    return im
+def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
+                section_pos, sections, xtick_rotation, triangular=False):
+    if len(regions) <= 2:
+        pltbeg1 = 0 if start1 is None else start1
+        pltend1 = sections[regions[0]] if end1 is None else end1
+        pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                   0 if start2 is None else start2)
+        pltend2 = (pltend1 if len(regions) == 1 else
+                   sections[regions[-1]] if end2 is None else end2)
+        axe1.set_xlabel('{}:{:,}-{:,}'.format(
+            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+        if not triangular:
+            axe1.set_ylabel('{}:{:,}-{:,}'.format(
+                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+        def format_xticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg1)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        def format_yticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg2)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
+        if triangular:
+            axe1.set_yticks([])
+
+        labels = axe1.get_xticklabels()
+        plt.setp(labels, rotation=xtick_rotation,
+                 ha='left' if xtick_rotation else 'center')
+    else:
+        vals = [0]
+        keys = ['']
+        for crm in section_pos:
+            # TODO: xlabels not working
+            vals.append(section_pos[crm][0] / reso)
+            keys.append(crm)
+        vals.append(section_pos[crm][1] / reso)
+        axe1.set_yticks(vals)
+        axe1.set_yticklabels('')
+        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                         for i in xrange(len(vals) - 1)],
+                        minor=True)
+        axe1.set_yticklabels(keys, minor=True)
+        for t in axe1.yaxis.get_minor_ticks():
+            t.tick1On = False
+            t.tick2On = False
+
+        axe1.set_xticks(vals)
+        axe1.set_xticklabels('')
+        axe1.set_xticks([float(vals[i]+vals[i+1])/2
+                         for i in xrange(len(vals) - 1)],
+                        minor=True)
+        axe1.set_xticklabels(keys, minor=True)
+        for t in axe1.xaxis.get_minor_ticks():
+            t.tick1On = False
+            t.tick2On = False
+        axe1.set_xlabel('Chromosomes')
+        if not triangular:
+            axe1.set_ylabel('Chromosomes')
 
 
 def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
@@ -612,7 +564,8 @@ def populate_args(parser):
     pltopt.add_argument('--force_plot', dest='force_plot', action='store_true',
                         default=False,
                         help=('Force plotting even with demoniacally big '
-                              'matrices (more than 1500x1500).'))
+                              'matrices (more than 5000x5000, or 1500x1500'
+                              'with interactive option).'))
 
     outopt.add_argument('--only_plot', dest='only_plot', action='store_true',
                         default=False,
@@ -626,8 +579,8 @@ def populate_args(parser):
     pltopt.add_argument('--triangular', dest='triangular', action='store_true',
                         default=False,
                         help='''[%(default)s] represents only half matrix. Note
-                        that this also results in truly vectorial images of matrix
-                        and is thus more resource consuming.''')
+                        that this also results in truly vectorial images of
+                        matrix.''')
 
     pltopt.add_argument('--xtick_rotation', dest='xtick_rotation',
                         default=-25, type=int,
@@ -636,6 +589,12 @@ def populate_args(parser):
     pltopt.add_argument('--cmap', dest='cmap', action='store',
                         default='viridis',
                         help='[%(default)s] Matplotlib color map to use.')
+
+    pltopt.add_argument('--bad_color', dest='bad_color', action='store',
+                        default='white',
+                        help='''[%(default)s] Matplotlib color to use on bins
+                        filtered out (only used with normalized matrices, not
+                        raw).''')
 
     pltopt.add_argument('--format', dest='format', action='store',
                         default='png',

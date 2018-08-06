@@ -10,8 +10,9 @@ from itertools import product
 import numpy as np
 
 try:
-    from matplotlib.ticker import MultipleLocator
-    from matplotlib import pyplot as plt
+    from matplotlib.ticker    import MultipleLocator
+    from matplotlib.ticker    import FuncFormatter
+    from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
     warn('matplotlib not found\n')
@@ -671,14 +672,13 @@ def plot_2d_optimization_result(result,
                                          range(len(axes_range[3])))
 
         for indeces_set in indeces_sets:
-            tmp_indeces_set = (0,0,0,0,0)
+            tmp_indeces_set = [0, 0, 0, 0, 0]
             tmp_indeces_set[0] = indeces_set[scale_index]   # scale
             tmp_indeces_set[1] = 0                          # kbending
             tmp_indeces_set[2] = indeces_set[maxdist_index] # maxdist
             tmp_indeces_set[3] = indeces_set[lowfreq_index] # lowfreq
             tmp_indeces_set[4]=  indeces_set[upfreq_index]  # upfreq
             tmp_result[tmp_indeces_set] = result[indeces_set]
-
 
         ori_axes   = ('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq')
         axes_range = tmp_axes_range
@@ -769,7 +769,7 @@ def plot_2d_optimization_result(result,
                     cbar_mode="single",
                     # cbar_size="%s%%" % (20./ width),
                     cbar_pad="15%",
-                    )
+    )
     cell = ncols
     used = []
 
@@ -1053,6 +1053,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         else:
             plt.show()
 
+
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                       vmin=-1, vmax=1, whichpc=1,showAB=False):
     heights = []
@@ -1219,3 +1220,98 @@ def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
+
+
+def pcolormesh_45deg(C, axe=None, **kwargs):
+    if axe is None:
+        axe = kwargs.get('axe', plt.subplot(111))
+    n = C.shape[0]
+    # create rotation/scaling matrix
+    t = np.array([[1,0.5],[-1,0.5]])
+    # create coordinate matrix and transform it
+    A = np.dot(np.array([(j, i) for i, j in product(range(n, -1, -1),
+                                                    range(0, n+1, 1))]), t)
+    # plot
+    im = axe.pcolormesh(A[:,1].reshape(n+1,n+1) - 0.5,
+                        A[:,0].reshape(n+1,n+1),
+                        np.flipud(C), norm=None, **kwargs)
+    axe.spines['right'].set_visible(False)
+    axe.spines['left'].set_visible(False)
+    axe.spines['top'].set_visible(False)
+    return im
+
+
+def plot_HiC_matrix(matrix, bad_color=None, triangular=False, **kwargs):
+    """
+    Plot HiC matrix with histogram of values inside color bar.
+
+    :param matrix: list of lists with values to be plotted
+    :param None bad_color: plots NaNs in a given color
+    :param False triangular: representes only half matrix horizontally
+    :param kwargs: extra parameters for the imshow function of matplotlib
+
+    :returns: two axes object, the first corresponding to the matrix,
+       the second to the color bar
+    """
+    if bad_color is not None:
+        kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
+        kwargs['cmap'].set_bad(bad_color, 1.)
+
+    if triangular:
+        axe1 = plt.axes([0.05, 0.15, 0.9, 0.72])
+        axe2 = plt.axes([0.63, 0.775, 0.32, 0.07])
+    else:
+        axe1 = plt.axes([0.1, 0.1, 0.7, 0.8])
+        axe2 = plt.axes([0.82, 0.1, 0.07, 0.8])
+    if triangular:
+        pcolormesh_45deg(matrix, axe=axe1, **kwargs)
+    else:
+        axe1.imshow(matrix, interpolation='None', origin='lower', **kwargs)
+
+    axe1.set_xlim(0 - 0.5, len(matrix[0]) - 0.5)
+    if triangular:
+        axe1.set_ylim(0, len(matrix))
+    else:
+        axe1.set_ylim(-0.5, len(matrix) - 0.5)
+
+    data = [i for d in matrix for i in d if np.isfinite(i)]
+    try:
+        mindata = np.nanmin(data)
+        maxdata = np.nanmax(data)
+    except ValueError:
+        mindata = maxdata = 0.
+    gradient = np.linspace(maxdata, mindata, max((len(matrix),
+                                                  len(matrix[0]))))
+    if not triangular:
+        gradient = np.dstack((gradient, gradient))[0]
+    else:
+        gradient = [gradient[::-1]]
+    try:
+        h  = axe2.hist(data, color='darkgrey', linewidth=2,
+                       orientation='vertical' if triangular else 'horizontal',
+                       bins=50, histtype='step', density=True)
+    except AttributeError:  # older versions of matplotlib
+        h  = axe2.hist(data, color='darkgrey', linewidth=2,
+                       orientation='vertical' if triangular else 'horizontal',
+                       bins=50, histtype='step')
+    _  = axe2.imshow(gradient, aspect='auto', extent=(
+        (mindata, maxdata, 0, max(h[0])) if triangular else
+        (0, max(h[0]), mindata, maxdata)), **kwargs)
+    if triangular:
+        axe2.set_yticks([])
+        axe2.set_xlabel('Hi-C Log2 interactions%s' % (
+            '\n(Forced color range %s-%s)' % (kwargs['vmin'], kwargs['vmax'])
+            if 'vmin' in kwargs and 'vmax' in kwargs else ''))
+        axe2.set_ylabel('Count')
+    else:
+        axe2.yaxis.tick_right()
+        axe2.yaxis.set_label_position("right")
+        axe2.set_xticks([])
+        axe2.set_ylabel('Hi-C Log2 interactions%s' % (
+            '\n(Forced color range %s-%s)' % (kwargs['vmin'], kwargs['vmax'])
+            if 'vmin' in kwargs and 'vmax' in kwargs else ''), rotation=-90,
+                        labelpad=20 if 'vmin' in kwargs and 'vmax' in kwargs
+                        else 10)
+        axe2.set_xlabel('Count')
+
+    return axe1, axe2
