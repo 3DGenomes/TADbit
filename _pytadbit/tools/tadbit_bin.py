@@ -217,17 +217,12 @@ def run(opts):
                 matrix = array([array([matrix.get((i, j), 0)
                                        for i in xrange(b1, e1)])
                                 for j in xrange(b2, e2)])
-                try:
-                    mini = min(matrix[nonzero(matrix)]) / 2.
-                except ValueError:
-                    mini = 0.
-                matrix[matrix==0] = mini
                 m = zeros_like(matrix)
                 for bad1 in bads1:
                     m[:,bad1] = 1
                     for bad2 in bads2:
                         m[bad2,:] = 1
-                matrix = log2(ma.masked_array(matrix, m))
+                matrix = ma.masked_array(matrix, m)
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s%s.%s' % (
                     norm, name, nicer(opts.reso, sep=''),
