@@ -425,4 +425,4 @@ def check_options(opts):
                 remove(path.join(dbdir, dbfile))
             exit('WARNING: exact same job already computed, see JOBs table above')
         else:
-            warn('WARNING: exact same job already computed, overwritting...')
+            warn('WARNING: exact same job already computed, overwriting...')

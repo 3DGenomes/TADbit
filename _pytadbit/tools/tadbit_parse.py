@@ -307,7 +307,8 @@ def populate_args(parser):
 
     glopts.add_argument('--filter_chrom', dest='filter_chrom',
                         default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?(_dna)?$",
-                        help='[%(default)s] regexp to consider only chromosome names passing')
+                        help='''default: --filter_chrom "%(default)s", regexp
+                        to consider only chromosome names passing''')
 
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
@@ -365,7 +366,7 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writting log to ' + path.join(opts.workdir, 'process.log')
+        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
@@ -383,7 +384,7 @@ def check_options(opts):
     vlog_path = path.join(opts.workdir, 'TADbit_and_dependencies_versions.log')
     dependencies = get_dependencies_version()
     if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
-        logging.info('Writting versions of TADbit and dependencies')
+        logging.info('Writing versions of TADbit and dependencies')
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
