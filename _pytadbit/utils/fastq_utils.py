@@ -5,11 +5,11 @@
 from warnings                             import warn
 from gzip                                 import open as gopen
 from os                                   import SEEK_END
-from random                               import random
 from subprocess                           import Popen, PIPE
+from itertools                            import izip_longest
 import re
 
-from numpy                                import std, mean, linspace, nansum
+from numpy                                import nanstd, nanmean, linspace, nansum
 
 from pytadbit.utils.extraviews            import tadbit_savefig
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
@@ -142,9 +142,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     fhandler.close()
     if not nreads:
         nreads = len(quals)
-    quals = zip(*quals)
-    meanquals = [mean(q) for q in quals]
-    errorquals = [std(q) for q in quals]
+    quals = izip_longest(*quals, fillvalue=float('nan'))
+    meanquals, errorquals = zip(*[(nanmean(q), nanstd(q)) for q in quals])
+    max_seq_len = len(meanquals)
 
     if axe:
         ax = axe
@@ -165,11 +165,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                        left=False, bottom=False)
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
-    ax.errorbar(range(len(line.strip())), meanquals,
+
+    ax.errorbar(range(max_seq_len), meanquals,
                 linewidth=1, elinewidth=1, color='darkblue',
                 yerr=errorquals, ecolor='orange')
 
-    ax.set_xlim((0, len(line)))
+    ax.set_xlim((0, max_seq_len))
     ax.set_xlabel('Nucleotidic position')
     ax.set_ylabel('PHRED score')
     ax.set_title('Sequencing Quality (%d reads)' % (nreads))
@@ -177,7 +178,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     ax.tick_params(axis='y', colors='darkblue', **tkw)
     axb = ax.twinx()
     # quality_plot plot
-    axb.plot([henes.count(i) for i in xrange(len(line))], linewidth=1,
+    axb.plot([henes.count(i) for i in xrange(max_seq_len)], linewidth=1,
              color='black', linestyle='--')
     axb.yaxis.label.set_color('black')
     axb.tick_params(axis='y', colors='black', **tkw)
@@ -188,7 +189,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     except ValueError:
         axb.set_yscale('linear')
     ax.set_ylim((0, ax.get_ylim()[1]))
-    ax.set_xlim((0, len(line)))
+    ax.set_xlim((0, max_seq_len))
 
     # Hi-C plot
     if r_enzs:
@@ -208,7 +209,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         site_len = max((max([len(r_sites[k]) for k in r_sites]),
                                    max([len(l_sites[k]) for k in l_sites]),
                                    max([len(d_sites[k]) for k in d_sites])))
-        seq_len = len(line) - site_len
+        seq_len = max_seq_len - site_len
 
         # transform dictionaries of positions into dictionaries of counts
         for r_enz in sites:
@@ -241,13 +242,13 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         # remove anything that could be in between the two read ends
         if paired:
             for k in sites:
-                sites[k][len(line) / 2 - site_len:
-                         len(line) / 2] = [float('nan')] * site_len
-                fixes[k][len(line) / 2 - site_len:
-                         len(line) / 2] = [float('nan')] * site_len
+                sites[k][max_seq_len / 2 - site_len:
+                         max_seq_len / 2] = [float('nan')] * site_len
+                fixes[k][max_seq_len / 2 - site_len:
+                         max_seq_len / 2] = [float('nan')] * site_len
             for k in liges:
-                liges[k][len(line) / 2 - site_len:
-                         len(line) / 2] = [float('nan')] * site_len
+                liges[k][max_seq_len / 2 - site_len:
+                         max_seq_len / 2] = [float('nan')] * site_len
         # plot undigested cut-sites
         color = iter(plt.cm.Reds(linspace(0.3, 0.95, len(r_enzs))))
         for r_enz in sites:
@@ -300,25 +301,25 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 labels.extend(tmp_labels)
             else:
                 ax2.set_ylabel('Undigested & Dangling-ends')
-        ax2.set_xlim((0, len(line)))
+        ax2.set_xlim((0, max_seq_len))
         # Count ligation sites
         lig_cnt = {}
         for k in liges:
             lig_cnt[k] = (nansum(liges[k]) - liges[k][0] -
-                              liges[k][len(line) / 2])
+                              liges[k][max_seq_len / 2])
         # Count undigested sites
         sit_cnt = {}
         for r_enz in r_enzs:
             sit_cnt[r_enz] = (nansum(sites[r_enz]) - sites[r_enz][0] -
-                              sites[r_enz][len(line) / 2])
+                              sites[r_enz][max_seq_len / 2])
         # Count Dangling-Ends
         des = {}
         for r_enz in r_enzs:
             if any([f > 0 for f in fixes[r_enz]]):
-                des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(len(line) / 2)]
+                des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(max_seq_len / 2)]
                                                           if paired else 0))) / nreads)
             else:
-                des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(len(line) / 2)]
+                des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len / 2)]
                                                          if paired else 0))) / nreads
         title = ''
         for r_enz in r_enzs:
