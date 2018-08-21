@@ -11,7 +11,6 @@ import numpy as np
 
 try:
     from matplotlib.ticker    import MultipleLocator
-    from matplotlib.ticker    import FuncFormatter
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
@@ -1230,8 +1229,11 @@ def pcolormesh_45deg(matrix, axe=None, **kwargs):
         axe = kwargs.get('axe', plt.subplot(111))
     size = matrix.shape[0]
     if 'vmin' not in kwargs and 'vmax' not in kwargs:
-        kwargs['vmin'] = np.min(matrix[np.isfinite(matrix)])
-        kwargs['vmax'] = np.max(matrix[np.isfinite(matrix)])
+        try:
+            kwargs['vmin'] = np.min(matrix[np.isfinite(matrix)])
+            kwargs['vmax'] = np.max(matrix[np.isfinite(matrix)])
+        except ValueError:  # probably empty
+            pass
     # create rotation/scaling matrix
     rot = np.array([[1,0.5],[-1,0.5]])
     # create coordinate matrix and transform it
@@ -1264,6 +1266,9 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False,
     if bad_color is not None:
         kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
         kwargs['cmap'].set_bad(bad_color, 1.)
+
+    if not isinstance(matrix, np.array):
+        matrix = np.asarray(matrix)
 
     # remove zeroes from the matrix in order to avoid -inf with log transform
     if rescale_zeros:
