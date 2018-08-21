@@ -1267,7 +1267,7 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False,
         kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
         kwargs['cmap'].set_bad(bad_color, 1.)
 
-    if not isinstance(matrix, np.array):
+    if not isinstance(matrix, (np.ndarray, np.generic)):
         matrix = np.asarray(matrix)
 
     # remove zeroes from the matrix in order to avoid -inf with log transform
