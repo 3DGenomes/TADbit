@@ -51,6 +51,10 @@ def run(opts):
             for _, lpath, typ in paths:
                 if typ in protected_types or typ.startswith('EXT_'):
                     continue
+                # we do not remove anything outside the work directory
+                if not path.realpath(lpath).startswith(
+                        path.realpath(opts.workdir)):
+                    continue
                 print '  x ' + path.join(opts.workdir, lpath)
                 system('rm -rf ' + path.join(opts.workdir, lpath))
 

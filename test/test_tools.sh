@@ -144,9 +144,17 @@ echo "\n\n -> Found" $errors "errors\n" | tee -a $LOG
 if [ $errors -eq 0 ]
 then
     echo 'Cleanning temporary directory'
-    rm -rf $tmpdir
+    while true; do
+        read -p "Remove temporary folder [Y]?" yn
+        case $yn in
+            ""    ) echo '\n            ... Removing'; rm -rf $tmpdir; break;;
+            [Yy]* ) echo '\n            ... Removing'; rm -rf $tmpdir; break;;
+            [Nn]* ) echo '\n            Have fun with the resuts!!'; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 else
     echo '  ==>> Check LOG in: ' $LOG 'for details'
 fi
 
-echo "Done." | tee -a $LOG
+echo "Done."

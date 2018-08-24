@@ -308,7 +308,7 @@ class IMPoptimizer(object):
                     single_particle_restraints=self.single_particle_restraints)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
-
+                
                 matrices = tdm.get_contact_matrix(
                     cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
                 for m in matrices:
@@ -325,7 +325,7 @@ class IMPoptimizer(object):
                             stderr.write(verb + str(round(result, 4)) + '\n')
                         else:
                             print verb + str(round(result, 4))
-
+        
                     # Store the correlation for the TADbit parameters set
                     self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
             except Exception, e:
@@ -554,8 +554,8 @@ class IMPoptimizer(object):
 
                             # Case in which there is more than 1 distance cutoff (dcutoff)
                             try:
-                                cut = [int(c) for c in self.dcutoff_range
-                                       if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
+                                cut = [str(int(c)) for c in self.dcutoff_range
+                                       if (scale, kbending, maxdist, lowfreq, upfreq, str(int(c)))
                                        in self.results][0]
                             except IndexError:
                                 results[v, w, x, y, z] = float('nan')

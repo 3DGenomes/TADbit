@@ -393,7 +393,7 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
 def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
              region2=None, start2=None, end2=None, nchunks=None,
-             tmpdir='.', verbose=True, normalize=False):
+             tmpdir='.', verbose=True, normalize=False, max_size=None):
 
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
@@ -515,6 +515,15 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         start_bin2 = start_bin1
         end_bin2 = end_bin1
         bins_dict2 = bins_dict1
+
+    size1 = end_bin1 - start_bin1
+    size2 = end_bin2 - start_bin2
+    if verbose:
+        printime('\n  (Matrix size %dx%d)' % (size1, size2))
+    if max_size and max_size < size1 * size2:
+        raise Exception(('ERROR: matrix too large ({0}x{1}) should be at most '
+                         '{2}x{2}').format(size1, size2, int(max_size**0.5)))
+
     pool = mu.Pool(ncpus)
     # create random hash associated to the run:
     rand_hash = "%016x" % getrandbits(64)
@@ -606,7 +615,7 @@ def get_matrix(inbam, resolution, biases=None,
                region1=None, start1=None, end1=None,
                region2=None, start2=None, end2=None, dico=None, clean=False,
                return_headers=False, tmpdir='.', normalization='raw', ncpus=8,
-               nchunks=None, verbose=False):
+               nchunks=None, verbose=False, max_size=None):
     """
     Get matrix from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -651,7 +660,7 @@ def get_matrix(inbam, resolution, biases=None,
         inbam, filter_exclude, resolution, ncpus=ncpus,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
-        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose)
+        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose, max_size=max_size)
 
     if region1:
         regions = [region1]
