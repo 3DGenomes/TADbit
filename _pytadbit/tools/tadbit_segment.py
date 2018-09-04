@@ -350,7 +350,8 @@ def load_parameters_fromdb(opts):
                     raise Exception('ERROR: more than one possible input found, use'
                                     '"tadbit describe" and select corresponding '
                                     'jobid with --jobid')
-
+        else:
+            parse_jobid = opts.jobid
         # fetch path to BAM files
         # try:
         biases = mreads = reso = None

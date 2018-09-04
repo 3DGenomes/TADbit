@@ -19,10 +19,10 @@ from multiprocessing                  import cpu_count
 import sqlite3 as lite
 import time
 
-from numpy                            import arange
+from numpy                            import arange, around
 
 from pytadbit.modelling.imp_modelling import generate_3d_models
-from pytadbit.modelling.imp_modelling import TADbitModelingOutOfBound
+from pytadbit.modelling.restraints    import TADbitModelingOutOfBound
 from pytadbit                         import load_structuralmodels
 from pytadbit                         import Chromosome
 from pytadbit.utils.file_handling     import mkdir
@@ -686,7 +686,7 @@ def check_options(opts):
     def _load_range(range_str, num=float):
         try:
             beg, end, step = map(num, range_str[0].split(':'))
-            return tuple(arange(beg, end + step, step))
+            return tuple(around(arange(beg, end + step, step),2))
         except (AttributeError, ValueError):
             return tuple([num(v) for v in range_str])
 
