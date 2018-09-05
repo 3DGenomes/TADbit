@@ -38,7 +38,6 @@ from pytadbit.utils.extraviews       import plot_HiC_matrix
 
 DESC = 'bin Hi-C data into matrices'
 
-
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
@@ -153,7 +152,7 @@ def run(opts):
         sections = OrderedDict(zip(bamfile.references,
                                    [x for x in bamfile.lengths]))
         total = 0
-        section_pos = dict()
+        section_pos = OrderedDict()
         for crm in sections:
             section_pos[crm] = (total, total + sections[crm])
             total += sections[crm]
@@ -247,7 +246,7 @@ def run(opts):
                     regions[0], pltbeg1 if pltbeg1 else 1, pltend1)
                 ylabel = '{}:{:,}-{:,}'.format(
                     regions[-1], pltbeg2 if pltbeg2 else 1, pltend2)
-                section_pos = dict((k, section_pos[k]) for k in section_pos
+                section_pos = OrderedDict((k, section_pos[k]) for k in section_pos
                                    if k in regions)
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,

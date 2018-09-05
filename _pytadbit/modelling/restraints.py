@@ -93,7 +93,7 @@ class HiCBasedRestraints(object):
 
         if self.CONFIG['lowrdist'] > self.CONFIG['maxdist']:
             raise TADbitModelingOutOfBound(
-                ('ERROR: we must prevent you from doing this for the safe of our' +
+                ('ERROR: we must prevent you from doing this for the safe of our ' +
                  'universe...\nIn this case, maxdist must be higher than %s\n' +
                  '   -> resolution times scale -- %s*%s)') % (
                     self.CONFIG['lowrdist'], self.resolution, self.CONFIG['scale']))

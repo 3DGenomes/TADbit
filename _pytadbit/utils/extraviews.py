@@ -1097,7 +1097,6 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axim.minorticks_on()
     cb = plt.colorbar(im, cax=axey)
     cb.set_label('Pearson product-moment correlation coefficients')
-    _ = axim.get_majorticklocs()  # misteriously corrects a bug in matplotlib 2.0.2 ...
     axim.grid()
 
     # scale first PC
