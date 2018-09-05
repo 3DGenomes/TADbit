@@ -29,7 +29,7 @@ import logging
 import sqlite3 as lite
 import time
 
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, identify_re
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.utils.file_handling         import which, mkdir
 from pytadbit.mapping.full_mapper         import full_mapping
@@ -141,6 +141,16 @@ def check_options(opts):
                         'not provide any binary for MAC-OS.')
 
     # check RE name
+    if opts.renz == ['CHECK']:
+        print '\nSearching for most probable restriction enzyme in file: %s\n' % (opts.fastq)
+        try:
+            pat, enz = identify_re(opts.fastq, nreads=10000)
+            print ' -> Most probable digested site: %s' % (pat)
+            print ' -> Enzymes matching: %s' % (', '.join(enz))
+        except ValueError:
+            print ' -> Nothing found...'
+        print '\nDone.\n'
+        exit()
     for renz in opts.renz:
         try:
             _ = RESTRICTION_ENZYMES[renz]
@@ -411,7 +421,8 @@ def populate_args(parser):
 
     glopts.add_argument('--renz', dest='renz', metavar="STR",
                         type=str, required=True, nargs='+',
-                        help='restriction enzyme name(s)')
+                        help='''restriction enzyme name(s). Use "--renz CHECK"
+                        to search for most probable and exit''')
 
     glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
                         default=[], type=str,

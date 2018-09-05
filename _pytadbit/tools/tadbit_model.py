@@ -22,7 +22,7 @@ import time
 from numpy                            import arange
 
 from pytadbit.modelling.imp_modelling import generate_3d_models
-from pytadbit.modelling.imp_modelling import TADbitModelingOutOfBound
+from pytadbit.modelling.restraints    import TADbitModelingOutOfBound
 from pytadbit                         import load_structuralmodels
 from pytadbit                         import Chromosome
 from pytadbit.utils.file_handling     import mkdir
