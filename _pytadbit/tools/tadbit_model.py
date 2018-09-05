@@ -29,6 +29,7 @@ from pebble                           import ProcessPool
 from numpy                            import arange
 
 from pytadbit.modelling.imp_modelling import generate_3d_models
+from pytadbit.modelling.restraints    import TADbitModelingOutOfBound
 from pytadbit                         import load_structuralmodels
 from pytadbit.modelling.impoptimizer  import IMPoptimizer
 from pytadbit                         import Chromosome

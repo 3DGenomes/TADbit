@@ -4,8 +4,9 @@
 Definition and mapping of restriction enymes
 """
 
-from re import compile
+from re import compile, match
 from warnings import warn
+from pytadbit.utils.file_handling import magic_open
 
 
 def iupac2regex(restring):
@@ -221,6 +222,54 @@ def religateds(r_enzs):
             site2 = site2.replace('|', '')
             ligations[(r_enz1, r_enz2)] = beg1 + end1[:len(end1)-len(beg1)] + end2
     return ligations
+
+
+def identify_re(fnam, nreads=10000):
+    """
+    Search most probable restriction enzyme used in the Hi-C experiment
+
+    :param fnam: path to FASTQ file
+    :param 10000 nreads: number of reads to use for prediction, the more the better (and slower)
+
+    :returns: most probable pattern and the corresponding list of restriction enzyme names,
+       or None, None if nothing is found
+    """
+    pats = {}
+    for k in RESTRICTION_ENZYMES:
+        pat = RESTRICTION_ENZYMES[k].split('|')[1]
+        if len(pat) < 1:
+            continue
+        pats.setdefault(pat, {'name': [], 'count': 0})
+        pats[pat]['name'].append(k)
+
+    fh = magic_open(fnam)
+    for _ in xrange(nreads):
+        _ = fh.next()
+        s = fh.next()[:14]
+        _ = fh.next()
+        _ = fh.next()
+        for pat in pats:
+            m = match(pat, s)
+            if m and m.start() == 0:
+                pats[pat]['count'] += 1
+
+    bestk = 'XXXXXXXXXXXXXXXXXX'
+    best = None
+    for k in sorted(pats, key=lambda x: pats[x]['count'], reverse=True):
+        m = match(bestk, k)
+        if nreads / (2.5**len(k)) >= pats[k]['count']:
+            continue
+        if not best:
+            best = pats[k]
+            bestk = k
+        elif (len(bestk) < len(k) and
+            best['count'] / (2.5 ** (len(k) - len(bestk))) < pats[k]['count'] and
+            m and m.start() == 0):
+            best = pats[k]
+            bestk = k
+
+    if best:
+        return bestk, best['name']
 
 
 class RE_dict(dict):
