@@ -887,6 +887,9 @@ class HiC_data(dict):
                 except AttributeError:
                     warn(('WARNING: chromosome %s too small for plotting.'
                           'Skipping image creation.') % sec)
+                except ValueError:
+                    warn(('WARNING: chromosome %s too small for plotting.'
+                          'Skipping image creation.') % sec)
 
         self.compartments = cmprts
         if savedata:
