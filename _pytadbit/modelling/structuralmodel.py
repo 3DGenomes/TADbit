@@ -748,15 +748,27 @@ class StructuralModel(dict):
             out += model_header(self)
         form = "%s\t%s\t%.3f\t%.3f\t%.3f\n"
         # TODO: do not use resolution directly -> specific to Hi-C
-        for i in xrange(len(self['x'])):
-            out += form % (
-                i + 1,
-                '%s:%s-%s' % (
-                    self['description']['chromosome'],
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * i + 1,
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * (i + 1)),
-                round(self['x'][i], 3),
-                round(self['y'][i], 3), round(self['z'][i], 3))
+        chrom_list = self['description']['chromosome']
+        chrom_start = self['description']['start']
+        chrom_end = self['description']['end']
+        if not isinstance(chrom_list, list):
+            chrom_list = [chrom_list]
+            chrom_start = [chrom_start]
+            chrom_end = [chrom_end]
+        chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
+        chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
+        offset = 0
+        for crm in xrange(len(chrom_list)-1):
+            for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
+                out += form % (
+                    i + 1,
+                    '%s:%s-%s' % (
+                        chrom_list[crm],
+                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * i + 1,
+                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * (i + 1)),
+                    round(self['x'][i], 3),
+                    round(self['y'][i], 3), round(self['z'][i], 3))
+            offset += (chrom_end[crm]-chrom_start[crm])
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()
@@ -804,14 +816,26 @@ class StructuralModel(dict):
 
         form = "%s\t%.3f\t%.3f\t%.3f\n"
         # TODO: do not use resolution directly -> specific to Hi-C
-        for i in xrange(len(self['x'])):
-            out += form % (
-                '%s:%s-%s' % (
-                    self['description']['chromosome'],
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * i + 1,
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * (i + 1)),
-                round(self['x'][i], 3),
-                round(self['y'][i], 3), round(self['z'][i], 3))
+        chrom_list = self['description']['chromosome']
+        chrom_start = self['description']['start']
+        chrom_end = self['description']['end']
+        if not isinstance(chrom_list, list):
+            chrom_list = [chrom_list]
+            chrom_start = [chrom_start]
+            chrom_end = [chrom_end]
+        chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
+        chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
+        offset = 0
+        for crm in xrange(len(chrom_list)-1):
+            for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
+                out += form % (
+                    '%s:%s-%s' % (
+                        chrom_list[crm],
+                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * i + 1,
+                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * (i + 1)),
+                    round(self['x'][i], 3),
+                    round(self['y'][i], 3), round(self['z'][i], 3))
+            offset += (chrom_end[crm]-chrom_start[crm])
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()

@@ -1342,11 +1342,11 @@ class HiC_data(dict):
                 except KeyError:
                     continue
         out.write('#%sstart\tend\trich in A\ttype\n'% (
-            'CHR\t' if len(sections) > 1 else ''))
+            'CHR\t' if len(sections) > 1 else '\t'))
         for sec in sections:
             for c in self.compartments[sec]:
                 out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                    (str(sec) + '\t') if sections else '',
+                    (str(sec) + '\t') if sections else '\t',
                     c['start'] + 1, c['end'] + 1,
                     c.get('dens', float('nan')), c.get('type', '')))
         out.close()

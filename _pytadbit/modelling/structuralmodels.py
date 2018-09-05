@@ -81,7 +81,7 @@ def load_structuralmodels(input_):
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
-    if isinstance(input_, str):
+    if isinstance(input_, basestring):
         svd = load(open(input_))
     else:
         svd = input_
@@ -1618,7 +1618,7 @@ class StructuralModels(object):
                               [self._zscores[v].values()
                                for v in self._zscores.keys()]))
         _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
-                                facecolor='none', edgecolor='k', normed=True)
+                                facecolor='none', edgecolor='k', density=True)
         k2, pv = normaltest(zdata)
         normfit = sc_norm.pdf(zdata, np_mean(zdata), np_std(zdata))
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
@@ -1626,7 +1626,7 @@ class StructuralModels(object):
             reduce(lambda x, y: x + y, [self._zscores[v].values()
                                         for v in self._zscores.keys()]),
             bins=25, linewidth=2, facecolor='none', edgecolor='k',
-            histtype='stepfilled', normed=True)
+            histtype='stepfilled', density=True)
         height1 = height2 = 0
         minv = nanmin(masked_array)
         maxv = nanmax(masked_array)
