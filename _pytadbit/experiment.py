@@ -1027,12 +1027,11 @@ class Experiment(object):
         """
         Get the z-score of a sub-region of an  experiment.
 
-        TODO: find a nicer way to do this...
-
         :param start: first bin to model (bin number)
         :param end: first bin to model (bin number)
 
-        :returns: z-score, raw values and zzeros of the experiment
+        :returns: 1- z-score, 2- matrix of values with NaNs in the diagonal and in 
+           bad columns and 3- actual position of bad columns
         """
         if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
@@ -1074,14 +1073,12 @@ class Experiment(object):
             # zeros are rows or columns having a zero in the diagonal
             if i in exp._zeros:
                 continue
-            for j in xrange(i + 1, exp.size):
+            for j in xrange(i + 1, exp.size):  # NaNs kept in the diagonal
                 if j in exp._zeros:
                     continue
-                if (not exp.norm[0][i * exp.size + j]
-                    or not exp.norm[0][i * exp.size + j]):
-                    continue
-                values[i][j] = exp.norm[0][i * exp.size + j]
-                values[j][i] = exp.norm[0][i * exp.size + j]
+                val = exp.norm[0][i * exp.size + j]
+                values[i][j] = val
+                values[j][i] = val
         return exp._zscores, values, exp._zeros
 
 
