@@ -1617,16 +1617,27 @@ class StructuralModels(object):
         zdata = sorted(reduce(lambda x, y: x + y,
                               [self._zscores[v].values()
                                for v in self._zscores.keys()]))
-        _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
-                                facecolor='none', edgecolor='k', density=True)
+        try:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k', density=True)
+        except AttributeError:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k')
         k2, pv = normaltest(zdata)
         normfit = sc_norm.pdf(zdata, np_mean(zdata), np_std(zdata))
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
-        ax.hist(
-            reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                        for v in self._zscores.keys()]),
-            bins=25, linewidth=2, facecolor='none', edgecolor='k',
-            histtype='stepfilled', density=True)
+        try:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled', density=True)
+        except AttributeError:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled')
         height1 = height2 = 0
         minv = nanmin(masked_array)
         maxv = nanmax(masked_array)
