@@ -183,54 +183,59 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
 
     muls = tuple(map(my_round, (m, u, l, s)))
     dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-
-    n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
-    pool = ProcessPool(max_workers=opts.concurrent_jobs, max_tasks=n_jobs)
-    jobs = {}
-    for n_job in xrange(n_jobs):
-        job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
-        if job_file_handler:
-            scriptname = path.join(job_dir,'_tmp_optim.py')
-            job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
-        else:
-            jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
-                                                               script_args),
-                timeout=opts.timeout_job)
-
-    pool.close()
-    pool.join()
-
-    if job_file_handler:
-        return None, None
-
-    models = None
-    for n_job in xrange(n_jobs):
-        try:
+    modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
+    
+    if path.exists(modelsfile):
+        models = load_structuralmodels(modelsfile)
+    else:
+        n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
+        pool = ProcessPool(max_workers=opts.concurrent_jobs, max_tasks=n_jobs)
+        jobs = {}
+        for n_job in xrange(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
-            results_file = path.join(job_dir,'results.models')
-            if path.isfile(results_file):
-                results = load_structuralmodels(results_file)
-                if models:
-                    models._extend_models(results, nbest=len(models)+len(results))
-                else:
-                    models = results
-            failed_flag = path.join(job_dir,'failed.flag')
-            logname = path.join(job_dir,'_tmp_log.log')
-            if path.isfile(failed_flag):
-                f = open(logname, 'r')
-                logging.error(f.read())
-                f.close()
-            system('rm -rf %s' % (job_dir))
-        except TimeoutError:
-            logging.info("Model took more than %s seconds to complete ... canceling" % str(opts.timeout_job))
-            jobs[n_job].cancel()
-        except Exception as error:
-            logging.info("Function raised %s" % error)
-            jobs[n_job].cancel()
-    paramsfile = path.join(dirname,'_tmp_common_params.pickle')
-    system('rm %s' % (paramsfile))
-
-    models.define_best_models(opts.nkeep)
+            if job_file_handler:
+                scriptname = path.join(job_dir,'_tmp_optim.py')
+                job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
+            else:
+                jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
+                                                                   script_args),
+                    timeout=opts.timeout_job)
+    
+        pool.close()
+        pool.join()
+    
+        if job_file_handler:
+            return None, None
+    
+        models = None
+        for n_job in xrange(n_jobs):
+            try:
+                job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+                results_file = path.join(job_dir,'results.models')
+                if path.isfile(results_file):
+                    results = load_structuralmodels(results_file)
+                    if models:
+                        models._extend_models(results, nbest=len(models)+len(results))
+                    else:
+                        models = results
+                failed_flag = path.join(job_dir,'failed.flag')
+                logname = path.join(job_dir,'_tmp_log.log')
+                if path.isfile(failed_flag):
+                    f = open(logname, 'r')
+                    logging.error(f.read())
+                    f.close()
+                system('rm -rf %s' % (job_dir))
+            except TimeoutError:
+                logging.info("Model took more than %s seconds to complete ... canceling" % str(opts.timeout_job))
+                jobs[n_job].cancel()
+            except Exception as error:
+                logging.info("Function raised %s" % error)
+                jobs[n_job].cancel()
+        paramsfile = path.join(dirname,'_tmp_common_params.pickle')
+        system('rm %s' % (paramsfile))
+    
+        models.define_best_models(opts.nkeep)
+        models.save_models(modelsfile)
 
     num=1
     results_corr = {}
@@ -249,9 +254,9 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                    (num, len(cuts), u, l, m, s, d, result)))
         num += 1
         results_corr[name] = {'corr'   : result,
-                              'nmodels': (len(models) +
-                                          len(models._bad_models)),
-                              'kept'   : len(models)}
+                         'nmodels': (len(models) +
+                                     len(models._bad_models)),
+                         'kept'   : len(models)}
     if exp: #Store more data for the models
         out = open(path.join(outdir, dirname, 'constraints.txt'),
                    'w')
@@ -261,8 +266,6 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                              for (p1, p2), (harm, dist, kforce)
                              in models._restraints.iteritems()]) + '\n')
         out.close()
-    modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
-    models.save_models(modelsfile)
 
     return results_corr, modelsfile
 
@@ -280,8 +283,11 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
         m, u, l, s = map(my_round, (m, u, l, s))
         muls = tuple((m, u, l, s))
-        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % muls))
-        prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+        cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
+        modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
+        if not path.exists(modelsfile):
+            mkdir(cfgfolder)
+            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
 
     # get the best combination
     best = ({'corr': None}, [None, None, None, None, None])
@@ -319,14 +325,19 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                   optpar['lowfreq'],
                   optpar['scale'  ])
     muls = tuple(map(my_round, (m, u, l, s)))
-    mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % muls))
+    cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
+    if path.exists(cfgfolder):
+        logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
+        return []
+    mkdir(cfgfolder)
     prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
-    _, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
+    results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
                                          job_file_handler=job_file_handler,
                                          exp = exp, script_cmd = script_cmd,
                                          script_args = script_args)
     if not job_file_handler:
         rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
+    return results
     
 def run(opts):
     check_options(opts)
@@ -336,8 +347,8 @@ def run(opts):
     # prepare output folders
     batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
         'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
-        'job_list', 'rand', 'nmodels', 'nkeep', 'optimize',
-        'optimization_id', 'cpus', 'workdir', 'matrix', 'ori_beg', 'ori_end'])
+        'job_list', 'rand', 'optimize',
+        'optimization_id', 'cpus', 'workdir', 'matrix'])
 
     # write log
     if opts.optimize:
@@ -362,31 +373,30 @@ def run(opts):
         else:
             (opts.matrix,_) = load_matrix_path_fromdb(opts)
             opts.matrix = convert_from_unicode(path.join(opts.workdir, opts.matrix))
-    
+
         crm = load_hic_data(opts)
         exp = crm.experiments[0]
         opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
-        
+
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
-    
-        mkdir(path.join(opts.workdir, '07_model'))
-        outdir = path.join(opts.workdir, '07_model',
+
+        mkdir(path.join(opts.workdir, '06_model'))
+        outdir = path.join(opts.workdir, '06_model',
                            '%s_%s_%s-%s' % (batch_job_hash,
                                 opts.crm if opts.crm else 'all',
                                 opts.beg if opts.beg else '',
                                 opts.end if opts.end else ''))
         mkdir(outdir)
-    
+
         if opts.crm:
             logging.info('''
         %s%s
         
-          - Region: Chromosome %s from %d to %d at resolution %s (%d particles)\n''' % (
-              'Preparing ' if opts.job_list else '',
-                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11)) 
-                   if opts.optimize else
-                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
+          - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
+            ''' % ('Preparing ' if opts.job_list else '',
+                   ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
+                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
                    opts.end - opts.beg + 1))
         else:
@@ -395,9 +405,8 @@ def run(opts):
         
           - Region: full genome at resolution %s (%d particles)
             ''' % ('Preparing ' if opts.job_list else '',
-                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11)) 
-                   if opts.optimize else
-                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
+                   ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
+                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    nicer(opts.reso),
                    opts.end - opts.beg + 1))
         # in case we are not going to run
@@ -430,7 +439,7 @@ def run(opts):
                                 savefig="%s/optimal_params.%s" % (
                                     outdir, opts.fig_format))
                 logging.info('\n optimization done')
-    
+
         if opts.model:
             if not opts.force:
                 logging.info( '     o Loading optimized parameters')
@@ -442,10 +451,10 @@ def run(opts):
                           'lowfreq': opts.lowfreq[0],
                           'scale'  : opts.scale[0],
                           'kforce' : 5}
-        
+
             ###########
             # Modeling
-            run_distributed(exp, batch_job_hash, opts, outdir, optpar,
+            results = run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                             job_file_handler = job_file_handler,
                             script_cmd = opts.script_cmd, script_args = opts.script_args)
     
@@ -462,7 +471,8 @@ def run(opts):
                                     int(opts.beg), int(opts.end))
         outdir = path.join(opts.workdir,outdir)
         models = load_structuralmodels(path.join(outdir,batch_job_hash+'.models'))
-        
+        opts.reso = models.description['resolution']
+
         logging.info('''
         %s
         
@@ -470,7 +480,7 @@ def run(opts):
             ''' % ('Analysis',
                    opts.crm, opts.beg, opts.end, nicer(opts.reso),
                    opts.end - opts.beg + 1))
-        
+
         dcutoff = int((opts.dcutoff[0] if opts.dcutoff else 2) *
                   models._config['scale']   *
                   models.resolution)
@@ -483,13 +493,13 @@ def run(opts):
                 savefig=path.join(outdir, batch_job_hash + '_corre_real.' + opts.fig_format),
                 plot=True)
             logging.info("\t Correlation coefficient: %s [p-value: %s]", rho, pval)
-    
+
         if "z-score plot" in opts.analyze_list:
             # zscore plots
             logging.info("\tZ-score plot...")
             models.zscore_plot(
                 savefig=path.join(outdir, batch_job_hash + '_zscores.' + opts.fig_format))
-    
+
         # Cluster models based on structural similarity
         logging.info("\tClustering all models into sets of structurally similar" +
                      " models...")
@@ -517,10 +527,10 @@ def run(opts):
                     outdir, batch_job_hash + '_clusters.' + opts.fig_format))
         except:
             logging.info("\t\tWARNING: plot for clusters could not be made...")
-    
+
         if not opts.not_write_json:
             models.write_json(path.join(outdir, batch_job_hash + '.json'), title = opts.project+' '+name if opts.project else name)
-    
+
         if not (opts.not_write_xyz and opts.not_write_cmm):
             # Save the clustered models into directories for easy visualization with
             # Chimera (http://www.cgl.ucsf.edu/chimera/)
@@ -732,6 +742,8 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             cur.execute("""
         create table MODELED_REGIONs
            (Id integer primary key,
+            JOBid int,
+            Type text,
             PATHid int,
             PARAM_md5 text,
             RESO int,
@@ -754,7 +766,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             Cutoff int,
             Nmodels int,
             Kept int,
-            Correlation text)""")
+            Correlation int)""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
             # In case optimization or modeling  is split in different computers
@@ -773,18 +785,18 @@ def save_to_db(opts, outdir, results, batch_job_hash,
         if not opts.job_list:
             ##### STORE OPTIMIZATION RESULT
             jobid = get_jobid(cur)
-            add_path(cur, outdir, 'DIR', jobid, opts.workdir)
+            add_path(cur, outdir, 'EXT_OPTIM_FOLDER' if opts.optimize else 'DIR', jobid, opts.workdir)
             pathid = get_path_id(cur, outdir, opts.workdir)
             # models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
             ### STORE GENERAL OPTIMIZATION INFO
             try:
                 cur.execute("""
                 insert into MODELED_REGIONs
-                (Id  , PATHid, PARAM_md5, RESO, BEG, END)
+                (Id  , JOBid , Type, PATHid, PARAM_md5, RESO, BEG, END)
                 values
-                (NULL,     %d,      "%s",   %d,  %d,  %d)
-                """ % (pathid, batch_job_hash, opts.reso,
-                       opts.beg, opts.end))
+                (NULL,   %d,     "%s",   %d,      "%s",   %d,  %d,  %d)
+                """ % (jobid, 'OPTIM' if opts.optimize else 'MODEL', pathid,
+                    batch_job_hash, opts.reso, opts.beg, opts.end))
             except lite.IntegrityError:
                 pass
             ### STORE EACH OPTIMIZATION
@@ -802,11 +814,14 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                     insert into MODELs
                     (Id  , REGIONid, JOBid, OPTPAR_md5, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
                     values
-                    (NULL,             %d,    %d,      '%s',      %s,     %s,      %s,     %s,    %s,      %d,   %d,   '%f')
+                    (NULL,             %d,    %d,      '%s',      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
                     """ % ((optimid, jobid, optpar_md5, m, u, l, d, s,
                             results[(m, u, l, d, s)]['nmodels'],
                             results[(m, u, l, d, s)]['kept'],
                             results[(m, u, l, d, s)]['corr'])))
+                    muls = tuple(map(my_round, (m, u, l, s)))
+                    dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
+                    add_path(cur, dirname, 'MODELS', jobid, opts.workdir)
                 else:
                     cur.execute(("update MODELs "
                                  "set Nmodels = %d, Kept = %d, Correlation = %f "
@@ -816,21 +831,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                                      results[(m, u, l, d, s)]['kept'],
                                      results[(m, u, l, d, s)]['corr'],
                                      optpar_md5, optimid))
-    
-            ### MODELING
-            if not opts.optimization_id:
-                cur.execute("SELECT Id from MODELED_REGIONs")
-                optimid = cur.fetchall()[0]
-                if len(optimid) > 1:
-                    raise IndexError("ERROR: more than 1 optimization in folder "
-                                     "choose with 'tadbit describe' and "
-                                     "--optimization_id")
-                optimid = optimid[0]
-            else:
-                cur.execute("SELECT Id from MODELED_REGIONs where Id=%d" % (
-                    opts.optimization_id))
-                optimid = cur.fetchall()[0][0]
-        
+
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
@@ -1065,7 +1066,7 @@ def check_options(opts):
     def _load_range(range_str, num=float):
         try:
             beg, end, step = map(num, range_str[0].split(':'))
-            return tuple([round(x,2) for x in arange(beg, end + step / 2, step)])
+            return tuple([round(x,2) for x in arange(beg, end + step, step)])
         except (AttributeError, ValueError):
             return tuple([round(num(v),2) for v in range_str])
 
@@ -1101,13 +1102,13 @@ def load_optpar_fromdb(opts):
     with con:
         cur = con.cursor()
         if not opts.optimization_id:
-            cur.execute("SELECT Id from MODELED_REGIONs where RESO=%d and BEG=%d and END=%d" % (
+            cur.execute("SELECT Id from MODELED_REGIONs where RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
             opts.reso, opts.beg, opts.end))
         else:
-            cur.execute("SELECT Id from MODELED_REGIONs where Id=%d and RESO=%d and BEG=%d and END=%d" % (
+            cur.execute("SELECT Id from MODELED_REGIONs where JOBid=%d and RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
                 opts.optimization_id,opts.reso, opts.beg, opts.end))
         try:
-            optimid = cur.fetchall()[0]
+            optimid = cur.fetchall()
         except IndexError:
             raise IndexError("ERROR: no optimization found. Run 'tadbit model' "
                                  "with --optimize or use --force to indicate optimal "
@@ -1123,7 +1124,7 @@ def load_optpar_fromdb(opts):
                     where REGIONid=%d ORDER BY Correlation DESC
                 """ % (optimid))
         optpar = cur.fetchall()[0]
-        logging.info(('Loaded UpFreq:%6s LowFreq:%7s MaxDist:%7s scale:%6s cutoff:%7s Correlation:%.4s' %
+        logging.info(('Loaded UpFreq:%6s LowFreq:%7s MaxDist:%7s scale:%6s cutoff:%7s Correlation:%.4f' %
                 (optpar[4], optpar[5], optpar[3], optpar[7], optpar[6], optpar[10])))
         optpar = {'maxdist': optpar[3],
                   'upfreq' : optpar[4],
