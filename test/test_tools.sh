@@ -196,15 +196,15 @@ echo $((END-START)) | awk '{print "=> done in: " int($1/60)"m "int($1%60)"s"}' |
 
 START=$(date +%s);
 echo 'Modelling: model generation.\n' | tee -a $LOG  # Estimated time: 2 min
-echo $SEP"\n   $ " tadbit model -w $tmpdir/both --model --project 3DAROC --species 'Saccharomyces cerevisiae' --assembly 'R64-1-1' --beg 0 --end 1360022 --reso 20000 --maxdist 500 --upfreq=-0.2 --lowfreq=-0.4 --nmodels 200 --nkeep 200 -j 8 --cpu 8 | tee -a $LOG
-tadbit model -w $tmpdir/both --model --project 3DAROC --species 'Saccharomyces cerevisiae' --assembly 'R64-1-1' --beg 0 --end 1360022 --reso 20000 --maxdist 500 --upfreq=-0.2 --lowfreq=-0.4 --nmodels 200 --nkeep 200 -j 8 --cpu 8 2>> $LOG
+echo $SEP"\n   $ " tadbit model -w $tmpdir/both --model --project test --species 'Saccharomyces cerevisiae' --assembly 'R64-1-1' --beg 0 --end 1360022 --reso 20000 --nmodels 200 --nkeep 200 -j 8 --cpu 8 | tee -a $LOG
+tadbit model -w $tmpdir/both --model --project test --species 'Saccharomyces cerevisiae' --assembly 'R64-1-1' --beg 0 --end 1360022 --reso 20000 --nmodels 200 --nkeep 200 -j 8 --cpu 8 2>> $LOG
 END=$(date +%s)
 echo $((END-START)) | awk '{print "=> done in: " int($1/60)"m "int($1%60)"s"}' | tee -a $LOG
 
 START=$(date +%s);
 echo 'Modelling: model analysis.\n' | tee -a $LOG  # Estimated time: 2 min
-echo $SEP"\n   $ " tadbit model --analyze -w $tmpdir/both -r 20000 --fig_format png -j 11 | tee -a $LOG
-tadbit model --analyze -w $tmpdir/both -r 20000 --fig_format png -j 11 2>> $LOG
+echo $SEP"\n   $ " tadbit model --analyze -w $tmpdir/both --fig_format png -j 11 | tee -a $LOG
+tadbit model --analyze -w $tmpdir/both --fig_format png -j 11 2>> $LOG
 END=$(date +%s)
 echo $((END-START)) | awk '{print "=> done in: " int($1/60)"m "int($1%60)"s"}' | tee -a $LOG
 

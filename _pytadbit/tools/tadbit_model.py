@@ -381,8 +381,8 @@ def run(opts):
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
 
-        mkdir(path.join(opts.workdir, '06_model'))
-        outdir = path.join(opts.workdir, '06_model',
+        mkdir(path.join(opts.workdir, '07_model'))
+        outdir = path.join(opts.workdir, '07_model',
                            '%s_%s_%s-%s' % (batch_job_hash,
                                 opts.crm if opts.crm else 'all',
                                 opts.beg if opts.beg else '',
@@ -393,9 +393,10 @@ def run(opts):
             logging.info('''
         %s%s
         
-          - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
-            ''' % ('Preparing ' if opts.job_list else '',
-                   ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
+          - Region: Chromosome %s from %d to %d at resolution %s (%d particles)\n''' % (
+              'Preparing ' if opts.job_list else '',
+                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
+                   if opts.optimize else
                    ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
                    opts.end - opts.beg + 1))
@@ -403,9 +404,10 @@ def run(opts):
             logging.info('''
         %s%s
         
-          - Region: full genome at resolution %s (%d particles)
-            ''' % ('Preparing ' if opts.job_list else '',
-                   ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
+          - Region: full genome at resolution %s (%d particles)\n''' % (
+              'Preparing ' if opts.job_list else '',
+                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
+                   if opts.optimize else
                    ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    nicer(opts.reso),
                    opts.end - opts.beg + 1))
@@ -766,7 +768,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             Cutoff int,
             Nmodels int,
             Kept int,
-            Correlation int)""")
+            Correlation text)""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
             # In case optimization or modeling  is split in different computers
@@ -814,7 +816,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                     insert into MODELs
                     (Id  , REGIONid, JOBid, OPTPAR_md5, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
                     values
-                    (NULL,             %d,    %d,      '%s',      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
+                    (NULL,             %d,    %d,      '%s',      %s,     %s,      %s,     %s,    %s,      %d,   %d,   '%f')
                     """ % ((optimid, jobid, optpar_md5, m, u, l, d, s,
                             results[(m, u, l, d, s)]['nmodels'],
                             results[(m, u, l, d, s)]['kept'],
@@ -1066,7 +1068,7 @@ def check_options(opts):
     def _load_range(range_str, num=float):
         try:
             beg, end, step = map(num, range_str[0].split(':'))
-            return tuple([round(x,2) for x in arange(beg, end + step, step)])
+            return tuple([round(x,2) for x in arange(beg, end + step / 2, step)])
         except (AttributeError, ValueError):
             return tuple([round(num(v),2) for v in range_str])
 
@@ -1124,7 +1126,7 @@ def load_optpar_fromdb(opts):
                     where REGIONid=%d ORDER BY Correlation DESC
                 """ % (optimid))
         optpar = cur.fetchall()[0]
-        logging.info(('Loaded UpFreq:%6s LowFreq:%7s MaxDist:%7s scale:%6s cutoff:%7s Correlation:%.4f' %
+        logging.info(('Loaded UpFreq:%6s LowFreq:%7s MaxDist:%7s scale:%6s cutoff:%7s Correlation:%.4s' %
                 (optpar[4], optpar[5], optpar[3], optpar[7], optpar[6], optpar[10])))
         optpar = {'maxdist': optpar[3],
                   'upfreq' : optpar[4],
