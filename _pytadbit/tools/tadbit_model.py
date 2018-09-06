@@ -7,14 +7,14 @@ information needed
 """
 
 from argparse                         import HelpFormatter
-from os                               import path, listdir, remove, system, rename, makedirs
+from os                               import path, remove, system, rename, makedirs
 from string                           import ascii_letters
 from math                             import ceil
 from random                           import random
 from shutil                           import copyfile
 from itertools                        import product
 from warnings                         import warn
-from cPickle                          import load, dump
+from cPickle                          import dump
 from hashlib                          import md5
 from multiprocessing                  import cpu_count
 from concurrent.futures               import TimeoutError
@@ -28,8 +28,6 @@ import collections
 from pebble                           import ProcessPool
 from numpy                            import arange
 
-from pytadbit.modelling.imp_modelling import generate_3d_models
-from pytadbit.modelling.restraints    import TADbitModelingOutOfBound
 from pytadbit                         import load_structuralmodels
 from pytadbit.modelling.impoptimizer  import IMPoptimizer
 from pytadbit                         import Chromosome
@@ -37,9 +35,8 @@ from pytadbit.utils.file_handling     import mkdir
 from pytadbit.utils.extraviews        import nicer
 from pytadbit.utils.sqlite_utils      import get_path_id, add_path, get_jobid
 from pytadbit.utils.sqlite_utils      import digest_parameters
-from pytadbit                         import load_hic_data_from_reads
 from pytadbit                         import get_dependencies_version
-from pytadbit.parsers.hic_parser      import optimal_reader, read_matrix, __read_file_header
+from pytadbit.parsers.hic_parser      import read_matrix
 
 
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
@@ -71,7 +68,8 @@ def convert_from_unicode(data):
     return data
 
 def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
-    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset, opts.end - opts.offset)
+    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset,
+                                                        opts.end - opts.offset)
     zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
     nloci = opts.end - opts.beg + 1
     if exp.norm and exp.norm[0].chromosomes:
@@ -184,7 +182,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
     muls = tuple(map(my_round, (m, u, l, s)))
     dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
     modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
-    
+
     if path.exists(modelsfile):
         models = load_structuralmodels(modelsfile)
     else:
@@ -200,13 +198,12 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                 jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
                                                                    script_args),
                     timeout=opts.timeout_job)
-    
         pool.close()
         pool.join()
-    
+
         if job_file_handler:
             return None, None
-    
+
         models = None
         for n_job in xrange(n_jobs):
             try:
@@ -233,13 +230,12 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                 jobs[n_job].cancel()
         paramsfile = path.join(dirname,'_tmp_common_params.pickle')
         system('rm %s' % (paramsfile))
-    
+
         models.define_best_models(opts.nkeep)
         models.save_models(modelsfile)
 
     num=1
     results_corr = {}
-    d = float('nan')
     cuts = dict([(d, int(d * opts.reso * float(s))) for d in opts.dcutoff])
     for d, cut in sorted(cuts.iteritems()):
         try:
@@ -254,9 +250,9 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                    (num, len(cuts), u, l, m, s, d, result)))
         num += 1
         results_corr[name] = {'corr'   : result,
-                         'nmodels': (len(models) +
-                                     len(models._bad_models)),
-                         'kept'   : len(models)}
+                              'nmodels': (len(models) +
+                                          len(models._bad_models)),
+                              'kept'   : len(models)}
     if exp: #Store more data for the models
         out = open(path.join(outdir, dirname, 'constraints.txt'),
                    'w')
@@ -314,7 +310,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
               'lowfreq': l,
               'scale'  : s,
               'kforce' : 5}
-    
+
     return optpar, results
 
 def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
@@ -338,12 +334,12 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
     if not job_file_handler:
         rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
     return results
-    
+
 def run(opts):
     check_options(opts)
 
     launch_time = time.localtime()
-    
+
     # prepare output folders
     batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
         'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
@@ -418,15 +414,17 @@ def run(opts):
                                            opts.optimize else 'modeling')), 'w')
         else:
             job_file_handler = None
-    
+
         optpar = None
         results = []
         ###############
         # Optimization
         if opts.optimize:
             logging.info ('     o Optimizing parameters')
-            optpar, results = optimization_distributed(exp, opts, outdir, job_file_handler = job_file_handler,
-                                    script_cmd = opts.script_cmd, script_args = opts.script_args)
+            optpar, results = optimization_distributed(exp, opts, outdir,
+                                                       job_file_handler = job_file_handler,
+                                                       script_cmd = opts.script_cmd,
+                                                       script_args = opts.script_args)
             if not opts.job_list and "optimization plot" in opts.analyze_list:
                 if optpar:
                     optimizer = IMPoptimizer(exp, opts.beg - opts.offset, opts.end - opts.offset)
@@ -436,7 +434,9 @@ def run(opts):
                     optimizer.lowfreq_range  = [i for i in opts.lowfreq]
                     optimizer.upfreq_range   = [i for i in opts.upfreq]
                     optimizer.dcutoff_range  = [i for i in opts.dcutoff]
-                    optimizer.results = dict(((float(s),0.0,float(m),float(l),float(u),str(int(d))),results[(m,u,l,d,s)]['corr']) for m,u,l,d,s in results)
+                    optimizer.results = dict(((float(s),0.0,float(m),float(l),float(u),
+                                               str(int(d))),
+                                               results[(m,u,l,d,s)]['corr']) for m,u,l,d,s in results)
                     optimizer.plot_2d(show_best=20,
                                 savefig="%s/optimal_params.%s" % (
                                     outdir, opts.fig_format))
@@ -459,7 +459,7 @@ def run(opts):
             results = run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                             job_file_handler = job_file_handler,
                             script_cmd = opts.script_cmd, script_args = opts.script_args)
-    
+
         finish_time = time.localtime()
         # save all job information to sqlite DB
         save_to_db(opts, outdir, results, batch_job_hash,
@@ -531,7 +531,8 @@ def run(opts):
             logging.info("\t\tWARNING: plot for clusters could not be made...")
 
         if not opts.not_write_json:
-            models.write_json(path.join(outdir, batch_job_hash + '.json'), title = opts.project+' '+name if opts.project else name)
+            models.write_json(path.join(outdir, batch_job_hash + '.json'),
+                              title = opts.project+' '+name if opts.project else name)
 
         if not (opts.not_write_xyz and opts.not_write_cmm):
             # Save the clustered models into directories for easy visualization with
@@ -635,7 +636,7 @@ def run(opts):
             centroid = models.centroid_model(cluster=1)
             logging.info("\t\tThe model centroid (closest to the average) " +
                          "for cluster 1 is: {}".format(centroid))
-    
+
         if "consistency" in opts.analyze_list:
             # Calculate a consistency plot for all models in cluster #1
             logging.info("\tGetting consistency data...")
@@ -643,7 +644,7 @@ def run(opts):
                 cluster=1, cutoffs=range(50, dcutoff + 50, 50),
                 savefig =path.join(outdir, batch_job_hash + '_consistency.' + opts.fig_format),
                 savedata=path.join(outdir, batch_job_hash + '_consistency.dat'))
-    
+
         if "density" in opts.analyze_list:
             # Calculate a DNA density plot
             logging.info("\tGetting density data...")
@@ -651,14 +652,14 @@ def run(opts):
                 error=True, steps=(1,3,5,7),
                 savefig =path.join(outdir, batch_job_hash + '_density.' + opts.fig_format),
                 savedata=path.join(outdir, batch_job_hash + '_density.dat'))
-    
+
         if "contact map" in opts.analyze_list:
             # Get a contact map at cut-off of 150nm for cluster #1
             logging.info("\tGetting a contact map...")
             models.contact_map(
                 cluster=1, cutoff=dcutoff,
                 savedata=path.join(outdir, batch_job_hash + '_contact.dat'))
-    
+
         if "walking angle" in opts.analyze_list:
             # Get Dihedral angle plot for cluster #1
             logging.info("\tGetting angle data...")
@@ -666,7 +667,7 @@ def run(opts):
                 cluster=1, steps=(1,5),
                 savefig = path.join(outdir, batch_job_hash + '_wang.' + opts.fig_format),
                 savedata= path.join(outdir, batch_job_hash + '_wang.dat'))
-    
+
         if "persistence length" in opts.analyze_list:
             # Get persistence length of all models
             logging.info("\tGetting persistence length data...")
@@ -680,7 +681,7 @@ def run(opts):
                 except:
                     sys.stderr.write('WARNING: failed to compute persistence ' +
                          'length for model %s' % model["rand_init"])
-    
+
         if "accessibility" in opts.analyze_list:
             # Calculate a DNA density plot
             logging.info("\tGetting accessibility data...")
@@ -691,7 +692,7 @@ def run(opts):
                 error=True,
                 savefig =path.join(outdir, batch_job_hash + '_accessibility.' + opts.fig_format),
                 savedata=path.join(outdir, batch_job_hash + '_accessibility.dat'))
-    
+
         if "interaction" in opts.analyze_list:
             # Get interaction data of all models at 200 nm cut-off
             logging.info("\tGetting interaction data...")
@@ -701,7 +702,7 @@ def run(opts):
                 savedata=path.join(outdir, batch_job_hash + '_interactions.dat'),
                 error=True)
 
-def save_to_db(opts, outdir, results, batch_job_hash, 
+def save_to_db(opts, outdir, results, batch_job_hash,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
@@ -787,7 +788,8 @@ def save_to_db(opts, outdir, results, batch_job_hash,
         if not opts.job_list:
             ##### STORE OPTIMIZATION RESULT
             jobid = get_jobid(cur)
-            add_path(cur, outdir, 'EXT_OPTIM_FOLDER' if opts.optimize else 'DIR', jobid, opts.workdir)
+            add_path(cur, outdir, 'EXT_OPTIM_FOLDER' if opts.optimize else 'DIR',
+                     jobid, opts.workdir)
             pathid = get_path_id(cur, outdir, opts.workdir)
             # models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
             ### STORE GENERAL OPTIMIZATION INFO
@@ -857,7 +859,7 @@ def populate_args(parser):
     opopts = parser.add_argument_group('Parameter optimization')
     analyz = parser.add_argument_group('Analysis')
     ruopts = parser.add_argument_group('Running jobs')
-    
+
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
@@ -1167,10 +1169,10 @@ def load_models_path_fromdb(opts):
             raise Exception('ERROR: no folders found in job.')
         fold, fold_id = jobids[0]
         return (fold, fold_id)
-    
+
 def load_matrix_path_fromdb(opts):
     """
-    TODO: should load optimization specific parameters like nkeep nmodels etc.. 
+    TODO: should load optimization specific parameters like nkeep nmodels etc..
           to ensure they are always the same.
     """
     if 'tmpdb' in opts and opts.tmpdb:
@@ -1243,7 +1245,7 @@ def load_hic_data(opts):
             project=opts.project, # user descriptions
             resolution=opts.reso,
             norm_data=opts.matrix)
-    
+
     if opts.beg is not None:
         if opts.beg - opts.offset > crm.experiments[-1].size:
             raise Exception('ERROR: beg parameter is larger than chromosome size.')
