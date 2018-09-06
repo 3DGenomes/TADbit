@@ -142,14 +142,13 @@ def check_options(opts):
 
     # check RE name
     if opts.renz == ['CHECK']:
-        print '\nSearching for most probable restriction enzyme in file: %s\n' % (opts.fastq)
+        print '\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq)
         try:
-            pat, enz = identify_re(opts.fastq, nreads=10000)
-            print ' -> Most probable digested site: %s' % (pat)
+            pat, enz, pv = identify_re(opts.fastq, nreads=100000)
+            print ' -> Most probable digested site: %s (pv: %f)' % (pat, pv)
             print ' -> Enzymes matching: %s' % (', '.join(enz))
         except ValueError:
             print ' -> Nothing found...'
-        print '\nDone.\n'
         exit()
     for renz in opts.renz:
         try:
