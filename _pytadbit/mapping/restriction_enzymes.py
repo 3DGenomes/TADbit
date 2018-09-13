@@ -4,8 +4,11 @@
 Definition and mapping of restriction enymes
 """
 
-from re import compile, match
+from re import compile
 from warnings import warn
+
+from scipy.stats import binom_test
+
 from pytadbit.utils.file_handling import magic_open
 
 
@@ -224,22 +227,25 @@ def religateds(r_enzs):
     return ligations
 
 
-def identify_re(fnam, nreads=10000):
+def identify_re(fnam, nreads=100000):
     """
-    Search most probable restriction enzyme used in the Hi-C experiment
+    Search most probable restriction enzyme used in the Hi-C experiment.
+    Uses binomial test and some heuristics.
 
     :param fnam: path to FASTQ file
-    :param 10000 nreads: number of reads to use for prediction, the more the better (and slower)
+    :param 100000 nreads: number of reads to use for prediction, the more the
+       better (and slower)
 
-    :returns: most probable pattern and the corresponding list of restriction enzyme names,
-       or None, None if nothing is found
+    :returns: 1- most probable pattern, 2- the corresponding list of restriction
+       enzyme names and 3- p-value of binomial test (which is not necessarily
+       meaningful).
     """
     pats = {}
     for k in RESTRICTION_ENZYMES:
         pat = RESTRICTION_ENZYMES[k].split('|')[1]
         if len(pat) < 1:
             continue
-        pats.setdefault(pat, {'name': [], 'count': 0})
+        pats.setdefault(pat, {'name': [], 're': compile(pat), 'count': 0})
         pats[pat]['name'].append(k)
 
     fh = magic_open(fnam)
@@ -249,27 +255,28 @@ def identify_re(fnam, nreads=10000):
         _ = fh.next()
         _ = fh.next()
         for pat in pats:
-            m = match(pat, s)
+            m = pats[pat]['re'].match(s)
             if m and m.start() == 0:
                 pats[pat]['count'] += 1
 
-    bestk = 'XXXXXXXXXXXXXXXXXX'
-    best = None
-    for k in sorted(pats, key=lambda x: pats[x]['count'], reverse=True):
-        m = match(bestk, k)
-        if nreads / (2.5**len(k)) >= pats[k]['count']:
-            continue
-        if not best:
-            best = pats[k]
-            bestk = k
-        elif (len(bestk) < len(k) and
-            best['count'] / (2.5 ** (len(k) - len(bestk))) < pats[k]['count'] and
-            m and m.start() == 0):
-            best = pats[k]
-            bestk = k
+    bestks = []
+    best_pv = 1
+    for pv, k in sorted((binom_test(pats[k]['count'], nreads, 0.25**len(k), alternative='greater'), k)
+                        for k in pats if pats[k]['count'])[:10]:
+        # print k, pv
+        if pv <= best_pv:
+            best_pv = pv
+            bestks.append(k)
+    # some times several patterns are equally probable (pv=0.0), in this case
+    # we take the longest pattern that has a unique length.
+    if len(bestks) > 1:
+        lens = [len(k) for k in bestks]
+        lens = dict((l, lens.count(l)) for l in set(lens))
+        bestk = max([k for k in bestks if lens[len(k)] == 1], key=len)
+    else:
+        bestk = bestks[0]
 
-    if best:
-        return bestk, best['name']
+    return bestk, pats[bestk]['name'], best_pv
 
 
 class RE_dict(dict):
