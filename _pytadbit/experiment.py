@@ -898,7 +898,7 @@ class Experiment(object):
             coords = []
             tot = 0
             chrs = []
-            chrom_offset_start = 1
+            chrom_offset_start = start
             chrom_offset_end = 0
             for k, v in self.hic_data[0].chromosomes.iteritems():
                 tot += v
