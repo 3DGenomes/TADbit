@@ -878,12 +878,14 @@ class HiC_data(dict):
                                 abs(npperc(matrix, 0.5))])
                     vmin = -vmax
                 try:
-                    fnam = os.path.join(savefig,
-                                        '%s_EV%d%s.%s' % (str(sec),
-                                                          ev_nums[sec],
-                                                          suffix,
-                                                          format)
-                                        if savefig else None)
+                    if savefig:
+                        fnam = os.path.join(savefig,
+                                            '%s_EV%d%s.%s' % (str(sec),
+                                                              ev_nums[sec],
+                                                              suffix,
+                                                              format))
+                    else:
+                        fnam = None
                     plot_compartments(
                         sec, n_first[ev_num], cmprts, matrix, show, fnam,
                         vmin=vmin, vmax=vmax, whichpc=ev_num + 1,

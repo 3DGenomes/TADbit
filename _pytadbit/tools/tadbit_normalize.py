@@ -804,6 +804,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         hic_data = load_hic_data_from_bam(
             inbam, resolution, filter_exclude=filter_exclude,
             tmpdir=outdir, ncpus=ncpus)
+        hic_data.bads = badcol
         hic_data.normalize_hic(iterations=100, max_dev=0.000001)
         biases = hic_data.bias.copy()
         del(hic_data)

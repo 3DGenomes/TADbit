@@ -1150,16 +1150,19 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
         axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
                     [b[1] for b in b_comp], color='blue' , linewidth=6)
     elif showAB:
-        warn('WARNING: not displaying AB compartments, need richin A regions')
+        warn('WARNING: not displaying AB compartments, need rich in A regions')
+    else:
+        print '?????'
 
-    # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
-    #             color='red' , linewidth=4, alpha=0.7)
-    # axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
-    #             color='blue', linewidth=4, alpha=0.7)
+    axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
+                color='red' , linewidth=4, alpha=0.7)
+    axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
+                color='blue', linewidth=4, alpha=0.7)
 
     axex.grid()
-    axex.minorticks_on()
-    axex.grid(b=True, which='minor')
+    # TODO: these two lines conflict with matplotlib 2.0.2, and plot are still beautiful so...
+    # axex.minorticks_on()
+    # axex.grid(b=True, which='minor')
     plt.setp(axex.get_xticklabels(), visible=False)
 
     axex.set_xlim((-0.5, len(matrix) - 0.5))
