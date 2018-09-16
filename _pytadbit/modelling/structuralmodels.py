@@ -2555,12 +2555,12 @@ class StructuralModels(object):
         fil['len_hic_data'] = len(self._original_data)
         try:
             fil['tad_def'] = ','.join(
-                '[' + ','.join([str(i), str(self.experiment.tads[tad]['start'] * self.resolution),
-                               str(self.experiment.tads[tad]['end'] * self.resolution),
+                '[' + ','.join([str(i), str(self.experiment.tads[tad]['start'] * self.resolution + my_descr['chrom_start'][0]),
+                               str(self.experiment.tads[tad]['end'] * self.resolution + my_descr['chrom_start'][0]),
                                str(self.experiment.tads[tad]['score'])]) + ']'
                 for i,tad in enumerate(self.experiment.tads)
-                if self.experiment.tads[tad]['start'] * self.resolution >= my_descr['chrom_start'][0]
-                and self.experiment.tads[tad]['end'] * self.resolution <= my_descr['chrom_end'][0])
+                if self.experiment.tads[tad]['start']  >= my_descr['start']
+                and self.experiment.tads[tad]['end'] <= my_descr['end'])
         except:
             fil['tad_def'] = ''
         out_f = open(filename, 'w')
