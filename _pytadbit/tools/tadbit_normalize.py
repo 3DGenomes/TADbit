@@ -12,7 +12,7 @@ from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict, defaultdict
-from cPickle                              import dump, load
+from cPickle                              import dump, load, HIGHEST_PROTOCOL
 from traceback                            import print_exc
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
@@ -21,7 +21,8 @@ import time
 
 from pysam                                import AlignmentFile
 from numpy                                import nanmean, isnan, nansum, seterr
-import math
+
+from pytadbit                             import load_hic_data_from_bam
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling         import mkdir
@@ -86,7 +87,8 @@ def run(opts):
                 len(bam - fas), txt))
         refs = [crm for crm in refs if crm in genome]
         if len(refs) == 0:
-            raise Exception("ERROR: chromosomes in FASTA different the ones in BAM")
+            raise Exception("ERROR: chromosomes in FASTA different the ones"
+                            " in BAM")
 
         # get mappability ~2 min
         printime('  - Parsing mappability')
@@ -163,7 +165,7 @@ def run(opts):
     dump({'biases'    : biases,
           'decay'     : decay,
           'badcol'    : badcol,
-          'resolution': opts.reso}, out)
+          'resolution': opts.reso}, out, HIGHEST_PROTOCOL)
     out.close()
 
     finish_time = time.localtime()
@@ -410,9 +412,9 @@ def populate_args(parser):
 
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='Vanilla', type=str,
-                        choices=['Vanilla', 'oneD', 'custom'],
+                        choices=['Vanilla', 'ICE', 'SQRT', 'oneD', 'custom'],
                         help='''[%(default)s] normalization(s) to apply.
-                        Order matters. Choices: [%(choices)s]''')
+                        Order matters. Choices: %(choices)s''')
     normpt.add_argument('--biases_path', dest='biases_path', type=str,
                         default=None, help='''biases file to compute decay.
                         REQUIRED with "custom" normalization. Format: single
@@ -601,11 +603,11 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
-        dump(dico, out)
+        dump(dico, out, HIGHEST_PROTOCOL)
         out.close()
         out = open(path.join(outdir,
                              'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
-        dump(cisprc, out)
+        dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
     except Exception, e:
         exc_type, exc_obj, exc_tb = exc_info()
@@ -653,11 +655,11 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
-        dump(dico, out)
+        dump(dico, out, HIGHEST_PROTOCOL)
         out.close()
-        out = open(path.join(outdir,
-                             'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
-        dump(cisprc, out)
+        out = open(path.join(outdir, 'tmp_bins_%s:%d-%d_%s.pickle' % (
+            region, start, end, extra_out)), 'w')
+        dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
     except Exception, e:
         exc_type, exc_obj, exc_tb = exc_info()
@@ -666,7 +668,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
-def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
+def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
@@ -797,12 +799,26 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
     biases = [float('nan') if k in badcol else cisprc.get(k, [0, 1.])[1]
               for k in xrange(size)]
 
-    if normalization=='Vanilla':
+    if normalization == 'ICE':
+        printime('  - ICE normalization')
+        hic_data = load_hic_data_from_bam(
+            inbam, resolution, filter_exclude=filter_exclude,
+            tmpdir=outdir, ncpus=ncpus)
+        hic_data.normalize_hic(iterations=100, max_dev=0.000001)
+        biases = hic_data.bias.copy()
+        del(hic_data)
+    elif normalization == 'Vanilla':
         printime('  - Vanilla normalization')
         mean_col = nanmean(biases)
         biases   = dict((k, b / mean_col * mean_col**0.5)
                         for k, b in enumerate(biases))
-    elif normalization=='oneD':
+    elif normalization == 'SQRT':
+        printime('  - Vanilla-SQRT normalization')
+        biases = [b**0.5 for b in biases]
+        mean_col = nanmean(biases)
+        biases   = dict((k, b / mean_col * mean_col**0.5)
+                        for k, b in enumerate(biases))
+    elif normalization == 'oneD':
         printime('  - oneD normalization')
         if len(set([len(biases), len(mappability), len(n_rsites), len(cg_content)])) > 1:
             print "biases", "mappability", "n_rsites", "cg_content"
@@ -814,7 +830,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
                       res=n_rsites, cg=cg_content, seed=seed)
         biases = dict((k, b) for k, b in enumerate(biases))
         rmtree(tmp_oneD)
-    elif normalization=='custom':
+    elif normalization == 'custom':
         n_pos = 0
         biases = {}
         print 'Using provided biases...'
@@ -835,7 +851,6 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,biases_path='',
                 n_pos += 1
         for add in range(max(biases.keys()), total + 1):
             biases[add] = float('nan')
-
     else:
         raise NotImplementedError('ERROR: method %s not implemented' %
                                   normalization)

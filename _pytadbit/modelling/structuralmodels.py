@@ -2420,20 +2420,6 @@ class StructuralModels(object):
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
            objective function value
         :param None filename: overide the default file name writing
-        :param 'index' color: can be:
-
-             * a string as:
-                 * '**index**' to color particles according to their position in the
-                   model (:func:`pytadbit.utils.extraviews.color_residues`)
-                 * '**tad**' to color particles according to the TAD they belong to
-                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
-                 * '**border**' to color particles marking borders. Color according to
-                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
-                   coloring function like.
-             * a function, that takes as argument a model and any other parameter
-               passed through the kwargs.
-             * a list of (r, g, b) tuples (as long as the number of particles).
-               Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
         :param False infer_unrestrained: infer unrestrained particle
@@ -2441,26 +2427,6 @@ class StructuralModels(object):
            restraints
 
         """
-        if isinstance(color, str):
-            if color == 'index':
-                color = color_residues(self, **kwargs)
-            elif color == 'tad':
-                if 'tads' not in kwargs:
-                    raise Exception('ERROR: missing TADs\n   ' +
-                                    'pass an Experiment.tads disctionary\n')
-                color = tad_coloring(self, **kwargs)
-            elif color == 'border':
-                if 'tads' not in kwargs:
-                    raise Exception('ERROR: missing TADs\n   ' +
-                                    'pass an Experiment.tads disctionary\n')
-                color = tad_border_coloring(self, **kwargs)
-            else:
-                raise NotImplementedError(('%s type of coloring is not yet ' +
-                                           'implemeted\n') % color)
-        elif hasattr(color, '__call__'):  # it's a function
-            color = color(self, **kwargs)
-        elif not isinstance(color, list):
-            raise TypeError('one of function, list or string is required\n')
         form = '''
 {
         "metadata" : {
@@ -2589,9 +2555,9 @@ class StructuralModels(object):
         fil['len_hic_data'] = len(self._original_data)
         try:
             fil['tad_def'] = ','.join(
-                '[' + ','.join(str(i), str(self.experiment.tads[tad]['start'] * self.resolution),
+                '[' + ','.join([str(i), str(self.experiment.tads[tad]['start'] * self.resolution),
                                str(self.experiment.tads[tad]['end'] * self.resolution),
-                               str(self.experiment.tads[tad]['score'])) + ']'
+                               str(self.experiment.tads[tad]['score'])]) + ']'
                 for i,tad in enumerate(self.experiment.tads)
                 if self.experiment.tads[tad]['start'] * self.resolution >= my_descr['chrom_start'][0]
                 and self.experiment.tads[tad]['end'] * self.resolution <= my_descr['chrom_end'][0])

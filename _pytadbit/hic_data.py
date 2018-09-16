@@ -362,7 +362,8 @@ class HiC_data(dict):
                 norm_sum += v
         return norm_sum
 
-    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False, factor=1):
+    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False,
+                      sqrt=False, factor=1):
         """
         Normalize the Hi-C data.
 
@@ -373,12 +374,15 @@ class HiC_data(dict):
         :param 0.1 max_dev: iterative process stops when the maximum deviation
            between the sum of row is equal to this number (0.1 means 10%)
         :param False silent: does not warn when overwriting weights
+        :param False sqrt: uses the square root of the computed biases
         :param 1 factor: final mean number of normalized interactions wanted
            per cell (excludes filtered, or bad, out columns)
         """
         bias = iterative(self, iterations=iterations,
                          max_dev=max_dev, bads=self.bads,
                          verbose=not silent)
+        if sqrt:
+            bias = dict((b, bias[b]**0.5) for b in bias)
         if factor:
             if not silent:
                 print 'rescaling to factor %d' % factor
