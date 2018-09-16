@@ -190,6 +190,9 @@ def filter_by_zero_count(matrx, perc_zero, min_count=None, silent=True):
         min_val = int(size * float(perc_zero) / 100)
     else:
         if matrx.symmetricized:
+            stderr.write('\nWARNING: Using twice min_count as the matrix was '
+                         'symmetricized and contains twice as many '
+                         'interactions as the original\n')
             min_count *= 2
         cols = [0 for i in xrange(size)]
         for k, v in matrx.iteritems(): # linear representation of the matrix

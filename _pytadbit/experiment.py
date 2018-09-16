@@ -1030,7 +1030,7 @@ class Experiment(object):
         :param start: first bin to model (bin number)
         :param end: first bin to model (bin number)
 
-        :returns: 1- z-score, 2- matrix of values with NaNs in the diagonal and in 
+        :returns: 1- z-score, 2- matrix of values with NaNs in the diagonal and in
            bad columns and 3- actual position of bad columns
         """
         if not self._normalization or not self._normalization.startswith('visibility'):
@@ -1572,7 +1572,7 @@ class Experiment(object):
             warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
 
         new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
-        
+
         chrom_start = []
         chrom_end = []
         chrom = []
@@ -1591,20 +1591,20 @@ class Experiment(object):
                     break
                 if start < tot and end >= tot:
                     chrs.append((k,v))
-            
+
             for k, v in chrs:
                 chrom.append(k)
                 chrom_start.append(0)
                 chrom_end.append(v * self.resolution)
             chrom_start[0] = chrom_offset_start * self.resolution
             chrom_end[-1] -= chrom_offset_end * self.resolution
-            
+
         else:
             chrom.append(self.crm.name)
             chrom_start.append(start * self.resolution)
             chrom_end.append(end * self.resolution)
-            
-        
+
+
         descr = {'chromosome'   : chrom,
                  'species'      : self.crm.species,
                  'resolution'   : self.resolution,
