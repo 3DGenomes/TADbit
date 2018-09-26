@@ -39,6 +39,8 @@ def run(opts):
 
     renz = renz.split('-')
 
+    opts.workdir = path.abspath(opts.workdir)
+
     name = path.split(opts.workdir)[-1]
 
     param_hash = digest_parameters(opts)
