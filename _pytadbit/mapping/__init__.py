@@ -1,8 +1,10 @@
-from pytadbit.utils.file_handling         import mkdir, magic_open
-from itertools                            import combinations
-from os                                   import path, system
-from sys                                  import stdout
-from collections import OrderedDict
+from itertools                    import combinations
+from os                           import path, system
+from sys                          import stdout
+from collections                  import OrderedDict
+
+from pytadbit.utils.file_handling import mkdir, magic_open
+
 
 def eq_reads(rd1, rd2):
     """
@@ -10,11 +12,13 @@ def eq_reads(rd1, rd2):
     """
     return rd1.split('~', 1)[0] == rd2.split('~', 1)[0]
 
+
 def gt_reads(rd1, rd2):
     """
     Compare reads accounting for multicontacts
     """
     return rd1.split('~', 1)[0] > rd2.split('~', 1)[0]
+
 
 def merge_2d_beds(path1, path2, outpath):
     """
@@ -92,6 +96,7 @@ def merge_2d_beds(path1, path2, outpath):
     fh2.close()
     out.close()
     return nreads
+
 
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
@@ -231,6 +236,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     system('rm -rf ' + tmp_dir)
     return count, multiples
 
+
 def _loc_reads(r1, r2):
     """
     Put upstream read before, get position in buf
@@ -242,6 +248,7 @@ def _loc_reads(r1, r2):
         pos1, pos2 = pos2, pos1
     return r1, r2, pos1
 
+
 def write_to_files(buf, tmp_dir, nchunks):
     for b in buf:
         out = open(path.join(tmp_dir, 'rep_%03d' % (b / int(nchunks**0.5)),
@@ -251,6 +258,7 @@ def write_to_files(buf, tmp_dir, nchunks):
             out.write('\n')
         out.close()
         del(buf[b][:])
+
 
 def _process_lines(line1, line2, buf, multiples, lchunk):
     # case we have potential multicontacts
