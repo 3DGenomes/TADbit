@@ -7,13 +7,14 @@ import os
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
+from cPickle                        import HIGHEST_PROTOCOL, dump, load
 
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan, mean
 from numpy                          import meshgrid, asarray, exp, linspace, std
 from numpy                          import nanpercentile as npperc, log as nplog
-from numpy                          import nanmax, nanmin
-from scipy.stats                    import ttest_ind, ks_2samp, spearmanr
+from numpy                          import nanmax
+from scipy.stats                    import ttest_ind, spearmanr
 from scipy.special                  import gammaincc
 from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
 from scipy.sparse.linalg            import eigsh
@@ -397,11 +398,41 @@ class HiC_data(dict):
             bias = dict([(b, bias[b] * target) for b in bias])
         self.bias = bias
 
+    def save_biases(self, fnam, protocol=None):
+        """
+        Save biases, decay and bad columns in pickle format (to be loaded by
+        the function load_hic_data_from_bam)
+
+        :param fnam: path to output file
+        """
+        out = open(fnam, 'w')
+
+        dump({'biases'    : self.bias,
+              'decay'     : self.expected,
+              'badcol'    : self.bads,
+              'resolution': self.resolution}, out,
+             protocol if protocol else HIGHEST_PROTOCOL)
+        out.close()
+
+    def load_biases(self, fnam, protocol=None):
+        """
+        Load biases, decay and bad columns from pickle file
+
+        :param fnam: path to input pickle file
+        """
+        biases = load(open(fnam), protocol if protocol else HIGHEST_PROTOCOL)
+        if biases['resolution'] != self.resolution:
+            raise Exception(('Error: resolution in Pickle (%d) does not match '
+                             'the one of this HiC_data object (%d)') % (
+                                 biases['resolution'], self.resolution))
+        self.bias     = ['biases']
+        self.expected = ['decay']
+        self.bads     = ['badcol']
+
     def get_as_tuple(self):
         return tuple([self[i, j]
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
-
 
     def write_coord_table(self, fname, focus=None, diagonal=True,
                           normalized=False, format='BED'):
@@ -494,7 +525,6 @@ class HiC_data(dict):
         else:
             raise Exception('ERROR: format "%s" not found\n' % format)
         out.close()
-
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
