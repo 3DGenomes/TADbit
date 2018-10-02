@@ -392,10 +392,10 @@ def populate_args(parser):
     mapper = parser.add_argument_group('Mapping options')
     descro = parser.add_argument_group('Descriptive, optional arguments')
 
-    glopts.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
-                        default=None, type=str,
-                        help='path to a configuration file with predefined ' +
-                        'parameters')
+    # glopts.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
+    #                     default=None, type=str,
+    #                     help='path to a configuration file with predefined ' +
+    #                     'parameters')
 
     glopts.add_argument('--skip_mapping', dest='skip_mapping', action='store_true',
                         default=False,

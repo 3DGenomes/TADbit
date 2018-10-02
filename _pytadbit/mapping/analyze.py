@@ -687,6 +687,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     :param ('median', 'perc_max') stats: returns this set of values calculated from the
        distribution of insert/fragment sizes. Possible values are:
         - 'median' median of the distribution
+        - 'mean' mean of the distribution
         - 'perc_max' percentil defined by the other parameter 'max_size'
         - 'first_deacay' starting from the median of the distribution to the
             first window where 10 consecutive insert sizes are counted less than
@@ -712,23 +713,23 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         pos += len(line)
     fhandler.seek(pos)
     des = []
-    if nreads:
-        nreads /= 2
     for line in fhandler:
         (crm1, pos1, dir1, _, re1, _,
          crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
-        if re1==re2 and crm1 == crm2 and dir1 != dir2:
+        if re1 == re2 and crm1 == crm2 and dir1 == '1' and dir2 == '0':
             pos1, pos2 = int(pos1), int(pos2)
-            if (pos2 > pos1) == int(dir1):
-                des.append(abs(pos2 - pos1))
+            des.append(pos2 - pos1)
             if len(des) == nreads:
                 break
     des = [i for i in des if i <= too_large]
     fhandler.close()
+    if not des:
+        raise Exception('ERROR: no dangling-ends found in %s' % (fnam))
     max_perc = np.percentile(des, max_size)
     perc99   = np.percentile(des, 99)
     perc01   = np.percentile(des, 1)
     perc50   = np.percentile(des, 50)
+    meanfr   = np.mean(des)
     perc95   = np.percentile(des, 95)
     perc05   = np.percentile(des, 5)
     to_return = {'median': perc50}
@@ -746,24 +747,25 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         raise Exception('ERROR: not found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
+    to_return['mean'] = meanfr
     if not savefig and not axe and not show:
         return [to_return[k] for k in stats]
 
     ax = setup_plot(axe, figsize=(10, 5.5))
-    desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
+    desapan = ax.axvspan(perc95, perc99, facecolor='black', alpha=.2,
                          label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
-    ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
-    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=.3,
+    ax.axvspan(perc01, perc05, facecolor='black', alpha=.2)
+    desapan = ax.axvspan(perc05, perc95, facecolor='black', alpha=.4,
                          label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
-    deshist = ax.hist(des, bins=100, range=(0, max_perc),
-                      alpha=.7, color='darkred', label='Dangling-ends')
+    deshist = ax.hist(des, bins=100, range=(0, max_perc), lw=2,
+                      alpha=.5, edgecolor='darkred', facecolor='darkred', label='Dangling-ends')
     ylims   = ax.get_ylim()
     plots   = []
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
     ax.set_title('Distribution of dangling-ends ' +
-                 'lenghts\n(median: %s, top %.1f%%, up to %0.f nts)' % (
-                     perc50, max_size, max_perc))
+                 'lenghts\nmedian: %s (mean: %s), top %.1f%%: %0.f nts' % (
+                     int(perc50), int(meanfr), max_size, int(max_perc)))
     if xlog:
         ax.set_xscale('log')
     ax.set_xlim((50, max_perc))
@@ -1318,44 +1320,54 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     pp.close()
 
 
-
-def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
+def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
+                                 half_step=20, half_len=2000,
                                  full_step=500, full_len=50000, savefig=None):
     """
-    Classify reads into for categories depending on the strand on which each end
-    is mapped, and plots the proportion of each of these categories in function
-    of the genomic distance between them.
+    Classify reads into four categories depending on the strand on which each
+    of its end is mapped, and plots the proportion of each of these categories
+    in function of the genomic distance between them.
+
+    Only full mapped reads mapped on two diferent restriction fragments (still
+    same chromosome) are considered.
+
     The four categories are:
+       - Both read-ends mapped on the same strand (forward)
+       - Both read-ends mapped on the same strand (reverse)
+       - Both read-ends mapped on the different strand (facing), like extra-dangling-ends
+       - Both read-ends mapped on the different strand (opposed), like extra-self-circles
 
-       - Both read-ends mapped in the forward strand
-       - Both read-ends mapped in the reverse strand
-       - First read-end in the forward strand1, second in the reverse
-       - First read-end in the reverse strand1, second in the forward
-
-    Note: First/second read-ends are according to their genomic coordinates.
-
-    The plot is divided in two halves, in order to use different zooms for
-    read-ends mapped very close, and read-ends further (by default the first
-    half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).
-
-    :param fnam: input file name with the intersection of the two read-ends mapped
-    :param None nreads: number of reads to process (default: all reads)
-    :param 2000 half_len: limit in the X axis of the first plot
-    :param 20 half_step: to bin distances between read-ends in the first plot
-    :param 2000 full_len: limit in the X axis of the second plot
-    :param 20 full_step: to bin distances between read-ends in the second plot
-    :param None savefig: path where to store the output images.
+    :params fnam: path to tsv file with intersection of mapped ends
+    :params True valid_pairs: consider only read-ends mapped
+       on different restriction fragments. If False, considers only read-ends
+       mapped on the same restriction fragment.
+    :params 1000000 nreads: number of reads used to plot (if None, all will be used)
+    :params 20 half_step: binning for the first part of the plot
+    :params 2000 half_len: maximum distance for the first part of the plot
+    :params 500 full_step:  binning for the second part of the plot
+    :params 50000 full_len: maximum distance for the second part of the plot
+    :params None savefig: path to save figure
     """
+    max_len = 100000
 
-    fhandler = open(fnam)
+    genome_seq = OrderedDict()
     pos = 0
+    fhandler = open(fnam)
     for line in fhandler:
-        if not line.startswith('#'):
+        if line.startswith('#'):
+            if line.startswith('# CRM '):
+                crm, clen = line[6:].split('\t')
+                genome_seq[crm] = int(clen)
+        else:
             break
         pos += len(line)
     fhandler.seek(pos)
 
-    max_len = 100000
+    names = ['<== <== both reverse',
+             '<== ==> opposed (Extra-self-circles)',
+             '==> <== facing (Extra-dangling-ends)',
+             '==> ==> both forward']
+
     dirs = [[0 for i in range(max_len)],
             [0 for i in range(max_len)],
             [0 for i in range(max_len)],
@@ -1363,16 +1375,29 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
 
     iterator = (fhandler.next() for _ in xrange(nreads)) if nreads else fhandler
 
+    if valid_pairs:
+        comp_re = lambda x, y: x != y
+    else:
+        comp_re = lambda x, y: x == y
+
     for line in iterator:
-        (crm1, pos1, dir1, _, re1, _,
-         crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
+        (crm1, pos1, dir1, len1, re1, _,
+         crm2, pos2, dir2, len2, re2) = line.strip().split('\t')[1:12]
         pos1, pos2 = int(pos1), int(pos2)
         if pos2 < pos1:
             pos2, pos1 = pos1, pos2
             dir2, dir1 = dir1, dir2
+            len2, len1 = len1, len2
+        dir1, dir2 = int(dir1), int(dir2)
+        len1, len2 = int(len1), int(len2)
+        if dir1 == 0:
+            pos1 -= len1
+        if dir2 == 1:
+            pos2 += len2
         diff = pos2 - pos1
-        if re1!=re2 and crm1 == crm2 and diff < max_len:
-            dir1, dir2 = int(dir1) * 2, int(dir2)
+        # only ligated; same chromsome; bellow max_dist; not multi-contact
+        if comp_re(re1, re2) and crm1 == crm2 and diff < max_len and len1 == len2:
+            dir1, dir2 = dir1 * 2, dir2
             dirs[dir1 + dir2][diff] += 1
 
     sum_dirs = [0 for i in range(max_len)]
@@ -1385,102 +1410,108 @@ def plot_strand_bias_by_distance(fnam, nreads=None, half_step=20, half_len=2000,
                 dirs[d][i] = 0.
             sum_dirs[i] = sum_dir
 
-    names = ['==> ==> both forward',
-             '<== ==> opposed (Extra-self-circles)',
-             '==> <== facing (Extra-dangling-ends)',
-             '<== <== both backward']
-
     plt.figure(figsize=(14, 9))
+    if full_step:
+        axLp = plt.subplot2grid((3, 2), (0, 0), rowspan=2)
+        axLb = plt.subplot2grid((3, 2), (2, 0), sharex=axLp)
 
-    axLp = plt.subplot2grid((3, 2), (0, 0), rowspan=2)
-    axRp = plt.subplot2grid((3, 2), (0, 1), rowspan=2, sharey=axLp)
-    axLb = plt.subplot2grid((3, 2), (2, 0), sharex=axLp)
-    axRb = plt.subplot2grid((3, 2), (2, 1), sharex=axRp, sharey=axLb)
+        axRp = plt.subplot2grid((3, 2), (0, 1), rowspan=2, sharey=axLp)
+        axRb = plt.subplot2grid((3, 2), (2, 1), sharex=axRp, sharey=axLb)
+    else:
+        axLp = plt.subplot2grid((3, 1), (0, 0), rowspan=2)
+        axLb = plt.subplot2grid((3, 1), (2, 0), sharex=axLp)
 
     for d in range(4):
         axLp.plot([sum(dirs[d][i:i + half_step]) / half_step
                    for i in range(0, half_len - half_step, half_step)],
-                   alpha=0.7, label=names[d])
+                  alpha=0.7, label=names[d])
 
     axLp.set_ylim(0, 1)
     axLp.set_yticks([0, 0.25, 0.5, 0.75, 1])
-    axLp.spines['right'].set_visible(False)
     axLp.set_xlim(0, half_len / half_step)
     axLp.set_xticks(axLp.get_xticks()[:-1])
     axLp.set_xticklabels([str(int(i)) for i in axLp.get_xticks() * half_step])
-    plt.setp(axLp.get_xticklabels(), visible=False)
     axLp.grid()
+    if full_step:
+        axLp.spines['right'].set_visible(False)
+        plt.setp(axLp.get_xticklabels(), visible=False)
+        axLb.spines['right'].set_visible(False)
 
     axLp.set_ylabel('Proportion of reads in each category')
 
-    for d in range(4):
-        axRp.plot([sum(dirs[d][i:i + full_step]) / full_step
-                   for i in range(half_len, full_len + full_step, full_step)],
-                  alpha=0.7, label=names[d])
-
-    axRp.spines['left'].set_visible(False)
-    axRp.set_xlim(0, full_len / full_step - 2000 / full_step)
-    axRp.set_xticks(range((10000 - half_step) / full_step, (full_len + full_step) / full_step, 20))
-    axRp.set_xticklabels([int(i) for i in range(10000, full_len + full_step, full_step * 20)])
-    plt.setp(axRp.get_xticklabels(), visible=False)
-    axRp.legend(title='Strand on which each read-end is mapped\n(first read-end is always smaller than second)')
-    axRp.yaxis.tick_right()
-    axRp.tick_params(labelleft='off')
-    axRp.tick_params(labelright='off')
-    axRp.grid()
-
     axLb.bar(range(0, half_len / half_step - 1),
-            [sum(sum_dirs[i:i + half_step]) / half_step
-             for i in range(0, half_len - half_step, half_step)],
-           alpha=0.5, color='k')
-    axLb.spines['right'].set_visible(False)
+             [sum(sum_dirs[i:i + half_step]) / half_step
+              for i in range(0, half_len - half_step, half_step)],
+             alpha=0.5, color='k')
 
     axLb.set_ylabel("Log number of reads\nper genomic position")
     axLb.set_yscale('log')
     axLb.grid()
     axLb.set_xlabel('Distance between mapping position of the two ends\n'
-                '(averaged in windows of 20 nucleotides)')
+                    '(averaged in windows of 20 nucleotides)')
 
-    axRb.bar(range(0, full_len / full_step - half_len / full_step + 1),
-             [sum(sum_dirs[i:i + full_step]) / full_step
-              for i in range(half_len, full_len + full_step, full_step)],
-             alpha=0.5, color='k')
+    if full_step:
+        for d in range(4):
+            axRp.plot([sum(dirs[d][i:i + full_step]) / full_step
+                       for i in range(half_len, full_len + full_step, full_step)],
+                      alpha=0.7, label=names[d])
 
-    axRb.set_ylim(0, max(sum_dirs) * 1.1)
+        axRp.spines['left'].set_visible(False)
+        axRp.set_xlim(0, full_len / full_step - 2000 / full_step)
+        axRp.set_xticks(range((10000 - half_step) / full_step, (full_len + full_step) / full_step, 20))
+        axRp.set_xticklabels([int(i) for i in range(10000, full_len + full_step, full_step * 20)])
+        plt.setp(axRp.get_xticklabels(), visible=False)
+        axRp.legend(title='Strand on which each read-end is mapped\n(first read-end is always smaller than second)')
+        axRp.yaxis.tick_right()
+        axRp.tick_params(labelleft=False)
+        axRp.tick_params(labelright=False)
+        axRp.grid()
 
-    axRb.spines['left'].set_visible(False)
-    axRb.yaxis.tick_right()
-    axRb.tick_params(labelleft='off')
-    axRb.tick_params(labelright='off')
-    axRb.set_xlabel('Distance between mapping position of the two ends\n'
-                    '(averaged in windows of 500 nucleotide)')
-    axRb.set_yscale('log')
-    axRb.grid()
+        axRb.bar(range(0, full_len / full_step - half_len / full_step + 1),
+                 [sum(sum_dirs[i:i + full_step]) / full_step
+                  for i in range(half_len, full_len + full_step, full_step)],
+                 alpha=0.5, color='k')
 
-    d = .015  # how big to make the diagonal lines in axes coordinates
-    # arguments to pass to plot, just so we don't keep repeating them
-    kwargs = dict(transform=axLp.transAxes, color='k', clip_on=False)
-    axLp.plot((1 - d, 1 + d), (1-d, 1+d), **kwargs)        # top-left diagonal
-    axLp.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+        axRb.set_ylim(0, max(sum_dirs) * 1.1)
 
-    kwargs.update(transform=axRp.transAxes)  # switch to the bottom axes
-    axRp.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-    axRp.plot((-d, +d), (-d, +d), **kwargs)  # bottom-right diagonal
+        axRb.spines['left'].set_visible(False)
+        axRb.yaxis.tick_right()
+        axRb.tick_params(labelleft=False)
+        axRb.tick_params(labelright=False)
+        axRb.set_xlabel('Distance between mapping position of the two ends\n'
+                        '(averaged in windows of 500 nucleotide)')
+        axRb.set_yscale('log')
+        axRb.grid()
 
-    w = .015
-    h = .030
-    # arguments to pass to plot, just so we don't keep repeating them
-    kwargs = dict(transform=axLb.transAxes, color='k', clip_on=False)
-    axLb.plot((1 - w, 1 + w), (1 - h, 1 + h), **kwargs)        # top-left diagonal
-    axLb.plot((1 - w, 1 + w), (  - h,   + h), **kwargs)  # top-right diagonal
+        # decorate...
+        d = .015  # how big to make the diagonal lines in axes coordinates
+        # arguments to pass to plot, just so we don't keep repeating them
+        kwargs = dict(transform=axLp.transAxes, color='k', clip_on=False)
+        axLp.plot((1 - d, 1 + d), (1-d, 1+d), **kwargs)  # top-left diagonal
+        axLp.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
-    kwargs.update(transform=axRb.transAxes)  # switch to the bottom axes
-    axRb.plot((- w, + w), (1 - h, 1 + h), **kwargs)  # bottom-left diagonal
-    axRb.plot((- w, + w), (  - h,   + h), **kwargs)  # bottom-right diagonal
+        kwargs.update(transform=axRp.transAxes)  # switch to the bottom axes
+        axRp.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+        axRp.plot((-d, +d), (-d, +d), **kwargs)  # bottom-right diagonal
 
-    plt.subplots_adjust(wspace=0.05)
-    plt.subplots_adjust(hspace=0.1)
+        w = .015
+        h = .030
+        # arguments to pass to plot, just so we don't keep repeating them
+        kwargs = dict(transform=axLb.transAxes, color='k', clip_on=False)
+        axLb.plot((1 - w, 1 + w), (1 - h, 1 + h), **kwargs)  # top-left diagonal
+        axLb.plot((1 - w, 1 + w), (  - h,   + h), **kwargs)  # top-right diagonal
+
+        kwargs.update(transform=axRb.transAxes)  # switch to the bottom axes
+        axRb.plot((- w, + w), (1 - h, 1 + h), **kwargs)  # bottom-left diagonal
+        axRb.plot((- w, + w), (  - h,   + h), **kwargs)  # bottom-right diagonal
+
+        plt.subplots_adjust(wspace=0.05)
+        plt.subplots_adjust(hspace=0.1)
+    else:
+        axLp.legend(title='Strand on which each read-end is mapped\n(first read-end is always smaller than second)')
+
     if savefig:
         tadbit_savefig(savefig)
     else:
         plt.show()
+

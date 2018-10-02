@@ -100,10 +100,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r_enz in r_enzs:
             r_sites[r_enz] = RESTRICTION_ENZYMES[r_enz].replace('|', '')
             d_sites[r_enz] = repaired(r_enz)
-            sites[r_enz] = []  # initialize dico to store sites
-            fixes[r_enz] = []  # initialize dico to store sites
+            sites[r_enz] = []  # initialize dico to store undigested sites
+            fixes[r_enz] = []  # initialize dico to store digested sites
         l_sites = religateds(r_enzs)
-        # TODO: change regexp to account for multiple cut sites
         site = {}
         fixe = {}
         for r_enz in r_enzs:
@@ -218,7 +217,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r1, r2 in liges:
             liges[(r1, r2)] = [liges[(r1, r2)].count(k) for k in xrange(seq_len)] # OK
 
-        # in case the pattern of the repaired cut-site is included is the
+        # in case the pattern of the repaired cut-site contains the target
         # cut-site pattern. These sites were counted twice, once in the
         # undigested, and once in the repaired. We remove them from the
         # repaired:
@@ -249,6 +248,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             for k in liges:
                 liges[k][max_seq_len / 2 - site_len:
                          max_seq_len / 2] = [float('nan')] * site_len
+
         # plot undigested cut-sites
         color = iter(plt.cm.Reds(linspace(0.3, 0.95, len(r_enzs))))
         for r_enz in sites:
@@ -302,16 +302,19 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             else:
                 ax2.set_ylabel('Undigested & Dangling-ends')
         ax2.set_xlim((0, max_seq_len))
+
         # Count ligation sites
         lig_cnt = {}
         for k in liges:
             lig_cnt[k] = (nansum(liges[k]) - liges[k][0] -
                               liges[k][max_seq_len / 2])
+
         # Count undigested sites
         sit_cnt = {}
         for r_enz in r_enzs:
             sit_cnt[r_enz] = (nansum(sites[r_enz]) - sites[r_enz][0] -
                               sites[r_enz][max_seq_len / 2])
+
         # Count Dangling-Ends
         des = {}
         for r_enz in r_enzs:
@@ -321,6 +324,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             else:
                 des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len / 2)]
                                                          if paired else 0))) / nreads
+
+        # Decorate plot
         title = ''
         for r_enz in r_enzs:
             lcnt = float(sum([lig_cnt[(r_enz1, r_enz2)] * (2 if r_enz1 == r_enz2 else 1)
