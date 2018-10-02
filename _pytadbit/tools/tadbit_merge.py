@@ -90,10 +90,11 @@ def run(opts):
 
         printime('  - comparing experiments')
         print '    => correlation between equidistant loci'
-        corr, _, bads = correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
-                                           remove_bad_columns=True,
-                                           savefig=decay_corr_fig,
-                                           savedata=decay_corr_dat, get_bads=True)
+        corr, _, scc, std, bads = correlate_matrices(
+            hic_data1, hic_data2, normalized=opts.norm,
+            remove_bad_columns=True, savefig=decay_corr_fig,
+            savedata=decay_corr_dat, get_bads=True)
+
         print '    => correlation between eigenvectors'
         eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                           remove_bad_columns=True, nvect=6,
