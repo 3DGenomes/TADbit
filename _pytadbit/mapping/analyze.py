@@ -8,6 +8,7 @@ from collections                  import OrderedDict
 from pysam                        import AlignmentFile
 from scipy.stats                  import norm as sc_norm, skew, kurtosis
 from scipy.stats                  import pearsonr, spearmanr, linregress
+from scipy.sparse.linalg          import eigsh
 from numpy.linalg                 import eigh
 import numpy as np
 
@@ -286,7 +287,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
                            np.nanmax(data), max(size1, size2))
     gradient = np.vstack((gradient, gradient))
     h  = ax2.hist(data, color='darkgrey', linewidth=2,
-                  bins=20, histtype='step', normed=True)
+                  bins=20, histtype='step', density=True)
     _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                     vmin=clim[0] if clim else None, vmax=clim[1] if clim else None,
                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
@@ -896,18 +897,28 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
         out.write('\n')
         out.close()
 
+
+def _unitize(vals):
+    return np.argsort(vals) / float(len(vals))
+
+
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
-                       savefig=None, show=False, savedata=None,
+                       savefig=None, show=False, savedata=None, min_dist=1,
                        normalized=False, remove_bad_columns=True, **kwargs):
     """
     Compare the interactions of two Hi-C matrices at a given distance,
-    with Spearman rank correlation
+       with Spearman rank correlation.
+
+    Also computes the SCC reproducibility score as in HiCrep (see
+       https://doi.org/10.1101/gr.220640.117)
 
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
     :param 1 resolution: to be used for scaling the plot
     :param 10 max_dist: maximum distance from diagonal (e.g. 10 mean we will
        not look further than 10 times the resolution)
+    :param 1 min_dist: minimum distance from diagonal (set to 0 to reproduce
+       result from HicRep)
     :param None savefig: path to save the plot
     :param False intra: only takes into account intra-chromosomal contacts
     :param False show: displays the plot
@@ -915,10 +926,13 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     :param True remove_bads: computes the union of bad columns between samples
        and exclude them from the comparison
 
-    :returns: list of correlations and list of genomic distances
+    :returns: list of correlations, list of genomic distances, SCC and standard
+       deviation of SCC
     """
-    corrs = []
+    spearmans = []
+    pearsons = []
     dists = []
+    weigs = []
 
     if normalized:
         get_the_guy1 = lambda i, j: (hic_data1[j, i] / hic_data1.bias[i] /
@@ -947,13 +961,18 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                         continue
                     diag1.append(get_the_guy1(i, j))
                     diag2.append(get_the_guy2(i, j))
-            corrs.append(spearmanr(diag1, diag2)[0])
+            spearmans.append(spearmanr(diag1, diag2)[0])
+            pearsons.append(spearmanr(diag1, diag2)[0])
+            r1 = _unitize(diag1)
+            r2 = _unitize(diag2)
+            weigs.append((np.var(r1, ddof=1) *
+                          np.var(r2, ddof=1))**0.5 * len(diag1))
             dists.append(dist)
     else:
         if intra:
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
-        for dist in xrange(1, max_dist + 1):
+        for dist in xrange(min_dist, max_dist + min_dist):
             diag1 = []
             diag2 = []
             for j in xrange(len(hic_data1) - dist):
@@ -962,8 +981,23 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                     continue
                 diag1.append(get_the_guy1(i, j))
                 diag2.append(get_the_guy2(i, j))
-            corrs.append(spearmanr(diag1, diag2)[0])
+            spearmans.append(spearmanr(diag1, diag2)[0])
+            pearsons.append(pearsonr(diag1, diag2)[0])
+            r1 = _unitize(diag1)
+            r2 = _unitize(diag2)
+            weigs.append((np.var(r1, ddof=1) *
+                          np.var(r2, ddof=1))**0.5 * len(diag1))
             dists.append(dist)
+    # compute scc
+    # print pearsons
+    # print weigs
+    tot_weigth = sum(weigs)
+    scc = sum(pearsons[i] * weigs[i] / tot_weigth
+              for i in xrange(len(pearsons)))
+    var_corr = np.var(pearsons, ddof=1)
+    std = (sum(weigs[i]**2 for i in xrange(len(pearsons))) * var_corr /
+           sum(weigs)**2)**0.5
+    # plot
     if show or savefig or axe:
         if not axe:
             fig = plt.figure()
@@ -971,7 +1005,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
             given_axe = False
         else:
             given_axe = True
-        axe.plot(dists, corrs, color='orange', linewidth=3, alpha=.8)
+        axe.plot(dists, spearmans, color='orange', linewidth=3, alpha=.8)
         axe.set_xlabel('Genomic distance in bins')
         axe.set_ylabel('Spearman rank correlation')
         axe.set_xlim((0, dists[-1]))
@@ -984,13 +1018,129 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
-        for i in xrange(len(corrs)):
-            out.write('%s\t%s\n' % (dists[i], corrs[i]))
+        for i in xrange(len(spearmans)):
+            out.write('%s\t%s\n' % (dists[i], spearmans[i]))
         out.close()
     if kwargs.get('get_bads', False):
-        return corrs, dists, bads
+        return spearmans, dists, scc, std, bads
+    return spearmans, dists, scc, std
+
+
+def _evec_dist(v1,v2):
+    d1=np.dot(v1-v2,v1-v2)
+    d2=np.dot(v1+v2,v1+v2)
+    if d1<d2:
+        d=d1
     else:
-        return corrs, dists
+        d=d2
+    return np.sqrt(d)
+
+
+def _get_Laplacian(M):
+    S=M.sum(1)
+    i_nz=np.where(S>0)[0]
+    S=S[i_nz]
+    M=(M[i_nz].T)[i_nz].T
+    S=1/np.sqrt(S)
+    M=S*M
+    M=(S*M.T).T
+    n=np.size(S)
+    M=np.identity(n)-M
+    M=(M+M.T)/2
+    return M
+
+
+def get_ipr(evec):
+    ipr=1.0/(evec*evec*evec*evec).sum()
+    return ipr
+
+
+def get_reproducibility(hic_data1, hic_data2, num_evec,
+                        normalized=False, remove_bad_columns=True):
+    """
+    Compute reproducibility score similarly to HiC-spector
+       (https://doi.org/10.1093/bioinformatics/btx152)
+
+    :param hic_data1: Hi-C-data object
+    :param hic_data2: Hi-C-data object
+    :param 20 num_evec: number of eigenvectors to compare
+
+    :returns: reproducibility score (bellow 0.5 ~ different cell types)
+    """
+    M1 = hic_data1.get_matrix(normalized=normalized)
+    M2 = hic_data2.get_matrix(normalized=normalized)
+
+    if remove_bad_columns:
+        # union of bad columns
+        bads = hic_data1.bads.copy()
+        bads.update(hic_data2.bads)
+        # remove them form both matrices
+        for bad in sorted(bads, reverse=True):
+            del(M1[bad])
+            del(M2[bad])
+            for i in xrange(len(M1)):
+                _ = M1[i].pop(bad)
+                _ = M2[i].pop(bad)
+
+    M1 = np.matrix(M1)
+    M2 = np.matrix(M2)
+
+    k1=np.sign(M1.A).sum(1)
+    d1=np.diag(M1.A)
+    kd1=~((k1==1)*(d1>0))
+    k2=np.sign(M2.A).sum(1)
+    d2=np.diag(M2.A)
+    kd2=~((k2==1)*(d2>0))
+    iz=np.nonzero((k1+k2>0)*(kd1>0)*(kd2>0))[0]
+    M1b=(M1[iz].A.T)[iz].T
+    M2b=(M2[iz].A.T)[iz].T
+
+    i_nz1=np.where(M1b.sum(1)>0)[0]
+    i_nz2=np.where(M2b.sum(1)>0)[0]
+    i_z1=np.where(M1b.sum(1)==0)[0]
+    i_z2=np.where(M2b.sum(1)==0)[0]
+
+    M1b_L=_get_Laplacian(M1b)
+    M2b_L=_get_Laplacian(M2b)
+
+    a1, b1=eigsh(M1b_L,k=num_evec,which="SM")
+    a2, b2=eigsh(M2b_L,k=num_evec,which="SM")
+
+    b1_extend=np.zeros((np.size(M1b,0),num_evec))
+    b2_extend=np.zeros((np.size(M2b,0),num_evec))
+    for i in range(num_evec):
+        b1_extend[i_nz1,i]=b1[:,i]
+        b2_extend[i_nz2,i]=b2[:,i]
+
+    ipr_cut=5
+    ipr1=np.zeros(num_evec)
+    ipr2=np.zeros(num_evec)
+    for i in range(num_evec):
+        ipr1[i]=get_ipr(b1_extend[:,i])
+        ipr2[i]=get_ipr(b2_extend[:,i])
+
+    b1_extend_eff=b1_extend[:,ipr1>ipr_cut]
+    b2_extend_eff=b2_extend[:,ipr2>ipr_cut]
+    num_evec_eff=min(np.size(b1_extend_eff,1),np.size(b2_extend_eff,1))
+
+    evd=np.zeros(num_evec_eff)
+    for i in range(num_evec_eff):
+        evd[i]=_evec_dist(b1_extend_eff[:,i],b2_extend_eff[:,i])
+
+    Sd=evd.sum()
+    l=np.sqrt(2)
+    evs=abs(l-Sd/num_evec_eff)/l
+
+    N=float(M1.shape[1]);
+    if (np.sum(ipr1>N/100)<=1)|(np.sum(ipr2>N/100)<=1):
+       print("at least one of the maps does not look like typical Hi-C maps")
+    else:
+       print("size of maps: %d" %(np.size(M1,0)))
+       print("reproducibility score: %6.3f " %(evs))
+       print("num_evec_eff: %d" %(num_evec_eff))
+
+    return evs
+
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                            savefig=None, show=False, savedata=None,
