@@ -410,6 +410,8 @@ def populate_args(parser):
                         default=False,
                         help='skip calculation of Cis-percentage and decay')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     normpt.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='Vanilla', type=str,
                         choices=['Vanilla', 'ICE', 'SQRT', 'oneD', 'custom'],

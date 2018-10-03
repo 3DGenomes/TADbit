@@ -442,6 +442,8 @@ def populate_args(parser):
                                   ['%2d: %15s' % (k, MASKED[k]['name'])
                                    for k in MASKED]))))
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     cmopts.add_argument('--rich_in_A', dest='rich_in_A', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path to a BED or bedGraph file with list of

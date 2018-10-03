@@ -77,6 +77,8 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit map)''')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     glopts.add_argument('-t', '--tables', dest='tables', metavar='',
                         action='store', nargs='+', type=str,
                         default=[str(t) for t in range(1, len(TABLE_IDX) + 1)],

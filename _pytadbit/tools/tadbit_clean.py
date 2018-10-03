@@ -113,6 +113,8 @@ def populate_args(parser):
                         default=False,
                         help='compress files and update paths accordingly')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     parser.add_argument('--change_workdir', dest='new_workdir', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''In case folder was moved, input the new path''')

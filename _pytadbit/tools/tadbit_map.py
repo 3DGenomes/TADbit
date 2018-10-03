@@ -125,8 +125,6 @@ def run(opts):
 
 
 def check_options(opts):
-    if opts.cfg:
-        get_options_from_cfg(opts.cfg, opts)
 
     opts.gem_binary = which(opts.gem_binary)
     if not opts.gem_binary:
@@ -437,6 +435,8 @@ def populate_args(parser):
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
+
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
 
     mapper.add_argument('--iterative', dest='iterative', default=False,
                         action='store_true',

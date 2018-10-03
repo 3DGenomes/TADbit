@@ -342,6 +342,8 @@ def populate_args(parser):
                         jobid(s). Use tadbit describe to find out which.
                         In this case one jobid can be passed per read.''')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     parser.add_argument_group(glopts)
 
 def check_options(opts):

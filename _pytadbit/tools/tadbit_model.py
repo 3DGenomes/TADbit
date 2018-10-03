@@ -892,6 +892,8 @@ def populate_args(parser):
                         default="pdf",
                         help='''file format and extension for figures and plots
                         (can be any supported by matplotlib, png, eps...)''')
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     #########################################
     # DESCRIPTION
     descro.add_argument('--species', dest='species', metavar="STRING",

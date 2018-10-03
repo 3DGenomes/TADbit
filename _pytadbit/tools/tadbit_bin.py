@@ -436,6 +436,9 @@ def check_options(opts):
     if opts.only_plot:
         opts.plot = True
     if opts.interactive:
+        if opts.nox:
+            raise Exception('ERROR: no screen no fun.\n'
+                            'Interactive plot incompatible with noX option.')
         opts.plot = True
         opts.only_plot = True
 
@@ -499,6 +502,9 @@ def populate_args(parser):
                         action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
+
+    glopts.add_argument('--noX', help='no display server (X screen)',
+                        dest='nox', action='store_true')
 
     oblopt.add_argument('-r', '--resolution', dest='reso', metavar="INT",
                         action='store', default=None, type=int, required=True,

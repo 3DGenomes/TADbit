@@ -501,6 +501,8 @@ def populate_args(parser):
                         all reads (other wise the tool will guess from the
                         working directory database)''')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     glopts.add_argument('--bam2', dest='bam2', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path to the second TADbit-generated BAM file with

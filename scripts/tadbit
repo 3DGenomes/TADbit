@@ -8,7 +8,10 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from os import environ
 from subprocess import check_call, PIPE, CalledProcessError
 
-if environ.get("DISPLAY", None) != ':0':
+if '--noX' in sys.argv:
+    import matplotlib
+    matplotlib.use('Agg')
+elif environ.get("DISPLAY", None) != ':0':
     try:
         check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
                    shell=True, stdout=PIPE, stderr=PIPE)
@@ -30,6 +33,7 @@ try:
     model_av = True
 except ImportError:
     model_av = False
+
 
 def main(arguments):
     if len(arguments) > 1:

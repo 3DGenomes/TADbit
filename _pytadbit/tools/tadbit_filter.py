@@ -338,6 +338,8 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     filter_.add_argument('--over_represented', dest='over_represented', metavar="NUM",
                          action='store', default=0.001, type=float,
                          help='''[%(default)s%%] percentage of restriction-enzyme
