@@ -286,8 +286,12 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), max(size1, size2))
     gradient = np.vstack((gradient, gradient))
-    h  = ax2.hist(data, color='darkgrey', linewidth=2,
-                  bins=20, histtype='step', density=True)
+    try:
+        h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                      bins=20, histtype='step', density=True)
+    except AttributeError:
+        h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                      bins=20, histtype='step', normed=True)
     _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                     vmin=clim[0] if clim else None, vmax=clim[1] if clim else None,
                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
