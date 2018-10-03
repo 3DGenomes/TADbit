@@ -18,6 +18,7 @@ import sqlite3 as lite
 import time
 
 from pytadbit                        import load_hic_data_from_bam
+from pytadbit.mapping.analyze        import get_reproducibility
 from pytadbit.mapping.analyze        import correlate_matrices
 from pytadbit.mapping.analyze        import eig_correlate_matrices
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
@@ -89,17 +90,22 @@ def run(opts):
         eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
 
         printime('  - comparing experiments')
-        print '    => correlation between equidistant loci'
+        printime('    => correlation between equidistant loci')
         corr, _, scc, std, bads = correlate_matrices(
             hic_data1, hic_data2, normalized=opts.norm,
             remove_bad_columns=True, savefig=decay_corr_fig,
             savedata=decay_corr_dat, get_bads=True)
-
-        print '    => correlation between eigenvectors'
+        print '         - correlation score (SCC): %.4f (+- %.7f)' % (scc, std)
+        printime('    => correlation between eigenvectors')
         eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                           remove_bad_columns=True, nvect=6,
                                           savefig=eigen_corr_fig,
                                           savedata=eigen_corr_dat)
+
+        printime('    => reproducibility score')
+        reprod = get_reproducibility(hic_data1, hic_data2, num_evec=20, normalized=opts.norm,
+                                     verbose=False, remove_bad_columns=True)
+        print '         - reproducibility score: %.4f' % (reprod)
         ncols = len(hic_data1)
     else:
         ncols = 0
@@ -130,14 +136,14 @@ def run(opts):
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
-                len(bads.keys()), ncols,
+                len(bads.keys()), ncols, scc, std, reprod,
                 eigen_corr_dat, eigen_corr_fig, outbam, corr, eig_corr,
                 biases1, biases2, launch_time, finish_time)
     printime('\nDone.')
 
 
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
-               nbad_columns, ncolumns,
+               nbad_columns, ncolumns, scc, std, reprod,
                eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,
                biases1, biases2, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
@@ -199,6 +205,9 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                 Inputs text,
                 decay_corr text,
                 eigen_corr text,
+                reprod real,
+                scc real,
+                std_scc real,
                 N_columns int,
                 N_filtered int,
                 Resolution int,
@@ -280,10 +289,10 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         if not opts.skip_comparison:
             cur.execute("""
             insert into MERGE_STATs
-            (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bias2Path)
+            (Id  , JOBid, N_columns,   N_filtered, Resolution, reprod, scc, std_scc, decay_corr, eigen_corr, bias1Path, bias2Path)
             values
-            (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d)
-            """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   biasid2))
+            (NULL,    %d,        %d,           %d,         %d,     %f,  %f,      %f,       '%s',       '%s',        %d,        %d)
+            """ % (jobid,  ncolumns, nbad_columns, opts.reso , reprod, scc,     std, decay_corr, eigen_corr,   biasid1,   biasid2))
 
         masked1 = {'valid-pairs': {'count': 0}}
         if opts.workdir1:
@@ -372,6 +381,7 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
         dbfile = tmpdb
     else:
         dbfile = path.join(workdir, 'trace.db')
+    print dbfile
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
@@ -511,7 +521,14 @@ def populate_args(parser):
 
     glopts.add_argument('--skip_comparison', dest='skip_comparison',
                         action='store_true', default=False,
-                        help='''skip the comparison between replicates (faster).''')
+                        help='''skip the comparison between replicates (faster).
+                        Comparisons are performed at 3 levels 1- comparing first
+                        diagonals of each experiment (and generating SCC score
+                        and standard deviation see
+                        https://doi.org/10.1101/gr.220640.117) 2- Comparing the
+                        first eigenvectors of input experiments 3- Generates
+                        reproducibility score using function from
+                        https://doi.org/10.1093/bioinformatics/btx152''')
 
     glopts.add_argument('--skip_merge', dest='skip_merge',
                         action='store_true', default=False,
@@ -609,8 +626,10 @@ def check_options(opts):
             except IOError:
                 pass
     else:
-        opts.tmpdb1 = path.join(opts.workdir1, 'trace.db')
-        opts.tmpdb2 = path.join(opts.workdir2, 'trace.db')
+        if opts.workdir1:
+            opts.tmpdb1 = path.join(opts.workdir1, 'trace.db')
+        if opts.workdir2:
+            opts.tmpdb2 = path.join(opts.workdir2, 'trace.db')
 
     # resolution needed to compare
     if not opts.skip_comparison and not opts.reso:

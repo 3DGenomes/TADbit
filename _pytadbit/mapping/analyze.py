@@ -910,7 +910,10 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
        with Spearman rank correlation.
 
     Also computes the SCC reproducibility score as in HiCrep (see
-       https://doi.org/10.1101/gr.220640.117)
+       https://doi.org/10.1101/gr.220640.117). It's implementation is inspired
+       by the version implemented in dryhic by Enrique Vidal
+       (https://github.com/qenvio/dryhic).
+
 
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
@@ -1055,7 +1058,7 @@ def get_ipr(evec):
     return ipr
 
 
-def get_reproducibility(hic_data1, hic_data2, num_evec,
+def get_reproducibility(hic_data1, hic_data2, num_evec, verbose=True,
                         normalized=False, remove_bad_columns=True):
     """
     Compute reproducibility score similarly to HiC-spector
@@ -1131,13 +1134,14 @@ def get_reproducibility(hic_data1, hic_data2, num_evec,
     l=np.sqrt(2)
     evs=abs(l-Sd/num_evec_eff)/l
 
-    N=float(M1.shape[1]);
-    if (np.sum(ipr1>N/100)<=1)|(np.sum(ipr2>N/100)<=1):
-       print("at least one of the maps does not look like typical Hi-C maps")
-    else:
-       print("size of maps: %d" %(np.size(M1,0)))
-       print("reproducibility score: %6.3f " %(evs))
-       print("num_evec_eff: %d" %(num_evec_eff))
+    N = float(M1.shape[1])
+    if verbose:
+        if (np.sum(ipr1>N/100)<=1)|(np.sum(ipr2>N/100)<=1):
+            print("at least one of the maps does not look like typical Hi-C maps")
+        else:
+            print("size of maps: %d" %(np.size(M1,0)))
+            print("reproducibility score: %6.3f " %(evs))
+            print("num_evec_eff: %d" %(num_evec_eff))
 
     return evs
 
