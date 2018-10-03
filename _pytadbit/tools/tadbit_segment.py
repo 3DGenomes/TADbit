@@ -25,6 +25,7 @@ from pytadbit.utils.file_handling   import mkdir
 from pytadbit.parsers.tad_parser    import parse_tads
 from pytadbit.parsers.genome_parser import parse_fasta, get_gc_content
 from pytadbit.mapping.filter        import MASKED
+from pytadbit.utils.extraviews      import nicer
 
 
 DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
@@ -333,7 +334,6 @@ def load_parameters_fromdb(opts):
                 except IndexError:
                     parse_jobid = 1
             if len(jobids) > 1:
-                found = False
                 cur.execute("""
                 select distinct JOBid from NORMALIZE_OUTPUTs
                 where Resolution = %d
@@ -341,12 +341,10 @@ def load_parameters_fromdb(opts):
                 jobs = cur.fetchall()
                 try:
                     parse_jobid = jobs[0][0]
-                    found = True
                 except IndexError:
-                    found = False
+                    raise Exception('ERROR: no normalization found at %s' % (
+                        nicer(opts.reso)))
                 if len(jobs ) > 1:
-                    found = False
-                if not found:
                     raise Exception('ERROR: more than one possible input found, use'
                                     '"tadbit describe" and select corresponding '
                                     'jobid with --jobid')

@@ -101,13 +101,16 @@ def populate_args(parser):
 
     glopts.add_argument('-W', '--where', dest='where', metavar="STR",
                         action='store', default={}, type=str, nargs='+',
-                        help='''ensemble of keyword and value to filter results
-                        in the form: `-s Chromosome,18`''')
+                        help='''Select rows. List pairs of keywords (column header)
+                        and values to filter results. For example to get only results
+                        where "18" appears in the column "Chromosome", the option
+                        should be set as: `-W Chromosome,18`''')
 
     glopts.add_argument('-s', '--select', dest='select', metavar="STR",
                         action='store', default={}, type=str, nargs='+',
-                        help='''ensemble of keyword to show results. E.g.
-                        to show only JobIds: `-s Jobids`''')
+                        help='''Select columns. List the keyword (column
+                        headers) to be displayed. E.g.
+                        to show only the colmns JobIds: `-s Jobids`''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
