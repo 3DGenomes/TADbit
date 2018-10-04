@@ -13,6 +13,7 @@ try:
     from matplotlib.ticker    import MultipleLocator
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib.ticker    import FuncFormatter
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -1245,7 +1246,32 @@ def pcolormesh_45deg(matrix, axe=None, **kwargs):
     return im
 
 
-def plot_HiC_matrix(matrix, bad_color=None, triangular=False,
+def add_subplot_axes(ax,rect,axisbg='w'):
+    """
+    from https://stackoverflow.com/questions/17458580/embedding-small-plots-inside-subplots-in-matplotlib/35966183
+    """
+    fig = plt.gcf()
+    box = ax.get_position()
+    width = box.width
+    height = box.height
+    inax_position  = ax.transAxes.transform(rect[0:2])
+    transFigure = fig.transFigure.inverted()
+    infig_position = transFigure.transform(inax_position)
+    x = infig_position[0]
+    y = infig_position[1]
+    width *= rect[2]
+    height *= rect[3]  # <= Typo was here
+    subax = fig.add_axes([x,y,width,height])
+    x_labelsize = subax.get_xticklabels()[0].get_size()
+    y_labelsize = subax.get_yticklabels()[0].get_size()
+    x_labelsize *= rect[2]**0.5
+    y_labelsize *= rect[3]**0.5
+    subax.xaxis.set_tick_params(labelsize=x_labelsize)
+    subax.yaxis.set_tick_params(labelsize=y_labelsize)
+    return subax
+
+
+def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
                     transform=np.log2, rescale_zeros=True, **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
@@ -1276,11 +1302,21 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False,
     matrix = np.ma.masked_where(np.isnan(matrix), transform(matrix))
 
     if triangular:
-        axe1 = plt.axes([0.05, 0.15, 0.9, 0.72])
-        axe2 = plt.axes([0.63, 0.775, 0.32, 0.07])
+        if not axe:
+            _ = plt.figure(figsize=(16, 10))
+            axe1 = plt.axes([0.05, 0.15, 0.9, 0.72])
+            axe2 = plt.axes([0.63, 0.775, 0.32, 0.07])
+        else:
+            axe1 = add_subplot_axes(axe, [0.05, 0.15, 0.9, 0.72])
+            axe2 = add_subplot_axes(axe, [0.63, 0.775, 0.32, 0.07])
     else:
-        axe1 = plt.axes([0.1, 0.1, 0.7, 0.8])
-        axe2 = plt.axes([0.82, 0.1, 0.07, 0.8])
+        if not axe:
+            _ = plt.figure(figsize=(16, 14))
+            axe1 = plt.axes([0.1, 0.1, 0.7, 0.8])
+            axe2 = plt.axes([0.82, 0.1, 0.07, 0.8])
+        else:
+            axe1 = add_subplot_axes(axe, [0.1, 0.1, 0.7, 0.8])
+            axe2 = add_subplot_axes(axe, [0.82, 0.1, 0.07, 0.8])
     if triangular:
         pcolormesh_45deg(matrix, axe=axe1, **kwargs)
     else:
