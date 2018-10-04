@@ -13,7 +13,7 @@ from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan, mean
 from numpy                          import meshgrid, asarray, exp, linspace, std
 from numpy                          import nanpercentile as npperc, log as nplog
-from numpy                          import nanmax
+from numpy                          import nanmax, ma, zeros_like
 from scipy.stats                    import ttest_ind, spearmanr
 from scipy.special                  import gammaincc
 from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
@@ -425,9 +425,9 @@ class HiC_data(dict):
             raise Exception(('Error: resolution in Pickle (%d) does not match '
                              'the one of this HiC_data object (%d)') % (
                                  biases['resolution'], self.resolution))
-        self.bias     = ['biases']
-        self.expected = ['decay']
-        self.bads     = ['badcol']
+        self.bias     = biases['biases']
+        self.expected = biases['decay']
+        self.bads     = biases['badcol']
 
     def get_as_tuple(self):
         return tuple([self[i, j]
@@ -579,7 +579,8 @@ class HiC_data(dict):
                 out.write('\t'.join([str(i) for i in line]) + '\n')
         out.close()
 
-    def get_matrix(self, focus=None, diagonal=True, normalized=False):
+    def get_matrix(self, focus=None, diagonal=True, normalized=False,
+                   masked=False):
         """
         returns a matrix.
 
@@ -591,6 +592,8 @@ class HiC_data(dict):
         :param True diagonal: if False, diagonal is replaced by ones, or zeroes
            if normalized
         :param False normalized: get normalized data
+        :param False masked: return masked arrays using the definition of bad
+           columns
 
         :returns: matrix (a list of lists of values)
         """
@@ -599,28 +602,38 @@ class HiC_data(dict):
         start1, start2, end1, end2 = self._focus_coords(focus)
         if normalized:
             if diagonal:
-                return [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] / self.bias[i] / self.bias[j]
+                           for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
             else:
-                mtrx = [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] / self.bias[i] / self.bias[j]
+                           for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(mtrx)):
-                        mtrx[i][i] = 0
-                return mtrx
+                    for i in xrange(len(matrix)):
+                        matrix[i][i] = 0
         else:
             if diagonal:
-                return [[self[i, j] for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
             else:
-                mtrx = [[self[i, j] for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(mtrx)):
-                        mtrx[i][i] = 1 if mtrx[i][i] else 0
-                return mtrx
+                    for i in xrange(len(matrix)):
+                        matrix[i][i] = 1 if matrix[i][i] else 0
+
+        if masked:
+            bads1 = [b - start1 for b in self.bads if start1 <= b < end1]
+            bads2 = [b - start2 for b in self.bads if start2 <= b < end2]
+            m = zeros_like(matrix)
+            for bad1 in bads1:
+                m[:,bad1] = 1
+                for bad2 in bads2:
+                    m[bad2,:] = 1
+            matrix = ma.masked_array(matrix, m)
+
+        return matrix
 
     def _focus_coords(self, focus):
         siz = len(self)
@@ -636,11 +649,35 @@ class HiC_data(dict):
                     start1 -= 1
                     start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
-                start1, end1 = self.section_pos[focus[0]]
-                start2, end2 = self.section_pos[focus[1]]
+                start1, end1 = self.section_pos[focus[0].split(':')[0]]
+                start2, end2 = self.section_pos[focus[1].split(':')[0]]
+                if ':' in focus[0]:
+                    pos = focus[0].split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start1, end1 = start1 + pos1, start1 + pos2
+                if ':' in focus[1]:
+                    pos = focus[0].split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start2, end2 = start1 + pos1, start1 + pos2
             else:
-                start1, end1 = self.section_pos[focus]
-                start2, end2 = self.section_pos[focus]
+                start1, end1 = self.section_pos[focus.split(':')[0]]
+                if ':' in focus:
+                    pos = focus.split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start1, end1 = start1 + pos1, start1 + pos2
+                start2, end2 = start1, end1
         else:
             start1 = start2 = 0
             end1   = end2   = siz
