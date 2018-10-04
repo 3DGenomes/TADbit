@@ -420,7 +420,7 @@ class HiC_data(dict):
 
         :param fnam: path to input pickle file
         """
-        biases = load(open(fnam), protocol if protocol else HIGHEST_PROTOCOL)
+        biases = load(open(fnam))
         if biases['resolution'] != self.resolution:
             raise Exception(('Error: resolution in Pickle (%d) does not match '
                              'the one of this HiC_data object (%d)') % (
