@@ -2,8 +2,11 @@ from itertools                    import combinations
 from os                           import path, system
 from sys                          import stdout
 from collections                  import OrderedDict
+from multiprocessing              import cpu_count
+from distutils.version            import LooseVersion
+from subprocess                   import Popen, PIPE
 
-from pytadbit.utils.file_handling import mkdir, magic_open
+from pytadbit.utils.file_handling import mkdir, magic_open, which
 
 
 def eq_reads(rd1, rd2):
@@ -26,7 +29,7 @@ def merge_2d_beds(path1, path2, outpath):
        the filtering) into one.
 
     :param path1: path to first file
-    :param path2: path to first file
+    :param path2: path to second file
 
     :returns: number of reads processed
     """
@@ -97,6 +100,28 @@ def merge_2d_beds(path1, path2, outpath):
     out.close()
     return nreads
 
+def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', verbose = True):
+    """
+    Merge two bam files with samtools into one.
+
+    :param bam1: path to first file
+    :param bam2: path to second file
+    """
+
+    samtools = which(samtools)
+    if verbose:
+        print '  - Mergeing experiments'
+    system(samtools  + ' merge -@ %d %s %s %s' % (cpus, outbam, bam1, bam2))
+    if verbose:
+        print '  - Indexing new BAM file'
+    # check samtools version number and modify command line
+    version = LooseVersion([l.split()[1]
+                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            if 'Version' in l][0])
+    if version >= LooseVersion('1.3.1'):
+        system(samtools  + ' index -@ %d %s' % (cpus, outbam))
+    else:
+        system(samtools  + ' index %s' % (outbam))
 
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
