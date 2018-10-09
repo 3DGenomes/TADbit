@@ -18,10 +18,9 @@ from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
-from numpy                           import zeros_like, min as np_min
-from numpy                           import nonzero, array, linspace
-from numpy                           import nanmin, nanmax, ma, isfinite
-from numpy                           import log2, dstack
+from numpy                           import zeros_like
+from numpy                           import array
+from numpy                           import ma
 from matplotlib                      import pyplot as plt
 from matplotlib.ticker               import FuncFormatter
 from pysam                           import AlignmentFile
@@ -286,7 +285,7 @@ def run(opts):
 
 
 def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
-                section_pos, sections, xtick_rotation, triangular=False):
+                 section_pos, sections, xtick_rotation, triangular=False):
     if len(regions) <= 2:
         pltbeg1 = 0 if start1 is None else start1
         pltend1 = sections[regions[0]] if end1 is None else end1
