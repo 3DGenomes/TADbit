@@ -663,7 +663,7 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
                      markersize=.5)
         ax3.tick_params(axis='both', which='major', labelsize=10)
 
-        ax3.hist(zdata, bins=20, normed=True, alpha=0.7, color='r')
+        ax3.hist(zdata, bins=20, density=True, alpha=0.7, color='r')
         ax3.set_xlabel('Z-score')
         ax3.set_ylabel('Frequency')
         rcParams['xtick.direction'] = 'out'
@@ -687,7 +687,10 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         ax1.xaxis.set_ticks_position('bottom')
         ax1.yaxis.set_ticks_position('left')
         ax1.set_xscale('log')
-        ax1.set_axis_bgcolor((.9,.9,.9))
+        try:
+            ax1.set_axis_bgcolor((.9,.9,.9))
+        except AttributeError:
+            ax1.set_facecolor((.9,.9,.9))
 
         ax1.errorbar(range(1, 1 + len(rvmean)), rvmean, yerr=err, ecolor='red',
                      color='orange', lw=2,
