@@ -177,26 +177,28 @@ def nice_ba_plot(x, y, unadj_pN, sigmaN, sigmaR, pred, cond1, cond2,
     return axe
 
 def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
-               kde=True, use_odr=True):
+               kde=True, use_odr=True, EV_range=(-1, 1), mid_point=0):
     if not axe:
         axe = plt.subplot(111)
     dots = []
     num_dots = []
     if color_ab:
         try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] < 0 and ev2[i] < 0])
-            dots.extend(plt.plot(a, b, 'b.', alpha=0.1, label='Bins always in B'))
-            num_dots.append(len(a))
-        except ValueError:
-            pass
-        try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] > 0 and ev2[i] > 0])
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] > mid_point and ev2[i] > mid_point])
             dots.extend(plt.plot(a, b, 'r.', alpha=0.1, label='Bins always in A'))
             num_dots.append(len(a))
         except ValueError:
             pass
         try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] * ev2[i] < 0])
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] < mid_point and ev2[i] < mid_point])
+            dots.extend(plt.plot(a, b, 'b.', alpha=0.1, label='Bins always in B'))
+            num_dots.append(len(a))
+        except ValueError:
+            pass
+        try:
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1))
+                         if (ev1[i] < mid_point and ev2[i] > mid_point)
+                         or (ev1[i] > mid_point and ev2[i] < mid_point)])
             dots.extend(plt.plot(a, b, '.', color='grey', alpha=0.1, label='Bins switching'))
             num_dots.append(len(a))
         except ValueError:
@@ -205,34 +207,36 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
         dots.extend(plt.plot(ev1, ev2, '.', color='grey', alpha=0.1, label='Bins'))
 
     r, p  = st.pearsonr(ev1, ev2)
-    plt.xlim(-1.1, 1.1)
-    plt.ylim(-1.1, 1.1)
-    plt.xticks([-1, 0, 1])
-    plt.yticks([-1, 0, 1])
-    plt.axhline(0, color='lightgrey', alpha=0.3)
-    plt.axvline(0, color='lightgrey', alpha=0.3)
+    plt.xlim(EV_range)
+    plt.ylim(EV_range)
+    plt.xticks([EV_range[0], mid_point, EV_range[1]])
+    plt.yticks([EV_range[0], mid_point, EV_range[1]])
+    plt.axhline(mid_point, color='lightgrey', alpha=0.3)
+    plt.axvline(mid_point, color='lightgrey', alpha=0.3)
     p_x, p_y, z, confs, preds, r2 = fit_with_uncertainty(
         ev1, ev2, x_range=(-2, 2), use_odr=use_odr)
     formula = latex_formula("A*x+B", z)
     # confs, preds, p_x, p_y, z, r2, formula
-    fit_line = plt.plot(p_x, p_y,color= 'darkgreen', lw=2, label='Regression line')
+    corr_color = "#7f7f7f"
+    fit_line = plt.plot(p_x, p_y,color=corr_color, alpha=0.7, lw=2, label='Regression line')
     # plot confidence limits
-    plt.fill_between(p_x, p_y - preds, p_y + preds, color='darkgreen', alpha=0.1)
+    plt.fill_between(p_x, p_y - preds, p_y + preds, color=corr_color, alpha=0.15)
+    plt.plot(p_x, p_y - preds, color=corr_color, alpha=0.15)
+    plt.plot(p_x, p_y + preds, color=corr_color, alpha=0.25)
 
-    p1 = Rectangle((0, 0), 1, 1, fc="darkgreen", alpha=.2)
+    p1 = Rectangle((0, 0), 1, 1, fc=corr_color, alpha=.2)
     num_dots = [100 * float(n) / sum(num_dots) for n in num_dots]
-    dot_labels = (['Bins always in B (%.0f%%)'% (num_dots[0]),
-                   'Bins always in A (%.0f%%)'% (num_dots[1]),
-                   'Bins switching (%.0f%%)'  % (num_dots[2])]
+    dot_labels = (['Bin stays A: %.0f%%' % (num_dots[0]),
+                   'Bin stays B: %.0f%%' % (num_dots[1]),
+                   'Bin changes: %.0f%%' % (num_dots[2])]
                   if color_ab else ['Bins'])
     leg = plt.legend(fit_line + [p1] + dots,
-                     ['''ODR fit: $y = %s$ (Pearson %.2f)''' % (formula, r),
+                     ['''$y = %s$ (Pearson %.2f)''' % (formula, r),
                       '95% Prediction band'] + dot_labels,
                      frameon=False, loc=2)
     # a little bit of cheating here to see the dots
     for l in leg.get_lines():
         if not 'Bins' in l.get_label():
-            print l.get_label()
             continue
         l.set_alpha(0.6)
         x0, x1 = l.get_xdata()
@@ -270,6 +274,8 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
     axHistx.axison = False
     axe.set_xlabel(xlabel)
     axe.set_ylabel(ylabel)
+    axe.set_xlim(EV_range)
+    axe.set_ylim(EV_range)
     return axHistx
 
 
