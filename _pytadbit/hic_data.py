@@ -363,6 +363,9 @@ class HiC_data(dict):
                 norm_sum += v
         return norm_sum
 
+    def normalize_expected(self, **kwargs):
+        self.expected = expected(self, bads=self.bads, **kwargs)
+
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False,
                       sqrt=False, factor=1):
         """

@@ -373,9 +373,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
 
     # Definition of null model
     print 'Defining Null model'
-    ev3 = np.array(list(ev1[1:]) + list(ev2[1:]))
-    ev4 = np.array([ev1[v] for v in xrange(len(ev1) - 1)] +
-                   [ev2[v] for v in xrange(len(ev2) - 1)])
+    ev3 = np.array(list(ev1[1: :2]) + list(ev2[1: :2]))
+    ev4 = np.array(list(ev1[:-1:2]) + list(ev2[:-1:2]))
 
     if plot == 'all':
         axes.append(plt.subplot(2, 2, 2))
@@ -405,21 +404,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     ids = ids[idx]
 
     # for null model:
-    zev3 = []
-    zev4 = []
-    for i, j  in zip(list(zev1[1: ]) + list(zev2[1: ]), list(zev1[:-1]) + list(zev2[:-1])):
-        if i > 0.5 and j > 0.5:
-            zev3.append(i)
-            zev4.append(j)
-        elif  i < 0.5 and j < 0.5:
-            zev3.append(i)
-            zev4.append(j)
-
-    zev3 = np.array(zev3)
-    zev4 = np.array(zev4)
-    # zev3 = np.array(list(zev1[1:]) + list(zev2[1:]))
-    # zev4 = np.array([zev1[v] for v in xrange(len(zev1) - 1)] +
-    #                [zev2[v] for v in xrange(len(zev2) - 1)])
+    zev3 = np.array(ev3)
+    zev4 = np.array(ev4)
     x_cor = (zev3 + zev4) / 2
     y_cor = (zev3 - zev4)
     idx_cor = np.argsort(x_cor)
@@ -559,12 +545,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             signx=signx, signy=signy, t_contours=t_contours, steps=steps))
 
     if plot in ['all', 'correlation']:
-        # xlim = (min(ev1.min(), ev3.min()), max(ev1.max(), ev3.max()))
-        # maxval = max(abs(xlim[0]), abs(xlim[1]))
-        # xlim = (-maxval, maxval)
-        # ylim = (min(ev2.min(), ev4.min()), max(ev2.max(), ev4.max()))
-        # maxval = max(abs(ylim[0]), abs(ylim[1]))
-        # ylim = (-maxval, maxval)
         for axe in axes[:2]:
             axe.set_xlim(EV_range)
             axe.set_ylim(EV_range)
@@ -574,7 +554,6 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
         for axe in (axes[2:] if plot == 'all' else axes):
             axe.set_xlim(xlim)
             axe.set_ylim(ylim)
-
     return result
 
 
