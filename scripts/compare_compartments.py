@@ -310,7 +310,8 @@ def ba_plot(x, y, pred, cond1, cond2, alpha=float('nan'), df=0, ax=None):
 
 
 def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
-                       confidence=0.95, alpha=0.75, kernel_density=200):
+                       mid_point=0., EV_range=(-1.4, 1.4), confidence=0.95,
+                       alpha=0.75, kernel_density=200):
     """
     Compare two eigenvectors (from two conditions), using as null, or
        background, model the differences between each pair of neighbor bins.
@@ -350,8 +351,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     ids = np.array(ids)
 
     # ~normalize
-    ev1 = ev1 / np.std(ev1) / 3
-    ev2 = ev2 / np.std(ev2) / 3
+    # ev1 = ev1 / np.std(ev1) / 3
+    # ev2 = ev2 / np.std(ev2) / 3
 
     # plot
     axes = []
@@ -365,7 +366,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             axe = plt.subplot(2, 2, 1)
         axes.append(axe)
         axe = compare_AB(ev1, ev2, axe=axe, xlabel='Eigenvector of ' + cond1,
-                   ylabel='Eigenvector of ' + cond2, color_ab=True)
+                         ylabel='Eigenvector of ' + cond2, color_ab=True,
+                         mid_point=mid_point, EV_range=EV_range)
         axe.set_title('Correlation between EigenVectors (%s vs %s)' % (
             cond1, cond2))
 
@@ -381,7 +383,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             ev3, ev4, axe=axes[-1],
             xlabel='Eigenvector from %s and %s ($n$)' % (cond1, cond2),
             ylabel='Eigenvector from %s and %s ($n+1$)' % (cond1, cond2),
-            color_ab=True)
+            color_ab=True, mid_point=mid_point, EV_range=EV_range)
         axe.set_title((
             'Correlation of EigenVectors (Null model)\n'
             '{0} bins $n$ vs $n+1$ and {1} '
@@ -391,8 +393,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     # Normalization
 
     # Z-scorish
-    zev1 = (ev1 - np.mean(ev1)) / np.std(ev1) / 3
-    zev2 = (ev2 - np.mean(ev2)) / np.std(ev2) / 3
+    zev1 = ev1  # (ev1 - np.mean(ev1)) / np.std(ev1) / 3
+    zev2 = ev2  # (ev2 - np.mean(ev2)) / np.std(ev2) / 3
     # prepare data for MA plot
     x = (zev1 + zev2) / 2
     y = (zev1 - zev2)
@@ -403,9 +405,21 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     ids = ids[idx]
 
     # for null model:
-    zev3 = np.array(list(zev1[1:]) + list(zev2[1:]))
-    zev4 = np.array([zev1[v] for v in xrange(len(zev1) - 1)] +
-                   [zev2[v] for v in xrange(len(zev2) - 1)])
+    zev3 = []
+    zev4 = []
+    for i, j  in zip(list(zev1[1: ]) + list(zev2[1: ]), list(zev1[:-1]) + list(zev2[:-1])):
+        if i > 0.5 and j > 0.5:
+            zev3.append(i)
+            zev4.append(j)
+        elif  i < 0.5 and j < 0.5:
+            zev3.append(i)
+            zev4.append(j)
+
+    zev3 = np.array(zev3)
+    zev4 = np.array(zev4)
+    # zev3 = np.array(list(zev1[1:]) + list(zev2[1:]))
+    # zev4 = np.array([zev1[v] for v in xrange(len(zev1) - 1)] +
+    #                [zev2[v] for v in xrange(len(zev2) - 1)])
     x_cor = (zev3 + zev4) / 2
     y_cor = (zev3 - zev4)
     idx_cor = np.argsort(x_cor)
@@ -472,8 +486,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     y -= pred
     y_cor -= pred_cor
     # Perform the kernel density estimate for null model
-    xmin = min(x_cor) * 1.5
-    ymin = min(y_cor) * 1.5
+    xmin = min(x_cor) - abs(min(x_cor)) * .5
+    ymin = min(y_cor) - abs(min(y_cor)) * .5
     xmax = max(x_cor) * 1.5
     ymax = max(y_cor) * 1.5
     xx, yy = np.mgrid[xmin:xmax:complex(0, kernel_density),
@@ -545,15 +559,15 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             signx=signx, signy=signy, t_contours=t_contours, steps=steps))
 
     if plot in ['all', 'correlation']:
-        xlim = (min(ev1.min(), ev3.min()), max(ev1.max(), ev3.max()))
-        maxval = max(abs(xlim[0]), abs(xlim[1]))
-        xlim = (-maxval, maxval)
-        ylim = (min(ev2.min(), ev4.min()), max(ev2.max(), ev4.max()))
-        maxval = max(abs(ylim[0]), abs(ylim[1]))
-        ylim = (-maxval, maxval)
+        # xlim = (min(ev1.min(), ev3.min()), max(ev1.max(), ev3.max()))
+        # maxval = max(abs(xlim[0]), abs(xlim[1]))
+        # xlim = (-maxval, maxval)
+        # ylim = (min(ev2.min(), ev4.min()), max(ev2.max(), ev4.max()))
+        # maxval = max(abs(ylim[0]), abs(ylim[1]))
+        # ylim = (-maxval, maxval)
         for axe in axes[:2]:
-            axe.set_xlim(xlim)
-            axe.set_ylim(ylim)
+            axe.set_xlim(EV_range)
+            axe.set_ylim(EV_range)
     if plot in ['all', 'density', 'difference']:
         xlim = (min(x.min(), x_cor.min()), max(x.max(), x_cor.max()))
         ylim = (min(y.min(), y_cor.min()), max(y.max(), y_cor.max()))
