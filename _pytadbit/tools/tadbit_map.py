@@ -31,7 +31,7 @@ import time
 
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, identify_re
 from pytadbit.utils.fastq_utils           import quality_plot
-from pytadbit.utils.file_handling         import which, mkdir
+from pytadbit.utils.file_handling         import which, mkdir, is_fastq
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
@@ -176,6 +176,9 @@ def check_options(opts):
 
     if not path.exists(opts.fastq):
         raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
+
+    if not is_fastq(opts.fastq):
+        raise IOError(('ERROR: FASTQ file %s wrong format, check') % (opts.fastq))
 
     try:
         opts.windows = [[int(i) for i in win.split(':')]

@@ -8,7 +8,7 @@ from warnings import warn
 from tempfile import gettempdir, mkstemp
 from subprocess import CalledProcessError, PIPE, Popen
 
-from pytadbit.utils.file_handling import mkdir, which
+from pytadbit.utils.file_handling import mkdir, which, is_fastq
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import religateds
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
@@ -453,7 +453,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
 
     # iterative mapping
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
-    base_name = base_name.replace('.fastq', '')
+    base_name = '.'.join(base_name.split('.')[:-1])
     input_reads = fastq_path
     if windows is None:
         light_storage = True
@@ -474,11 +474,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         # Prepare the FASTQ file and iterate over them
         curr_map, counter = transform_fastq(
             input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
-            fastq=(   input_reads.endswith('.fastq'   )
-                   or input_reads.endswith('.fastq.gz')
-                   or input_reads.endswith('.fq'      )
-                   or input_reads.endswith('.fq.gz'   )
-                   or input_reads.endswith('.dsrc'    )),
+            fastq=is_fastq(input_reads),
             min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads,
             light_storage=light_storage)
         # clean
