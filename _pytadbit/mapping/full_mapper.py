@@ -476,6 +476,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
             fastq=(   input_reads.endswith('.fastq'   )
                    or input_reads.endswith('.fastq.gz')
+                   or input_reads.endswith('.fq'      )
                    or input_reads.endswith('.fq.gz'   )
                    or input_reads.endswith('.dsrc'    )),
             min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads,
