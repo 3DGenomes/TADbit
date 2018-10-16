@@ -596,8 +596,18 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
             if deltas:
                 for pos in range(hic_data.section_pos[crm][0] + end,
                                  hic_data.section_pos[crm][1] - end):
-                    deltas[(dist, end)][pos] = (insidx[(dist, end)].get(pos - delta, float('nan')) -
-                                                insidx[(dist, end)].get(pos + delta, float('nan')))
+                    up_vals = []
+                    dw_vals = []
+                    for spos in xrange(delta):
+                        try:
+                            up_vals.append(insidx[(dist, end)][pos - delta + spos])
+                        except KeyError:
+                            pass
+                        try:
+                            dw_vals.append(insidx[(dist, end)][pos + delta - spos])
+                        except KeyError:
+                            pass
+                    deltas[(dist, end)][pos] = (np.mean(up_vals) - np.mean(dw_vals))
 
     if savedata:
         out = open(savedata, 'w')
@@ -632,7 +642,7 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
     return insidx
 
 
-def insulation_to_borders(ins_score, deltas):
+def insulation_to_borders(ins_score, deltas, min_strength=0.1):
     """
     Best (for human-like genome size) according to https://doi.org/10.1038/nature14450
     is (at 10kb resolution) to use awindow size of 500 kb (use the function
@@ -670,5 +680,6 @@ def insulation_to_borders(ins_score, deltas):
             prev_rv = rv
             ro += 1
         strength = 1. / (1 + np.exp(-(prev_lv - prev_rv))) * 2 - 1
-        borders.append((pos, strength))
+        if strength > min_strength:
+            borders.append((pos, strength))
     return borders
