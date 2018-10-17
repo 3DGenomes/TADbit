@@ -1290,13 +1290,17 @@ def add_subplot_axes(ax,rect,axisbg='w'):
 
 
 def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
-                    transform=np.log2, rescale_zeros=True, **kwargs):
+                    transform=np.log2, rescale_zeros=True, figsize=None,
+                    **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
 
     :param matrix: list of lists with values to be plotted
     :param None bad_color: plots NaNs in a given color
     :param False triangular: representes only half matrix horizontally
+    :param None figsize: tuple with the width and heigth of the wanted
+       image (default is (16, 10) for triangular and (16, 14) for square
+       matrices)
     :param kwargs: extra parameters for the imshow function of matplotlib
 
     :returns: two axes object, the first corresponding to the matrix,
@@ -1321,7 +1325,10 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
 
     if triangular:
         if not axe:
-            _ = plt.figure(figsize=(16, 10))
+            if not figsize:
+                _ = plt.figure(figsize=(16, 10))
+            else:
+                _ = plt.figure(figsize=figsize)
             axe1 = plt.axes([0.05, 0.15, 0.9, 0.72])
             axe2 = plt.axes([0.63, 0.775, 0.32, 0.07])
         else:
@@ -1329,7 +1336,10 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
             axe2 = add_subplot_axes(axe, [0.63, 0.775, 0.32, 0.07])
     else:
         if not axe:
-            _ = plt.figure(figsize=(16, 14))
+            if not figsize:
+                _ = plt.figure(figsize=(16, 14))
+            else:
+                _ = plt.figure(figsize=figsize)
             axe1 = plt.axes([0.1, 0.1, 0.7, 0.8])
             axe2 = plt.axes([0.82, 0.1, 0.07, 0.8])
         else:

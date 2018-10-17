@@ -373,8 +373,16 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
 
     # Definition of null model
     print 'Defining Null model'
-    ev3 = np.array(list(ev1[1: :2]) + list(ev2[1: :2]))
-    ev4 = np.array(list(ev1[:-1:2]) + list(ev2[:-1:2]))
+    ev3 = []
+    ev4 = []
+    for pos in xrange(0, len(ev1) - 1, 2):
+        # we want same chromosome and true neighbors
+        if (ids[pos][0] == ids[pos + 1][0] and
+            ids[pos + 1][1] - ids[pos][1] == 1):
+            ev3.append(ev1[pos])
+            ev3.append(ev2[pos])
+            ev4.append(ev1[pos + 1])
+            ev4.append(ev2[pos + 1])
 
     if plot == 'all':
         axes.append(plt.subplot(2, 2, 2))
@@ -550,7 +558,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             axe.set_ylim(EV_range)
     if plot in ['all', 'density', 'difference']:
         xlim = (min(x.min(), x_cor.min()), max(x.max(), x_cor.max()))
-        ylim = (min(y.min(), y_cor.min()), max(y.max(), y_cor.max()))
+        ylim = (min(y.min(), y_cor.min()) * 1.15,
+                max(y.max(), y_cor.max()) * 1.15)
         for axe in (axes[2:] if plot == 'all' else axes):
             axe.set_xlim(xlim)
             axe.set_ylim(ylim)
