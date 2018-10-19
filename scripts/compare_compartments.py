@@ -446,25 +446,24 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     # ordinary least square regression
     print 'Perform OLS regression and outlier test'
 
+    # for real data
     modelR = OLS(y - pred, x, )
     resultR = modelR.fit()
 
+    # for null model
     modelN = OLS(y_cor - pred_cor, x_cor)
     resultN = modelN.fit()
 
     sigmaN = np.sqrt(resultN.mse_resid)
 
     inflR = resultR.get_influence
-    hiiR = inflR().hat_matrix_diag
+    hiiR = inflR().hat_matrix_diag  # model leverage
     sigmaR = np.sqrt(resultR.mse_resid)
     residR = resultR.resid / sigmaN / np.sqrt(1 - hiiR)
     dfR = modelR.df_resid - 1
 
     unadj_pR = st.t.sf(np.abs(residR), dfR) * 2
-    adj_pR = multipletests(unadj_pR, alpha=0.05, method='bonferroni')
-
-    unadj_pN = st.t.sf(np.abs(residR), dfR) * 2
-    adj_pN = multipletests(unadj_pN, alpha=0.05, method='bonferroni')
+    adj_pR = multipletests(unadj_pR, alpha=0.05, method='bonferroni')[1]
 
     if plot in ['all', 'difference']:
         if plot == 'all':
@@ -472,7 +471,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
         axe.set_title(('Bland-Altman plot of EigenVectors (%s vs %s)\n'
                        'with prediction bands based on null model') % (
                            cond1, cond2))
-        axes.append(nice_ba_plot(x, y, unadj_pN, sigmaN, sigmaR, pred,
+        axes.append(nice_ba_plot(x, y, unadj_pR, sigmaN, sigmaR, pred,
                                  cond1, cond2, alpha=alpha, ax=axe))
 
     ##########################################################################
@@ -540,7 +539,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             signx.append(x[i])
             signy.append(y[i])
         result[ids[i][0], ids[i][1]] = (ev1[i], ev2[i], pv, y[i],
-                                        unadj_pR[i], unadj_pN[i])
+                                        unadj_pR[i], adj_pR[i])
 
     if plot in ['all', 'density']:
         if plot == 'all':
