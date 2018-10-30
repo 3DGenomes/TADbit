@@ -664,7 +664,7 @@ def insulation_to_borders(ins_score, deltas, min_strength=0.1):
         # left
         lo = 1
         prev_lv = deltas.get(pos - 1, 100)
-        while True:
+        while pos - 1 - lo > 0:
             lv = deltas.get(pos - 1 - lo, 100)
             if lv < prev_lv:
                 break
@@ -672,9 +672,9 @@ def insulation_to_borders(ins_score, deltas, min_strength=0.1):
             lo += 1
         # right
         ro = 1
-        prev_rv = deltas.get(pos + 1, 100)
-        while True:
-            rv = deltas.get(pos + 1 + ro, 100)
+        prev_rv = deltas.get(pos + 1, -100)
+        while pos + 1 + ro <= len(deltas):
+            rv = deltas.get(pos + 1 + ro, -100)
             if rv > prev_rv:
                 break
             prev_rv = rv

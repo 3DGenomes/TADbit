@@ -11,7 +11,7 @@ def consensusize(ali1, ali2, passed):
     """
     Given two alignments returns a consensus alignment. Used for the generation
     of multiple alignments
-    
+
     :param ali1: first aligned sequence
     :param ali1: second aligned sequence
     :param passed: in case first aligned sequence is already a consensus, it
@@ -90,14 +90,14 @@ def align(sequences, method='reciprocal', **kwargs):
                 aligneds.append(align1)
             aligneds.append(align2)
             consensus = consensusize(align1, align2, other)
-            
+
         sort_alis = [[] for _ in xrange(len(dico))]
         for seq in xrange(len(dico)):
             sort_alis[dico[seq]['sort']] = aligneds[seq][:]
         return (sort_alis, scores,
                 perc1 / (len(sequences) - 1.),
                 perc2 / (len(sequences) - 1.)), consensus
-    ([align1, align2], score, p1, p2) = aligner(sequences[0], sequences[1], **kwargs) 
+    ([align1, align2], score, p1, p2) = aligner(sequences[0], sequences[1], **kwargs)
     consensus = consensusize(align1, align2, sequences[1])
     return ([align1, align2], score, p1, p2), consensus
 
