@@ -21,7 +21,7 @@ from pytadbit.mapping                import get_intersection
 from pytadbit.utils.file_handling    import mkdir
 from pytadbit.utils.sqlite_utils     import get_jobid, add_path, get_path_id, print_db
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
-from pytadbit.mapping.analyze        import insert_sizes
+from pytadbit.mapping.analyze        import fragment_size
 from pytadbit.mapping.filter         import filter_reads, apply_filter
 from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
 
@@ -53,7 +53,7 @@ def run(opts):
         print 'Get insert size...'
         hist_path = path.join(opts.workdir,
                               'histogram_fragment_sizes_%s.pdf' % param_hash)
-        median, max_f, mad = insert_sizes(
+        median, max_f, mad = fragment_size(
             reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
             savefig=hist_path)
 

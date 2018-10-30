@@ -679,7 +679,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
-def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
+def fragment_size(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
                  show=False, xlog=False, stats=('median', 'perc_max'),
                  too_large=10000):
     """
@@ -1673,3 +1673,16 @@ def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
     else:
         plt.show()
 
+
+
+# For back compatibility
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
+                 show=False, xlog=False, stats=('median', 'perc_max'),
+                 too_large=10000):
+    """
+    Deprecated function, use fragment_size
+    """
+    warn("WARNING: function has been replaced by fragment_size", category=DeprecationWarning,)
+    return fragment_size(fnam, savefig=savefig, nreads=nreads, max_size=max_size, axe=axe,
+                         show=show, xlog=xlog, stats=stats,
+                         too_large=too_large)

@@ -1,7 +1,7 @@
 """
-Computes the insulation index using different windows.
+Computes the insulation score using different windows.
 
-Insulation index assigned to bins at a given resolution, not between bins.
+Insulation score assigned to bins at a given resolution, not between bins.
 """
 
 from argparse                    import ArgumentParser
@@ -9,6 +9,7 @@ from cPickle                     import load
 
 from pytadbit.parsers.hic_parser import load_hic_data_from_bam
 from pytadbit.mapping.filter     import MASKED
+from pytadbit.tadbit             import insulation_score
 
 
 def main():
@@ -21,36 +22,8 @@ def main():
                                       verbose=not opts.quiet,
                                       tmpdir=opts.tmpdir, ncpus=opts.cpus)
 
-    insidx = {}
-    bias = hic_data.bias
-    bads = hic_data.bads
-    decay = hic_data.expected
-    for dist, end in opts.dists:
-        if not opts.quiet:
-            print ' - computing insulation in band %d-%d' % (dist, end)
-        insidx[(dist, end)] = {}
-        for crm in hic_data.chromosomes:
-            for pos in range(hic_data.section_pos[crm][0] + end,
-                             hic_data.section_pos[crm][1] - end):
-                insidx[(dist, end)][pos] = sum(
-                    hic_data[i, j] / bias[i] / bias[j] / decay[crm][abs(j-i)]
-                    for i in range(pos - end, pos - dist + 1)
-                    if not i in bads
-                    for j in range(pos + dist, pos + end + 1)
-                    if not j in bads)
-    out = open(opts.outfile, 'w')
-    out.write('# CRM\tCOORD\t' + '\t'.join(['%d-%d' % (d1, d2)
-                                            for d1, d2 in opts.dists]) +
-              '\n')
-
-    for crm in hic_data.section_pos:
-        for pos in range(*hic_data.section_pos[crm]):
-            beg = (pos - hic_data.section_pos[crm][0]) * resolution
-            out.write('{}\t{}-{}\t{}\n'.format(
-                crm, beg + 1, beg + resolution,
-                '\t'.join([str(insidx[dist].get(pos, 'NaN'))
-                           for dist in opts.dists])))
-    out.close()
+    insulation_score(hic_data, opts.dists, normalize=opts.normalize,
+                     savedata=opts.outfile, resolution=resolution)
 
 
 def get_options():
@@ -61,10 +34,10 @@ def get_options():
     parser.add_argument('-l', '--list_dists', dest='dists', type=str,
                         default=['2,2', '4,5', '8,11', '14,19'], nargs='+',
                         help='''[%(default)s] list of pairs of distances between
-                        which to compute the insulation index. E.g. 4,5 means
+                        which to compute the insulation score. E.g. 4,5 means
                         that for a given bin B(i), all interactions between
                         B(i-4) to B(i-5) and B(i+4) to B(i+5) will be summed and
-                        used to compute the insulation index''')
+                        used to compute the insulation score''')
     parser.add_argument('-o', '--outfile', dest='outfile', metavar='',
                         required=True, default=True, help='path to output file')
     parser.add_argument('--tmp', dest='tmpdir', metavar='',

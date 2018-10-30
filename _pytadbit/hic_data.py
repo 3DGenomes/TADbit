@@ -363,6 +363,9 @@ class HiC_data(dict):
                 norm_sum += v
         return norm_sum
 
+    def normalize_expected(self, **kwargs):
+        self.expected = expected(self, bads=self.bads, **kwargs)
+
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False,
                       sqrt=False, factor=1):
         """
@@ -685,7 +688,7 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', ev_index=None,
-                          rich_in_A=None, format='png',
+                          rich_in_A=None, format='png', savedir=None,
                           max_ev=3, show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
@@ -710,6 +713,11 @@ class HiC_data(dict):
         :param False show: show the plot
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
+        :param None savedir: path to a directory to store coordinates of each
+           eigenvector, one per chromosome. Each file contains one eigenvector
+           per column, the first one being the one used as reference. This
+           eigenvector is also rotated according to the prediction if a
+           `rich_in_A` array was given.
         :param None savecorr: path to a directory where to save correlation
            matrices of each chromosome
         :param -1 vmin: for the color scale of the plotted map (use vmin='auto',
@@ -768,6 +776,8 @@ class HiC_data(dict):
             mkdir(savefig)
         if savecorr:
             mkdir(savecorr)
+        if savedir:
+            mkdir(savedir)
         if suffix != '':
             suffix = '_' + suffix
         # parse bed file
@@ -968,6 +978,23 @@ class HiC_data(dict):
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys(),
                                     ev_nums=ev_nums)
+
+        if savedir:
+            ncrm = 0
+            for sec in self.section_pos:
+                if crms and sec not in crms:
+                    continue
+                ev_file = open(os.path.join(
+                    savedir, '%s_EigVect%d.tsv' % (
+                        sec, ev_index[ncrm] if ev_index else 1)), 'w')
+                ev_file.write('# %s\n' % ('\t'.join(
+                    'EV_%d (%.4f)' % (i, v)
+                    for i, v in enumerate(firsts[sec][0], 1))))
+                ev_file.write('\n'.join(['\t'.join([str(v) for v in vs])
+                                         for vs in zip(*firsts[sec][1])]))
+                ev_file.close()
+                ncrm += 1
+
         return firsts, richA_stats
 
     def find_compartments_beta(self, crms=None, savefig=None, savedata=None,

@@ -15,6 +15,7 @@ import tarfile
 from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 
+
 def check_pik(path):
     with open(path, "r") as f:
         f.seek (0, 2)                # Seek @ EOF
@@ -22,6 +23,7 @@ def check_pik(path):
         f.seek (max (fsize-2, 0), 0) # Set pos @ last n chars
         key = f.read()               # Read to end
     return key == 's.'
+
 
 def magic_open(filename, verbose=False, cpus=None):
     """
@@ -97,11 +99,29 @@ def get_free_space_mb(folder, div=2):
         st = os.statvfs(folder)
         return st.f_bavail * st.f_frsize/(1024**div)
 
+
+def is_fastq(thing):
+    """
+    Check if a given file is in fastq format
+    """
+    if isinstance(thing, str):
+        fh = magic_open(thing)
+    else:
+        fh = thing
+    for _ in range(100):
+        if (fh.next().startswith('@') and fh.next()[0].upper() in 'ATGCN' and
+            fh.next().startswith('+') and fh.next()):
+            continue
+        return False
+    return True
+
+
 def wc(fnam):
     """
     Pythonic way to count lines
     """
     return sum(1 for _ in open(fnam))
+
 
 def mkdir(dnam):
     try:
@@ -111,6 +131,7 @@ def mkdir(dnam):
             pass
         else:
             raise
+
 
 def which(program):
     """

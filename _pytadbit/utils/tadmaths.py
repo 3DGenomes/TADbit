@@ -22,6 +22,7 @@ def mad(arr):
     med  = np.median(arr)
     return np.median(np.abs(arr - med))
 
+
 def right_double_mad(arr):
     """ Double Median Absolute Deviation: a 'Robust' version of standard deviation.
         Indices variability of the sample.
@@ -33,6 +34,7 @@ def right_double_mad(arr):
     med  = np.median(arr)
     right_mad = np.median(np.abs(arr[arr >  med] - med))
     return right_mad
+
 
 def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
@@ -91,6 +93,7 @@ class Interpolate(object):
 def transform(val):
     return log10(val)
 
+
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = float(min([v for v in values.values() if v])) / 2
@@ -103,6 +106,7 @@ def nozero_log(values):
             values[i] = transform(values[i])
         except ValueError:
             values[i] = logminv
+
 
 def nozero_log_list(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
@@ -119,6 +123,7 @@ def nozero_log_list(values):
     #     minv /= 2  # TODO: something better
     logminv = transform(minv)
     return [transform(v) if v else logminv for v in values]
+
 
 def nozero_log_matrix(values, transformation):
     # Set the virtual minimum of the matrix to half the non-null real minimum
@@ -212,7 +217,6 @@ def calinski_harabasz(scores, clusters):
     return ((between_cluster / (len(cluster_list) - 1))
             /
             (within_cluster / (nmodels - len(cluster_list))))
-
 
 
 def mean_none(values):
