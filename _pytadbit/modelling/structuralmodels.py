@@ -1895,7 +1895,8 @@ class StructuralModels(object):
 
     def view_models(self, models=None, cluster=None, tool='chimera',
                     show='all', highlight='centroid', savefig=None,
-                    cmd=None, color='index', align=True, **kwargs):
+                    cmd=None, color='index', align=True, smooth=False,
+                    particle_size=50, lw_main=3, alpha_part=0.5, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1911,6 +1912,11 @@ class StructuralModels(object):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
+        :param False alpha: only for matplotlib ('plot' option), transparency of
+           particles.
+        :param False smooth: only for matplotlib ('plot' option), spline smoothing.
+        :param 50 particle_size: only for matplotlib ('plot' option), redefine
+           size of particles. If None, resolution times scale is used.
         :param 'index' color: can be:
 
              * a string as:
@@ -2011,6 +2017,7 @@ class StructuralModels(object):
                      "'centroid', 'best' or 'all' not %s\n"  % (
                          highlight) + "Highlighting no models.")
             mdl = 'all'
+
         # View with Matplotlib
         if tool == 'plot':
             pltshow = 'axe' not in kwargs
@@ -2024,16 +2031,22 @@ class StructuralModels(object):
                 for model in models:
                     model_coords.append((
                         self[model]['x'], self[model]['y'], self[model]['z']))
+
             if show in ['all', 'highlighted']:
                 if 'axe' not in kwargs:
                     fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
                     kwargs['axe'] = fig.add_subplot(1, 1, 1, projection='3d')
                 for i in models:
+                    if particle_size is None:
+                        ps = self[i]['radius'] * 2
+                    else:
+                        ps = particle_size
                     if show == 'all' or i == mdl or mdl == 'all':
                         plot_3d_model(
                             *model_coords[models.index(i)], color=color,
                             thin=False if highlight == 'all' else (i != mdl),
-                            **kwargs)
+                            particle_size=ps, smooth=smooth, alpha_part=alpha_part,
+                            lw_main=lw_main, **kwargs)
                 if pltshow:
                     try:
                         kwargs['axe'].set_title('Model %s highlighted as %s' % (
@@ -2058,7 +2071,8 @@ class StructuralModels(object):
                         plot_3d_model(
                             *model_coords[i * rows + j], color=color,
                             thin=False if highlight == 'all' else (this != mdl),
-                            **kwargs)
+                            particle_size=ps, smooth=smooth, alpha_part=alpha_part,
+                            lw_main=lw_main, **kwargs)
                         if pltshow:
                             kwargs['axe'].set_title(
                                 'Model %s' % self[this]['rand_init'])
@@ -2067,6 +2081,7 @@ class StructuralModels(object):
             elif pltshow:
                 plt.show()
             return
+
         # View with Chimera
         cmm_files = []
         radius = 10

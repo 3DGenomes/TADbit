@@ -3,11 +3,12 @@
 
 
 """
-from warnings import warn
+from warnings   import warn
 from subprocess import Popen
-from itertools import product
+from itertools  import product
 
 import numpy as np
+from scipy      import interpolate
 
 try:
     from matplotlib.ticker    import MultipleLocator
@@ -378,6 +379,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
                   show_axe=False, azimuth=-90, elevation=0., color='index',
+                  smooth=True, particle_size=50, alpha_part=0.5, lw_main=3,
                   **kwargs):
     """
     Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
@@ -437,17 +439,33 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     if not show_axe:
         axe._axis3don = False
     axe.view_init(elev=elevation, azim=azimuth)
+
     if thin:
-        axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
+        if smooth:
+            tck, u= interpolate.splprep([x, y, z], s=0.001)
+            #here we generate the new interpolated dataset,
+            #increase the resolution by increasing the spacing, 500 in this example
+            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
+            axe.plot(xs, ys, zs, color='black', lw=1, alpha=0.2)
+        else:
+            axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
     else:
-        for i in xrange(len(x)-1):
-            axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
-                     color=color[i], lw=3)
-            if label:
-                axe.text(x[i], y[i], z[i], str(i), size=7)
+        if smooth:
+            tck, u= interpolate.splprep([x, y, z], s=0.001)
+            #here we generate the new interpolated dataset,
+            #increase the resolution by increasing the spacing, 500 in this example
+            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
+            axe.plot(xs, ys, zs, color='lightgrey', lw=lw_main, alpha=0.8)
+        else:
+            for i in xrange(len(x)-1):
+                axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
+                         color=color[i], lw=lw_main)
+                if label:
+                    axe.text(x[i], y[i], z[i], str(i), size=7)
         if label:
-            axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
-        axe.scatter(x, y, z, color=color, s=50)
+            for i in xrange(len(x)):
+                axe.text(x[i], y[i], z[i],str(i), size=7)
+        axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
     axe.pbaspect = [1,1,1]
     if show:
         if savefig:
@@ -1272,13 +1290,17 @@ def add_subplot_axes(ax,rect,axisbg='w'):
 
 
 def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
-                    transform=np.log2, rescale_zeros=True, **kwargs):
+                    transform=np.log2, rescale_zeros=True, figsize=None,
+                    **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
 
     :param matrix: list of lists with values to be plotted
     :param None bad_color: plots NaNs in a given color
     :param False triangular: representes only half matrix horizontally
+    :param None figsize: tuple with the width and heigth of the wanted
+       image (default is (16, 10) for triangular and (16, 14) for square
+       matrices)
     :param kwargs: extra parameters for the imshow function of matplotlib
 
     :returns: two axes object, the first corresponding to the matrix,
@@ -1303,7 +1325,10 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
 
     if triangular:
         if not axe:
-            _ = plt.figure(figsize=(16, 10))
+            if not figsize:
+                _ = plt.figure(figsize=(16, 10))
+            else:
+                _ = plt.figure(figsize=figsize)
             axe1 = plt.axes([0.05, 0.15, 0.9, 0.72])
             axe2 = plt.axes([0.63, 0.775, 0.32, 0.07])
         else:
@@ -1311,7 +1336,10 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
             axe2 = add_subplot_axes(axe, [0.63, 0.775, 0.32, 0.07])
     else:
         if not axe:
-            _ = plt.figure(figsize=(16, 14))
+            if not figsize:
+                _ = plt.figure(figsize=(16, 14))
+            else:
+                _ = plt.figure(figsize=figsize)
             axe1 = plt.axes([0.1, 0.1, 0.7, 0.8])
             axe2 = plt.axes([0.82, 0.1, 0.07, 0.8])
         else:

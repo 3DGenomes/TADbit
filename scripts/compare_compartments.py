@@ -177,26 +177,28 @@ def nice_ba_plot(x, y, unadj_pN, sigmaN, sigmaR, pred, cond1, cond2,
     return axe
 
 def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
-               kde=True, use_odr=True):
+               kde=True, use_odr=True, EV_range=(-1, 1), mid_point=0):
     if not axe:
         axe = plt.subplot(111)
     dots = []
     num_dots = []
     if color_ab:
         try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] < 0 and ev2[i] < 0])
-            dots.extend(plt.plot(a, b, 'b.', alpha=0.1, label='Bins always in B'))
-            num_dots.append(len(a))
-        except ValueError:
-            pass
-        try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] > 0 and ev2[i] > 0])
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] > mid_point and ev2[i] > mid_point])
             dots.extend(plt.plot(a, b, 'r.', alpha=0.1, label='Bins always in A'))
             num_dots.append(len(a))
         except ValueError:
             pass
         try:
-            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] * ev2[i] < 0])
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] < mid_point and ev2[i] < mid_point])
+            dots.extend(plt.plot(a, b, 'b.', alpha=0.1, label='Bins always in B'))
+            num_dots.append(len(a))
+        except ValueError:
+            pass
+        try:
+            a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1))
+                         if (ev1[i] < mid_point and ev2[i] > mid_point)
+                         or (ev1[i] > mid_point and ev2[i] < mid_point)])
             dots.extend(plt.plot(a, b, '.', color='grey', alpha=0.1, label='Bins switching'))
             num_dots.append(len(a))
         except ValueError:
@@ -205,34 +207,36 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
         dots.extend(plt.plot(ev1, ev2, '.', color='grey', alpha=0.1, label='Bins'))
 
     r, p  = st.pearsonr(ev1, ev2)
-    plt.xlim(-1.1, 1.1)
-    plt.ylim(-1.1, 1.1)
-    plt.xticks([-1, 0, 1])
-    plt.yticks([-1, 0, 1])
-    plt.axhline(0, color='lightgrey', alpha=0.3)
-    plt.axvline(0, color='lightgrey', alpha=0.3)
+    plt.xlim(EV_range)
+    plt.ylim(EV_range)
+    plt.xticks([EV_range[0], mid_point, EV_range[1]])
+    plt.yticks([EV_range[0], mid_point, EV_range[1]])
+    plt.axhline(mid_point, color='lightgrey', alpha=0.3)
+    plt.axvline(mid_point, color='lightgrey', alpha=0.3)
     p_x, p_y, z, confs, preds, r2 = fit_with_uncertainty(
         ev1, ev2, x_range=(-2, 2), use_odr=use_odr)
     formula = latex_formula("A*x+B", z)
     # confs, preds, p_x, p_y, z, r2, formula
-    fit_line = plt.plot(p_x, p_y,color= 'darkgreen', lw=2, label='Regression line')
+    corr_color = "#7f7f7f"
+    fit_line = plt.plot(p_x, p_y,color=corr_color, alpha=0.7, lw=2, label='Regression line')
     # plot confidence limits
-    plt.fill_between(p_x, p_y - preds, p_y + preds, color='darkgreen', alpha=0.1)
+    plt.fill_between(p_x, p_y - preds, p_y + preds, color=corr_color, alpha=0.15)
+    plt.plot(p_x, p_y - preds, color=corr_color, alpha=0.15)
+    plt.plot(p_x, p_y + preds, color=corr_color, alpha=0.25)
 
-    p1 = Rectangle((0, 0), 1, 1, fc="darkgreen", alpha=.2)
+    p1 = Rectangle((0, 0), 1, 1, fc=corr_color, alpha=.2)
     num_dots = [100 * float(n) / sum(num_dots) for n in num_dots]
-    dot_labels = (['Bins always in B (%.0f%%)'% (num_dots[0]),
-                   'Bins always in A (%.0f%%)'% (num_dots[1]),
-                   'Bins switching (%.0f%%)'  % (num_dots[2])]
+    dot_labels = (['Bin stays A: %.0f%%' % (num_dots[0]),
+                   'Bin stays B: %.0f%%' % (num_dots[1]),
+                   'Bin changes: %.0f%%' % (num_dots[2])]
                   if color_ab else ['Bins'])
     leg = plt.legend(fit_line + [p1] + dots,
-                     ['''ODR fit: $y = %s$ (Pearson %.2f)''' % (formula, r),
+                     ['''$y = %s$ (Pearson %.2f)''' % (formula, r),
                       '95% Prediction band'] + dot_labels,
                      frameon=False, loc=2)
     # a little bit of cheating here to see the dots
     for l in leg.get_lines():
         if not 'Bins' in l.get_label():
-            print l.get_label()
             continue
         l.set_alpha(0.6)
         x0, x1 = l.get_xdata()
@@ -270,6 +274,8 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
     axHistx.axison = False
     axe.set_xlabel(xlabel)
     axe.set_ylabel(ylabel)
+    axe.set_xlim(EV_range)
+    axe.set_ylim(EV_range)
     return axHistx
 
 
@@ -304,7 +310,8 @@ def ba_plot(x, y, pred, cond1, cond2, alpha=float('nan'), df=0, ax=None):
 
 
 def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
-                       confidence=0.95, alpha=0.75, kernel_density=200):
+                       mid_point=0., EV_range=(-1.4, 1.4), confidence=0.95,
+                       alpha=0.75, kernel_density=200):
     """
     Compare two eigenvectors (from two conditions), using as null, or
        background, model the differences between each pair of neighbor bins.
@@ -344,8 +351,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     ids = np.array(ids)
 
     # ~normalize
-    ev1 = ev1 / np.std(ev1) / 3
-    ev2 = ev2 / np.std(ev2) / 3
+    # ev1 = ev1 / np.std(ev1) / 3
+    # ev2 = ev2 / np.std(ev2) / 3
 
     # plot
     axes = []
@@ -359,15 +366,23 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             axe = plt.subplot(2, 2, 1)
         axes.append(axe)
         axe = compare_AB(ev1, ev2, axe=axe, xlabel='Eigenvector of ' + cond1,
-                   ylabel='Eigenvector of ' + cond2, color_ab=True)
+                         ylabel='Eigenvector of ' + cond2, color_ab=True,
+                         mid_point=mid_point, EV_range=EV_range)
         axe.set_title('Correlation between EigenVectors (%s vs %s)' % (
             cond1, cond2))
 
     # Definition of null model
     print 'Defining Null model'
-    ev3 = np.array(list(ev1[1:]) + list(ev2[1:]))
-    ev4 = np.array([ev1[v] for v in xrange(len(ev1) - 1)] +
-                   [ev2[v] for v in xrange(len(ev2) - 1)])
+    ev3 = []
+    ev4 = []
+    for pos in xrange(0, len(ev1) - 1, 2):
+        # we want same chromosome and true neighbors
+        if (ids[pos][0] == ids[pos + 1][0] and
+            ids[pos + 1][1] - ids[pos][1] == 1):
+            ev3.append(ev1[pos])
+            ev3.append(ev2[pos])
+            ev4.append(ev1[pos + 1])
+            ev4.append(ev2[pos + 1])
 
     if plot == 'all':
         axes.append(plt.subplot(2, 2, 2))
@@ -375,7 +390,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             ev3, ev4, axe=axes[-1],
             xlabel='Eigenvector from %s and %s ($n$)' % (cond1, cond2),
             ylabel='Eigenvector from %s and %s ($n+1$)' % (cond1, cond2),
-            color_ab=True)
+            color_ab=True, mid_point=mid_point, EV_range=EV_range)
         axe.set_title((
             'Correlation of EigenVectors (Null model)\n'
             '{0} bins $n$ vs $n+1$ and {1} '
@@ -385,8 +400,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     # Normalization
 
     # Z-scorish
-    zev1 = (ev1 - np.mean(ev1)) / np.std(ev1) / 3
-    zev2 = (ev2 - np.mean(ev2)) / np.std(ev2) / 3
+    zev1 = ev1  # (ev1 - np.mean(ev1)) / np.std(ev1) / 3
+    zev2 = ev2  # (ev2 - np.mean(ev2)) / np.std(ev2) / 3
     # prepare data for MA plot
     x = (zev1 + zev2) / 2
     y = (zev1 - zev2)
@@ -397,9 +412,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     ids = ids[idx]
 
     # for null model:
-    zev3 = np.array(list(zev1[1:]) + list(zev2[1:]))
-    zev4 = np.array([zev1[v] for v in xrange(len(zev1) - 1)] +
-                   [zev2[v] for v in xrange(len(zev2) - 1)])
+    zev3 = np.array(ev3)
+    zev4 = np.array(ev4)
     x_cor = (zev3 + zev4) / 2
     y_cor = (zev3 - zev4)
     idx_cor = np.argsort(x_cor)
@@ -432,25 +446,24 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     # ordinary least square regression
     print 'Perform OLS regression and outlier test'
 
+    # for real data
     modelR = OLS(y - pred, x, )
     resultR = modelR.fit()
 
+    # for null model
     modelN = OLS(y_cor - pred_cor, x_cor)
     resultN = modelN.fit()
 
     sigmaN = np.sqrt(resultN.mse_resid)
 
     inflR = resultR.get_influence
-    hiiR = inflR().hat_matrix_diag
+    hiiR = inflR().hat_matrix_diag  # model leverage
     sigmaR = np.sqrt(resultR.mse_resid)
     residR = resultR.resid / sigmaN / np.sqrt(1 - hiiR)
     dfR = modelR.df_resid - 1
 
     unadj_pR = st.t.sf(np.abs(residR), dfR) * 2
-    adj_pR = multipletests(unadj_pR, alpha=0.05, method='bonferroni')
-
-    unadj_pN = st.t.sf(np.abs(residR), dfR) * 2
-    adj_pN = multipletests(unadj_pN, alpha=0.05, method='bonferroni')
+    adj_pR = multipletests(unadj_pR, alpha=0.05, method='bonferroni')[1]
 
     if plot in ['all', 'difference']:
         if plot == 'all':
@@ -458,7 +471,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
         axe.set_title(('Bland-Altman plot of EigenVectors (%s vs %s)\n'
                        'with prediction bands based on null model') % (
                            cond1, cond2))
-        axes.append(nice_ba_plot(x, y, unadj_pN, sigmaN, sigmaR, pred,
+        axes.append(nice_ba_plot(x, y, unadj_pR, sigmaN, sigmaR, pred,
                                  cond1, cond2, alpha=alpha, ax=axe))
 
     ##########################################################################
@@ -466,8 +479,8 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
     y -= pred
     y_cor -= pred_cor
     # Perform the kernel density estimate for null model
-    xmin = min(x_cor) * 1.5
-    ymin = min(y_cor) * 1.5
+    xmin = min(x_cor) - abs(min(x_cor)) * .5
+    ymin = min(y_cor) - abs(min(y_cor)) * .5
     xmax = max(x_cor) * 1.5
     ymax = max(y_cor) * 1.5
     xx, yy = np.mgrid[xmin:xmax:complex(0, kernel_density),
@@ -526,7 +539,7 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             signx.append(x[i])
             signy.append(y[i])
         result[ids[i][0], ids[i][1]] = (ev1[i], ev2[i], pv, y[i],
-                                        unadj_pR[i], unadj_pN[i])
+                                        unadj_pR[i], adj_pR[i])
 
     if plot in ['all', 'density']:
         if plot == 'all':
@@ -539,22 +552,16 @@ def get_significant_ev(ev1, ev2, ids, cond1, cond2, norm='loess', plot='all',
             signx=signx, signy=signy, t_contours=t_contours, steps=steps))
 
     if plot in ['all', 'correlation']:
-        xlim = (min(ev1.min(), ev3.min()), max(ev1.max(), ev3.max()))
-        maxval = max(abs(xlim[0]), abs(xlim[1]))
-        xlim = (-maxval, maxval)
-        ylim = (min(ev2.min(), ev4.min()), max(ev2.max(), ev4.max()))
-        maxval = max(abs(ylim[0]), abs(ylim[1]))
-        ylim = (-maxval, maxval)
         for axe in axes[:2]:
-            axe.set_xlim(xlim)
-            axe.set_ylim(ylim)
+            axe.set_xlim(EV_range)
+            axe.set_ylim(EV_range)
     if plot in ['all', 'density', 'difference']:
         xlim = (min(x.min(), x_cor.min()), max(x.max(), x_cor.max()))
-        ylim = (min(y.min(), y_cor.min()), max(y.max(), y_cor.max()))
+        ylim = (min(y.min(), y_cor.min()) * 1.15,
+                max(y.max(), y_cor.max()) * 1.15)
         for axe in (axes[2:] if plot == 'all' else axes):
             axe.set_xlim(xlim)
             axe.set_ylim(ylim)
-
     return result
 
 

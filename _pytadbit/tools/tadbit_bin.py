@@ -48,6 +48,11 @@ def run(opts):
     else:
         vmin = vmax = None
 
+    if opts.figsize:
+        opts.figsize = map(float, opts.figsize.split(','))
+    else:
+        vmin = vmax = None
+
     clean = True  # change for debug
 
     if opts.bam:
@@ -227,16 +232,6 @@ def run(opts):
                     ('_' + param_hash), '_tri' if opts.triangular else '',
                     opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
-                if opts.interactive:
-                    if opts.triangular:
-                        _ = plt.figure(figsize=(8, 5))
-                    else:
-                        _ = plt.figure(figsize=(8, 7))
-                else:
-                    if opts.triangular:
-                        _ = plt.figure(figsize=(16, 10))
-                    else:
-                        _ = plt.figure(figsize=(16, 14))
                 pltbeg1 = 0 if start1 is None else start1
                 pltend1 = sections[regions[0]] if end1 is None else end1
                 pltbeg2 = 0 if start2 is None else start2
@@ -250,6 +245,7 @@ def run(opts):
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,
                     vmin=vmin, vmax=vmax, cmap=opts.cmap,
+                    figsize=opts.figsize,
                     bad_color=opts.bad_color if norm != 'raw' else None)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
@@ -603,6 +599,12 @@ def populate_args(parser):
                         default=None,
                         help='''Range, in log2 scale of the color scale.
                         i.e.: --zrange=-2,2''')
+
+    pltopt.add_argument('--figsize', dest='figsize', action='store',
+                        default=None,
+                        help='''Range, in log2 scale of the color scale.
+                        default for triangular matrices: --figsize=16,10
+                        and for square matrices:  --figsize=16,14''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to
