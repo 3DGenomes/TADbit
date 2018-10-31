@@ -764,8 +764,8 @@ class StructuralModel(dict):
                     i + 1,
                     '%s:%s-%s' % (
                         chrom_list[crm],
-                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * i + 1,
-                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * (i + 1)),
+                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * i + 1) - offset,
+                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * (i + 1))) - offset,
                     round(self['x'][i], 3),
                     round(self['y'][i], 3), round(self['z'][i], 3))
             offset += (chrom_end[crm]-chrom_start[crm])
@@ -831,8 +831,8 @@ class StructuralModel(dict):
                 out += form % (
                     '%s:%s-%s' % (
                         chrom_list[crm],
-                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * i + 1,
-                        int(chrom_start[crm] or 1) + int(self['description']['resolution']) * (i + 1)),
+                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * i + 1) - offset,
+                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * (i + 1))) - offset,
                     round(self['x'][i], 3),
                     round(self['y'][i], 3), round(self['z'][i], 3))
             offset += (chrom_end[crm]-chrom_start[crm])
