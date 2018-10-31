@@ -1745,11 +1745,12 @@ class StructuralModels(object):
                                                    cutoff=cutoff)
         oridata = []
         moddata = []
-        for i in xrange(len(self._original_data)):
-            for j in xrange(i + off_diag, len(self._original_data)):
-                if self._original_data[i][j] <= 0:
+        for i in (v for v, z in enumerate(self._zeros) if z):
+            for j in (v for v, z in enumerate(self._zeros[i + off_diag:]) if z):
+                oriv = self._original_data[i][j]
+                if oriv <= 0 or isnan(oriv):
                     continue
-                oridata.append(self._original_data[i][j])
+                oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
