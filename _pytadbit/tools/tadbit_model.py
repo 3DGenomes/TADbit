@@ -168,8 +168,11 @@ def run_distributed_job(job_dir, script_cmd , script_args):
 
     scriptname = path.join(job_dir,'_tmp_optim.py')
     logname = path.join(job_dir,'_tmp_log.log')
-    with open(logname, 'w') as f:
+    with open(logname, 'a') as f:
+        f.write('Log %s\n' % job_dir)
+        f.flush()
         subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f)
+    f.close()
     results_file = path.join(job_dir,'results.models')
     failed_flag = path.join(job_dir,'failed.flag')
     while not (path.exists(results_file) or path.exists(failed_flag)):
