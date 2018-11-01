@@ -666,22 +666,22 @@ class StructuralModel(dict):
             raise TypeError('one of function, list or string is required\n')
         form = '''
 {
-	"chromatin" : {
-		"id" : %(sha)s,
-		"title" : "%(title)s",
-		"source" : "TADbit %(version)s",
-		"metadata": {%(descr)s},
-		"type" : "tadbit",
-	        "data": {
-		    "models":     [
-		        { %(xyz)s },
-		    ],
-	            "clusters":[%(cluster)s],
-      	            "centroid":[%(centroid)s],
-	            "restraints": [[][]],
-		    "chromatinColor" : [ ]
-		}
-	}
+    "chromatin" : {
+        "id" : %(sha)s,
+        "title" : "%(title)s",
+        "source" : "TADbit %(version)s",
+        "metadata": {%(descr)s},
+        "type" : "tadbit",
+            "data": {
+            "models":     [
+                { %(xyz)s },
+            ],
+                "clusters":[%(cluster)s],
+                      "centroid":[%(centroid)s],
+                "restraints": [[][]],
+            "chromatinColor" : [ ]
+        }
+    }
 }
 '''
         fil = {}
@@ -757,15 +757,17 @@ class StructuralModel(dict):
             chrom_end = [chrom_end]
         chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
         chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
-        offset = 0
-        for crm in xrange(len(chrom_list)-1):
+        offset = -chrom_start[0]
+        for crm in xrange(len(chrom_list)):
             for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
                 out += form % (
                     i + 1,
                     '%s:%s-%s' % (
                         chrom_list[crm],
-                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * i + 1) - offset,
-                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * (i + 1))) - offset,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i - offset) + 1,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i + 1 - offset)),
                     round(self['x'][i], 3),
                     round(self['y'][i], 3), round(self['z'][i], 3))
             offset += (chrom_end[crm]-chrom_start[crm])
@@ -826,13 +828,16 @@ class StructuralModel(dict):
         chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
         chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
         offset = 0
-        for crm in xrange(len(chrom_list)-1):
+        for crm in xrange(len(chrom_list)):
             for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
                 out += form % (
+                    i + 1,
                     '%s:%s-%s' % (
                         chrom_list[crm],
-                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * i + 1) - offset,
-                        int(chrom_start[crm] or 1) + (int(self['description']['resolution']) * (i + 1))) - offset,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i - offset) + 1,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i + 1 - offset)),
                     round(self['x'][i], 3),
                     round(self['y'][i], 3), round(self['z'][i], 3))
             offset += (chrom_end[crm]-chrom_start[crm])
