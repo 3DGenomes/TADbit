@@ -68,15 +68,15 @@ def convert_from_unicode(data):
     return data
 
 def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
-    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset,
+    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
-    zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
-    nloci = opts.end - opts.beg + 1
+    zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg)])
+    nloci = opts.end - opts.beg
     if exp.norm and exp.norm[0].chromosomes:
         coords = []
         tot = 0
         chrs = []
-        chrom_offset_start = 1
+        chrom_offset_start = opts.beg
         chrom_offset_end = 0
         for k, v in exp.norm[0].chromosomes.iteritems():
             tot += v
@@ -92,11 +92,11 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
             coords.append({'crm'  : k,
                   'start': 1,
                   'end'  : exp.norm[0].chromosomes[k]})
-        coords[0]['start'] = chrom_offset_start
+        coords[0]['start'] = chrom_offset_start + 1
         coords[-1]['end'] -= chrom_offset_end
     else:
         coords = {"crm"  : opts.crm,
-                  "start": opts.beg,
+                  "start": opts.beg + 1,
                   "end"  : opts.end}
 
     optpar = {'maxdist': float(m),
@@ -168,8 +168,11 @@ def run_distributed_job(job_dir, script_cmd , script_args):
 
     scriptname = path.join(job_dir,'_tmp_optim.py')
     logname = path.join(job_dir,'_tmp_log.log')
-    with open(logname, 'w') as f:
+    with open(logname, 'a') as f:
+        f.write('Log %s\n' % job_dir)
+        f.flush()
         subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f)
+    f.close()
     results_file = path.join(job_dir,'results.models')
     failed_flag = path.join(job_dir,'failed.flag')
     while not (path.exists(results_file) or path.exists(failed_flag)):
@@ -232,6 +235,17 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         system('rm %s' % (paramsfile))
 
         models.define_best_models(opts.nkeep)
+        if isinstance(models.description['start'],list):
+            models.description['start'] = [(st + opts.matrix_beg * opts.reso) 
+                                        for st in models.description['start']]
+            models.description['end'] = [(st + opts.matrix_beg * opts.reso) 
+                                        for st in models.description['end']]
+        else:
+            models.description['start'] += opts.matrix_beg * opts.reso
+            models.description['end'] += opts.matrix_beg * opts.reso  
+        for model in models:
+            model['description']['start'] = models.description['start']
+            model['description']['end'] = models.description['end']
         models.save_models(modelsfile)
 
     num=1
@@ -292,7 +306,8 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         m, u, l, s = map(my_round, (m, u, l, s))
         muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler, 
                             script_cmd = script_cmd, script_args = script_args, verbose=verbose)
-        results.update(muls_results)
+        if muls_results:
+            results.update(muls_results)
     if not job_file_handler:
         for m, u, l, d, s in results:
             if results[(m, u, l, d, s)]['corr'] > best[0]['corr']:
@@ -372,16 +387,16 @@ def run(opts):
 
         crm = load_hic_data(opts)
         exp = crm.experiments[0]
-        opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
+        opts.beg, opts.end = opts.beg or 0, opts.end or exp.size
 
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
-                                    int(opts.beg), int(opts.end))
+                                    int(opts.beg + 1), int(opts.end))
 
         mkdir(path.join(opts.workdir, '07_model'))
         outdir = path.join(opts.workdir, '07_model',
                            '%s_%s_%s-%s' % (batch_job_hash,
                                 opts.crm if opts.crm else 'all',
-                                opts.beg if opts.beg else '',
+                                (opts.beg + 1) if opts.beg is not None else '',
                                 opts.end if opts.end else ''))
         mkdir(outdir)
 
@@ -395,7 +410,7 @@ def run(opts):
                    if opts.optimize else
                    ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
-                   opts.end - opts.beg + 1))
+                   opts.end - opts.beg))
         else:
             logging.info('''
         %s%s
@@ -406,7 +421,7 @@ def run(opts):
                    if opts.optimize else
                    ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
                    nicer(opts.reso),
-                   opts.end - opts.beg + 1))
+                   opts.end - opts.beg))
         # in case we are not going to run
         if opts.job_list:
             job_file_handler = open(path.join(
@@ -427,7 +442,7 @@ def run(opts):
                                                        script_args = opts.script_args)
             if not opts.job_list and "optimization plot" in opts.analyze_list:
                 if optpar:
-                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset, opts.end - opts.offset)
+                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset + 1, opts.end - opts.offset)
                     optimizer.scale_range    = [i for i in opts.scale]
                     optimizer.kbending_range = [0.0]
                     optimizer.maxdist_range  = [i for i in opts.maxdist]
@@ -596,7 +611,7 @@ def run(opts):
             models[models.centroid_model()].write_cmm(
                 directory=path.join(outdir, 'models'),
                 filename='centroid.cmm')
-            models[models.centroid_model()].write_cmm(
+            models[models.centroid_model()].write_xyz(
                 directory=path.join(outdir, 'models'),
                 filename='centroid.xyz')
             models[0].write_cmm(
@@ -773,7 +788,6 @@ def save_to_db(opts, outdir, results, batch_job_hash,
         try:
             parameters = digest_parameters(opts, get_md5=False)
             # In case optimization or modeling  is split in different computers
-            param_hash = digest_parameters(opts, get_md5=True)
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
@@ -782,7 +796,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
      """ % ((parameters, time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
              time.strftime("%d/%m/%Y %H:%M:%S", finish_time),
              (('PRE_' if opts.job_list else '') +
-              ('OPTIM' if opts.optimize else 'MODEL')), param_hash)))
+              ('OPTIM' if opts.optimize else 'MODEL')), batch_job_hash)))
         except lite.IntegrityError:
             pass
         if not opts.job_list:
@@ -919,6 +933,11 @@ def populate_args(parser):
     reopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         default=None,
                         help='genomic coordinate where to end modeling')
+    reopts.add_argument('--matrix_beg', dest='matrix_beg', metavar="INT", type=float,
+                        default=None,
+                        help='genomic coordinate of the first row/column ' +
+                        'of the input matrix. This has to be specified if ' +
+                        'the input matrix is not the TADbit tools generated abc format')
     reopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
                         help='resolution of the Hi-C experiment')
     reopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
@@ -1060,6 +1079,8 @@ def check_options(opts):
     try:
         opts.ori_beg = opts.beg
         opts.ori_end = opts.end
+        if opts.matrix_beg:
+            opts.matrix_beg = int(float(opts.matrix_beg) / opts.reso)
         opts.beg = int(float(opts.beg) / opts.reso)
         opts.end = int(float(opts.end) / opts.reso)
         if opts.end - opts.beg <= 2:
@@ -1227,7 +1248,7 @@ def load_hic_data(opts):
             if opts.crm not in hic.chromosomes:
                 raise Exception('ERROR: chromosome %s not in input matrix(%s).' % (opts.crm,
                                                     ','.join([h for h in hic.chromosomes])))
-            hic = hic.get_matrix(focus=(opts.beg+1,opts.end+1))
+            hic = hic.get_matrix(focus=(opts.beg+1,opts.end))
             opts.offset = opts.beg
         else:
             if len(hic.chromosomes) == 1: # we assume full chromosome
@@ -1235,13 +1256,19 @@ def load_hic_data(opts):
                 opts.crm = next(iter(hic.chromosomes))
                 opts.beg = 1
                 opts.end = hic.chromosomes[opts.crm]
+        opts.matrix_beg = 0
         crm.add_experiment('test',
             cell_type=opts.cell,
             project=opts.project, # user descriptions
             norm_data=[hic], resolution=opts.reso)
     except Exception, e:
-        logging.info( str(e))
-        #warn('WARNING: failed to load data as TADbit standardized matrix\n')
+        #logging.info( str(e))
+        warn('WARNING: failed to load data as TADbit standardized matrix\n')
+        if not opts.matrix_beg:
+            raise Exception('"matrix_beg" parameter should be given if ' +
+                            'input matrix is not in TADbit abc format')
+        opts.beg -= opts.matrix_beg
+        opts.end -= opts.matrix_beg
         crm.add_experiment('test',
             cell_type=opts.cell,
             project=opts.project, # user descriptions
@@ -1249,7 +1276,7 @@ def load_hic_data(opts):
             norm_data=opts.matrix)
 
     if opts.beg is not None:
-        if opts.beg - opts.offset > crm.experiments[-1].size:
+        if opts.beg - opts.offset + 1 > crm.experiments[-1].size:
             raise Exception('ERROR: beg parameter is larger than chromosome size.')
         if opts.end - opts.offset > crm.experiments[-1].size:
             logging.info ('WARNING: end parameter is larger than chromosome ' +
