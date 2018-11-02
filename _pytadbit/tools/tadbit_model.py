@@ -58,6 +58,7 @@ actions = {0  : "do nothing",
            12 : "accessibility",
            13 : "interaction"}
 
+
 def convert_from_unicode(data):
     if isinstance(data, basestring):
         return str(data)
@@ -66,6 +67,7 @@ def convert_from_unicode(data):
     if isinstance(data, collections.Iterable):
         return type(data)(map(convert_from_unicode, data))
     return data
+
 
 def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset,
@@ -90,8 +92,8 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
                 chrs.append(k)
         for k in chrs:
             coords.append({'crm'  : k,
-                  'start': 1,
-                  'end'  : exp.norm[0].chromosomes[k]})
+                           'start': 1,
+                           'end'  : exp.norm[0].chromosomes[k]})
         coords[0]['start'] = chrom_offset_start
         coords[-1]['end'] -= chrom_offset_end
     else:
@@ -152,17 +154,18 @@ try:
                                         start=int(opts.rand)+%s, container=None,
                                         config=optpar, coords=coords, experiment=exp,
                                         zeros=zeros)
-    
+
     models.save_models(path.join("%s",'results.models'),minimal=%s)
-except Exception as e: 
+except Exception as e:
     print(e)
     open(path.join("%s",'failed.flag'), 'a').close()
     ''' % (paramsfile, nloci, nmodels_per_job, nmodels_per_job,
-               n_job*opts.nmodels_per_job, job_dir,
-               '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
-               job_dir))
+           n_job*opts.nmodels_per_job, job_dir,
+           '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
+           job_dir))
 
         tmp.close()
+
 
 def run_distributed_job(job_dir, script_cmd , script_args):
 
@@ -174,6 +177,7 @@ def run_distributed_job(job_dir, script_cmd , script_args):
     failed_flag = path.join(job_dir,'failed.flag')
     while not (path.exists(results_file) or path.exists(failed_flag)):
         time.sleep(1)
+
 
 def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                          exp = None, script_cmd = 'python',
@@ -196,8 +200,8 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
             else:
                 jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
-                                                                   script_args),
-                    timeout=opts.timeout_job)
+                                                                       script_args),
+                                            timeout=opts.timeout_job)
         pool.close()
         pool.join()
 
@@ -265,9 +269,11 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
 
     return results_corr, modelsfile
 
+
 def my_round(num, val=4):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
+
 
 def optimization_distributed(exp, opts, outdir, job_file_handler = None,
                              script_cmd = 'python', script_args = '', verbose=True):
@@ -328,9 +334,9 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
     mkdir(cfgfolder)
     prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
     results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
-                                         job_file_handler=job_file_handler,
-                                         exp = exp, script_cmd = script_cmd,
-                                         script_args = script_args)
+                                               job_file_handler=job_file_handler,
+                                               exp=exp, script_cmd=script_cmd,
+                                               script_args=script_args)
     if not job_file_handler:
         rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
     return results
@@ -367,7 +373,7 @@ def run(opts):
         if opts.matrix:
             opts.matrix = convert_from_unicode(path.realpath(opts.matrix))
         else:
-            (opts.matrix,_) = load_matrix_path_fromdb(opts)
+            opts.matrix, _ = load_matrix_path_fromdb(opts)
             opts.matrix = convert_from_unicode(path.join(opts.workdir, opts.matrix))
 
         crm = load_hic_data(opts)
@@ -380,33 +386,33 @@ def run(opts):
         mkdir(path.join(opts.workdir, '07_model'))
         outdir = path.join(opts.workdir, '07_model',
                            '%s_%s_%s-%s' % (batch_job_hash,
-                                opts.crm if opts.crm else 'all',
-                                opts.beg if opts.beg else '',
-                                opts.end if opts.end else ''))
+                                            opts.crm if opts.crm else 'all',
+                                            opts.beg if opts.beg else '',
+                                            opts.end if opts.end else ''))
         mkdir(outdir)
 
         if opts.crm:
             logging.info('''
         %s%s
-        
+
           - Region: Chromosome %s from %d to %d at resolution %s (%d particles)\n''' % (
               'Preparing ' if opts.job_list else '',
-                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
-                   if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
-                   opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
-                   opts.end - opts.beg + 1))
+              ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
+              if opts.optimize else
+              ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+              opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
+              opts.end - opts.beg + 1))
         else:
             logging.info('''
         %s%s
-        
+
           - Region: full genome at resolution %s (%d particles)\n''' % (
               'Preparing ' if opts.job_list else '',
-                   ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
-                   if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
-                   nicer(opts.reso),
-                   opts.end - opts.beg + 1))
+              ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
+              if opts.optimize else
+              ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+              nicer(opts.reso),
+              opts.end - opts.beg + 1))
         # in case we are not going to run
         if opts.job_list:
             job_file_handler = open(path.join(
@@ -427,16 +433,18 @@ def run(opts):
                                                        script_args = opts.script_args)
             if not opts.job_list and "optimization plot" in opts.analyze_list:
                 if optpar:
-                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset, opts.end - opts.offset)
+                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset,
+                                             opts.end - opts.offset)
                     optimizer.scale_range    = [i for i in opts.scale]
                     optimizer.kbending_range = [0.0]
                     optimizer.maxdist_range  = [i for i in opts.maxdist]
                     optimizer.lowfreq_range  = [i for i in opts.lowfreq]
                     optimizer.upfreq_range   = [i for i in opts.upfreq]
                     optimizer.dcutoff_range  = [i for i in opts.dcutoff]
-                    optimizer.results = dict(((float(s),0.0,float(m),float(l),float(u),
-                                               str(int(d))),
-                                               results[(m,u,l,d,s)]['corr']) for m,u,l,d,s in results)
+                    optimizer.results = dict((
+                        (float(s),0.0,float(m),float(l), float(u), str(int(d))),
+                        results[(m,u,l,d,s)]['corr'])
+                                             for m,u,l,d,s in results)
                     optimizer.plot_2d(show_best=20,
                                 savefig="%s/optimal_params.%s" % (
                                     outdir, opts.fig_format))
@@ -477,7 +485,7 @@ def run(opts):
 
         logging.info('''
         %s
-        
+
           - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
             ''' % ('Analysis',
                    opts.crm, opts.beg, opts.end, nicer(opts.reso),

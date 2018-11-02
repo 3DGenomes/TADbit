@@ -1,12 +1,9 @@
 """
 06 Aug 2013
-
-
 """
 
 from bisect    import bisect_left
 from itertools import combinations
-from math      import log10, exp
 from warnings  import warn
 import numpy as np
 
@@ -52,7 +49,7 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
     for _ in xrange(1, jmax):
         contour_guess = contour / guess
-        expcx = exp(-contour_guess) - 1
+        expcx = np.exp(-contour_guess) - 1
         # function
         fx = 2 * pow(guess, 2) * (contour_guess + expcx) - sq_length
         # derivative
@@ -91,7 +88,7 @@ class Interpolate(object):
 
 
 def transform(val):
-    return log10(val)
+    return np.log10(val)
 
 
 def nozero_log(values):
