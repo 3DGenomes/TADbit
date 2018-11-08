@@ -152,15 +152,15 @@ try:
                                         start=int(opts.rand)+%s, container=None,
                                         config=optpar, coords=coords, experiment=exp,
                                         zeros=zeros)
-    
+
     models.save_models(path.join("%s",'results.models'),minimal=%s)
-except Exception as e: 
+except Exception as e:
     print(e)
     open(path.join("%s",'failed.flag'), 'a').close()
     ''' % (paramsfile, nloci, nmodels_per_job, nmodels_per_job,
-               n_job*opts.nmodels_per_job, job_dir,
-               '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
-               job_dir))
+           n_job*opts.nmodels_per_job, job_dir,
+           '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
+           job_dir))
 
         tmp.close()
 
@@ -199,8 +199,8 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
             else:
                 jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
-                                                                   script_args),
-                    timeout=opts.timeout_job)
+                                                                       script_args),
+                                            timeout=opts.timeout_job)
         pool.close()
         pool.join()
 
@@ -343,9 +343,9 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
     mkdir(cfgfolder)
     prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
     results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
-                                         job_file_handler=job_file_handler,
-                                         exp = exp, script_cmd = script_cmd,
-                                         script_args = script_args)
+                                               job_file_handler=job_file_handler,
+                                               exp=exp, script_cmd=script_cmd,
+                                               script_args=script_args)
     if not job_file_handler:
         rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
     return results
@@ -382,7 +382,7 @@ def run(opts):
         if opts.matrix:
             opts.matrix = convert_from_unicode(path.realpath(opts.matrix))
         else:
-            (opts.matrix,_) = load_matrix_path_fromdb(opts)
+            opts.matrix, _ = load_matrix_path_fromdb(opts)
             opts.matrix = convert_from_unicode(path.join(opts.workdir, opts.matrix))
 
         crm = load_hic_data(opts)
@@ -403,7 +403,7 @@ def run(opts):
         if opts.crm:
             logging.info('''
         %s%s
-        
+
           - Region: Chromosome %s from %d to %d at resolution %s (%d particles)\n''' % (
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
@@ -414,7 +414,7 @@ def run(opts):
         else:
             logging.info('''
         %s%s
-        
+
           - Region: full genome at resolution %s (%d particles)\n''' % (
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
@@ -442,16 +442,18 @@ def run(opts):
                                                        script_args = opts.script_args)
             if not opts.job_list and "optimization plot" in opts.analyze_list:
                 if optpar:
-                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset + 1, opts.end - opts.offset)
+                    optimizer = IMPoptimizer(exp, opts.beg - opts.offset + 1, 
+                                             opts.end - opts.offset)
                     optimizer.scale_range    = [i for i in opts.scale]
                     optimizer.kbending_range = [0.0]
                     optimizer.maxdist_range  = [i for i in opts.maxdist]
                     optimizer.lowfreq_range  = [i for i in opts.lowfreq]
                     optimizer.upfreq_range   = [i for i in opts.upfreq]
                     optimizer.dcutoff_range  = [i for i in opts.dcutoff]
-                    optimizer.results = dict(((float(s),0.0,float(m),float(l),float(u),
-                                               str(int(d))),
-                                               results[(m,u,l,d,s)]['corr']) for m,u,l,d,s in results)
+                    optimizer.results = dict((
+                        (float(s),0.0,float(m),float(l), float(u), str(int(d))),
+                        results[(m,u,l,d,s)]['corr'])
+                                             for m,u,l,d,s in results)
                     optimizer.plot_2d(show_best=20,
                                 savefig="%s/optimal_params.%s" % (
                                     outdir, opts.fig_format))
@@ -492,7 +494,7 @@ def run(opts):
 
         logging.info('''
         %s
-        
+
           - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
             ''' % ('Analysis',
                    opts.crm, opts.beg, opts.end, nicer(opts.reso),

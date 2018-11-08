@@ -189,8 +189,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     VERBOSE = verbose
     #VERBOSE = 3
 
-    HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG,resolution,zscores,
-                 chromosomes=coords, close_bins=close_bins,first=first)
+    HiCRestraints = HiCBasedRestraints(nloci, RADIUS, CONFIG, resolution,
+                                       zscores, chromosomes=coords,
+                                       close_bins=close_bins, first=first)
 
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, HiCRestraints,

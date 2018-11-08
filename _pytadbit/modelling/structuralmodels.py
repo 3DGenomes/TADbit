@@ -1745,11 +1745,12 @@ class StructuralModels(object):
                                                    cutoff=cutoff)
         oridata = []
         moddata = []
-        for i in xrange(len(self._original_data)):
-            for j in xrange(i + off_diag, len(self._original_data)):
-                if self._original_data[i][j] <= 0:
+        for i in (v for v, z in enumerate(self._zeros) if z):
+            for j in (v for v, z in enumerate(self._zeros[i + off_diag:]) if z):
+                oriv = self._original_data[i][j]
+                if oriv <= 0 or isnan(oriv):
                     continue
-                oridata.append(self._original_data[i][j])
+                oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
@@ -2580,17 +2581,12 @@ class StructuralModels(object):
             fil['tad_def'] = ''
         out_f = open(filename, 'w')
         out_f.write(form % fil)
-        first = True
-        for i, nrow in enumerate(self._original_data):
-            for j, ncol in enumerate(nrow):
-                if not isnan(ncol) and int(ncol) != 0:
-                    if not first:
-                        out_f.write(',')
-                    first = False
-                    if isinstance( ncol, ( int, long ) ):
-                        out_f.write('"'+str((i*len(nrow))+j)+'":'+str(ncol))
-                    else:
-                        out_f.write('"'+str((i*len(nrow))+j)+'":'+"{:2.6f}".format(ncol))
+
+        size = len(self._original_data)
+        out_f.write(','.join('"{}":{}'.format((i * size) + j, round(ncol, 6))
+                             for i, nrow in enumerate(self._original_data)
+                             for j, ncol in enumerate(nrow)
+                             if ncol and not isnan(ncol)))
         out_f.write(form_end % fil)
         out_f.close()
 
