@@ -282,7 +282,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         evect = evect[sort_perm]
     except:
         evals, evect = None, None
-    data = [i for d in data for i in d if not np.isnan(i)]
+    data = [i for d in data for i in d if np.isfinite(i)]
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), max(size1, size2))
     gradient = np.vstack((gradient, gradient))

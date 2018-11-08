@@ -7,7 +7,6 @@ from itertools import combinations
 from warnings  import warn
 import numpy as np
 
-
 def mad(arr):
     """ Median Absolute Deviation: a "Robust" version of standard deviation.
         Indices variability of the sample.
@@ -108,7 +107,8 @@ def nozero_log(values):
 def nozero_log_list(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     try:
-        transform(0)
+        if not np.isfinite(transform(0)):
+            raise Exception()
         minv = 0.
     except:
         try:
@@ -125,7 +125,8 @@ def nozero_log_list(values):
 def nozero_log_matrix(values, transformation):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     try:
-        transform(0)
+        if not np.isfinite(transform(0)):
+            raise Exception()
         minv = 0.
     except:
         try:

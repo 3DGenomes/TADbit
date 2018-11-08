@@ -379,7 +379,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
                   show_axe=False, azimuth=-90, elevation=0., color='index',
-                  smooth=True, particle_size=50, alpha_part=0.5, lw_main=3,
+                  smooth=0.001, particle_size=50, alpha_part=0.5, lw_main=3,
                   **kwargs):
     """
     Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
@@ -391,6 +391,8 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
        appearance
     :param False thin: draw a thin black line instead of representing particles
        and edges
+    :param 0.001 smooth: connction between particles is smoothed according to
+       the input condition
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
@@ -441,8 +443,8 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     axe.view_init(elev=elevation, azim=azimuth)
 
     if thin:
-        if smooth:
-            tck, u= interpolate.splprep([x, y, z], s=0.001)
+        if smooth is not False:
+            tck, u= interpolate.splprep([x, y, z], s=smooth)
             #here we generate the new interpolated dataset,
             #increase the resolution by increasing the spacing, 500 in this example
             xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
@@ -450,8 +452,8 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
         else:
             axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
     else:
-        if smooth:
-            tck, u= interpolate.splprep([x, y, z], s=0.001)
+        if smooth is not False:
+            tck, u= interpolate.splprep([x, y, z], s=smooth)
             #here we generate the new interpolated dataset,
             #increase the resolution by increasing the spacing, 500 in this example
             xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)

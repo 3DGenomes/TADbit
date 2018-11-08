@@ -758,7 +758,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
         hic_data1 = load_hic_data_from_reads("lala-map~", resolution=10000)
-        hic_map(hic_data1, savedata="lala-map.tsv~", savefig="lala.pdf~")
+        hic_map(hic_data1, savedata="lala-map.tsv~", savefig="lala.pdf")
         hic_map(hic_data1, by_chrom="intra", savedata="lala-maps~", savefig="lalalo~")
         hic_map(hic_data1, by_chrom="inter", savedata="lala-maps~", savefig="lalala~")
         # slowest part of the all test:
@@ -781,8 +781,9 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(corr, [0.755, 0.729, 0.804, 0.761, 0.789, 0.776, 0.828,
                                 0.757, 0.797, 0.832])
 
-        ecorr = eig_correlate_matrices(hic_data1, hic_data2)
-        ecorr = [round(i,3) for i in reduce(lambda x, y:x+y, ecorr)]
+        ecorr = eig_correlate_matrices(hic_data1, hic_data2, savefig='lala3.pdf')
+
+        ecorr = [round(i, 3) for i in reduce(lambda x, y:x+y, ecorr)]
         self.assertEqual(ecorr, [0.997, 0.322, 0.442, 0.017, 0.243, 0.014,
                                  0.321, 0.999, 0.01, 0.006, 0.0, 0.007, 0.451,
                                  0.012, 0.996, 0.031, 0.013, 0.004, 0.002,
