@@ -110,7 +110,6 @@ class HiCBasedRestraints(object):
         #print "#SLOPE = %f ; INTERCEPT = %f" % (self.SLOPE, self.INTERCEPT)
         #print "#maxdist = %f ; lowrdist = %f" % (self.CONFIG['maxdist'], self.CONFIG['lowrdist'])
         # get SLOPE and regression for neighbors of the z-score data
-        print close_bins
         xarray = [zscores[i][j] for i in zscores for j in zscores[i]
                   if abs(int(i) - int(j)) <= (close_bins + 1)]
         yarray = [self.particle_radius * 2 for _ in xrange(len(xarray))]
