@@ -116,7 +116,7 @@ def _map2sam_mid(line, flag):
             'S1:i:{9}\tS2:i:{10}\n'
             '{0}\t{1}\t{6}\t{7}\t0\t{5}S\t{2}\t{3}\t{4}\t*\t*\t'
             'TC:i:{8}\t'
-            'S2:i:{9}\tS1:i:{10}\n').format(
+            'S1:i:{9}\tS2:i:{10}\n').format(
                 qname,               # 0
                 flag,                # 1
                 rname,               # 2
@@ -151,7 +151,7 @@ def _map2sam_long(line, flag):
             'TC:i:{8}\tS1:i:{13}\tS2:i:{14}\t'
             'E1:i:{9}\tE2:i:{10}\tE3:i:{11}\tE4:i:{12}\n'
             '{0}\t{1}\t{6}\t{7}\t0\t{5}S\t{2}\t{3}\t{4}\t*\t*\t'
-            'TC:i:{8}\tS2:i:{14}\tS1:i:{13}\t'
+            'TC:i:{8}\tS1:i:{14}\tS2:i:{13}\t'
             'E3:i:{11}\tE4:i:{12}\tE1:i:{9}\tE2:i:{10}\n').format(
                 qname,               # 0
                 flag,                # 1
