@@ -171,9 +171,9 @@ class IMPoptimizer(object):
         # maxdist
         if isinstance(maxdist_range, tuple):
             maxdist_step = maxdist_range[2]
-            maxdist_arange = range(maxdist_range[0],
-                                        maxdist_range[1] + maxdist_step,
-                                        maxdist_step)
+            maxdist_arange = np.arange(maxdist_range[0],
+                                       maxdist_range[1] + maxdist_step,
+                                       maxdist_step)
         else:
             if isinstance(maxdist_range, (float, int)):
                 maxdist_range = [maxdist_range]
@@ -182,8 +182,8 @@ class IMPoptimizer(object):
         if isinstance(lowfreq_range, tuple):
             lowfreq_step = lowfreq_range[2]
             lowfreq_arange = np.arange(lowfreq_range[0],
-                                            lowfreq_range[1] + lowfreq_step / 2,
-                                            lowfreq_step)
+                                       lowfreq_range[1] + lowfreq_step / 2,
+                                       lowfreq_step)
         else:
             if isinstance(lowfreq_range, (float, int)):
                 lowfreq_range = [lowfreq_range]
@@ -289,7 +289,7 @@ class IMPoptimizer(object):
                           'scale'    : float(scale),
                           'kbending' : float(kbending),
                           'lowrdist' : 100, # This parameters is fixed to XXX
-                          'maxdist'  : int(maxdist),
+                          'maxdist'  : float(maxdist),
                           'lowfreq'  : float(lowfreq),
                           'upfreq'   : float(upfreq)}
 
@@ -310,9 +310,9 @@ class IMPoptimizer(object):
                 cutoff = my_round(dcutoff_arange[0])
 
                 matrices = tdm.get_contact_matrix(
-                    cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
+                    cutoff=[i * self.resolution * float(scale) for i in dcutoff_arange])
                 for m in matrices:
-                    cut = int(m**0.5)
+                    cut = m**0.5
                     result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
                                                           off_diag=off_diag,
                                                           contact_matrix=matrices[m])[0]
@@ -705,7 +705,7 @@ class IMPoptimizer(object):
                 continue
             scale, kbending, maxdist, lowfreq, upfreq, dcutoff, result = line.split()
             scale, kbending, maxdist, lowfreq, upfreq, dcutoff = (
-                float(scale), float(kbending), int(maxdist), float(lowfreq), float(upfreq),
+                float(scale), float(kbending), float(maxdist), float(lowfreq), float(upfreq),
                 float(dcutoff))
             scale    = my_round(scale, val=5)
             kbending = my_round(kbending)

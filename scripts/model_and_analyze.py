@@ -143,7 +143,7 @@ def load_hic_data(opts, xnames):
         if not xnorm:
             crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag,
                                                  perc_zero=opts.perc_zeros,
-                                                 min_count=opts.min_count)
+                                                 min_count=int(opts.min_count))
             logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
     if opts.beg > crm.experiments[-1].size:
@@ -184,8 +184,8 @@ def optimize(results, opts, name, no_load=False):
     """
     scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
                if ':' in opts.scale   else float(opts.scale)  )
-    maxdist = (tuple([int(i) for i in opts.maxdist.split(':')])
-               if ':' in opts.maxdist else int(opts.maxdist))
+    maxdist = (tuple([float(i) for i in opts.maxdist.split(':')])
+               if ':' in opts.maxdist else float(opts.maxdist))
     upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
                if ':' in opts.upfreq  else float(opts.upfreq) )
     lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
@@ -229,8 +229,8 @@ opts_file.close()
 
 scale   = (tuple([float(i) for i in opts.scale.split(":")  ])
            if ":" in opts.scale   else float(opts.scale)  )
-maxdist = (tuple([int(i) for i in opts.maxdist.split(":")])
-           if ":" in opts.maxdist else int(opts.maxdist))
+maxdist = (tuple([float(i) for i in opts.maxdist.split(":")])
+           if ":" in opts.maxdist else float(opts.maxdist))
 upfreq  = (tuple([float(i) for i in opts.upfreq.split(":") ])
            if ":" in opts.upfreq  else float(opts.upfreq) )
 lowfreq = (tuple([float(i) for i in opts.lowfreq.split(":")])
@@ -273,7 +273,7 @@ tmp.close()
             optpar = {}
             optpar['scale'    ] = float(scale)
             optpar['kbending' ] = 0.0
-            optpar['maxdist'  ] = int(maxdist)
+            optpar['maxdist'  ] = float(maxdist)
             optpar['upfreq'   ] = float(upfreq)
             optpar['lowfreq'  ] = float(lowfreq)
             optpar['dcutoff'  ] = float(dcutoff)
@@ -507,8 +507,8 @@ def main():
     elif opts.model_only:
         scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
                    if ':' in opts.scale   else float(opts.scale)  )
-        maxdist = (tuple([int(i) for i in opts.maxdist.split(':')])
-                   if ':' in opts.maxdist else int(opts.maxdist))
+        maxdist = (tuple([float(i) for i in opts.maxdist.split(':')])
+                   if ':' in opts.maxdist else float(opts.maxdist))
         upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
                    if ':' in opts.upfreq  else float(opts.upfreq) )
         lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
@@ -519,7 +519,7 @@ def main():
             optpar = {}
             optpar['scale'    ] = float(scale)
             optpar['kbending' ] = 0.0
-            optpar['maxdist'  ] = int(maxdist)
+            optpar['maxdist'  ] = float(maxdist)
             optpar['upfreq'   ] = float(upfreq)
             optpar['lowfreq'  ] = float(lowfreq)
             optpar['dcutoff'  ] = float(dcutoff)
@@ -572,9 +572,7 @@ def main():
     if opts.seed != 1:
         exit()
 
-    dcutoff = int(models._config['dcutoff'] *
-                  models._config['scale']   *
-                  models.resolution)
+    dcutoff = models._config['dcutoff'] * models._config['scale'] * models.resolution
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################
@@ -600,16 +598,19 @@ def main():
     logging.info("\tClustering all models into sets of structurally similar" +
                  " models...")
     ffact    = 0.95 # Fraction of particles that are within the dcutoff value
-    clcutoff = dcutoff - 50 # RMSD cut-off to consider two models equivalent(nm)
-    for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]:
+    clcutoff = dcutoff * 0.5 # RMSD cut-off to consider two models equivalent(nm)
+    for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4]:
         logging.info('   fact = ' + str(ffact))
-        for clcutoff in [dcutoff / 2 , dcutoff, dcutoff * 1.5]:
+        for clcutoff in [dcutoff / 2 , dcutoff, dcutoff * 1.5, dcutoff * 2, dcutoff * 2.5, dcutoff * 3]:
             try:
                 logging.info('      cutoff = ' + str(clcutoff))
                 models.cluster_models(fact=ffact, dcutoff=clcutoff,
                                       n_cpus=int(opts.ncpus))
-                break
+                singletons = len([1 for m in models if m['cluster'] == 'Singleton'])
+                if singletons < len(models) / 2:
+                    break
             except:
+                singletons = len([1 for m in models if m['cluster'] == 'Singleton'])
                 continue
         else:
             continue
@@ -734,7 +735,7 @@ def main():
         # Calculate a consistency plot for all models in cluster #1
         logging.info("\tGetting consistency data...")
         models.model_consistency(
-            cluster=1, cutoffs=range(50, dcutoff + 50, 50),
+            cluster=1, cutoffs=np.arange(dcutoff * 0.5, dcutoff * 1.5, dcutoff / 10),
             savefig =os.path.join(opts.outdir, name,
                                   name + '_consistency.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name,

@@ -755,11 +755,17 @@ class StructuralModel(dict):
             chrom_list = [chrom_list]
             chrom_start = [chrom_start]
             chrom_end = [chrom_end]
-        chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
-        chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
+
+        chrom_start = [(int(c) / int(self['description']['resolution'])
+                        if int(c) else 0)
+                       for c in chrom_start]
+        chrom_end = [(int(c) / int(self['description']['resolution'])
+                      if int(c) else len(self['x']))
+                     for c in chrom_end]
+
         offset = -chrom_start[0]
         for crm in xrange(len(chrom_list)):
-            for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
+            for i in range(chrom_start[crm] + offset, chrom_end[crm] + offset):
                 out += form % (
                     i + 1,
                     '%s:%s-%s' % (
@@ -770,7 +776,7 @@ class StructuralModel(dict):
                             int(self['description']['resolution']) * (i + 1 - offset)),
                     round(self['x'][i], 3),
                     round(self['y'][i], 3), round(self['z'][i], 3))
-            offset += (chrom_end[crm]-chrom_start[crm])
+            offset += (chrom_end[crm] - chrom_start[crm])
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()

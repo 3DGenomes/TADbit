@@ -411,7 +411,7 @@ class StructuralModels(object):
            storing it as StructuralModels.clusters
         :param 'score' what: Statistic used for clustering. Can be one of
            'score', 'rmsd', 'drmsd' or 'eqv'.
-        :param None region: coordinates of the region to base the clustering. 
+        :param None region: coordinates of the region to base the clustering.
             Can be either one chromosome name, or the coordinate in
             the form: "chr3:110000000-120000000"
 
@@ -425,7 +425,7 @@ class StructuralModels(object):
         end = self.nloci
         if region:
             if ':' in region:
-                crm, pos = region.split(':') 
+                crm, pos = region.split(':')
                 beg, end = map(int, pos.split('-'))
             else:
                 crm = region
@@ -439,14 +439,14 @@ class StructuralModels(object):
             if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list):
                 if crm not in my_descr['chromosome']:
                     raise Exception('ERROR: chromosome not in StructuralModels\n')
-                chrom_start += sum([(n-m) for i,(m,n) in enumerate(zip(my_descr['start'],my_descr['end'])) 
+                chrom_start += sum([(n-m) for i,(m,n) in enumerate(zip(my_descr['start'],my_descr['end']))
                                     if i < my_descr['chromosome'].index(crm)])
             else:
                 if my_descr.get('chromosome', 'Chromosome') != crm:
                     raise Exception('ERROR: chromosome not in StructuralModels\n')
-                
+
             if not end:
-                end = my_descr['end'][my_descr['chromosome'].index(crm)]  
+                end = my_descr['end'][my_descr['chromosome'].index(crm)]
             beg = int(float(beg + chrom_start) / self.resolution)
             end = int(float(end + chrom_start) / self.resolution)
         nloci = end - beg
@@ -647,7 +647,7 @@ class StructuralModels(object):
             cutoff_list = False
         cutoff.sort(reverse=True)
         if not cutoff:
-            cutoff = [int(2 * self.resolution * self._config['scale'])]
+            cutoff = [float(2 * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
@@ -659,7 +659,6 @@ class StructuralModels(object):
         for model in models:
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
-
             #print model, len(x), len(y), len(z)
             for c in cutoff:
                 for i, j in combinations(wloci, 2):
@@ -738,7 +737,7 @@ class StructuralModels(object):
         """
         fact /= self.nloci
         if not dcutoff:
-            dcutoff = int(1.5 * self.resolution * self._config['scale'])
+            dcutoff = 1.5 * self.resolution * self._config['scale']
         if not clusters:
             clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
                                            mcl_bin=mcl_bin,
@@ -934,7 +933,7 @@ class StructuralModels(object):
 
         """
         if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
+            cutoff = 2.0 * self.resolution * self._config['scale']
         matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
         show = False
         if savedata:
@@ -1306,7 +1305,7 @@ class StructuralModels(object):
         models = self._get_models(models, cluster)
         models = [self.__models[m] for m in models]
 
-        if not cutoffs:
+        if cutoffs is None:
             cutoffs = (int(0.5 * self.resolution * self._config['scale']),
                        int(1.0 * self.resolution * self._config['scale']),
                        int(1.5 * self.resolution * self._config['scale']),
@@ -1737,7 +1736,7 @@ class StructuralModels(object):
            correlation
         """
         if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
+            cutoff = 2.0 * self.resolution * self._config['scale']
         if contact_matrix:
             model_matrix = contact_matrix
         else:
@@ -1752,6 +1751,7 @@ class StructuralModels(object):
                     continue
                 oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
+        # print oridata
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
@@ -1915,7 +1915,8 @@ class StructuralModels(object):
            the default GUI.
         :param False alpha: only for matplotlib ('plot' option), transparency of
            particles.
-        :param False smooth: only for matplotlib ('plot' option), spline smoothing.
+        :param False smooth: only for matplotlib ('plot' option), spline smoothing
+           (by default smoothing is 0.001).
         :param 50 particle_size: only for matplotlib ('plot' option), redefine
            size of particles. If None, resolution times scale is used.
         :param 'index' color: can be:
@@ -1997,6 +1998,8 @@ class StructuralModels(object):
             models = [m for m in self.__models]
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
+        if smooth is True:
+            smooth = None
         if color in ['tad', 'border'] and 'tads' not in kwargs:
             start = (float(self[models[0]]['description']['start']) /
                      self[models[0]]['description']['resolution'] - 1)
