@@ -52,6 +52,8 @@ class StructuralModel(dict):
         :returns: distance between one point of the model and an external
            coordinate
         """
+        if part1 == 0 or part2 == 0:
+            raise Exception('Particle number must be strictly positive\n')
         return sqrt((self['x'][part1-1] - self['x'][part2-1])**2 +
                     (self['y'][part1-1] - self['y'][part2-1])**2 +
                     (self['z'][part1-1] - self['z'][part2-1])**2)
@@ -59,7 +61,7 @@ class StructuralModel(dict):
 
     def _square_distance(self, part1, part2):
         """
-        Calculates the square istance between one point of the model and an
+        Calculates the square instance between one point of the model and an
         external coordinate
 
         :param part1: index of a particle in the model
