@@ -6,22 +6,26 @@ information needed
 
 """
 
-from argparse                       import HelpFormatter
-from pytadbit                       import get_dependencies_version
-from pytadbit.parsers.genome_parser import parse_fasta
-from pytadbit.parsers.map_parser    import parse_map
 from os                             import path, remove
 from string                         import ascii_letters
 from random                         import random
 from shutil                         import copyfile
-from pytadbit.utils.file_handling   import mkdir
-from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
-from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
+from argparse                       import HelpFormatter
+from cPickle                        import load, UnpicklingError
+from warnings                       import warn
+
 import time
 import logging
-from cPickle import load, UnpicklingError
 import sqlite3 as lite
-from warnings import warn
+
+from pytadbit                       import get_dependencies_version
+from pytadbit.parsers.genome_parser import parse_fasta
+from pytadbit.parsers.map_parser    import parse_map
+from pytadbit.utils.file_handling   import mkdir
+from pytadbit.utils.sqlite_utils    import print_db, get_jobid
+from pytadbit.utils.sqlite_utils    import get_path_id, add_path
+from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
+
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
 
@@ -32,6 +36,10 @@ def run(opts):
 
     reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
     f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
+
+    renz = renz.split('-')
+
+    opts.workdir = path.abspath(opts.workdir)
 
     name = path.split(opts.workdir)[-1]
 
@@ -53,7 +61,7 @@ def run(opts):
         f_names1  = f_names2
         f_names2  = None
         out_file1 = path.join(opts.workdir, outdir, '%s_r2_%s.tsv' % (name, param_hash))
-        
+
     logging.info('parsing genomic sequence')
     try:
         # allows the use of cPickle genome to make it faster
@@ -77,10 +85,13 @@ def run(opts):
             elif not line.startswith('#'):
                 break
         multis = {}
-        multis[0] = 0
+        multis[0] = {}
         for line in fhandler:
             if '|||' in line:
-                multis[0] += line.count('|||')
+                try:
+                    multis[0][line.count('|||')] += 1
+                except KeyError:
+                    multis[0][line.count('|||')] = 1
         if out_file2:
             counts[1] = {}
             fhandler = open(out_file2)
@@ -93,7 +104,7 @@ def run(opts):
             multis[1] = 0
             for line in fhandler:
                 if '|||' in line:
-                    multis[1] += line.count('|||')                
+                    multis[1] += line.count('|||')
 
     # write machine log
     while path.exists(path.join(opts.workdir, '__lock_log')):
@@ -151,7 +162,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
            (Id integer primary key,
             PATHid int,
             Total_interactions int,
-            Multiples int,
+            Multiples text,
             unique (PATHid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -194,11 +205,13 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 insert into PARSED_OUTPUTs
                 (Id  , PATHid, Total_interactions, Multiples)
                 values
-                (NULL,     %d,      %d,        %d)
+                (NULL,     %d,      %d,        '%s')
                 """ % (get_path_id(cur, outfiles[count], opts.workdir),
-                       sum_reads, multis[count]))
+                       sum_reads, ','.join([':'.join(map(str, (n, multis[count][n])))
+                                            for n in multis[count] if n])))
             except lite.IntegrityError:
                 print 'WARNING: already parsed (PARSED_OUTPUTs)'
+
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -265,7 +278,7 @@ def load_parameters_fromdb(opts, reads=None, jobids=None):
                 'ERROR: different enzymes used to generate these files')
         renz = enzymes[0][0]
     return fnames[1], fnames[2], renz
-        
+
 
 def populate_args(parser):
     """
@@ -285,18 +298,19 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-    glopts.add_argument('--type', dest='type', metavar="STR", 
-                        type=str, default='map', choices=['map', 'sam', 'bam'], 
+    glopts.add_argument('--type', dest='type', metavar="STR",
+                        type=str, default='map', choices=['map', 'sam', 'bam'],
                         help='''[%(default)s]file type to be parser, MAP
                         (GEM-mapper), SAM or BAM''')
 
     glopts.add_argument('--read', dest='read', metavar="INT",
-                        type=int, default=None, 
+                        type=int, default=None,
                         help='In case only one of the reads needs to be parsed')
 
     glopts.add_argument('--filter_chrom', dest='filter_chrom',
-                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$",
-                        help='[%(default)s] regexp to consider only chromosome names passing')
+                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?(_dna)?$",
+                        help='''default: --filter_chrom "%(default)s", regexp
+                        to consider only chromosome names passing''')
 
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
@@ -304,7 +318,7 @@ def populate_args(parser):
 
     glopts.add_argument('--compress_input', dest='compress_input',
                         action='store_true', default=False,
-                        help='''Compress input mapped files when parsing is 
+                        help='''Compress input mapped files when parsing is
                         done. This is done in background, while next MAP file is
                         processed, or while reads are sorted.''')
 
@@ -317,7 +331,7 @@ def populate_args(parser):
                         type=str,
                         help='''paths to file(s) with FASTA files of the
                         reference genome. If many, files will be concatenated.
-                        I.e.: --fasta chr_1.fa chr_2.fa
+                        I.e.: --genome chr_1.fa chr_2.fa
                         In this last case, order is important or the rest of the
                         analysis. Note: it can also be the path to a previously
                         parsed genome in pickle format.''')
@@ -326,7 +340,9 @@ def populate_args(parser):
                         action='store', default=None, nargs='+', type=int,
                         help='''Use as input data generated by a job with a given
                         jobid(s). Use tadbit describe to find out which.
-                        In this case one jobid can be passed per read.''')    
+                        In this case one jobid can be passed per read.''')
+
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
 
     parser.add_argument_group(glopts)
 
@@ -354,7 +370,7 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writting log to ' + path.join(opts.workdir, 'process.log')
+        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
@@ -372,7 +388,7 @@ def check_options(opts):
     vlog_path = path.join(opts.workdir, 'TADbit_and_dependencies_versions.log')
     dependencies = get_dependencies_version()
     if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
-        logging.info('Writting versions of TADbit and dependencies')
+        logging.info('Writing versions of TADbit and dependencies')
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()

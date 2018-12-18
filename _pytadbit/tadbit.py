@@ -530,3 +530,156 @@ def Get_Downstream_Triangle(data, i, size):
     triag = (np.triu(tmp_mat,k=1).flatten())
 
     return triag[triag!=0].tolist()
+
+
+def insulation_score(hic_data, dists, normalize=False, resolution=1,
+                     delta=0, silent=False, savedata=None, savedeltas=None):
+    """
+    Compute insulation score.
+
+    :param hic_dada: HiC_data object already normalized
+    :param dists: list of pairs of distances between which to compute the
+       insulation score. E.g. 4,5 means that for a given bin B(i), all
+       interactions between B(i-4) to B(i-5) and B(i+4) to B(i+5) will be
+       summed and used to compute the insulation score.
+    :param False normalize: Normalize insulation score by the average in the
+       chromosome, and log2 of this ratio.
+    :param 1 resolution:
+    :param 0 delta: to compute the delta for TAD detection (e.g. at 10kb use 10)
+    :param False silent:
+    :param None savedata: path to file where to save result
+    :param None savedeltas: path to file where to save deltas
+
+    :returns: dictionary with insulation score
+    """
+    bias = hic_data.bias
+    bads = hic_data.bads
+    decay = hic_data.expected
+    if not decay or not bias:
+        raise Exception('ERROR: HiC_data should be normalized by visibility '
+                        'and by expected')
+
+    insidx = {}
+    deltas = {}
+    for dist, end in dists:
+        if not silent:
+            print ' - computing insulation in band %d-%d' % (dist, end)
+        insidx[(dist, end)] = {}
+        deltas[(dist, end)] = {}
+        for crm in hic_data.chromosomes:
+            if crm in decay:
+                this_decay = decay[crm]
+            else:
+                this_decay = decay
+            total = 0
+            count = 0
+            for pos in range(hic_data.section_pos[crm][0] + end,
+                             hic_data.section_pos[crm][1] - end):
+                val = sum(hic_data[i, j] / bias[i] / bias[j] / this_decay[abs(j-i)]
+                          for i in range(pos - end, pos - dist + 1)
+                          if not i in bads
+                          for j in range(pos + dist, pos + end + 1)
+                          if not j in bads)
+                total += val
+                count += 1
+                insidx[(dist, end)][pos] = val
+            if normalize:
+                total /= float(count)
+                if total == 0:
+                    total = float('nan')
+                for pos in range(hic_data.section_pos[crm][0] + end,
+                                 hic_data.section_pos[crm][1] - end):
+                    try:
+                        insidx[(dist, end)][pos] = np.log2(insidx[(dist, end)][pos] / total)
+                    except ZeroDivisionError:
+                        insidx[(dist, end)][pos] = float('nan')
+            if deltas:
+                for pos in range(hic_data.section_pos[crm][0] + end,
+                                 hic_data.section_pos[crm][1] - end):
+                    up_vals = []
+                    dw_vals = []
+                    for spos in xrange(delta):
+                        try:
+                            up_vals.append(insidx[(dist, end)][pos - delta + spos])
+                        except KeyError:
+                            pass
+                        try:
+                            dw_vals.append(insidx[(dist, end)][pos + delta - spos])
+                        except KeyError:
+                            pass
+                    deltas[(dist, end)][pos] = (np.mean(up_vals) - np.mean(dw_vals))
+
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('# CRM\tCOORD\t' + '\t'.join(['%d-%d' % (d1, d2)
+                                                for d1, d2 in dists]) +
+                  '\n')
+        for crm in hic_data.section_pos:
+            for pos in range(*hic_data.section_pos[crm]):
+                beg = (pos - hic_data.section_pos[crm][0]) * resolution
+                out.write('{}\t{}-{}\t{}\n'.format(
+                    crm, beg + 1, beg + resolution,
+                    '\t'.join([str(insidx[dist].get(pos, 'NaN'))
+                               for dist in dists])))
+        out.close()
+
+    if savedeltas:
+        out = open(savedeltas, 'w')
+        out.write('# CRM\tCOORD\t' + '\t'.join(['%d-%d' % (d1, d2)
+                                                for d1, d2 in dists]) +
+                  '\n')
+        for crm in hic_data.section_pos:
+            for pos in range(*hic_data.section_pos[crm]):
+                beg = (pos - hic_data.section_pos[crm][0]) * resolution
+                out.write('{}\t{}-{}\t{}\n'.format(
+                    crm, beg + 1, beg + resolution,
+                    '\t'.join([str(deltas[dist].get(pos, 'NaN'))
+                               for dist in dists])))
+        out.close()
+
+    if delta:
+        return insidx, deltas
+    return insidx
+
+
+def insulation_to_borders(ins_score, deltas, min_strength=0.1):
+    """
+    Best (for human-like genome size) according to https://doi.org/10.1038/nature14450
+    is (at 10kb resolution) to use awindow size of 500 kb (use the function
+    insulation_score with dist=(1,50)) and a delta of 100 kb (10 bins).
+
+
+    :returns: the position in bin of each border, and the intensity of the
+       border (sigmoid normalized, from 0 to 1)
+    """
+    borders = []
+    for pos in range(max(ins_score)):
+        if (ins_score.get(pos, 100) >= ins_score.get(pos + 1, -100)
+            or
+            ins_score.get(pos, 100) >= ins_score.get(pos - 1, -100)):
+            continue
+        if not (deltas.get(pos - 1, 100) > 0 and
+                deltas.get(pos + 1, -100) < 0):
+            continue
+        # left
+        lo = 1
+        prev_lv = deltas.get(pos - 1, 100)
+        while pos - 1 - lo > 0:
+            lv = deltas.get(pos - 1 - lo, 100)
+            if lv < prev_lv:
+                break
+            prev_lv = lv
+            lo += 1
+        # right
+        ro = 1
+        prev_rv = deltas.get(pos + 1, -100)
+        while pos + 1 + ro <= len(deltas):
+            rv = deltas.get(pos + 1 + ro, -100)
+            if rv > prev_rv:
+                break
+            prev_rv = rv
+            ro += 1
+        strength = 1. / (1 + np.exp(-(prev_lv - prev_rv))) * 2 - 1
+        if strength > min_strength:
+            borders.append((pos, strength))
+    return borders

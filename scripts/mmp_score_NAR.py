@@ -113,7 +113,7 @@ def main():
     # sort eigenvalues/vectors
     idx = (-egval).argsort()
     egval = egval[idx]
-		
+
     regvals = []
 
     sys.stdout.write('  - randomization\n')
@@ -143,36 +143,31 @@ def main():
     kurtness = kurtosis(zdata)
 
     if opts.plot:
-	os.system('mkdir -p %s' % opts.outdir)
+        os.system('mkdir -p %s' % opts.outdir)
         # matrix plot
-        fig = plt.figure(figsize=(14, 8))
-	gs = gridspec.GridSpec(7, 5, wspace=0.5, hspace=1.5)
-	ax1 = plt.subplot(gs[:   , 0:3])
-	ax2 = plt.subplot(gs[1:5 , 3: ])
-	ax3 = plt.subplot(gs[5:7 , 3: ])
+        _ = plt.figure(figsize=(14, 8))
+    gs = gridspec.GridSpec(7, 5, wspace=0.5, hspace=1.5)
+    ax1 = plt.subplot(gs[:   , 0:3])
+    ax2 = plt.subplot(gs[1:5 , 3: ])
+    ax3 = plt.subplot(gs[5:7 , 3: ])
         img = ax2.imshow(log2(data), interpolation='none')
         plt.colorbar(img, ax=ax2)
         #plt.subplots_adjust(right=0.8, left=0.6, hspace=0.3)
 
-    zdata = sorted(log2([data[i][j] for i in xrange(len(data))
-                         for j in xrange(i, len(data)) if data[i][j]]))
-    skewness = skew(zdata)
-    kurtness = kurtosis(zdata)
-
     if opts.plot:
         ax2.set_title('Original matrix', size=12)
         ax2.tick_params(axis='both', which='major', labelsize=10)
-	ax2.set_xlabel('Bin')
-	ax2.set_ylabel('Bin')
+        ax2.set_xlabel('Bin')
+        ax2.set_ylabel('Bin')
 
         normfit = sc_norm.pdf(zdata, mean(zdata), std(zdata))
         normplot = ax3.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4,
                             markersize=.5)
         ax3.tick_params(axis='both', which='major', labelsize=10)
-        
+
         ax3.hist(zdata, bins=20, normed=True, alpha=0.7, color='r')
-	ax3.set_xlabel('Z-score')
-	ax3.set_ylabel('Frequency')
+        ax3.set_xlabel('Z-score')
+        ax3.set_ylabel('Frequency')
         rcParams['xtick.direction'] = 'out'
         rcParams['ytick.direction'] = 'out'
         rcParams['axes.axisbelow']  = True
@@ -181,15 +176,15 @@ def main():
         #plt.savefig(opts.outdir + '/matrix_small.png',
         #            format='png')
         #plt.close('all')
-        
-        
+
+
         #plt.imshow(log2(data), interpolation='none')
         #plt.title('Original matrix')
         #plt.colorbar()
         #plt.savefig(opts.outdir + '/matrix.png',
         #            format='png')
         #plt.close('all')
-        
+
         # distribution plot
         #axe = plt.axes(axisbelow=True)
         rcParams['xtick.direction'] = 'out'
@@ -211,7 +206,7 @@ def main():
         ax1.yaxis.set_ticks_position('left')
         ax1.set_xscale('log')
         ax1.set_axis_bgcolor((.9,.9,.9))
-        
+
         ax1.errorbar(range(1, 1 + len(rvmean)), rvmean, yerr=err, ecolor='red',
                      color='orange', lw=2,
         label='%s randomizations' % (opts.nrand))
@@ -225,7 +220,7 @@ def main():
     signifidx = i
     signifsum = sum(abs(egval[:signifidx]))
     signifcontr = 100 * sum(abs(egval[:signifidx])) / sum(abs(egval))
-    
+
     size = len(data)
 
     sev = sum(egval[:signifidx]-rvmean[:signifidx])
@@ -233,7 +228,7 @@ def main():
     if opts.plot:
         ax1.plot(range(1, 1 + len(rvmean)), egval,
                  color='green', lw=2, label='Observed data')
-        
+
         ax1.fill_between(range(1, 1 + len(rvmean)), rvmean, egval,
 			 where=(array(rvmean) + array(err))<egval,
 			 facecolor='green', interpolate=True, alpha=0.2)
@@ -249,7 +244,7 @@ def main():
         ax1.set_title(opts.fnam.split('/')[-1].replace('_xyz.txt', '').replace(
 	    'list_files_', '').replace('.txt', ''))
         #plt.subplots_adjust(right=0.6)
-        
+
         #img = Image.open(opts.outdir + '/matrix_small.png')
         #fig.figimage(img, 640, -160)
 
@@ -270,28 +265,28 @@ def main():
     supa1, supb1 = [0.69300732000423904, 0.29858572176099613]
     lowa1, lowb1 = [0.70217788900976075, 0.211048473299004]
 
-    scc     = (mmp - ex_b1 ) / ex_a1 
-    scc_up1 = (mmp - supb1 ) / supa1 
-    scc_lw1 = (mmp - lowb1 ) / lowa1 
-    
+    scc     = (mmp - ex_b1 ) / ex_a1
+    scc_up1 = (mmp - supb1 ) / supa1
+    scc_lw1 = (mmp - lowb1 ) / lowa1
+
     sys.stdout.write('  predicted dSCC is %.3f (%.3f-%.3f 68%% confidence)\n' % (scc , scc_up1 , scc_lw1 ))
 
     ex_a75, ex_b75 = [0.6975926,  0.2548171]
     supa75, supb75 = [0.69230778430383244, 0.30526310790548261]
     lowa75, lowb75 = [0.70287742471016734, 0.20437108715451746]
 
-    scc_up75 = (mmp - supb75 ) / supa75 
-    scc_lw75 = (mmp - lowb75 ) / lowa75 
-    
+    scc_up75 = (mmp - supb75 ) / supa75
+    scc_lw75 = (mmp - lowb75 ) / lowa75
+
     sys.stdout.write('                        (%.3f-%.3f 75%% confidence)\n' % (scc_up75 , scc_lw75 ))
 
-    ex_a2, ex_b2 = [0.6975926,  0.2548171]		  
+    ex_a2, ex_b2 = [0.6975926,  0.2548171]
     supa2, supb2 = [0.68855373600821357, 0.34109720480765293]
     lowa2, lowb2 = [0.70663147300578644, 0.16853699025234709]
 
-    scc_up2 = (mmp - supb2 ) / supa2 
-    scc_lw2 = (mmp - lowb2 ) / lowa2 
-    
+    scc_up2 = (mmp - supb2 ) / supa2
+    scc_lw2 = (mmp - lowb2 ) / lowa2
+
     sys.stdout.write('                        (%.3f-%.3f 95%% confidence)\n' % (scc_up2 , scc_lw2 ))
 
     if opts.plot:

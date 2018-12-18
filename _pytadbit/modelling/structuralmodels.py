@@ -1,63 +1,90 @@
 """
 19 Jul 2013
 """
-from cPickle                        import load, dump
-from subprocess                     import Popen, PIPE
-from math                           import acos, degrees, pi, sqrt
-from warnings                       import warn
-from string                         import uppercase as uc, lowercase as lc
-from random                         import random
-from os.path                        import exists
-from itertools                      import combinations
-from uuid                           import uuid5, UUID
-from hashlib                        import md5
+from cPickle                          import load, dump, HIGHEST_PROTOCOL
+from subprocess                       import Popen, PIPE
+from math                             import acos, degrees, pi, sqrt
+from warnings                         import warn
+from string                           import uppercase as uc, lowercase as lc
+from random                           import random
+from os.path                          import exists
+from itertools                        import combinations
+from uuid                             import uuid5, UUID
+from hashlib                          import md5
+from copy                             import deepcopy
 
-from numpy                          import median as np_median
-from numpy                          import mean as np_mean
-from numpy                          import std as np_std, log2
-from numpy                          import array, cross, dot, ma, isnan
-from numpy                          import histogram, linspace
-from numpy.linalg                   import norm
+from numpy                            import exp as np_exp
+from numpy                            import median as np_median
+from numpy                            import mean as np_mean
+from numpy                            import std as np_std, log2
+from numpy                            import array, cross, dot, ma, isnan
+from numpy                            import histogram, linspace
+from numpy                            import nanmin, nanmax
+from numpy.linalg                     import norm
 
-from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress
-from scipy.stats                    import normaltest, norm as sc_norm
-from scipy.cluster.hierarchy        import linkage, fcluster
+from scipy.optimize                   import curve_fit
+from scipy.stats                      import spearmanr, pearsonr, chisquare
+from scipy.stats                      import kendalltau
+from scipy.stats                      import linregress
+from scipy.stats                      import normaltest, norm as sc_norm
+from scipy.cluster.hierarchy          import linkage, fcluster
 
-from pytadbit                       import get_dependencies_version
-from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
-from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
-from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
-from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
-from pytadbit.utils.tadmaths        import mean_none
-from pytadbit.utils.extraviews      import plot_3d_model, setup_plot
-from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
-from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
-from pytadbit.utils.extraviews      import tad_coloring
-from pytadbit.utils.extraviews      import tad_border_coloring
-from pytadbit.utils.extraviews      import color_residues
-from pytadbit.modelling.impmodel    import IMPmodel
-from pytadbit.centroid              import centroid_wrapper
-from pytadbit.aligner3d             import aligner3d_wrapper
+from pytadbit                         import get_dependencies_version
+from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
+from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
+from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
+from pytadbit.utils.tadmaths          import calinski_harabasz, nozero_log_list
+from pytadbit.utils.tadmaths          import mean_none
+from pytadbit.utils.extraviews        import plot_3d_model, setup_plot
+from pytadbit.utils.extraviews        import chimera_view, tadbit_savefig
+from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
+from pytadbit.utils.extraviews        import tad_coloring
+from pytadbit.utils.extraviews        import tad_border_coloring
+from pytadbit.utils.extraviews        import color_residues
+from pytadbit.modelling.impmodel      import IMPmodel
+from pytadbit.centroid                import centroid_wrapper
+from pytadbit.aligner3d               import aligner3d_wrapper
+from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
 
 try:
     from matplotlib import pyplot as plt
-    from matplotlib.cm import jet, bwr
+    from matplotlib.cm import viridis, Reds, Blues, bwr
 except ImportError:
     warn('matplotlib not found\n')
 
 
-def load_structuralmodels(path_f):
+def R2_vs_L(L, P):
+    """
+    Calculates the persistence length (Lp) of given section of the model.
+    Persistence length is calculated according to [Bystricky2004]_ :
+
+    .. math::
+
+    <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
+
+    with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
+    the genomic distance in bp and :math:`c` the linear mass density of the
+    chromatin (in bp/nm).
+
+    :returns: persistence length, or 2 times the Kuhn length
+    """
+    return 2.0 * P * ( L - P * ( 1.0 - np_exp( - L / P ) ) )
+
+def load_structuralmodels(input_):
     """
     Loads :class:`pytadbit.modelling.structuralmodels.StructuralModels` from a file
     (generated with
     :class:`pytadbit.modelling.structuralmodels.StructuralModels.save_models`).
 
-    :param path: to the pickled StructuralModels object.
+    :param input: path to the pickled StructuralModels object or dictionary
+       containing all the information.
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
-    svd = load(open(path_f))
+    if isinstance(input_, basestring):
+        svd = load(open(input_))
+    else:
+        svd = input_
     try:
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
@@ -155,23 +182,41 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
-    def _extend_models(self, models):
+    def _extend_models(self, models, nbest=None, different_stage=False):
         """
-        add new models to structural models
+        Add new models to structural models to current StructuralModel.
+
+        :param models: list of StructuralModels or StructuralModels instance
+        :param None nbest: number of StructuralModels to be considered as
+           'good'
+        :param False different_stage: by default, only models with new unique
+           random initial numbers will be added. If added data corresponds to
+           a different stage (experiment, time points...) than random_init
+           numbers will extended with a specific hash.
         """
-        nbest = len(self.__models)
+        if isinstance(models, StructuralModels):
+            models.define_best_models(len(models) + len(models._bad_models))
+            models = models._StructuralModels__models
+        nbest = len(self.__models) if nbest is None else nbest
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
-        ids = set(self.__models[m]['rand_init'] for m in self.__models)
+        if different_stage:
+            chars = list(lc) + map(str, range(10))
+            sha = ''.join(chars[int(random() * len(chars))] for _ in xrange(12))
+            for m in models.keys():
+                models[m]['rand_init'] += '_%s' % (sha)
+        ids = set(self.__models[m]['rand_init'] for m in self.__models.keys())
         for m in models.keys():
             if models[m]['rand_init'] in ids:
-                warn('WARNING: found model with same random seed number, '
-                     'SKIPPPING')
+                warn(('WARNING: model with seed: %s already here (use '
+                      'different_stage=True, to force extesion)\n  '
+                      'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(models.values() + self.__models.values(),
                                      key=lambda x: x['objfun'])):
             new_models[i] = m
+            new_models[i]['index'] = i
         self.__models = new_models
         # keep the same number of best models
         self.define_best_models(nbest)
@@ -327,7 +372,7 @@ class StructuralModels(object):
 
     def cluster_models(self, fact=0.75, dcutoff=None, method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                       mclargs=None, external=False, what='score'):
+                       mclargs=None, external=False, what='score', region=None):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison. The result will be stored in
@@ -366,13 +411,46 @@ class StructuralModels(object):
            storing it as StructuralModels.clusters
         :param 'score' what: Statistic used for clustering. Can be one of
            'score', 'rmsd', 'drmsd' or 'eqv'.
+        :param None region: coordinates of the region to base the clustering.
+            Can be either one chromosome name, or the coordinate in
+            the form: "chr3:110000000-120000000"
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
-        scores = calc_eqv_rmsd(self.__models, self.nloci, self._zeros, dcutoff,
+        crm = None
+        beg = 0
+        end = self.nloci
+        if region:
+            if ':' in region:
+                crm, pos = region.split(':')
+                beg, end = map(int, pos.split('-'))
+            else:
+                crm = region
+                end = None
+            try:
+                my_descr = dict(self.description)
+            except TypeError:
+                raise Exception('ERROR: chromosome not in StructuralModels\n')
+
+            chrom_start = 0
+            if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list):
+                if crm not in my_descr['chromosome']:
+                    raise Exception('ERROR: chromosome not in StructuralModels\n')
+                chrom_start += sum([(n-m) for i,(m,n) in enumerate(zip(my_descr['start'],my_descr['end']))
+                                    if i < my_descr['chromosome'].index(crm)])
+            else:
+                if my_descr.get('chromosome', 'Chromosome') != crm:
+                    raise Exception('ERROR: chromosome not in StructuralModels\n')
+
+            if not end:
+                end = my_descr['end'][my_descr['chromosome'].index(crm)]
+            beg = int(float(beg + chrom_start) / self.resolution)
+            end = int(float(end + chrom_start) / self.resolution)
+        nloci = end - beg
+        scores = calc_eqv_rmsd(self.__models, beg, end, self._zeros, dcutoff,
                                what=what, normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
@@ -381,12 +459,13 @@ class StructuralModels(object):
         # Initialize cluster definition of models:
         for model in self:
             model['cluster'] = 'Singleton'
+        new_singles = 0
         if method == 'ward':
 
             matrix = [[0.0 for _ in xrange(len(self))]
                       for _ in xrange(len(self))]
             for (i, j), score in scores.iteritems():
-                matrix[i][j] = score if score > fact * self.nloci else 0.0
+                matrix[i][j] = score if score > fact * nloci else 0.0
             clust = linkage(matrix, method='ward')
             # score each possible cut in hierarchical clustering
             solutions = {}
@@ -401,9 +480,9 @@ class StructuralModels(object):
                 solutions, key=lambda x: solutions[x]['score'])
                 if solutions[s]['score'] > 0][-1]['out']
             # sort clusters, the more populated, the first.
-            clusters = dict([(i + 1, j) for i, j in
-                             enumerate(sorted(clusters.values(),
-                                              key=len, reverse=True))])
+            clusters = dict((i + 1, j) for i, j in
+                            enumerate(sorted(clusters.values(),
+                                             key=len, reverse=True)))
             if external:
                 return clusters
             self.clusters = ClusterOfModels()
@@ -417,7 +496,7 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
-            cut = fact * (self.nloci - self._zeros.count(False))
+            cut = fact * (nloci - self._zeros[beg:end].count(False))
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
                 if score >= cut:
@@ -431,7 +510,6 @@ class StructuralModels(object):
             if not exists(tmp_file + '.mcl'):
                 raise Exception('Problem with clustering, try increasing ' +
                                 '"dcutoff", now: %s\n' % (dcutoff))
-            new_singles = 0
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
                 if len(models) == 1:
@@ -479,6 +557,7 @@ class StructuralModels(object):
                         # the first one found is the best :)
                         break
                 matrix[i][j + i + 1] = calc_eqv_rmsd({0: md1, 1: md2},
+                                                     0,
                                                      self.nloci,
                                                      self._zeros, one=True)
         return clust_count, objfun, matrix
@@ -568,23 +647,24 @@ class StructuralModels(object):
             cutoff_list = False
         cutoff.sort(reverse=True)
         if not cutoff:
-            cutoff = [int(2 * self.resolution * self._config['scale'])]
+            cutoff = [float(2 * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
-        matrix = dict([(c, [[float('nan') for _ in xrange(self.nloci)]
+        matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
         wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
         models = [self[mdl] for mdl in models]
-        for i, j in combinations(wloci, 2):
-            dists = self.__fast_square_3d_dist(i, j, models)
-            vals = dict([(c, 0) for c in cutoff])
-            for v in dists:
-                for c in cutoff:
-                    if v > c:
-                        # cutoffs are sorted so we do not need to check further
-                        break
-                    vals[c] += 1
+
+        frac = 1.0 / len(models)
+
+        for model in models:
+            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
+                model['x'], model['y'], model['z'], self.nloci)
+            #print model, len(x), len(y), len(z)
             for c in cutoff:
-                matrix[c][i][j] = matrix[c][j][i] = float(vals[c]) / len(models)  # * 100
+                for i, j in combinations(wloci, 2):
+                    if squared_distance_matrix[i][j] <= c:
+                        matrix[c][i][j] += frac  # * 100
+                        matrix[c][j][i] += frac  # * 100
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -603,9 +683,10 @@ class StructuralModels(object):
         """
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
-        self.__models = dict([(i, tmp_models[i]) for i in xrange(nbest)])
-        self._bad_models = dict([(i, tmp_models[i]) for i in
-                                 xrange(nbest, len(tmp_models))])
+        nbest = min(len(tmp_models), nbest)
+        self.__models = dict((i, tmp_models[i]) for i in xrange(nbest))
+        self._bad_models = dict((i, tmp_models[i]) for i in
+                                xrange(nbest, len(tmp_models)))
 
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
@@ -656,7 +737,7 @@ class StructuralModels(object):
         """
         fact /= self.nloci
         if not dcutoff:
-            dcutoff = int(1.5 * self.resolution * self._config['scale'])
+            dcutoff = 1.5 * self.resolution * self._config['scale']
         if not clusters:
             clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
                                            mcl_bin=mcl_bin,
@@ -773,7 +854,7 @@ class StructuralModels(object):
                     axes.set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
-        cbar = fig.colorbar(ims, cax=cell, cmap=jet)
+        cbar = fig.colorbar(ims, cax=cell, cmap=viridis)
         cbar.set_ticks([float(k) / 100
                         for k in xrange(-100, 150, 50)])
         cbar.set_ticklabels(['%3s%% ' % (p)
@@ -852,7 +933,7 @@ class StructuralModels(object):
 
         """
         if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
+            cutoff = 2.0 * self.resolution * self._config['scale']
         matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
         show = False
         if savedata:
@@ -870,7 +951,7 @@ class StructuralModels(object):
             show = True
         else:
             fig = axe.get_figure()
-        cmap = plt.get_cmap('jet')
+        cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
         ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
                          vmin=0, vmax=1, cmap=cmap,
@@ -878,7 +959,9 @@ class StructuralModels(object):
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        oldlabels = cbar.ax.get_yticklabels()
+        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+        cbar.ax.set_yticklabels(newlabels)
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
         axe.set_title('Contact map')
@@ -1005,11 +1088,11 @@ class StructuralModels(object):
         self._generic_per_particle_plot(steps, accper, error, errorp,
                                         errorn, savefig, axe, xlabel=xlabel,
                                         ylabel=ylabel, title=title, ylim=(0, 1))
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-        plt.close('all')
+        #if savefig:
+        #    tadbit_savefig(savefig)
+        #elif not axe:
+        #    plt.show()
+        #plt.close('all')
 
 
     def _get_density(self, models, interval, use_mass_center):
@@ -1222,7 +1305,7 @@ class StructuralModels(object):
         models = self._get_models(models, cluster)
         models = [self.__models[m] for m in models]
 
-        if not cutoffs:
+        if cutoffs is None:
             cutoffs = (int(0.5 * self.resolution * self._config['scale']),
                        int(1.0 * self.resolution * self._config['scale']),
                        int(1.5 * self.resolution * self._config['scale']),
@@ -1471,11 +1554,11 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
 
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-        plt.close('all')
+        #if savefig:
+        #    tadbit_savefig(savefig)
+        #elif not axe:
+        #    plt.show()
+        #plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
         """
@@ -1505,50 +1588,58 @@ class StructuralModels(object):
                 try:
                     zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
                 except KeyError:
-                    continue
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if zsc_mtrx[i][j]:
-                    zsc_mtrx[j][i] = zsc_mtrx[i][j]
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if (self._config['lowfreq'] < zsc_mtrx[i][j] <
-                    self._config['upfreq']):
-                    zsc_mtrx[j][i] = float('nan')
-                    zsc_mtrx[i][j] = float('nan')
+                    try:
+                        zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
+                    except KeyError:
+                        zsc_mtrx[i][j] = 0
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        cmap = jet
+        masked_array_top = ma.array (
+            masked_array, mask=masked_array < self._config['upfreq'])
+        masked_array_bot = ma.array (
+            masked_array, mask=self._config['lowfreq'] < masked_array)
+        cmap = viridis
         cmap.set_bad('w', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
             fig = axe.get_figure()
         ax = fig.add_subplot(131)
-        ims = ax.imshow(masked_array, origin='lower',
+        ims = ax.imshow(zsc_mtrx, origin='lower',
                         interpolation="nearest", cmap=cmap)
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the normalized Hi-C count')
         cbar = ax.figure.colorbar(ims, cmap=cmap)
         cbar.ax.set_ylabel('Z-score value')
-        #
-        ax = plt.axes([.43, 0.11, .22, .61])
+
+        ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
                               [self._zscores[v].values()
                                for v in self._zscores.keys()]))
-        _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
-                                facecolor='none', edgecolor='k', normed=True)
+        try:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k', density=True)
+        except AttributeError:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k')
         k2, pv = normaltest(zdata)
         normfit = sc_norm.pdf(zdata, np_mean(zdata), np_std(zdata))
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
-        ax.hist(
-            reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                        for v in self._zscores.keys()]),
-            bins=25, linewidth=2, facecolor='none', edgecolor='k',
-            histtype='stepfilled', normed=True)
-        red = cmap(int(255 * (.8 + 1.2) / 2.4))
-        blue = cmap(int(255 * (-.5 + 1.2) / 2.4))
+        try:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled', density=True)
+        except AttributeError:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled')
         height1 = height2 = 0
+        minv = nanmin(masked_array)
+        maxv = nanmax(masked_array)
         for thispatch in patches:
             beg = thispatch.get_x()
             end = thispatch.get_x() + thispatch.get_width()
@@ -1558,20 +1649,20 @@ class StructuralModels(object):
                              min(end, self._config['lowfreq' ])
                              if beg < self._config['lowfreq'] else end,
                              color=(
-                                 blue if beg < self._config['lowfreq'] else
-                                 red if end > self._config['upfreq']
+                                 Blues(beg / minv) if beg < self._config['lowfreq'] else
+                                 Reds (end / maxv) if end > self._config['upfreq']
                                  else 'w'))
             if end > self._config['lowfreq' ] and beg < self._config['lowfreq']:
                 height1 = thispatch.get_height()
             elif beg < self._config['upfreq'] and end > self._config['upfreq' ]:
                 height2 = thispatch.get_height()
         labels = []
-        p1 = plt.Rectangle((0, 0), 1, 1, fc=blue, color='k')
+        p1 = plt.Rectangle((0, 0), 1, 1, fc=Blues(0.7), color='k')
         labels.append('< %.2f (force particles apart)' % (
             self._config['lowfreq']))
         p2 = plt.Rectangle((0, 0), 1, 1, fc="w", color='k')
         labels.append('Not used (no constraints)')
-        p3 = plt.Rectangle((0, 0), 1, 1, fc=red, color='k')
+        p3 = plt.Rectangle((0, 0), 1, 1, fc=Reds(0.7), color='k')
         labels.append('> %.2f (force particles together)' % (
             self._config['upfreq']))
         try:
@@ -1589,27 +1680,17 @@ class StructuralModels(object):
                 frameon=False,
                 bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         ax.set_xlabel('Z-scores')
-        ax.set_ylabel('Number of particles')
-        ax.vlines(self._config['lowfreq'], 0, height1, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        ax.vlines(self._config['upfreq'] , 0, height2, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        #
+        ax.set_ylabel('Proportion of particles')
+        ax.vlines(self._config['lowfreq'], 0, height1, color='k',
+                  linestyle='-', lw=2, alpha=1)
+        ax.vlines(self._config['upfreq'] , 0, height2, color='k',
+                  linestyle='-', lw=2, alpha=1)
+
         ax = fig.add_subplot(133)
-        masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        for i in masked_array:
-            for j in xrange(len(i)):
-                try:
-                    i[j].mask
-                    continue
-                except AttributeError:
-                    pass
-                if i[j] > self._config['upfreq']:
-                    i[j] = .8
-                elif i[j] < self._config['lowfreq']:
-                    i[j] = -.5
-        ims = ax.imshow(masked_array, origin='lower', vmin=-1.2, vmax=1.2,
-                        interpolation="nearest", cmap=cmap)
+        _ = ax.imshow(masked_array_top, origin='lower',
+                      interpolation="nearest", cmap='Reds')
+        _ = ax.imshow(masked_array_bot, origin='lower',
+                      interpolation="nearest", cmap='Blues')
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax = plt.axes([.42, 0.11, .48, .79])
@@ -1623,6 +1704,7 @@ class StructuralModels(object):
         elif not axe:
             plt.show()
         plt.close('all')
+
 
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
@@ -1652,10 +1734,9 @@ class StructuralModels(object):
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
-
         """
         if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
+            cutoff = 2.0 * self.resolution * self._config['scale']
         if contact_matrix:
             model_matrix = contact_matrix
         else:
@@ -1663,16 +1744,20 @@ class StructuralModels(object):
                                                    cutoff=cutoff)
         oridata = []
         moddata = []
-        for i in xrange(len(self._original_data)):
-            for j in xrange(i + off_diag, len(self._original_data)):
-                if not self._original_data[i][j] > 0:
+        for i in (v for v, z in enumerate(self._zeros) if z):
+            for j in (v for v, z in enumerate(self._zeros[i + off_diag:]) if z):
+                oriv = self._original_data[i][j]
+                if oriv <= 0 or isnan(oriv):
                     continue
-                oridata.append(self._original_data[i][j])
+                oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
+        # print oridata
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
+        elif corr == 'kendall':
+            corr = kendalltau(moddata, oridata)
         elif corr == 'logpearson':
             corr = pearsonr(nozero_log_list(moddata), nozero_log_list(oridata))
         elif corr == 'chi2':
@@ -1692,8 +1777,22 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        self.contact_map(models, cluster, cutoff, axe=ax)
-        # correlation
+        cmap = plt.get_cmap('viridis')
+        cmap.set_bad('darkgrey', 1)
+        ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
+                         vmin=0, vmax=1, cmap=cmap,
+                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+        ax.set_ylabel('Particle')
+        ax.set_xlabel('Particle')
+        cbar = ax.figure.colorbar(ims)
+        oldlabels = cbar.ax.get_yticklabels()
+        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+        cbar.ax.set_yticklabels(newlabels)
+        # cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                           '%s nm' % (cutoff))
+        ax.set_title('Contact map')        # correlation
+
         ax = fig.add_subplot(132)
         try:
             if log_corr:
@@ -1766,13 +1865,13 @@ class StructuralModels(object):
             # axmidl.patch.set_visible(False)
         ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
-        cmap = plt.get_cmap('jet')
+        cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest", cmap=cmap,
                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        ax.set_ylabel('Particles')
-        ax.set_xlabel('Particles')
+        ax.set_ylabel('Genomic bin')
+        ax.set_xlabel('Genomic bin')
         ax.set_title('Normalized Hi-C count')
         cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
@@ -1782,6 +1881,7 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
         return corr
+
 
     def view_centroid(self, **kwargs):
         """
@@ -1796,7 +1896,8 @@ class StructuralModels(object):
 
     def view_models(self, models=None, cluster=None, tool='chimera',
                     show='all', highlight='centroid', savefig=None,
-                    cmd=None, color='index', align=True, **kwargs):
+                    cmd=None, color='index', align=True, smooth=False,
+                    particle_size=50, lw_main=3, alpha_part=0.5, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1812,6 +1913,12 @@ class StructuralModels(object):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
+        :param False alpha: only for matplotlib ('plot' option), transparency of
+           particles.
+        :param False smooth: only for matplotlib ('plot' option), spline smoothing
+           (by default smoothing is 0.001).
+        :param 50 particle_size: only for matplotlib ('plot' option), redefine
+           size of particles. If None, resolution times scale is used.
         :param 'index' color: can be:
 
              * a string as:
@@ -1891,6 +1998,8 @@ class StructuralModels(object):
             models = [m for m in self.__models]
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
+        if smooth is True:
+            smooth = None
         if color in ['tad', 'border'] and 'tads' not in kwargs:
             start = (float(self[models[0]]['description']['start']) /
                      self[models[0]]['description']['resolution'] - 1)
@@ -1912,6 +2021,7 @@ class StructuralModels(object):
                      "'centroid', 'best' or 'all' not %s\n"  % (
                          highlight) + "Highlighting no models.")
             mdl = 'all'
+
         # View with Matplotlib
         if tool == 'plot':
             pltshow = 'axe' not in kwargs
@@ -1925,16 +2035,22 @@ class StructuralModels(object):
                 for model in models:
                     model_coords.append((
                         self[model]['x'], self[model]['y'], self[model]['z']))
+
             if show in ['all', 'highlighted']:
                 if 'axe' not in kwargs:
                     fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
                     kwargs['axe'] = fig.add_subplot(1, 1, 1, projection='3d')
                 for i in models:
+                    if particle_size is None:
+                        ps = self[i]['radius'] * 2
+                    else:
+                        ps = particle_size
                     if show == 'all' or i == mdl or mdl == 'all':
                         plot_3d_model(
                             *model_coords[models.index(i)], color=color,
                             thin=False if highlight == 'all' else (i != mdl),
-                            **kwargs)
+                            particle_size=ps, smooth=smooth, alpha_part=alpha_part,
+                            lw_main=lw_main, **kwargs)
                 if pltshow:
                     try:
                         kwargs['axe'].set_title('Model %s highlighted as %s' % (
@@ -1959,7 +2075,8 @@ class StructuralModels(object):
                         plot_3d_model(
                             *model_coords[i * rows + j], color=color,
                             thin=False if highlight == 'all' else (this != mdl),
-                            **kwargs)
+                            particle_size=ps, smooth=smooth, alpha_part=alpha_part,
+                            lw_main=lw_main, **kwargs)
                         if pltshow:
                             kwargs['axe'].set_title(
                                 'Model %s' % self[this]['rand_init'])
@@ -1968,6 +2085,7 @@ class StructuralModels(object):
             elif pltshow:
                 plt.show()
             return
+
         # View with Chimera
         cmm_files = []
         radius = 10
@@ -2206,8 +2324,51 @@ class StructuralModels(object):
         self[model].objective_function(log=log, smooth=smooth, axe=axe,
                                        savefig=savefig)
 
+    def infer_unrestrained_particle_coords(self, xcoords, ycoords, zcoords):
+        """
+        if a given particle (and direct neighbors) have no restraints. Infer
+           the coordinates by linear interpolation using closest particles with
+           restraints.
+        :param xcoords: list of x coordinates
+        :param ycoords: list of y coordinates
+        :param zcoords: list of z coordinates
+
+        :transforms: three input lists corresponding to the x, y and z
+           coordinates of the FULL model
+        """
+        gaps = []
+        gap = 0
+        for pos in xrange(self.nloci):
+            if not self._zeros[pos]:
+                gap += 1
+            elif gap > 1:
+                if gap > 3:
+                    beg, end = pos - gap - 1, pos
+                    gaps.append((beg, end))
+                gap = 0
+            else:
+                gap = 0
+
+        for beg, end in gaps:
+            x1 = xcoords[beg]
+            y1 = ycoords[beg]
+            z1 = zcoords[beg]
+            x2 = xcoords[end]
+            y2 = ycoords[end]
+            z2 = zcoords[end]
+
+            div = end - beg - 1
+            xstep = (x2 - x1) / div
+            ystep = (y2 - y1) / div
+            zstep = (z2 - z1) / div
+            for pos, i in enumerate(range(beg + 1, end), 1):
+                xcoords[i] = x1 + xstep * pos
+                ycoords[i] = y1 + ystep * pos
+                zcoords[i] = z1 + zstep * pos
+
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
-                  color='index', rndname=True, **kwargs):
+                  color='index', rndname=True, infer_unrestrained=False,
+                  **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -2242,6 +2403,7 @@ class StructuralModels(object):
                Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
+
         """
         if model_num > -1:
             models = [model_num]
@@ -2261,7 +2423,7 @@ class StructuralModels(object):
                             model_num=model_num, **kwargs)
 
     def write_json(self, filename, color='index', models=None, cluster=None,
-                   title=None, **kwargs):
+                   title=None, infer_unrestrained=False, **kwargs):
         """
         Save a model in the json format, read by TADkit.
 
@@ -2277,43 +2439,13 @@ class StructuralModels(object):
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
            objective function value
         :param None filename: overide the default file name writing
-        :param 'index' color: can be:
-
-             * a string as:
-                 * '**index**' to color particles according to their position in the
-                   model (:func:`pytadbit.utils.extraviews.color_residues`)
-                 * '**tad**' to color particles according to the TAD they belong to
-                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
-                 * '**border**' to color particles marking borders. Color according to
-                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
-                   coloring function like.
-             * a function, that takes as argument a model and any other parameter
-               passed through the kwargs.
-             * a list of (r, g, b) tuples (as long as the number of particles).
-               Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
+        :param False infer_unrestrained: infer unrestrained particle
+           coordinates by linear interpolation using closest particles with
+           restraints
+
         """
-        if isinstance(color, str):
-            if color == 'index':
-                color = color_residues(self, **kwargs)
-            elif color == 'tad':
-                if 'tads' not in kwargs:
-                    raise Exception('ERROR: missing TADs\n   ' +
-                                    'pass an Experiment.tads disctionary\n')
-                color = tad_coloring(self, **kwargs)
-            elif color == 'border':
-                if 'tads' not in kwargs:
-                    raise Exception('ERROR: missing TADs\n   ' +
-                                    'pass an Experiment.tads disctionary\n')
-                color = tad_border_coloring(self, **kwargs)
-            else:
-                raise NotImplementedError(('%s type of coloring is not yet ' +
-                                           'implemeted\n') % color)
-        elif hasattr(color, '__call__'):  # it's a function
-            color = color(self, **kwargs)
-        elif not isinstance(color, list):
-            raise TypeError('one of function, list or string is required\n')
         form = '''
 {
         "metadata" : {
@@ -2324,6 +2456,7 @@ class StructuralModels(object):
         "object": {\n%(descr)s
                    "uuid": "%(sha)s",
                    "title": "%(title)s",
+                   "bp_per_nm": %(scale)s,
                    "datatype": "xyz",
                    "components": 3,
                    "source": "local",
@@ -2336,60 +2469,70 @@ class StructuralModels(object):
         "centroids":%(centroid)s,
         "restraints": %(restr)s,
         "hic_data": { "data": {'''
-        form_end = '''}, "n": %(len_hic_data)i , "tads": [%(tad_def)s] }
+        form_end = '''}, "n": %(len_hic_data)i , "tads": [%(tad_def)s]}
 }
 '''
         fil = {}
         fil['title']   = title or "Sample TADbit data"
+        fil['scale']   = str(self._config['scale'])
         versions = get_dependencies_version(dico=True)
-        fil['dep'] = str(dict([(k.strip(), v.strip()) for k, v in versions.items()
-                               if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
+        fil['dep'] = str(dict((k.strip(), v.strip()) for k, v in versions.items()
+                              if k in ['  TADbit', 'IMP', 'MCL'])).replace("'", '"')
         ukw = 'UNKNOWN'
 
         def tocamel(key):
             key = ''.join([(w[0].upper() + w[1:]) if i else w
                            for i, w in enumerate(key.split('_'))])
-            key = ''.join([(w[0].upper() + w[1:]) if i else w
-                           for i, w in enumerate(key.split(' '))])
+            key = ''.join((w[0].upper() + w[1:]) if i else w
+                          for i, w in enumerate(key.split(' ')))
             return key
         try:
             try:
                 my_descr = dict(self.description)
             except TypeError:
-                my_descr = {'start'     : 0,
-                            'end'       : self.nloci}
-            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
+                my_descr = {}
+            if not my_descr.get('start', 0):
+                my_descr['start'] = 0
+            if not my_descr.get('end', 0):
+                my_descr['end'  ] = self.nloci
+            my_descr['chrom'] = my_descr['chromosome'] if 'chromosome' in my_descr and isinstance(my_descr['chromosome'], list) else ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if 'chrom_start' not in my_descr:
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
-                     " the position in the experiment matrix " +
-                     " times the resolution (%d*%d)" % (
-                         my_descr['start'], self.resolution))
-                my_descr['chrom_start'] = my_descr['start'] * self.resolution + 1
+                     " the position in the experiment matrix (%s)" % (
+                         str([m for m in my_descr['start']]
+                             if isinstance(my_descr['start'], list) else my_descr['start'])))
+                my_descr['chrom_start'] = [m for m in my_descr['start']] if isinstance(my_descr['start'], list) else my_descr['start']
             if 'chrom_end' not in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
-                     " the position in the experiment matrix " +
-                     " times the resolution (%d*%d)" % (
-                         my_descr['end'], self.resolution))
-                my_descr['chrom_end'] = (1 + my_descr['end']) * self.resolution
+                     " the position in the experiment matrix (%s)" % (
+                         str([m for m in my_descr['end']]
+                              if isinstance(my_descr['end'], list) else my_descr['end'])))
+                my_descr['chrom_end'] = [m for m in my_descr['end']] if isinstance(my_descr['end'], list) else my_descr['end']
+            if not my_descr['species']:
+                warn("WARNING: species wasn't set, The resulting JSON will not work properly in TADkit.")
             # coordinates inside an array in case different models
             # from different places in the genome
-            my_descr['chrom_start'] = [my_descr['chrom_start']]
-            my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
+            if not isinstance(my_descr['chrom_start'],list):
+                my_descr['chrom_start'] = [my_descr['chrom_start']]
+                my_descr['chrom_end'  ] = [my_descr['chrom_end'  ]]
 
-            fil['descr']   = ',\n'.join([
+            fil['descr']   = ',\n'.join(
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
-                                            if not (isinstance(v, int) or
+                                            if not ((isinstance(v, int) and not isinstance(v, bool)) or
                                                     isinstance(v, list) or
                                                     isinstance(v, float))
                                             else str(v).replace("'", '"'))
-                for k, v in my_descr.items()])
+                for k, v in my_descr.items())
             if fil['descr']:
                 fil['descr'] += ','
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
+
+        if self.__models:
+            aligned_coords = self.align_models(models=models, cluster=cluster)
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2398,52 +2541,55 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         fil['xyz'] = []
-        for m in models:
-            model = self[m]
+        for m_idx in xrange(len(models)):
+            m = models[m_idx]
+            if infer_unrestrained:
+                self.infer_unrestrained_particle_coords(
+                    aligned_coords[m_idx][0],
+                    aligned_coords[m_idx][1],
+                    aligned_coords[m_idx][2])
+            model = {'rand_init': self[models[m_idx]]['rand_init'],
+                     'x': aligned_coords[m_idx][0],
+                     'y': aligned_coords[m_idx][1],
+                     'z': aligned_coords[m_idx][2]}
             fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % (
                 model['rand_init']) + ','.join(
-                    ['%.0f,%.0f,%.0f' % (model['x'][i],
-                                         model['y'][i],
-                                         model['z'][i])
-                     for i in xrange(len(model['x']))]) + ']}')
+                    '%.0f,%.0f,%.0f' % (model['x'][i], model['y'][i], model['z'][i])
+                    for i in xrange(len(model['x']))) + ']}')
         fil['xyz'] = ',\n'.join(fil['xyz'])
         # creates a UUID for this particular set of coordinates AND for TADbit version
         fil['sha'] = str(uuid5(UUID(md5(versions['  TADbit']).hexdigest()),
                                fil['xyz']))
         try:
-            fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
+            fil['restr']  = '[' + ','.join('[%s,%s,"%s",%f]' % (
                 k[0], k[1], self._restraints[k][0], self._restraints[k][2])
-                for k in self._restraints]) + ']'
+                for k in self._restraints) + ']'
         except:
             fil['restr'] = '[]'
-        fil['cluster'] = '[' + ','.join(['[' + ','.join(self.clusters[c]) + ']'
-                                         for c in self.clusters]) + ']'
+        fil['cluster'] = '[' + ','.join('[' + ','.join(self.clusters[c]) + ']'
+                                        for c in self.clusters) + ']'
         fil['centroid'] = '[' + ','.join(
             [self[self.centroid_model(cluster=c)]['rand_init']
              for c in self.clusters]) + ']'
         fil['len_hic_data'] = len(self._original_data)
         try:
-            fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']*self.resolution),
-                                    str(self.experiment.tads[tad]['end']*self.resolution),
-                                    str(self.experiment.tads[tad]['score'])])+']'
-                                       for i,tad in enumerate(self.experiment.tads)
-                                        if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0]
-                                            and self.experiment.tads[tad]['end']*self.resolution <= my_descr['chrom_end'][0]])
+            fil['tad_def'] = ','.join(
+                '[' + ','.join([str(i), str(self.experiment.tads[tad]['start'] * self.resolution + my_descr['chrom_start'][0]),
+                               str(self.experiment.tads[tad]['end'] * self.resolution + my_descr['chrom_start'][0]),
+                               str(self.experiment.tads[tad]['score'])]) + ']'
+                for i,tad in enumerate(self.experiment.tads)
+                if self.experiment.tads[tad]['start']  >= my_descr['start']
+                and self.experiment.tads[tad]['end'] <= my_descr['end'])
         except:
             fil['tad_def'] = ''
         out_f = open(filename, 'w')
         out_f.write(form % fil)
-        first = True
-        for i, nrow in enumerate(self._original_data):
-            for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
-                    if not first:
-                        out_f.write(',')
-                    first = False
-                    if isinstance( ncol, ( int, long ) ):
-                        out_f.write('"'+str((i*len(nrow))+j)+'":'+str(ncol))
-                    else:
-                        out_f.write('"'+str((i*len(nrow))+j)+'":'+"{:2.6f}".format(ncol))
+
+        size = len(self._original_data)
+        out_f.write(','.join('"{}":{}'.format((i * size) + j, round(ncol, 6))
+                             for i, nrow in enumerate(self._original_data)
+                             for j, ncol in enumerate(nrow)
+                             if ncol and not isnan(ncol)))
         out_f.write(form_end % fil)
         out_f.close()
 
@@ -2491,29 +2637,195 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
-    def save_models(self, outfile):
+    def write_xyz_babel(self, directory, model_num=None, models=None, cluster=None,
+                        get_path=False, rndname=True):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model using a file format compatible with babel
+        (http://openbabel.org/wiki/XYZ_%28format%29).
+        .. note::
+          If none of model_num, models or cluster parameter are set,
+          ALL the models will be written.
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        """
+        if model_num > -1:
+            models = [model_num]
+        elif models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1 and len(self.clusters) > 0:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        for model_num in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            path_f = model.write_xyz_babel(directory, model_num=model_num,
+                                           get_path=get_path, rndname=rndname)
+        if get_path:
+            return path_f
+
+    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
+                               plot=True):
+        """
+        Calculates the persistence length (Lp) of given section of the model.
+        Persistence length is calculated according to [Bystricky2004]_ :
+
+        .. math::
+
+          <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
+
+        with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
+        the genomic dstance in bp and :math:`c` the linear mass density of the
+        chromatin (in bp/nm).
+
+        :param 0  begin: starting particle of the region to consider
+        :param None end: ending particle of the region to consider
+
+
+        :returns: (float) persistence length
+        """
+        if not end:
+            end = self.nloci
+
+        wloci = [i for i in xrange(self.nloci)]
+
+        # Maximum genomic distance
+        max_gen_dist=end-begin
+        # Quantities for all models
+        R2_all  = [0]*max_gen_dist
+        R4_all  = [0]*max_gen_dist
+        cnt_all = [0]*max_gen_dist
+
+        for model in xrange(len(self.__models)):
+
+            # Quantities within each model
+            R2  = [0]*max_gen_dist
+            R4  = [0]*max_gen_dist
+            cnt = [0]*max_gen_dist
+
+            x = [] ; y = [] ; z = []
+            for locus in xrange(begin,end):
+                x.append(self[model]['x'][locus])
+                y.append(self[model]['y'][locus])
+                z.append(self[model]['z'][locus])
+
+            #Compute the contact matrix
+            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(x, y, z, max_gen_dist)
+
+            # Compute the average R2 per single model
+            for i, j in combinations(wloci, 2):
+                R2[abs(i-j)]  += squared_distance_matrix[i][j]
+                R4[abs(i-j)]  += (squared_distance_matrix[i][j]*squared_distance_matrix[i][j])
+                cnt[abs(i-j)] += 1
+
+            for i in xrange(max_gen_dist):
+                if cnt[i] != 0:
+                    R2[i] = R2[i] / cnt[i]
+                    R4[i] = R4[i] / cnt[i]
+                else:
+                    R2[i] = 0.0
+                    R4[i] = 0.0
+
+            for i in xrange(max_gen_dist):
+                R2_all[i]  += R2[i]
+                R4_all[i]  += R4[i]
+                cnt_all[i] += 1
+
+        avgs     = []
+        std_devs = []
+        for i in xrange(max_gen_dist):
+            if cnt_all[i] != 0:
+                avg     = R2_all[i]/cnt_all[i]
+                avg2    = R4_all[i]/cnt_all[i]
+                std_dev = sqrt(avg2-avg*avg)
+                avgs.append(avg)
+                std_devs.append(std_dev)
+            else:
+                avgs.append(0)
+                std_devs.append(0)
+
+        x = linspace(0.0 , float(max_gen_dist), num=max_gen_dist, endpoint=False)
+        persistence_length, pcov = curve_fit(R2_vs_L, x, avgs)
+
+        # write a 3 column file with genomic_distance | R2 | std_dev_R2
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#gen_dist\tR2\tstd_dev_R2\n')
+            out.write('#persistence_length = %f\n' % (persistence_length))
+            for gen_dist in xrange(max_gen_dist):
+                out.write('%f\t%f\t%f\n' % (gen_dist,avgs[gen_dist],std_devs[gen_dist]))
+            out.close()
+
+        if not plot:
+            return persistence_length[0]
+
+        # If plot we do the plot of R2 vs L
+        show = False if axe else True
+        axe = setup_plot(axe)
+        plots = []
+        plots = axe.plot(range(0, self.nloci),
+                         avgs, color='black')
+
+        axe.set_xlim((0, max_gen_dist))
+        axe.set_xlabel('Genomic distance (particle)')
+        axe.set_ylim((0, max(avgs)))
+        axe.set_ylabel('<$R^{2}$> $(nm^2)$')
+
+        if savefig:
+            tadbit_savefig(savefig)
+        elif show:
+            plt.show()
+        plt.close('all')
+
+        return persistence_length[0]
+
+    def save_models(self, outfile, minimal=()):
         """
         Saves all the models in pickle format (python object written to disk).
 
         :param path_f: path where to save the pickle file
+        :param () minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'log_objfun': generated during modeling model specific
+
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out)
+        dump(self._reduce_models(minimal=minimal), out, HIGHEST_PROTOCOL)
         out.close()
 
-    def _reduce_models(self, minimal=False):
+    def _reduce_models(self, minimal=()):
         """
-        reduce strural models objects to a dictionary to be saved
+        reduce structural models objects to a dictionary to be saved
 
-        :param False minimal: do not save info about log_objfun decay nor
-           zscores
+        :param () minimal: list of items to exclude from save. Options:
+          - 'restraints': used for modeling common to all models
+          - 'zscores': used generate restraints common to all models
+          - 'original_data': used generate Z-scores common to all models
+          - 'objfun': generated during modeling model specific
 
         :returns: this dictionary
         """
         to_save = {}
 
-        if minimal:
+        if 'objfun' in minimal:
             for m in self.__models:
                 self.__models[m]['log_objfun'] = None
             to_save['models']    = self.__models
@@ -2524,10 +2836,10 @@ class StructuralModels(object):
         to_save['nloci']         = self.nloci
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution
-        to_save['original_data'] = self._original_data
+        to_save['original_data'] = None if 'original_data' in minimal else self._original_data
         to_save['config']        = self._config
-        to_save['zscore']        = {} if minimal else self._zscores
-        to_save['restraints']    = {} if minimal else self._restraints
+        to_save['zscore']        = {} if 'zscores' in minimal else self._zscores
+        to_save['restraints']    = {} if 'restraints' in minimal else self._restraints
         to_save['zeros']         = self._zeros
 
         return to_save
@@ -2535,7 +2847,8 @@ class StructuralModels(object):
     def _get_models(self, models, cluster):
         """
         Internal function to transform cluster name, model name, or model list
-        into proper list of models processable by StructuralModels functions
+        into proper list of models that can be processed by StructuralModels
+        functions
         """
         if models:
             models = [m if isinstance(m, int) else self[m]['index']

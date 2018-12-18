@@ -3,6 +3,23 @@ December 12, 2014.
 
 """
 
+import os
+from collections                    import OrderedDict
+from warnings                       import warn
+from bisect                         import bisect_right as bisect
+from cPickle                        import HIGHEST_PROTOCOL, dump, load
+
+from numpy.linalg                   import LinAlgError
+from numpy                          import corrcoef, nansum, array, isnan, mean
+from numpy                          import meshgrid, asarray, exp, linspace, std
+from numpy                          import nanpercentile as npperc, log as nplog
+from numpy                          import nanmax, ma, zeros_like
+from scipy.stats                    import ttest_ind, spearmanr
+from scipy.special                  import gammaincc
+from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
+from scipy.sparse.linalg            import eigsh
+from scipy.sparse                   import csr_matrix
+
 from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.extraviews      import plot_compartments_summary
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
@@ -11,21 +28,15 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.hmm             import gaussian_prob, best_path, train
-from numpy.linalg                   import LinAlgError
-from numpy                          import corrcoef, nansum, array, isnan, mean
-from numpy                          import meshgrid, asarray, exp, linspace, std
-from numpy                          import nanpercentile as npperc, log as nplog
-from numpy                          import nanmax
-from scipy.special                  import gammaincc
-from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
-from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
-from scipy.stats                    import ttest_ind
-from collections                    import OrderedDict
-from warnings                       import warn
-from bisect                         import bisect_right as bisect
-from scipy.sparse                   import csr_matrix
-import os
+
+
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+    """
+    https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python/33024979#33024979
+    """
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 class HiC_data(dict):
     """
@@ -36,6 +47,7 @@ class HiC_data(dict):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
+        self._symmetricize()
         self.bias = None
         self.bads = masked or {}
         self.chromosomes = chromosomes
@@ -54,6 +66,43 @@ class HiC_data(dict):
             self.section_pos = {None: (0, self.__size)}
             self.sections = dict([((None, i), i)
                                   for i in xrange(0, self.__size)])
+
+    def _symmetricize(self):
+        """
+        Check if matrix is symmetric (check first 10 non-zero values) and,
+        if not, make it symmetric
+         - if matrix is half empty, copy values on one side to the other side
+         - if matrix is asymmetric, sum non-diagonal values
+        """
+        to_sum = False
+        symmetric = True
+        count  = 0
+        for n in self:
+            i = n / self.__size
+            j = n % self.__size
+            if i == j or self[i, j] == self[i, j] == 0:
+                continue
+            if not isclose(self[i, j], self[j, i]):
+                if self[i, j] != 0 and self[j, i] != 0:
+                    to_sum = True
+                symmetric = False
+                break
+            if count > 10:
+                return
+            count += 1
+        if symmetric:  # may not reach 10 values
+            return
+        if to_sum:
+            for n in self.keys()[:]:
+                i = n / self.__size
+                j = n % self.__size
+                if i != j:
+                    self[j, i] = self[i, j] = self[j, i] + self[i, j]
+        else:
+            for n in self.keys()[:]:
+                i = n / self.__size
+                j = n % self.__size
+                self[j, i] = self[i, j] = self[n]
 
     def _update_size(self, size):
         self.__size +=  size
@@ -90,6 +139,7 @@ class HiC_data(dict):
             row, col = row_col
             pos = row * self.__size + col
             if pos > self._size2:
+                print row, col, pos
                 raise IndexError(
                     'ERROR: row or column larger than %s' % self.__size)
             super(HiC_data, self).__setitem__(pos, val)
@@ -102,7 +152,7 @@ class HiC_data(dict):
 
     def get_hic_data_as_csr(self):
         """
-        Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
+        Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary
 
         :returns: scipy sparse matrix in Compressed Sparse Row format
         """
@@ -152,12 +202,12 @@ class HiC_data(dict):
 
     def add_sections(self, lengths, chr_names=None, binned=False):
         """
-        Add genomic coordinate to HiC_data object by getting them from a fasta
+        Add genomic coordinate to HiC_data object by getting them from a FASTA
         file containing chromosome sequences. Orders matters.
 
         :param lengths: list of chromosome lengths
         :param None chr_names: list of corresponding chromosome names.
-        :param False binned: if True, leghths will not be divided by resolution
+        :param False binned: if True, lengths will not be divided by resolution
         """
         sections = []
         genome_seq = OrderedDict()
@@ -245,7 +295,7 @@ class HiC_data(dict):
                 continue
             if i in bads or j in bads:
                 continue
-            if valid(i, j): # diagonal thing
+            if valid(i, j):  # diagonal thing
                 intra += transform(v, i, j)
         try:
             return float(intra) / self.sum(bias=self.bias if normalized else None, bads=bads)
@@ -255,7 +305,7 @@ class HiC_data(dict):
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
                        by_mean=True, min_count=None, silent=False):
         """
-        Call filtering function, to remove artefactual columns in a given Hi-C
+        Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
         counts; columns passing through a cell with no interaction in the
         diagonal; and columns with NaN values (in this case NaN will be replaced
@@ -313,7 +363,11 @@ class HiC_data(dict):
                 norm_sum += v
         return norm_sum
 
-    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False, factor=1):
+    def normalize_expected(self, **kwargs):
+        self.expected = expected(self, bads=self.bads, **kwargs)
+
+    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False,
+                      sqrt=False, factor=1):
         """
         Normalize the Hi-C data.
 
@@ -324,12 +378,15 @@ class HiC_data(dict):
         :param 0.1 max_dev: iterative process stops when the maximum deviation
            between the sum of row is equal to this number (0.1 means 10%)
         :param False silent: does not warn when overwriting weights
+        :param False sqrt: uses the square root of the computed biases
         :param 1 factor: final mean number of normalized interactions wanted
            per cell (excludes filtered, or bad, out columns)
         """
         bias = iterative(self, iterations=iterations,
                          max_dev=max_dev, bads=self.bads,
                          verbose=not silent)
+        if sqrt:
+            bias = dict((b, bias[b]**0.5) for b in bias)
         if factor:
             if not silent:
                 print 'rescaling to factor %d' % factor
@@ -344,11 +401,41 @@ class HiC_data(dict):
             bias = dict([(b, bias[b] * target) for b in bias])
         self.bias = bias
 
+    def save_biases(self, fnam, protocol=None):
+        """
+        Save biases, decay and bad columns in pickle format (to be loaded by
+        the function load_hic_data_from_bam)
+
+        :param fnam: path to output file
+        """
+        out = open(fnam, 'w')
+
+        dump({'biases'    : self.bias,
+              'decay'     : self.expected,
+              'badcol'    : self.bads,
+              'resolution': self.resolution}, out,
+             protocol if protocol else HIGHEST_PROTOCOL)
+        out.close()
+
+    def load_biases(self, fnam, protocol=None):
+        """
+        Load biases, decay and bad columns from pickle file
+
+        :param fnam: path to input pickle file
+        """
+        biases = load(open(fnam))
+        if biases['resolution'] != self.resolution:
+            raise Exception(('Error: resolution in Pickle (%d) does not match '
+                             'the one of this HiC_data object (%d)') % (
+                                 biases['resolution'], self.resolution))
+        self.bias     = biases['biases']
+        self.expected = biases['decay']
+        self.bads     = biases['badcol']
+
     def get_as_tuple(self):
         return tuple([self[i, j]
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
-
 
     def write_coord_table(self, fname, focus=None, diagonal=True,
                           normalized=False, format='BED'):
@@ -424,7 +511,7 @@ class HiC_data(dict):
                                       key=lambda x: self.sections[x])
                       if start2 <= self.sections[k] < end2]
             if not rownam:
-                raise Exception('ERROR: HiC data object should have genomic coordinates')
+                raise Exception('ERROR: Hi-C data object should have genomic coordinates')
             iter_rows = self.yield_matrix(focus=focus, diagonal=diagonal,
                                           normalized=normalized)
             pair_string = '%s\t%s,%f\t%d\t.\n' if normalized else '%s\t%s,%d\t%d\t.\n'
@@ -441,7 +528,6 @@ class HiC_data(dict):
         else:
             raise Exception('ERROR: format "%s" not found\n' % format)
         out.close()
-
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
@@ -480,7 +566,7 @@ class HiC_data(dict):
                                                for k in self.bads.keys()
                                                if start1 <= k <= end1])))
         rownam = ['%s\t%d-%d' % (k[0],
-                                 k[1] * self.resolution,
+                                 k[1] * self.resolution + 1,
                                  (k[1] + 1) * self.resolution)
                   for k in sorted(self.sections,
                                   key=lambda x: self.sections[x])
@@ -496,7 +582,8 @@ class HiC_data(dict):
                 out.write('\t'.join([str(i) for i in line]) + '\n')
         out.close()
 
-    def get_matrix(self, focus=None, diagonal=True, normalized=False):
+    def get_matrix(self, focus=None, diagonal=True, normalized=False,
+                   masked=False):
         """
         returns a matrix.
 
@@ -508,6 +595,8 @@ class HiC_data(dict):
         :param True diagonal: if False, diagonal is replaced by ones, or zeroes
            if normalized
         :param False normalized: get normalized data
+        :param False masked: return masked arrays using the definition of bad
+           columns
 
         :returns: matrix (a list of lists of values)
         """
@@ -516,28 +605,38 @@ class HiC_data(dict):
         start1, start2, end1, end2 = self._focus_coords(focus)
         if normalized:
             if diagonal:
-                return [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] / self.bias[i] / self.bias[j]
+                           for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
             else:
-                mtrx = [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] / self.bias[i] / self.bias[j]
+                           for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(mtrx)):
-                        mtrx[i][i] = 0
-                return mtrx
+                    for i in xrange(len(matrix)):
+                        matrix[i][i] = 0
         else:
             if diagonal:
-                return [[self[i, j] for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
             else:
-                mtrx = [[self[i, j] for i in xrange(start2, end2)]
-                        for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in xrange(start2, end2)]
+                          for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(mtrx)):
-                        mtrx[i][i] = 1 if mtrx[i][i] else 0
-                return mtrx
+                    for i in xrange(len(matrix)):
+                        matrix[i][i] = 1 if matrix[i][i] else 0
+
+        if masked:
+            bads1 = [b - start1 for b in self.bads if start1 <= b < end1]
+            bads2 = [b - start2 for b in self.bads if start2 <= b < end2]
+            m = zeros_like(matrix)
+            for bad1 in bads1:
+                m[:,bad1] = 1
+                for bad2 in bads2:
+                    m[bad2,:] = 1
+            matrix = ma.masked_array(matrix, m)
+
+        return matrix
 
     def _focus_coords(self, focus):
         siz = len(self)
@@ -553,20 +652,355 @@ class HiC_data(dict):
                     start1 -= 1
                     start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
-                start1, end1 = self.section_pos[focus[0]]
-                start2, end2 = self.section_pos[focus[1]]
+                start1, end1 = self.section_pos[focus[0].split(':')[0]]
+                start2, end2 = self.section_pos[focus[1].split(':')[0]]
+                if ':' in focus[0]:
+                    pos = focus[0].split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start1, end1 = start1 + pos1, start1 + pos2
+                if ':' in focus[1]:
+                    pos = focus[0].split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start2, end2 = start1 + pos1, start1 + pos2
             else:
-                start1, end1 = self.section_pos[focus]
-                start2, end2 = self.section_pos[focus]
+                start1, end1 = self.section_pos[focus.split(':')[0]]
+                if ':' in focus:
+                    pos = focus.split(':')[1]
+                    try:
+                        pos1, pos2 = [int(p) / self.resolution
+                                      for p in pos.split('-')]
+                    except ValueError:
+                        raise Exception('ERROR: should be in format "chr3:10000:20000"')
+                    start1, end1 = start1 + pos1, start1 + pos2
+                start2, end2 = start1, end1
         else:
             start1 = start2 = 0
             end1   = end2   = siz
         return start1, start2, end1, end2
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
+                          savecorr=None, show=False, suffix='', ev_index=None,
+                          rich_in_A=None, format='png', savedir=None,
+                          max_ev=3, show_compartment_labels=False, **kwargs):
+        """
+        Search for A/B compartments in each chromosome of the Hi-C matrix.
+        Hi-C matrix is normalized by the number interaction expected at a given
+        distance, and by visibility (one iteration of ICE). A correlation matrix
+        is then calculated from this normalized matrix, and its first
+        eigenvector is used to identify compartments. Changes in sign marking
+        boundaries between compartments.
+        Result is stored as a dictionary of compartment boundaries, keys being
+        chromosome names.
+
+        :param 99 perc_zero: to filter bad columns
+        :param 0.05 signal_to_noise: to calculate expected interaction counts,
+           if not enough reads are observed at a given distance the observations
+           of the distance+1 are summed. a signal to noise ratio of < 0.05
+           corresponds to > 400 reads.
+        :param None crms: only runs these given list of chromosomes
+        :param None savefig: path to a directory to store matrices with
+           compartment predictions, one image per chromosome, stored under
+           'chromosome-name_EV1.png'.
+        :param png format: in which to save the figures.
+        :param False show: show the plot
+        :param None savedata: path to a new file to store compartment
+           predictions, one file only.
+        :param None savedir: path to a directory to store coordinates of each
+           eigenvector, one per chromosome. Each file contains one eigenvector
+           per column, the first one being the one used as reference. This
+           eigenvector is also rotated according to the prediction if a
+           `rich_in_A` array was given.
+        :param None savecorr: path to a directory where to save correlation
+           matrices of each chromosome
+        :param -1 vmin: for the color scale of the plotted map (use vmin='auto',
+           and vmax='auto' to color according to the absolute maximum found).
+        :param 1 vmax: for the color scale of the plotted map (use vmin='auto',
+           and vmax='auto' to color according to the absolute maximum found).
+        :param False yield_ev1: if True yields one list per chromosome with the
+           first eigenvector used to compute compartments.
+        :param '' suffix: to be placed after file names of compartment images
+        :param 3 max_ev: maximum number of EV to try
+        :param None ev_index: a list of number referring to the index of the
+           eigenvector to be used. By default the first eigenvector is used.
+           WARNING: index starts at 1, default is thus a list of ones. Note:
+           if asking for only one chromosome the list should be only of one
+           element.
+        :param None rich_in_A: by default compartments are identified using mean
+           number of intra-interactions (A compartments are expected to have
+           less). However this measure is not very accurate. Using this
+           parameter a path to a BED or BED-Graph file with a list of genes or
+           active epigenetic marks can be passed, and used instead of the mean
+           interactions.
+        :param False show_compartment_labels: if True draw A and B compartment blocks.
+
+        TODO: this is really slow...
+
+        Notes: building the distance matrix using the amount of interactions
+               instead of the mean correlation, gives generally worse results.
+
+        :returns: 1- a dictionary with the N (max_ev) first
+           eigenvectors in the form:
+           {Chromosome_name: (Eigenvalue: [Eigenvector])}
+           Sign of the eigenvectors are changed in order to match the
+           prediction of A/B compartments (positive is A).
+           2- a dictionary of statistics of enrichment for A compartments
+           (Spearman rho).
+        """
+        if not self.bads:
+            if kwargs.get('verbose', False):
+                print 'Filtering bad columns %d' % 99
+            self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
+                                by_mean=False, silent=True)
+            if len(self.bads) == len(self):
+                self.bads = {}
+                warn('WARNING: all columns would have been filtered out, '
+                     'filtering disabled')
+        if not self.expected:
+            if kwargs.get('verbose', False):
+                print 'Normalizing by expected values'
+            self.expected = expected(self, bads=self.bads, **kwargs)
+        if not self.bias:
+            if kwargs.get('verbose', False):
+                print 'Normalizing by ICE (1 round)'
+            self.normalize_hic(iterations=0,
+                               silent=not kwargs.get('verbose', False))
+        if savefig:
+            mkdir(savefig)
+        if savecorr:
+            mkdir(savecorr)
+        if savedir:
+            mkdir(savedir)
+        if suffix != '':
+            suffix = '_' + suffix
+        # parse bed file
+        if rich_in_A and isinstance(rich_in_A, str):
+            rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
+
+        cmprts = {}
+        firsts = {}
+        ev_nums = {}
+        count = 0
+        richA_stats = dict((sec, None) for sec in self.section_pos)
+
+        for sec in self.section_pos:
+            if crms and sec not in crms:
+                continue
+            if kwargs.get('verbose', False):
+                print 'Processing chromosome', sec
+            # get chromosomal matrix
+            try:
+                matrix = [[(float(self[i,j]) / self.expected[sec][abs(j-i)]
+                            / self.bias[i] / self.bias[j])
+                        for i in xrange(*self.section_pos[sec])
+                        if not i in self.bads]
+                        for j in xrange(*self.section_pos[sec])
+                        if not j in self.bads]
+            except KeyError:
+                if sec in self.expected and not self.expected[sec]:
+                    matrix = []
+                else:
+                    matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
+                                / self.bias[i] / self.bias[j])
+                            for i in xrange(*self.section_pos[sec])
+                            if not i in self.bads]
+                            for j in xrange(*self.section_pos[sec])
+                            if not j in self.bads]
+            if not matrix: # MT chromosome will fall there
+                warn('Chromosome %s is probably MT :)' % (sec))
+                cmprts[sec] = []
+                count += 1
+                continue
+            # enforce symmetry
+            for i in xrange(len(matrix)):
+                for j in xrange(i+1, len(matrix)):
+                    matrix[i][j] = matrix[j][i]
+            # compute correlation coefficient
+            try:
+                matrix = [list(m) for m in corrcoef(matrix)]
+            except TypeError:
+                # very small chromosome?
+                warn('Chromosome %s is probably MT :)' % (sec))
+                cmprts[sec] = []
+                count += 1
+                continue
+            # replace nan in correlation matrix
+            matrix = [[0. if isnan(v) else v for v in l] for l in matrix]
+            # write correlation matrix to file. replaces filtered row/columns by NaN
+            if savecorr:
+                out = open(os.path.join(savecorr, '%s_corr-matrix%s.tsv' % (sec, suffix)),
+                           'w')
+                start1, end1 = self.section_pos[sec]
+                out.write('# MASKED %s\n' % (' '.join([str(k - start1)
+                                                       for k in self.bads.keys()
+                                                       if start1 <= k <= end1])))
+                rownam = ['%s\t%d-%d' % (k[0],
+                                         k[1] * self.resolution,
+                                         (k[1] + 1) * self.resolution)
+                          for k in sorted(self.sections,
+                                          key=lambda x: self.sections[x])
+                          if k[0] == sec]
+                length = self.section_pos[sec][1] - self.section_pos[sec][0]
+                empty = 'NaN\t' * (length - 1) + 'NaN\n'
+                badrows = 0
+                for row, posx in enumerate(xrange(self.section_pos[sec][0],
+                                                  self.section_pos[sec][1])):
+                    if posx in self.bads:
+                        out.write(rownam.pop(0) + '\t' + empty)
+                        badrows += 1
+                        continue
+                    vals = []
+                    badcols = 0
+                    for col, posy in enumerate(xrange(self.section_pos[sec][0],
+                                                      self.section_pos[sec][1])):
+                        if posy in self.bads:
+                            vals.append('NaN')
+                            badcols += 1
+                            continue
+                        vals.append(str(matrix[row-badrows][col-badcols]))
+                    out.write(rownam.pop(0) + '\t' +'\t'.join(vals) + '\n')
+                out.close()
+
+            # get eigenvectors
+            try:
+                # This eighs is very very fast, only ask for one eigenvector
+                evals, evect = eigsh(array(matrix),
+                                     k=max_ev if max_ev else (len(matrix) - 1))
+            except (LinAlgError, ValueError):
+                warn('Chromosome %s too small to compute PC1' % (sec))
+                cmprts[sec] = [] # Y chromosome, or so...
+                count += 1
+                continue
+            # define breakpoints, and store first EVs
+            n_first = [list(evect[:, -i])
+                       for i in xrange(1, (max_ev + 1)
+                                       if max_ev else len(matrix))]
+            ev_num = (ev_index[count] - 1) if ev_index else 0
+            breaks = [i for i, (a, b) in
+                      enumerate(zip(n_first[ev_num][1:], n_first[ev_num][:-1]))
+                      if a * b < 0] + [len(n_first[ev_num]) - 1]
+            breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
+                      for i, b in enumerate(breaks)]
+
+            # rescale EVs, matrix and breaks by inserting NaNs in bad column places
+            beg, end = self.section_pos[sec]
+            bads = [k - beg for k in sorted(self.bads) if beg <= k <= end]
+            for evect in n_first:
+                _ = [evect.insert(b, float('nan')) for b in bads]
+            _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
+                 for b in bads]
+            _ = [matrix[i].insert(b, float('nan'))
+                 for b in bads for i in xrange(len(n_first[0]))]
+            for b in bads:  # they are sorted
+                for brk in breaks:
+                    if brk['start'] >= b:
+                        brk['start'] += 1
+                        brk['end'  ] += 1
+                    else:
+                        brk['end'  ] += brk['end'] > b
+            bads = set(bads)
+
+            # rescale first EV and change sign according to rich_in_A
+            richA_stats[sec] = None
+            sign = 1
+            if rich_in_A and sec in rich_in_A:
+                eves = []
+                gccs = []
+                for i, v in enumerate(n_first[ev_num]):
+                    if i in bads:
+                        continue
+                    try:
+                        gc = rich_in_A[sec][i]
+                    except KeyError:
+                        continue
+                    gccs.append(gc)
+                    eves.append(v)
+                r_stat, richA_pval = spearmanr(eves, gccs)
+                if kwargs.get('verbose', False):
+                    print ('  - Spearman correlation between "rich in A" and '
+                           'Eigenvector:\n'
+                           '      rho: %.7f p-val:%.7f' % (r_stat, richA_pval))
+                richA_stats[sec] = r_stat
+                # switch sign and normalize
+                sign = 1 if r_stat > 0 else -1
+            for i in xrange(len(n_first)):
+                n_first[i] = [sign * v for v in n_first[i]]
+            # store it
+            ev_nums[sec] = ev_num + 1
+            cmprts[sec] = breaks
+            if rich_in_A:
+                for cmprt in cmprts[sec]:
+                    try:
+                        cmprt['dens'] = sum(rich_in_A.get(sec, {None: 0}).get(i, 0)
+                                            for i in range(cmprt['start'], cmprt['end'] + 1)
+                                            if not i in bads) / float(cmprt['end'] - cmprt['start'])
+                    except ZeroDivisionError:
+                        cmprt['dens'] = float('nan')
+                    cmprt['type'] = 'A' if n_first[ev_num][cmprt['start']] > 0 else'B'
+            firsts[sec] = (evals[::-1], n_first)
+
+            # needed for the plotting
+            if savefig or show:
+                vmin = kwargs.get('vmin', -1)
+                vmax = kwargs.get('vmax',  1)
+                if vmin == 'auto' == vmax:
+                    vmax = max([abs(npperc(matrix, 99.5)),
+                                abs(npperc(matrix, 0.5))])
+                    vmin = -vmax
+                try:
+                    if savefig:
+                        fnam = os.path.join(savefig,
+                                            '%s_EV%d%s.%s' % (str(sec),
+                                                              ev_nums[sec],
+                                                              suffix,
+                                                              format))
+                    else:
+                        fnam = None
+                    plot_compartments(
+                        sec, n_first[ev_num], cmprts, matrix, show, fnam,
+                        vmin=vmin, vmax=vmax, whichpc=ev_num + 1,
+                        showAB=show_compartment_labels)
+                except AttributeError:
+                    warn(('WARNING: chromosome %s too small for plotting.'
+                          'Skipping image creation.') % sec)
+                except ValueError:
+                    warn(('WARNING: chromosome %s too small for plotting.'
+                          'Skipping image creation.') % sec)
+
+        self.compartments = cmprts
+        if savedata:
+            self.write_compartments(savedata, chroms=self.compartments.keys(),
+                                    ev_nums=ev_nums)
+
+        if savedir:
+            ncrm = 0
+            for sec in self.section_pos:
+                if crms and sec not in crms:
+                    continue
+                ev_file = open(os.path.join(
+                    savedir, '%s_EigVect%d.tsv' % (
+                        sec, ev_index[ncrm] if ev_index else 1)), 'w')
+                ev_file.write('# %s\n' % ('\t'.join(
+                    'EV_%d (%.4f)' % (i, v)
+                    for i, v in enumerate(firsts[sec][0], 1))))
+                ev_file.write('\n'.join(['\t'.join([str(v) for v in vs])
+                                         for vs in zip(*firsts[sec][1])]))
+                ev_file.close()
+                ncrm += 1
+
+        return firsts, richA_stats
+
+    def find_compartments_beta(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
-                          ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
+                          ev_index=None, rich_in_A=None, max_ev=3,show_compartment_labels=False, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -599,7 +1033,7 @@ class HiC_data(dict):
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
         :param 3 max_ev: maximum number of EV to try
-        :param None ev_index: a list of number refering to the index of the
+        :param None ev_index: a list of number referring to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones. Note:
            if asking for only one chromosome the list should be only of one
@@ -617,6 +1051,7 @@ class HiC_data(dict):
            cluster.
         :param 'ratio' how: ratio divide by column, subratio divide by
            compartment, diagonal only uses diagonal
+        :param False'show_compartment_labels': if True draw A and B compartment blocks.
 
 
         TODO: this is really slow...
@@ -762,7 +1197,7 @@ class HiC_data(dict):
                       for i, b in enumerate(breaks)]
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
-            bads = [k - beg for k in self.bads if beg <= k <= end]
+            bads = [k - beg for k in sorted(self.bads) if beg <= k <= end]
             for evect in n_first:
                 _ = [evect.insert(b, float('nan')) for b in bads]
             _ = [first.insert(b, 0) for b in bads]
@@ -818,11 +1253,13 @@ class HiC_data(dict):
                     vmin = -vmax
                 plot_compartments(
                     sec, first, cmprts, matrix, show,
-                    savefig + '/chr' + str(sec) + suffix + '.pdf' if savefig else None,
-                    vmin=vmin, vmax=vmax, whichpc=ev_num)
-                plot_compartments_summary(
-                    sec, cmprts, show,
-                    savefig + '/chr' + str(sec) + suffix + '_summ.pdf' if savefig else None)
+                    savefig + '/chr' + str(sec) + suffix + '.png' if savefig else None,
+                    vmin=vmin, vmax=vmax, whichpc=ev_num,showAB=show_compartment_labels)
+
+                if label_compartments == 'cluster' or label_compartments == 'hmm':
+                    plot_compartments_summary(
+                          sec, cmprts, show,
+                          savefig + '/chr' + str(sec) + suffix + '_summ.png' if savefig else None)
             count += 1
 
         if label_compartments == 'hmm':
@@ -1007,19 +1444,14 @@ class HiC_data(dict):
                     out.write('## CHR %s\tEigenvector: %d\n' % (sec, ev_nums[sec]))
                 except KeyError:
                     continue
-        out.write('#%sstart\tend\tdensity\ttype\n'% (
-            'CHR\t' if len(sections) > 1 else ''))
+        out.write('#%sstart\tend\trich in A\ttype\n'% (
+            'CHR\t' if len(sections) > 1 else '\t'))
         for sec in sections:
             for c in self.compartments[sec]:
-                try:
-                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (str(sec) + '\t') if sections else '',
-                        c['start'] + 1, c['end'] + 1,
-                        c['dens'], c['type']))
-                except KeyError:
-                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (str(sec) + '\t') if sections else '',
-                        c['start'], c['end'], c['dens'], ''))
+                out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                    (str(sec) + '\t') if sections else '\t',
+                    c['start'] + 1, c['end'] + 1,
+                    c.get('dens', float('nan')), c.get('type', '')))
         out.close()
 
 
@@ -1136,7 +1568,7 @@ def _hmm_refine_compartments(xsec, models, bads, verbose):
 
 def _training(x, n, verbose):
     """
-    define default emision transition and initial states, and train the hmm
+    define default emission transition and initial states, and train the hmm
     """
     pi = [0.5 - ((n - 2) * 0.05)**2 if i == 0 or i == n - 1 else ((n - 2)*0.05)**2*2 / (n - 2) for i in range(n)]
     T = [[0.9 if i==j else 0.1/(n-1) for i in xrange(n)] for j in xrange(n)]
@@ -1224,7 +1656,7 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
     if len(clusters) != n_clust:
         # warn('WARNING2: compartment clustering is too clear. Skipping')
         return (float('inf'), float('inf'), float('inf'))
-    # labelling compartments. A compartments shall have lower
+    # labeling compartments. A compartments shall have lower
     # mean intra-interactions
     dens = {}
     if rich_in_A:

@@ -2,13 +2,15 @@
 22 may 2015
 """
 
-from pytadbit.utils.file_handling         import magic_open
 from bisect                               import bisect_right as bisect
-from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings                             import warn
 from sys                                  import stdout
 from subprocess                           import Popen
 import os
+
+from pytadbit.utils.file_handling         import magic_open
+from pytadbit.mapping.restriction_enzymes import map_re_sites
+
 
 def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
@@ -70,7 +72,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
     # max number of reads per intermediate files for sorting
     max_size = 1000000
-    
+
     windows = {}
     multis  = {}
     procs   = []
@@ -141,7 +143,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         if verbose:
             stdout.write('\n')
         tmp_name = tmp_files[0]
-        
+
         if verbose:
             print 'Getting Multiple contacts'
         reads_fh = open(outfiles[read], 'w')
@@ -165,16 +167,22 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         prev_head = read_line.split('\t', 1)[0]
         prev_head = prev_head.split('~' , 1)[0]
         prev_read = read_line
-        multis[read] = 0
+        multis[read] = {}
+        multi = 0
         for read_line in tmp_reads_fh:
             head = read_line.split('\t', 1)[0]
             head = head.split('~' , 1)[0]
             if head == prev_head:
-                multis[read] += 1
                 prev_read =  prev_read.strip() + '|||' + read_line
+                multi += 1
             else:
                 reads_fh.write(prev_read)
                 prev_read = read_line
+                try:
+                    multis[read][multi] += 1
+                except KeyError:
+                    multis[read][multi] = 1
+                multi = 0
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
@@ -184,6 +192,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     for p in procs:
         p.communicate()
     return windows, multis
+
 
 def write_reads_to_file(reads, outfiles, tmp_files, nfile):
     if not reads: # can be...
@@ -195,7 +204,8 @@ def write_reads_to_file(reads, outfiles, tmp_files, nfile):
     out = open(tmp_name, 'w')
     out.write(''.join(sorted(reads, key=lambda x: x.split('\t', 1)[0].split('~')[0])))
     out.close()
-    del(reads[:]) # empty list
+    del(reads[:])  # empty list
+
 
 def merge_sort(file1, file2, outfiles, nfile):
     tmp_name = os.path.join(*outfiles.split('/')[:-1] +
@@ -232,6 +242,7 @@ def merge_sort(file1, file2, outfiles, nfile):
     os.system('rm -f ' + file1)
     os.system('rm -f ' + file2)
     return tmp_name
+
 
 def read_read(r, frags, frag_chunk):
     name, seq, _, _, ali = r.split('\t')[:5]

@@ -4,20 +4,20 @@
 
 """
 
-from math                         import isnan
-from numpy                        import log2, array
-from pytadbit.modelling.IMP_CONFIG import CONFIG
-from copy                         import deepcopy as copy
-from sys                          import stderr
-from warnings                     import warn
-from pytadbit                     import HiC_data
-from pytadbit.parsers.hic_parser  import read_matrix
-from pytadbit.utils.extraviews    import nicer
-from pytadbit.utils.extraviews    import tadbit_savefig
-from pytadbit.utils.tadmaths      import zscore, nozero_log_matrix
-from pytadbit.utils.normalize_hic import iterative
-from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
-from pytadbit.parsers.tad_parser  import parse_tads
+from copy                                import deepcopy as copy
+from sys                                 import stderr
+from warnings                            import warn
+from math                                import isnan
+from numpy                               import log2, array
+from pytadbit.modelling.IMP_CONFIG       import CONFIG
+from pytadbit                            import HiC_data
+from pytadbit.parsers.hic_parser         import read_matrix
+from pytadbit.utils.extraviews           import nicer
+from pytadbit.utils.extraviews           import tadbit_savefig
+from pytadbit.utils.tadmaths             import zscore, nozero_log_matrix
+from pytadbit.utils.normalize_hic        import iterative
+from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
+from pytadbit.parsers.tad_parser         import parse_tads
 from pytadbit.modelling.structuralmodels import StructuralModels
 
 try:
@@ -317,6 +317,105 @@ class Experiment(object):
         return xpr
 
 
+    def __div__(self, other, silent=False):
+        """
+        sum Hi-C data of experiments into a new one.
+        """
+        reso1, reso2 = self.resolution, other.resolution
+        if self.resolution == other.resolution:
+            resolution = self.resolution
+            changed_reso = False
+        else:
+            resolution = max(reso1, reso2)
+            self.set_resolution(resolution)
+            other.set_resolution(resolution)
+            if not silent:
+                stderr.write('WARNING: experiments of different resolution, ' +
+                             'setting both resolution of %s, and normalizing ' +
+                             'at this resolution\n' % (resolution))
+            norm1 = copy(self.norm)
+            norm2 = copy(other.norm)
+            if self._normalization:
+                self.normalize_hic()
+            if other._normalization:
+                other.normalize_hic()
+            changed_reso = True
+        if self.hic_data:
+            new_hicdata = HiC_data([], size=self.size)
+            for i in self.hic_data[0]:
+                new_hicdata[i] = self.hic_data[0].get(i)
+            for i in other.hic_data[0]:
+                try:
+                    new_hicdata[i] /= other.hic_data[0].get(i)
+                except ZeroDivisionError:
+                    new_hicdata[i] = float('NaN')
+        else:
+            new_hicdata = None
+        xpr = Experiment(name='%s/%s' % (self.name, other.name),
+                         resolution=resolution,
+                         hic_data=new_hicdata, no_warn=True)
+        # check if both experiments are normalized with the same method
+        # and sum both normalized data
+        if self._normalization != None and other._normalization != None:
+            if (self._normalization.split('_factor:')[0] ==
+                other._normalization.split('_factor:')[0]):
+                xpr.norm = [HiC_data([], size=self.size)]
+                for i in self.norm[0]:
+                    xpr.norm[0][i] = self.norm[0].get(i)
+                for i in other.norm[0]:
+                    try:
+                        xpr.norm[0][i] /= other.norm[0].get(i)
+                    except ZeroDivisionError:
+                        xpr.norm[0][i] = float('NaN')
+                # The final value of the factor should be the same of each
+                try:
+                    xpr._normalization = (
+                        self._normalization.split('_factor:')[0] +
+                        '_factor:' +
+                        str(int(self._normalization.split('_factor:')[1]) +
+                            int(other._normalization.split('_factor:')[1]))) / 2
+                except IndexError: # no factor there
+                    xpr._normalization = (self._normalization)
+        elif self.norm or other.norm:
+            try:
+                if (self.norm[0] or other.norm[0]) != {}:
+                    if not silent:
+                        raise Exception('ERROR: normalization differs between' +
+                                        ' each experiment\n')
+            except TypeError:
+                pass
+        if changed_reso:
+            self.set_resolution(reso1)
+            self.norm = norm1
+            other.set_resolution(reso2)
+            other.norm = norm2
+        xpr.crm = self.crm
+        if not xpr.size:
+            xpr.size = len(xpr.norm[0])
+
+
+
+        def __merge(own, fgn):
+            "internal function to merge descriptions"
+            if own == fgn:
+                return own
+            return '%s+%s' % (own , fgn)
+
+        xpr.identifier  = __merge(self.identifier , other.identifier )
+        xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
+        xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
+        xpr.description = __merge(self.description, other.description)
+        xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
+
+        for des in self.description:
+            if not des in other.description:
+                continue
+            xpr.description[des] = __merge(self.description[des],
+                                           other.description[des])
+        return xpr
+
+
+
     def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for the resolution. Copy the original data into
@@ -604,6 +703,7 @@ class Experiment(object):
                 height = 0.
             tads[tad]['height'] = height
 
+
     def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
                       rowsums=None):
         """
@@ -708,8 +808,8 @@ class Experiment(object):
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG['dmel_01'],
-                     container=None):
+                     outfile=None, config=CONFIG, container=None,
+                     single_particle_restraints=None, use_HiC=True):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -739,7 +839,7 @@ class Experiment(object):
            micrometers length and 0.5 micrometer of width), these values could be
            used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
            (6 micrometers diameter): ['cylinder', 3000, 0, 50]
-        :param CONFIG['dmel_01'] config: a dictionary containing the standard
+        :param CONFIG config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
@@ -754,28 +854,37 @@ class Experiment(object):
            ::
 
              CONFIG = {
-              'dmel_01': {
-                  # use these paramaters with the Hi-C data from:
-                  'reference' : 'victor corces dataset 2013',
+              # use these paramaters with the Hi-C data from:
+              'reference' : 'victor corces dataset 2013',
 
-                  # Force applied to the restraints inferred to neighbor particles
-                  'kforce'    : 5,
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
 
-                  # Maximum experimental contact distance
-                  'maxdist'   : 600, # OPTIMIZATION: 500-1200
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
-                  # Minimum and maximum thresholds used to decide which experimental values have to be
-                  # included in the computation of restraints. Z-score values bigger than upfreq
-                  # and less that lowfreq will be include, whereas all the others will be rejected
-                  'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+              # Minimum and maximum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
-                  'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+              'lowfreq'   : -0.7, # OPTIMIZATION: min/max Z-score
 
-                  # How much space (radius in nm) ocupies a nucleotide
-                  'scale'     : 0.005
-                  }
+              # How much space (radius in nm) ocupies a nucleotide
+              'scale'     : 0.005
               }
 
+        :param True use_HiC: apply hic data restraints to the model
+        :param: None single_particle_restraints: a list containing restraints to single particles.
+            Each restraint in the list is itself a list with the following information:
+                [bin, [position_x, position_y, position_z], type, kforce, radius]
+                bin: bin number of the particle to restraint
+                [position_x, position_y, position_z](nm): center of the sphere of the restraint.
+                    The center of the coordinate system is the center of the base of the
+                    cylinder defined as the container.
+                type: 'Harmonic', 'HarmonicLowerBound', 'HarmonicUpperBound'
+                kforce: weigth of the restraint
+                radius (nm): radius of the sphere
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
@@ -785,9 +894,32 @@ class Experiment(object):
         if not end:
             end = self.size
         zscores, values, zeros = self._sub_experiment_zscore(start, end)
-        coords = {'crm'  : self.crm.name,
-                  'start': start,
-                  'end'  : end}
+        if self.hic_data and self.hic_data[0].chromosomes:
+            coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = start
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            for k in chrs:
+                coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : self.hic_data[0].chromosomes[k]})
+            coords[0]['start'] = chrom_offset_start
+            coords[-1]['end'] -= chrom_offset_end
+        else:
+            coords = {'crm'  : self.crm.name,
+                      'start': start,
+                      'end'  : end}
         zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         nloci = end - start + 1
         if verbose:
@@ -797,11 +929,13 @@ class Experiment(object):
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                   verbose=verbose, keep_all=keep_all, first=0,
                                   close_bins=close_bins, config=config, container=container,
-                                  experiment=self, coords=coords, zeros=zeros)
-
+                                  experiment=self, coords=coords, zeros=zeros,
+                                  single_particle_restraints=single_particle_restraints,
+                                  use_HiC=use_HiC)
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
+                               kbending_range=0.0,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
                                maxdist_range=(400, 1400, 100),
@@ -842,8 +976,6 @@ class Experiment(object):
            the optimal distance cutoff parameter (distance, in number of beads,
            from which to consider 2 beads as being close). The last value of the
            input tuple is the incremental step for scale parameter values
-        :param None cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not, default is 2 times resolution, times scale.
         :param None container: restrains particle to be within a given object. Can
            only be a 'cylinder', which is, in fact a cylinder of a given height to
            which are added hemispherical ends. This cylinder is defined by a radius,
@@ -877,6 +1009,7 @@ class Experiment(object):
                                  n_models=n_models, close_bins=close_bins,
                                  container=container)
         optimizer.run_grid_search(maxdist_range=maxdist_range,
+                                  kbending_range=kbending_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range,
@@ -894,14 +1027,13 @@ class Experiment(object):
         """
         Get the z-score of a sub-region of an  experiment.
 
-        TODO: find a nicer way to do this...
-
         :param start: first bin to model (bin number)
         :param end: first bin to model (bin number)
 
-        :returns: z-score, raw values and zzeros of the experiment
+        :returns: 1- z-score, 2- matrix of values with NaNs in the diagonal and in
+           bad columns and 3- actual position of bad columns
         """
-        if not self._normalization.startswith('visibility'):
+        if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
             self.normalize_hic()
         from pytadbit import Chromosome
@@ -941,14 +1073,12 @@ class Experiment(object):
             # zeros are rows or columns having a zero in the diagonal
             if i in exp._zeros:
                 continue
-            for j in xrange(i + 1, exp.size):
+            for j in xrange(i + 1, exp.size):  # NaNs kept in the diagonal
                 if j in exp._zeros:
                     continue
-                if (not exp.norm[0][i * exp.size + j]
-                    or not exp.norm[0][i * exp.size + j]):
-                    continue
-                values[i][j] = exp.norm[0][i * exp.size + j]
-                values[j][i] = exp.norm[0][i * exp.size + j]
+                val = exp.norm[0][i * exp.size + j]
+                values[i][j] = val
+                values[j][i] = val
         return exp._zscores, values, exp._zeros
 
 
@@ -1316,6 +1446,8 @@ class Experiment(object):
                          int(start or 1) + len(matrix) - 0.5)
             if show:
                 plt.show()
+            if savefig:
+                tadbit_savefig(savefig)
             return img
         pwidth = 1
         tads = dict([(t, self.tads[t]) for t in self.tads
@@ -1430,20 +1562,50 @@ class Experiment(object):
             warn("WARNING: no name specified in chromosome. TADkit will not be able to interpret the file")
 
         if focus:
-            start_j, end_j = focus
-            size = end_j-start_j+1
+            start, end = focus
+            size = end-start+1
         else:
-            start_j = 1
-            end_j = size = self.size
+            start = 0
+            end = size = self.size
 
         if size > 1200:
             warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
 
         new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
 
-        chrom_start = start_j * self.resolution
-        chrom_end = end_j * self.resolution
-        descr = {'chromosome'   : self.crm.name,
+        chrom_start = []
+        chrom_end = []
+        chrom = []
+        if self.hic_data and self.hic_data[0].chromosomes:
+            tot = 0
+            chrs = []
+            chrom_offset_start = start
+            chrom_offset_end = 0
+            for k, v in self.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append((k,v))
+                    break
+                if start < tot and end >= tot:
+                    chrs.append((k,v))
+
+            for k, v in chrs:
+                chrom.append(k)
+                chrom_start.append(0)
+                chrom_end.append(v * self.resolution)
+            chrom_start[0] = chrom_offset_start * self.resolution
+            chrom_end[-1] -= chrom_offset_end * self.resolution
+
+        else:
+            chrom.append(self.crm.name)
+            chrom_start.append(start * self.resolution)
+            chrom_end.append(end * self.resolution)
+
+
+        descr = {'chromosome'   : chrom,
                  'species'      : self.crm.species,
                  'resolution'   : self.resolution,
                  'chrom_start'  : chrom_start,
@@ -1452,7 +1614,7 @@ class Experiment(object):
                  'end'          : size * self.resolution}
 
         # Fake structural models object to produce json
-        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr)
+        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr, config={'scale':0.01})
         sm.write_json(filename=filename)
 
     # def generate_densities(self):

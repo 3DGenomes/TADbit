@@ -11,12 +11,12 @@
 
 
 TADbit is a complete Python library to deal with all steps to analyze,
-model and explore 3C-based data. With TADbit the user can map FASTQ
+model and explore 3C-based data. With TADbit the user can map FASTsQ
 files to obtain raw interaction binned matrices (Hi-C like matrices),
 normalize and correct interaction matrices, identify and compare the
 Topologically Associating Domains (TADs), build 3D models
 from the interaction matrices, and finally, extract structural
-properties from the models. TADbit is complemented by `TADkit for
+properties from the models. TADbit is complemented by TADkit for
 visualizing 3D models.
 
 Hi-C experiments generate genomic interaction between loci located in
@@ -43,6 +43,80 @@ If you have any question remaining, we would be happy to answer informally:
    :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
    :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+Frequently asked questions
+--------------------------
+
+Check the label `FAQ <https://github.com/3DGenomes/TADbit/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+>`_ in TADbit issues.
+
+If your question is still unanswered feel free to open a new issue.
+
+Docker
+------
+
+This minimal `Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ (resulting in a 3 Gb docker image) can be used to run TADbit in any computer::
+
+    FROM debian:8
+
+    ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y wget bzip2 --no-install-recommends && \
+        rm -rf /var/lib/apt/lists/*
+
+    RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+        wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+            -O ~/miniconda.sh && \
+        /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+        rm ~/miniconda.sh
+
+    ENV PATH /opt/conda/bin:$PATH
+
+    RUN conda config --add channels salilab && conda config --add channels bioconda && \
+        conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam && \
+        conda clean -y --all  && rm -rf /opt/conda/pkgs/*
+
+    RUN wget --quiet --no-check-certificate https://newcontinuum.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%202/GEM-binaries-Linux-x86_64-core_i3-20121106-022124.tbz2 \
+            -O GEM.tbz2 && \
+        tar xvf GEM.tbz2 && cd GEM-*/ && \
+        mv * /usr/local/bin/ && cd .. && rm -rf GEM*
+
+    RUN apt-get update --fix-missing && \
+        apt-get install -y unzip build-essential --no-install-recommends && \
+        wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/dev.zip && unzip dev.zip && \
+        cd TADbit-dev && python setup.py install && cd .. && rm -rf TADbit-dev dev.zip && \
+        apt-get remove -y --purge unzip build-essential && \
+        apt-get autoremove -y && \
+        apt-get autoclean -y && \
+        rm -rf /var/lib/apt/lists/*
+
+    CMD [ "/bin/bash" ]
+
+Build the image by saving this file as :code:`Dockerfile` into an empty folder
+and build the image from inside this empty folder with :code:`docker build -t tadbit .` (~20 minutes)
+
+Once built, run it as :code:`docker run tadbit tadbit map -h`
+
+This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_.
+
+To run a notebook from inside the docker container run :code:`tadbit` docker image as::
+
+    docker run -it -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit
+
+:code:`LOCAL_PATH` *would be for example a local folder with data*
+*(e.g. FASTQs or reference genomes). And* :code:`/mnt` *a directory*
+*inside the Docker container where the* :code:`LOCAL_PATH` *would be mounted.*
+
+From inside docker run::
+
+  jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token=''
+
+And finally write the url :code:`http://localhost:8888` in your browser.
+
+*Note: this can also be done in a single line and running in the background:*
+::
+
+  docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
+
 
 Citation
 ********
@@ -56,10 +130,10 @@ Methods implemented in TADbit
 -----------------------------
 In addition to the general citation for the TADbit library, please cite these articles if you used TADbit for:
 
-- Mapping and read filtering [Imakaev2012]_ [Ay2015]_
+- Mapping and read filtering [Marco-Sola2012]_ [Imakaev2012]_ [Ay2015]_
 - Hi-C normalization [Imakaev2012]_ [Rao2014]_
 - A/B compartment calling [Lieberman-Aiden2009]_
-- Model assessemnt [Trussart2015]_
+- Model assessement [Trussart2015]_
 - Chromatin 3D Model Building [BaùMarti-Renom2012]_
 
 Applications
@@ -76,8 +150,8 @@ Other programs
 --------------
 TADbit uses other major software packages in biology. Here is the list of their articles:
 
-- IMP. Integrative Modeling Platform [Russel2011]_
-- MCL. Markov Cluster Algorithm [Enright2002]_
+- IMP Integrative Modeling Platform [Russel2011]_
+- MCL Markov Cluster Algorithm [Enright2002]_
 
 TADbit training
 ***************
@@ -139,6 +213,8 @@ Bibliography
 .. [Le_Dily2014] Le Dily, F., Baù, D., Pohl, A., Vicent, G.P., Serra, F., Soronellas, D., Castellano, G., Wright, R.H.G., Ballare, C., Filion, G., Marti-Renom, M.A. and Beato, M. 2014. Distinct structural transitions of chromatin topological domains correlate with coordinated hormone-induced gene regulation. Genes & Development 28(19), pp. 2151–2162.
 
 .. [Lieberman-Aiden2009] Lieberman-Aiden, E., van Berkum, N.L., Williams, L., Imakaev, M., Ragoczy, T., Telling, A., Amit, I., Lajoie, B.R., Sabo, P.J., Dorschner, M.O., Sandstrom, R., Bernstein, B., Bender, M.A., Groudine, M., Gnirke, A., Stamatoyannopoulos, J., Mirny, L.A., Lander, E.S. and Dekker, J. 2009. Comprehensive mapping of long-range interactions reveals folding principles of the human genome. Science 326(5950), pp. 289–293.
+
+.. [Marco-Sola2012] Marco-Sola, S., Sammeth, M., Guigo, R. and Ribeca, P. 2012. The GEM mapper: fast, accurate and versatile alignment by filtration. Nat Methods 9(12), pp. 1185-1188.
 
 .. [Rao2014] Rao, S.S.P., Huntley, M.H., Durand, N.C., Stamenova, E.K., Bochkov, I.D., Robinson, J.T., Sanborn, A.L., Machol, I., Omer, A.D., Lander, E.S. and Aiden, E.L. 2014. A 3D map of the human genome at kilobase resolution reveals principles of chromatin looping. Cell 159(7), pp. 1665–1680.
 

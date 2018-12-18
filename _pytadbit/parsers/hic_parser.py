@@ -3,11 +3,17 @@ November 7, 2013.
 
 """
 
-from warnings                import warn
-from math                    import sqrt, isnan
-from pytadbit.parsers.gzopen import gzopen
-from collections             import OrderedDict
-from pytadbit                import HiC_data
+from collections                     import OrderedDict
+from warnings                        import warn
+from math                            import sqrt, isnan
+from cPickle                         import load
+
+from pysam                           import AlignmentFile
+
+from pytadbit.parsers.gzopen         import gzopen
+from pytadbit                        import HiC_data
+from pytadbit.parsers.hic_bam_parser import get_matrix
+
 
 HIC_DATA = True
 
@@ -100,7 +106,7 @@ def optimal_reader(f, normalized=False, resolution=1):
     f.seek(pos)
 
     ncol = len(header)
-    
+
     # Get the numeric values and remove extra columns
     num = float if normalized else int
     chromosomes, sections, resolution = _header_to_section(header, resolution)
@@ -145,24 +151,110 @@ def optimal_reader(f, normalized=False, resolution=1):
     return hic
 
 
-def autoreader(f):
+def __read_file_header(f):
     """
-    Auto-detect matrix format of HiC data file.
-    
-    :param f: an iterable (typically an open file).
-    
-    :returns: A tuple with integer values and the dimension of
-       the matrix.
-    """
+    Read file header, inside first commented lines of a file
 
-    # Skip initial comment lines and read in the whole file
-    # as a list of lists.
+    :returns masked dict, chromsomes orderedDict, crm, beg, end, resolution:
+    """
     masked = {}
+    chromosomes = OrderedDict()
+    crm, beg, end, reso = None, None, None, None
+    fpos = f.tell()
     for line in f:
         if line[0] != '#':
             break
+        fpos += len(line)
         if line.startswith('# MASKED'):
-            masked = dict([(int(n), True) for n in line.split()[2:]])
+            try:
+                masked = dict([(int(n), True) for n in line.split()[-1].split(',')])
+            except ValueError:  # nothing here
+                pass
+        elif line.startswith('# CRM'):
+            _, _, crm, size = line.split()
+            chromosomes[crm] = int(size)
+        elif 'resolution:' in line:
+            _, coords, reso = line.split()
+            try:
+                crm, pos = coords.split(':')
+                beg, end = map(int, pos.split('-'))
+            except ValueError:
+                crm = coords
+                beg, end = None, None
+            reso = int(reso.split(':')[1])
+    f.seek(fpos)
+    if crm == 'full':
+        crm = None
+    return masked, chromosomes, crm, beg, end, reso
+
+
+def abc_reader(f):
+    """
+    Read matrix stored in 3 column format (bin1, bin2, value)
+
+    :param f: an iterable (typically an open file).
+
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
+    """
+    masked, chroms, crm, beg, end, reso = __read_file_header(f)  # TODO rest of it not used here
+    sections = {}
+    size = 0
+    for c in chroms:
+        sections[c] = size
+        size += chroms[c] / reso + 1
+    if beg:
+        header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso))
+                  for l in xrange(beg, end)]
+    else:
+        header = [(c, '%d-%d' % (l * reso + 1, (l + 1) * reso))
+                  for c in chroms
+                  for l in xrange(sections[c], sections[c] + chroms[c] / reso + 1)]
+    num = int if HIC_DATA else float
+    offset = (beg or 0) * (1 + size)
+    def _disect(x):
+        a, b, v = x.split()
+        return (int(a) + int(b) * size + offset, num(v))
+    items = (_disect(line) for line in f)
+    return items, size, header, masked, False
+
+
+def __is_abc(f):
+    """
+    Only works for matrices with more than 3 bins
+    """
+    fpos = f.tell()
+    count = 0
+    for line in f:
+        if line.startswith('#'):
+            continue
+        count += 1
+        if len(line.split()) != 3:
+            f.seek(fpos)
+            return False
+        if count > 3:
+            f.seek(fpos)
+            return True
+    f.seek(fpos)
+    return False
+
+
+def autoreader(f):
+    """
+    Auto-detect matrix format of HiC data file.
+
+    :param f: an iterable (typically an open file).
+
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
+    """
+    masked = __read_file_header(f)[0]  # TODO rest of it not used here
+
+    # Skip initial comment lines and read in the whole file
+    # as a list of lists.
+    line = f.next()
     items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
@@ -177,7 +269,7 @@ def autoreader(f):
 
     # free little memory
     del(S)
-    
+
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
@@ -223,7 +315,7 @@ def autoreader(f):
         if not HIC_DATA:
             raise AutoReadFail('ERROR: non numeric values')
         try:
-            # Dekker data 2009, uses integer but puts a comma... 
+            # Dekker data 2009, uses integer but puts a comma...
             items = [[int(float(a)+.5) for a in line[trim:]] for line in items]
             warn('WARNING: non integer values')
         except ValueError:
@@ -247,7 +339,9 @@ def autoreader(f):
         warn('WARNING: matrix not symmetric: summing cell_ij with cell_ji')
         symmetrize(items)
         symmetricized = True
-    return tuple([a for line in items for a in line]), ncol, header, masked, symmetricized
+    return (((i + j * ncol, a) for i, line in enumerate(items)
+             for j, a in enumerate(line) if a),
+            ncol, header, masked, symmetricized)
 
 
 def _header_to_section(header, resolution):
@@ -255,7 +349,6 @@ def _header_to_section(header, resolution):
     converts row-names of the form 'chr12\t1000-2000' into sections, suitable
     to create HiC_data objects. Also creates chromosomes, from the reads
     """
-    chromosomes = OrderedDict()
     sections = {}
     sections = {}
     chromosomes = None
@@ -267,20 +360,21 @@ def _header_to_section(header, resolution):
             if '-' in h[1]:
                 a, b = map(int, h[1].split('-'))
                 if resolution==1:
-                    resolution = abs(b - a)
-                elif resolution != abs(b - a):
+                    resolution = abs(b - a) + 1
+                elif resolution != abs(b - a) + 1:
                     raise Exception('ERROR: found different resolution, ' +
                                     'check headers')
             else:
                 a = int(h[1])
                 if resolution==1 and i:
-                    resolution = abs(a - b)
+                    resolution = abs(a - b) + 1
                 elif resolution == 1:
                     b = a
             sections[(h[0], a / resolution)] = i
             chromosomes.setdefault(h[0], 0)
             chromosomes[h[0]] += 1
     return chromosomes, sections, resolution
+
 
 def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     """
@@ -293,7 +387,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
        representing the data matrix,
        with this file example.tsv:
        ::
-       
+
          chrT_001	chrT_002	chrT_003	chrT_004
          chrT_001	629	164	88	105
          chrT_002	86	612	175	110
@@ -314,7 +408,6 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     one = kwargs.get('one', True)
     global HIC_DATA
     HIC_DATA = hic
-    parser = parser or autoreader
     if not isinstance(things, list):
         things = [things]
     matrices = []
@@ -322,39 +415,40 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         if isinstance(thing, HiC_data):
             matrices.append(thing)
         elif isinstance(thing, file):
+            parser = parser or (abc_reader if __is_abc(thing) else autoreader)
             matrix, size, header, masked, sym = parser(thing)
+            print header
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size, dict_sec=sections,
+            matrices.append(HiC_data(matrix, size, dict_sec=sections,
                                      chromosomes=chromosomes,
                                      resolution=resolution,
                                      symmetricized=sym, masked=masked))
         elif isinstance(thing, str):
             try:
+                parser = parser or (abc_reader if __is_abc(gzopen(thing)) else autoreader)
                 matrix, size, header, masked, sym = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
+                    parser = parser or (abc_reader if __is_abc(thing.split('\n')) else autoreader)
                     matrix, size, header, masked, sym = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
             sections = dict([(h, i) for i, h in enumerate(header)])
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size, dict_sec=sections,
+            matrices.append(HiC_data(matrix, size, dict_sec=sections,
                                      chromosomes=chromosomes, masked=masked,
                                      resolution=resolution,
                                      symmetricized=sym))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
-                matrix  = [v for l in thing for v in l]
                 size = len(thing)
+                matrix  = [(i + j * size, v) for i, l in enumerate(thing) for j, v in enumerate(l) if v]
             else:
                 raise Exception('must be list of lists, all with same length.')
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         elif isinstance(thing, tuple):
             # case we know what we are doing and passing directly list of tuples
             matrix = thing
@@ -362,8 +456,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             if int(siz) != siz:
                 raise AttributeError('ERROR: matrix should be square.\n')
             size = int(siz)
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         elif 'matrix' in str(type(thing)):
             try:
                 row, col = thing.shape
@@ -373,14 +466,14 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                 size = row
             except Exception as exc:
                 print 'Error found:', exc
-            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+            matrices.append(HiC_data(matrix, size))
         else:
             raise Exception('Unable to read this file or whatever it is :)')
     if one:
         return matrices[0]
     else:
         return matrices
+
 
 def load_hic_data_from_reads(fnam, resolution, **kwargs):
     """
@@ -403,11 +496,9 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             genome_seq[crm] = int(clen) / resolution + 1
             size += genome_seq[crm]
         line = fhandler.next()
-    section_sizes = {}
     if kwargs.get('get_sections', True):
         for crm in genome_seq:
             len_crm = genome_seq[crm]
-            section_sizes[(crm,)] = len_crm
             sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
@@ -428,3 +519,67 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
     imx.symmetricized = True
     return imx
 
+
+def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
+                           filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
+                           region=None, verbose=True, clean=True):
+    """
+    :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
+    :param resolution: the resolution of the experiment (size of a bin in
+       bases)
+    :param None biases: path to pickle file where are stored the biases. Keys
+       in this file should be: 'biases', 'badcol', 'decay' and 'resolution'
+    :param '.' tmpdir: path to folder where to create temporary files
+    :param 8 ncpus:
+    :param (1, 2, 3, 4, 6, 7, 8, 9, 10) filter exclude: filters to define the
+       set of valid pair of reads.
+    :param None region: chromosome name, if None, all genome will be loaded
+
+    :returns: HiC_data object
+    """
+    bam = AlignmentFile(fnam)
+    genome_seq = OrderedDict((c, l) for c, l in
+                             zip(bam.references,
+                                 [x / resolution + 1 for x in bam.lengths]))
+    bam.close()
+
+    sections = []
+    for crm in genome_seq:
+        len_crm = genome_seq[crm]
+        sections.extend([(crm, i) for i in xrange(len_crm)])
+
+    size = sum(genome_seq.values())
+
+    chromosomes = {region: genome_seq[region]} if region else genome_seq
+    dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+    imx = HiC_data((), size, chromosomes=chromosomes, dict_sec=dict_sec,
+                   resolution=resolution)
+
+    if biases:
+        if isinstance(biases, basestring):
+            biases = load(open(biases))
+        if biases['resolution'] != resolution:
+            raise Exception('ERROR: resolution of biases do not match to the '
+                            'one wanted (%d vs %d)' % (
+                                biases['resolution'], resolution))
+        if region:
+            chrom_start = 0
+            for crm in genome_seq:
+                if crm == region:
+                    break
+                len_crm = genome_seq[crm]
+                chrom_start += len_crm
+            imx.bads     = dict((b - chrom_start, biases['badcol'][b]) for b in biases['badcol'])
+            imx.bias     = dict((b - chrom_start, biases['biases'][b]) for b in biases['biases'])
+        else:
+            imx.bads     = biases['badcol']
+            imx.bias     = biases['biases']
+        imx.expected = biases['decay']
+
+    get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
+               normalization='raw', tmpdir=tmpdir, clean=clean,
+               ncpus=ncpus, dico=imx, region1=region, verbose=verbose)
+    imx._symmetricize()
+    imx.symmetricized = True
+
+    return imx
