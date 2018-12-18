@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.2.0.586         |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+| Current version: v0.2.0.58          |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
 |                                     |                                                                           |                                                                                             |                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
@@ -43,6 +43,12 @@ If you have any question remaining, we would be happy to answer informally:
    :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
    :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+Frequently asked questions
+--------------------------
+
+Check the label `FAQ <https://github.com/3DGenomes/TADbit/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+>`_ in TADbit issues.
+
+If your question is still unanswered feel free to open a new issue.
 
 Docker
 ------
@@ -124,7 +130,7 @@ Methods implemented in TADbit
 -----------------------------
 In addition to the general citation for the TADbit library, please cite these articles if you used TADbit for:
 
-- Mapping and read filtering [Imakaev2012]_ [Ay2015]_
+- Mapping and read filtering [Marco-Sola2012]_ [Imakaev2012]_ [Ay2015]_
 - Hi-C normalization [Imakaev2012]_ [Rao2014]_
 - A/B compartment calling [Lieberman-Aiden2009]_
 - Model assessement [Trussart2015]_
@@ -140,6 +146,12 @@ TADbit has been previously used for modeling genomes and genomic domains. Here i
 - Yeast chromosome III [Belton2015]_
 - *Mycoplasma pneumoniae* genome [Trussart2017]_
 
+Other programs
+--------------
+TADbit uses other major software packages in biology. Here is the list of their articles:
+
+- IMP Integrative Modeling Platform [Russel2011]_
+- MCL Markov Cluster Algorithm [Enright2002]_
 
 TADbit training
 ***************
@@ -194,13 +206,19 @@ Bibliography
 
 .. [Belton2015] Belton, J.-M., Lajoie, B.R., Audibert, S., Cantaloube, S., Lassadi, I., Goiffon, I., Baù, D., Marti-Renom, M.A., Bystricky, K. and Dekker, J. 2015. The conformation of yeast chromosome III is mating type dependent and controlled by the recombination enhancer. Cell reports 13(9), pp. 1855–1867.
 
+.. [Enright2002] Enright, A. J., Van Dongen, S., & Ouzounis, C. A. (2002). An efficient algorithm for large-scale detection of protein families. Nucleic Acids Research, 30(7), 1575–1584.
+
 .. [Imakaev2012] Imakaev, M., Fudenberg, G., McCord, R.P., Naumova, N., Goloborodko, A., Lajoie, B.R., Dekker, J. and Mirny, L.A. 2012. Iterative correction of Hi-C data reveals hallmarks of chromosome organization. Nature Methods 9(10), pp. 999–1003.
 
 .. [Le_Dily2014] Le Dily, F., Baù, D., Pohl, A., Vicent, G.P., Serra, F., Soronellas, D., Castellano, G., Wright, R.H.G., Ballare, C., Filion, G., Marti-Renom, M.A. and Beato, M. 2014. Distinct structural transitions of chromatin topological domains correlate with coordinated hormone-induced gene regulation. Genes & Development 28(19), pp. 2151–2162.
 
 .. [Lieberman-Aiden2009] Lieberman-Aiden, E., van Berkum, N.L., Williams, L., Imakaev, M., Ragoczy, T., Telling, A., Amit, I., Lajoie, B.R., Sabo, P.J., Dorschner, M.O., Sandstrom, R., Bernstein, B., Bender, M.A., Groudine, M., Gnirke, A., Stamatoyannopoulos, J., Mirny, L.A., Lander, E.S. and Dekker, J. 2009. Comprehensive mapping of long-range interactions reveals folding principles of the human genome. Science 326(5950), pp. 289–293.
 
+.. [Marco-Sola2012] Marco-Sola, S., Sammeth, M., Guigo, R. and Ribeca, P. 2012. The GEM mapper: fast, accurate and versatile alignment by filtration. Nat Methods 9(12), pp. 1185-1188.
+
 .. [Rao2014] Rao, S.S.P., Huntley, M.H., Durand, N.C., Stamenova, E.K., Bochkov, I.D., Robinson, J.T., Sanborn, A.L., Machol, I., Omer, A.D., Lander, E.S. and Aiden, E.L. 2014. A 3D map of the human genome at kilobase resolution reveals principles of chromatin looping. Cell 159(7), pp. 1665–1680.
+
+.. [Russel2011] Russel, D., Lasker, K., Webb, B., Velázquez-Muriel, J., Tjioe, E., Schneidman-Duhovny, D., et al. (2012). Putting the Pieces Together: Integrative Modeling Platform Software for Structure Determination of Macromolecular Assemblies. PLoS Biology, 10(1), e1001244.
 
 .. [Trussart2015] Trussart, M., Serra, F., Baù, D., Junier, I., Serrano, L. and Marti-Renom, M.A. 2015. Assessing the limits of restraint-based 3D modeling of genomes and genomic domains. Nucleic Acids Research 43(7), pp. 3465–3477.
 
