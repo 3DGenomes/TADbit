@@ -6,14 +6,15 @@ information needed
 
 """
 
-from argparse                    import HelpFormatter
-from pytadbit.utils.sqlite_utils import delete_entries
-from pytadbit.utils.sqlite_utils import update_wordir_path
-import sqlite3 as lite
 from os                          import path, system, remove
 from string                      import ascii_letters
 from random                      import random
 from shutil                      import copyfile
+from argparse                    import HelpFormatter
+import sqlite3 as lite
+
+from pytadbit.utils.sqlite_utils import delete_entries
+from pytadbit.utils.sqlite_utils import update_wordir_path
 
 DESC = "Delete jobs and results of a given list of jobids in a given directories"
 
@@ -44,13 +45,15 @@ def run(opts):
             cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
             paths.extend([p for p in cur.fetchall()])
 
-
-
         # delete files and directories
         if opts.delete:
             print 'deleting %d files' % len(paths)
             for _, lpath, typ in paths:
-                if typ in protected_types:
+                if typ in protected_types or typ.startswith('EXT_'):
+                    continue
+                # we do not remove anything outside the work directory
+                if not path.realpath(path.join(opts.workdir, lpath)).startswith(
+                        path.realpath(opts.workdir)):
                     continue
                 print '  x ' + path.join(opts.workdir, lpath)
                 system('rm -rf ' + path.join(opts.workdir, lpath))
@@ -65,7 +68,7 @@ def run(opts):
                 else:
                     col = 'JOBid'
                 delete_entries(cur, table, col, jobid)
-                    
+
             for cpath, _, _ in paths:
                 if table.lower() == 'mapped_outputs':
                     elt = 'BEDid'
@@ -81,7 +84,8 @@ def run(opts):
                 print ' * dropped table %s' % table
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
-        remove(dbfile)        
+        remove(dbfile)
+
 
 def populate_args(parser):
     """
@@ -109,6 +113,8 @@ def populate_args(parser):
                         default=False,
                         help='compress files and update paths accordingly')
 
+    glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+
     parser.add_argument('--change_workdir', dest='new_workdir', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''In case folder was moved, input the new path''')
@@ -122,6 +128,10 @@ def populate_args(parser):
 
 def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
+
+    dbpath = path.join(opts.workdir, 'trace.db')
+    if not path.exists(dbpath):
+        raise Exception('ERROR: DB file: %s not found.' % dbpath)
 
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb

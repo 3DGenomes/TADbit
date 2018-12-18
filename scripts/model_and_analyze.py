@@ -36,16 +36,22 @@ A log file will be generated, repeating the message appearing on console, with
 line-specific flags allowing to identify from which step of the computation
 belongs the message.
 """
+import matplotlib
+matplotlib.use('Agg')
+
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
 from pytadbit.modelling.structuralmodels import load_structuralmodels
+from pytadbit                     import load_hic_data_from_bam
+from pytadbit                            import HiC_data
 import os, sys
 import logging
 from cPickle import load, dump
 from random import random
 from string import ascii_letters as letters
 from subprocess import check_call
+import numpy as np
 
 def search_tads(opts, crm, name):
     """
@@ -71,13 +77,13 @@ def search_tads(opts, crm, name):
         if len(opts.group) > 1:
             ali = crm.align_experiments(aligned)
             ali.draw(savefig=os.path.join(opts.outdir, name,
-                                          name + '_tad_alignment.pdf'))
+                                          name + '_tad_alignment.' + opts.fig_format))
         else:
             crm.tad_density_plot(crm.experiments[-1].name, savefig=os.path.join(
-                opts.outdir, name, name + '_tad_alignment.pdf'))
+                opts.outdir, name, name + '_tad_alignment.' + opts.fig_format))
     if "TAD borders" in  opts.analyze:
         crm.visualize(aligned, paint_tads=True, savefig=os.path.join(
-            opts.outdir, name, name + '_tad_matrices.pdf'),
+            opts.outdir, name, name + '_tad_matrices.' + opts.fig_format),
                       normalized=True)
         for exp in aligned:
             crm.experiments[exp].write_tad_borders(os.path.join(
@@ -99,17 +105,45 @@ def load_hic_data(opts, xnames):
     # Data obtained from Hou et al (2012) Molecular Cell.
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
-    for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
+    for xnam, xpath, xnorm, xbias in zip(xnames, opts.data, opts.norm, opts.biases):
+        hic_raw = xpath
+        if xpath:
+            file_name, file_extension = os.path.splitext(xpath)
+            if file_extension == '.bam' or file_extension == '.BAM':
+                hic_raw = load_hic_data_from_bam(xpath, opts.res, biases=xbias if xbias else None, ncpus=int(opts.ncpus))
         crm.add_experiment(
             xnam, exp_type='Hi-C', enzyme=opts.enzyme,
             cell_type=opts.cell,
             identifier=opts.identifier, # general descriptive fields
             project=opts.project, # user descriptions
             resolution=opts.res,
-            hic_data=xpath,
+            hic_data=hic_raw,
             norm_data=xnorm)
+        if xbias:
+            bias_ = load(open(xbias))
+            bias = bias_['biases']
+            bads = bias_['badcol']
+            if bias_['resolution'] != opts.res:
+                raise Exception('ERROR: resolution of biases do not match to the '
+                                'one wanted (%d vs %d)' % (
+                                    bias_['resolution'], opts.res))
+
+            def transform_value_norm(a, b, c):
+                return c / bias[a] / bias[b]
+            size = crm.experiments[-1].size
+            xnorm = [HiC_data([(i + j * size, float(hic_raw[i, j]) /
+                                    bias[i] /
+                                    bias[j] * size)
+                                   for i in bias for j in bias if i not in bads and j not in bads], size)]
+            crm.experiments[xnam]._normalization = 'visibility_factor:1'
+            factor = sum(xnorm[0].values()) / (size * size)
+            for n in xnorm[0]:
+                xnorm[0][n] = xnorm[0][n] / factor
+            crm.experiments[xnam].norm = xnorm
         if not xnorm:
-            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
+            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag,
+                                                 perc_zero=opts.perc_zeros,
+                                                 min_count=int(opts.min_count))
             logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
     if opts.beg > crm.experiments[-1].size:
@@ -144,14 +178,14 @@ def load_optimal_imp_parameters(opts, name, exp):
     return results
 
 
-def optimize(results, opts, name):
+def optimize(results, opts, name, no_load=False):
     """
     Optimize IMP parameters
     """
     scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
                if ':' in opts.scale   else float(opts.scale)  )
-    maxdist = (tuple([int(i) for i in opts.maxdist.split(':')])
-               if ':' in opts.maxdist else int(opts.maxdist))
+    maxdist = (tuple([float(i) for i in opts.maxdist.split(':')])
+               if ':' in opts.maxdist else float(opts.maxdist))
     upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
                if ':' in opts.upfreq  else float(opts.upfreq) )
     lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
@@ -174,11 +208,11 @@ def optimize(results, opts, name):
     tmp = open('_tmp_results_' + tmp_name, 'w')
     dump(results, tmp)
     tmp.close()
-    
+
     tmp = open('_tmp_opts_' + tmp_name, 'w')
     dump(opts, tmp)
     tmp.close()
-    
+
     tmp = open('_tmp_optim_' + tmp_name + '.py', 'w')
     tmp.write('''
 from cPickle import load, dump
@@ -195,8 +229,8 @@ opts_file.close()
 
 scale   = (tuple([float(i) for i in opts.scale.split(":")  ])
            if ":" in opts.scale   else float(opts.scale)  )
-maxdist = (tuple([int(i) for i in opts.maxdist.split(":")])
-           if ":" in opts.maxdist else int(opts.maxdist))
+maxdist = (tuple([float(i) for i in opts.maxdist.split(":")])
+           if ":" in opts.maxdist else float(opts.maxdist))
 upfreq  = (tuple([float(i) for i in opts.upfreq.split(":") ])
            if ":" in opts.upfreq  else float(opts.upfreq) )
 lowfreq = (tuple([float(i) for i in opts.lowfreq.split(":")])
@@ -234,8 +268,23 @@ tmp.close()
         return
 
     ## get best parameters
-    optpar, cc = results.get_best_parameters_dict(
-        reference='Optimized for %s' % (name), with_corr=True)
+    if opts.nmodels_opt == 0:
+        try:
+            optpar = {}
+            optpar['scale'    ] = float(scale)
+            optpar['kbending' ] = 0.0
+            optpar['maxdist'  ] = float(maxdist)
+            optpar['upfreq'   ] = float(upfreq)
+            optpar['lowfreq'  ] = float(lowfreq)
+            optpar['dcutoff'  ] = float(dcutoff)
+            optpar['reference'] = 'Optimized for %s' % (name)
+        except TypeError:
+            raise Exception(('ERROR: to skip optimization you should input '
+                             'single values for parameters, not ranges'))
+        cc = float('nan')
+    else:
+        optpar, cc = results.get_best_parameters_dict(
+            reference='Optimized for %s' % (name), with_corr=True)
 
     sc = optpar['scale']
     md = optpar['maxdist']
@@ -250,8 +299,8 @@ tmp.close()
         opts.outdir, name, '%s_optimal_params.tsv' % (name)))
     if "optimization plot" in opts.analyze:
         results.plot_2d(show_best=20,
-                        savefig="%s/%s_optimal_params.pdf" % (
-                            os.path.join(opts.outdir, name), name))
+                        savefig="%s/%s_optimal_params.%s" % (
+                            os.path.join(opts.outdir, name), name, opts.fig_format))
     if opts.optimize_only:
         logging.info('Optimization done.')
         return
@@ -263,7 +312,7 @@ tmp.close()
                           # like this
     return optpar
 
-def model_region(exp, optpar, opts, name):
+def model_region(exp, optpar, opts, name, seed=1):
     """
     generate structural models
     """
@@ -298,8 +347,8 @@ opts_file.close()
 
 nloci = end - beg + 1
 coords = {"crm"  : opts.crm,
-          "start": opts.beg,
-          "end"  : opts.end}
+          "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
+          "end"  : int(opts.end*opts.res + opts.chrom_start)}
 
 zeros = tuple([i not in zeros for i in xrange(end - beg + 1)])
 
@@ -307,14 +356,20 @@ models =  generate_3d_models(zscores, opts.res, nloci,
                              values=values, n_models=opts.nmodels_mod,
                              n_keep=opts.nkeep_mod,
                              n_cpus=opts.ncpus,
-                             keep_all=True,
-                             first=0, container=opts.container,
+                             keep_all=True, start=%s,  # seed
+                             container=opts.container,
                              config=optpar, coords=coords, zeros=zeros)
 # Save models
 models.save_models(
-    os.path.join(opts.outdir, "%s", "%s" + ".models"))
+    os.path.join(opts.outdir, "%s", "%s" + "%s" + ".models"),
+    minimal=%s)
 
-''' % (tmp_name, name, name))
+    ''' % (tmp_name,
+           seed,
+           name,
+           name,
+           ('_sub-from-seed-%d' % (seed)) if seed != 1 else '',
+           '()' if seed==1 else '["restraints", "zscores", "original_data"]'))
 
     tmp.close()
     check_call(["python", "_tmp_model_%s.py" % tmp_name])
@@ -322,7 +377,9 @@ models.save_models(
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
     models = load_structuralmodels(
-        os.path.join(opts.outdir, name, name + '.models'))
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed != 1 else '') + '.models'))
     if "constraints" in opts.analyze:
         out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
                    'w')
@@ -334,18 +391,19 @@ models.save_models(
         out.close()
     models.experiment = exp
     coords = {"crm"  : opts.crm,
-              "start": opts.beg,
-              "end"  : opts.end}
+              "start": int((opts.beg - 1)*opts.res + opts.chrom_start),
+              "end"  : int(opts.end*opts.res + opts.chrom_start)}
     crm = exp.crm
-    description = {'identifier'     : exp.identifier,
-                   'chromosome'     : coords['crm'],
-                   'start'          : (exp.resolution * coords['start']) if coords['start'] else None,
-                   'end'            : (exp.resolution * coords['end'])   if coords['end'  ] else None,
-                   'species'        : crm.species,
-                   'cell type'      : exp.cell_type,
-                   'experiment type': exp.exp_type,
-                   'resolution'     : exp.resolution,
-                   'assembly'       : crm.assembly}
+    description = {
+        'identifier'     : exp.identifier,
+        'chromosome'     : coords['crm'],
+        'start'          : coords['start'] if coords['start'] else None,
+        'end'            : coords['end'] if coords['end'  ] else None,
+        'species'        : crm.species,
+        'cell type'      : exp.cell_type,
+        'experiment type': exp.exp_type,
+        'resolution'     : exp.resolution,
+        'assembly'       : crm.assembly}
     for key in opts.description:
         description[key] = opts.description[key]
     for desc in exp.description:
@@ -356,6 +414,13 @@ models.save_models(
         m['index'] = i
         m['description'] = description
     models.description = description
+    models.save_models(
+        os.path.join(opts.outdir, name,
+                     name + (('_sub-from-seed-%d' % (seed))
+                             if seed != 1 else '') + '.models'),
+        minimal=() if seed==1 else ["restraints", "zscores", "original_data"])
+    if seed != 1:
+        return None
     return models
 
 
@@ -374,7 +439,7 @@ def main():
     else:
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
-    name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
+    name = '{0}_{1}_{2}'.format(opts.crm, int((opts.beg-1)*opts.res + opts.chrom_start), int(opts.end*opts.res + opts.chrom_start))
 
     ############################################################################
     ############################  LOAD HI-C DATA  ##############################
@@ -388,7 +453,7 @@ def main():
     ############################################################################
     if opts.tad and not opts.analyze_only:
         search_tads(opts, crm, name)
-        
+
     # Save the chromosome
     # Chromosomes can later on be loaded to avoid re-reading the original
     # matrices. See function "load_chromosome".
@@ -403,11 +468,11 @@ def main():
         else:
             exp = crm.experiments[0]
 
-    if  not opts.tad_only and not opts.analyze_only:
+    if  not opts.tad_only and not opts.analyze_only and not opts.norm:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
-                               name + '_column_filtering.pdf'),
+                               name + '_column_filtering.' + opts.fig_format),
                            diagonal=not opts.nodiag)
     if (not opts.tad_only and "column filtering" in opts.analyze
         and not opts.analyze_only):
@@ -428,15 +493,40 @@ def main():
     #######################  LOAD OPTIMAL IMP PARAMETERS #######################
     ############################################################################
 
-    if not opts.analyze_only:
+    if not opts.analyze_only and not opts.model_only:
         results = load_optimal_imp_parameters(opts, name, exp)
-        
+
     ############################################################################
     #########################  OPTIMIZE IMP PARAMETERS #########################
     ############################################################################
 
-    if not opts.analyze_only:
+    if not opts.analyze_only and not opts.model_only:
         optpar = optimize(results, opts, name)
+        if opts.optimize_only:
+            exit()
+    elif opts.model_only:
+        scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
+                   if ':' in opts.scale   else float(opts.scale)  )
+        maxdist = (tuple([float(i) for i in opts.maxdist.split(':')])
+                   if ':' in opts.maxdist else float(opts.maxdist))
+        upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
+                   if ':' in opts.upfreq  else float(opts.upfreq) )
+        lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
+                   if ':' in opts.lowfreq else float(opts.lowfreq))
+        dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
+                   if ':' in opts.dcutoff else float(opts.dcutoff))
+        try:
+            optpar = {}
+            optpar['scale'    ] = float(scale)
+            optpar['kbending' ] = 0.0
+            optpar['maxdist'  ] = float(maxdist)
+            optpar['upfreq'   ] = float(upfreq)
+            optpar['lowfreq'  ] = float(lowfreq)
+            optpar['dcutoff'  ] = float(dcutoff)
+            optpar['reference'] = 'Optimized for %s' % (name)
+        except TypeError:
+            raise Exception(('ERROR: to skip optimization you should input '
+                             'single values for parameters, not ranges'))
 
     ############################################################################
     ##############################  MODEL REGION ###############################
@@ -446,27 +536,47 @@ def main():
     if opts.analyze_only:
         ########################################################################
         # function for loading models
+        files = []
         try:
-            models = load_structuralmodels(
-                os.path.join(opts.outdir, name, name + '.models'))
+            logging.info("\tLoading StructuralModels")
+            fpath = os.path.join(opts.outdir, name, name + '.models')
+            models = load_structuralmodels(fpath)
+            files.append(fpath)
         except IOError:
             pass
+        for fnam in os.listdir(os.path.join(opts.outdir, name)):
+            if fnam.endswith('.models') and '_sub-from-seed-' in fnam:
+                fpath = os.path.join(opts.outdir, name, fnam)
+                logging.info("\t  Grouping with extra StructuralModels from %s" % (fnam))
+                models._extend_models(load_structuralmodels(fpath))
+                files.append(fpath)
+        if len(files) > 1:
+            models.define_best_models(opts.nkeep_mod)
+            logging.info("\tSaving joined StructuralModels at %s" % (fnam))
+            fpath = files[0]
+            os.rename(fpath, fpath + '_tmp')
+            files[0] = fpath + '_tmp'
+            models.save_models(fpath, minimal=())
+            for fpath in files:
+                os.remove(fpath)
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
-        models = model_region(exp, optpar, opts, name)
-        for line in repr(models).split('\n'):
-            logging.info(line)
+        print optpar
+        models = model_region(exp, optpar, opts, name, seed=opts.seed)
+        if models:
+            for line in repr(models).split('\n'):
+                logging.info(line)
+        logging.info('\tSaved models.')
+    if opts.seed != 1:
+        exit()
 
-
-    dcutoff = int(models._config['dcutoff'] *
-                  models._config['scale']   *
-                  models.resolution)
+    dcutoff = models._config['dcutoff'] * models._config['scale'] * models.resolution
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################
-    
+
     if "correlation real/models" in opts.analyze:
         # Calculate the correlation coefficient between a set of kept models and
         # the original HiC matrix
@@ -474,7 +584,7 @@ def main():
         rho, pval = models.correlate_with_real_data(
             cutoff=dcutoff,
             savefig=os.path.join(opts.outdir, name,
-                                 name + '_corre_real.pdf'),
+                                 name + '_corre_real.' + opts.fig_format),
             plot=True)
         logging.info("\t Correlation coefficient: %s [p-value: %s]", rho, pval)
 
@@ -482,22 +592,25 @@ def main():
         # zscore plots
         logging.info("\tZ-score plot...")
         models.zscore_plot(
-            savefig=os.path.join(opts.outdir, name, name + '_zscores.pdf'))
+            savefig=os.path.join(opts.outdir, name, name + '_zscores.' + opts.fig_format))
 
     # Cluster models based on structural similarity
     logging.info("\tClustering all models into sets of structurally similar" +
                  " models...")
     ffact    = 0.95 # Fraction of particles that are within the dcutoff value
-    clcutoff = dcutoff - 50 # RMSD cut-off to consider two models equivalent(nm)
-    for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]:
+    clcutoff = dcutoff * 0.5 # RMSD cut-off to consider two models equivalent(nm)
+    for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4]:
         logging.info('   fact = ' + str(ffact))
-        for clcutoff in [dcutoff / 2 , dcutoff, dcutoff * 1.5]:
+        for clcutoff in [dcutoff / 2 , dcutoff, dcutoff * 1.5, dcutoff * 2, dcutoff * 2.5, dcutoff * 3]:
             try:
                 logging.info('      cutoff = ' + str(clcutoff))
                 models.cluster_models(fact=ffact, dcutoff=clcutoff,
                                       n_cpus=int(opts.ncpus))
-                break
+                singletons = len([1 for m in models if m['cluster'] == 'Singleton'])
+                if singletons < len(models) / 2:
+                    break
             except:
+                singletons = len([1 for m in models if m['cluster'] == 'Singleton'])
                 continue
         else:
             continue
@@ -508,12 +621,12 @@ def main():
     try:
         models.cluster_analysis_dendrogram(
             color=True, savefig=os.path.join(
-                opts.outdir, name, name + '_clusters.pdf'))
+                opts.outdir, name, name + '_clusters.' + opts.fig_format))
     except:
         logging.info("\t\tWARNING: plot for clusters could not be made...")
 
     if not opts.not_write_json:
-        models.write_json(os.path.join(opts.outdir, name, name + '.json'))
+        models.write_json(os.path.join(opts.outdir, name, name + '.json'), title = opts.project+' '+name if opts.project else name)
 
     if not (opts.not_write_xyz and opts.not_write_cmm):
         # Save the clustered models into directories for easy visualization with
@@ -609,8 +722,8 @@ def main():
         logging.info("\tPlotting objective function decay for vbest model...")
         models.objective_function_model(
             0, log=True, smooth=False,
-            savefig=os.path.join(opts.outdir, name, name + '_obj-func.pdf'))
-        
+            savefig=os.path.join(opts.outdir, name, name + '_obj-func.' + opts.fig_format))
+
     if "centroid" in opts.analyze:
         # Get the centroid model of cluster #1
         logging.info("\tGetting centroid...")
@@ -622,9 +735,9 @@ def main():
         # Calculate a consistency plot for all models in cluster #1
         logging.info("\tGetting consistency data...")
         models.model_consistency(
-            cluster=1, cutoffs=range(50, dcutoff + 50, 50),
+            cluster=1, cutoffs=np.arange(dcutoff * 0.5, dcutoff * 1.5, dcutoff / 10),
             savefig =os.path.join(opts.outdir, name,
-                                  name + '_consistency.pdf'),
+                                  name + '_consistency.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name,
                                   name + '_consistency.dat'))
 
@@ -633,7 +746,7 @@ def main():
         logging.info("\tGetting density data...")
         models.density_plot(
             error=True, steps=(1,3,5,7),
-            savefig =os.path.join(opts.outdir, name, name + '_density.pdf'),
+            savefig =os.path.join(opts.outdir, name, name + '_density.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name, name + '_density.dat'))
 
     if "contact map" in opts.analyze:
@@ -648,7 +761,7 @@ def main():
         logging.info("\tGetting angle data...")
         models.walking_angle(
             cluster=1, steps=(1,5),
-            savefig = os.path.join(opts.outdir, name, name + '_wang.pdf'),
+            savefig = os.path.join(opts.outdir, name, name + '_wang.' + opts.fig_format),
             savedata= os.path.join(opts.outdir, name, name + '_wang.dat'))
 
     if "persistence length" in opts.analyze:
@@ -672,8 +785,8 @@ def main():
         nump   = 30   # number of particles (resolution)
         logging.info("\tGetting accessibility data (this can take long)...")
         models.accessibility(radius, nump=nump,
-            error=True, 
-            savefig =os.path.join(opts.outdir, name, name + '_accessibility.pdf'),
+            error=True,
+            savefig =os.path.join(opts.outdir, name, name + '_accessibility.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name, name + '_accessibility.dat'))
 
     # if "accessibility" in opts.analyze:
@@ -704,7 +817,7 @@ def main():
         models.interactions(
             cutoff=dcutoff, steps=(1,3,5),
             savefig =os.path.join(opts.outdir, name,
-                                  name + '_interactions.pdf'),
+                                  name + '_interactions.' + opts.fig_format),
             savedata=os.path.join(opts.outdir, name,
                                   name + '_interactions.dat'),
             error=True)
@@ -760,6 +873,9 @@ def get_options():
     parser.add_argument('--optimize_only', dest='optimize_only', default=False,
                         action='store_true',
                         help='do the optimization of the region and exit')
+    parser.add_argument('--model_only', dest='model_only', default=False,
+                        action='store_true',
+                        help='skip optimization, model with inputparameters only.')
     parser.add_argument('--tad_only', dest='tad_only', action="store_true",
                         default=False,
                         help='[%(default)s] exit after searching for TADs')
@@ -778,6 +894,10 @@ def get_options():
                         help='''path to file(s) with Hi-C data matrix. If many,
                         experiments will be summed up. I.e.: --data
                         replicate_1.txt replicate_2.txt''')
+    glopts.add_argument('--biases', dest='biases', metavar="PATH", nargs='+',
+                        default=[],type=str,
+                        help='''path to pickle file(s) with Hi-C data matrix biases. Use same order
+                        as data. If data are bam files use these biases to skip normalization''')
     glopts.add_argument('--xname', dest='xname', metavar="STR", nargs='+',
                         default=[], type=str,
                         help='''[file name] experiment name(s). Use same order
@@ -788,18 +908,32 @@ def get_options():
     glopts.add_argument('--nodiag', dest='nodiag', action='store_true',
                         help='''If the matrix does not contain self interacting
                         bins (only zeroes in the diagonal)''')
-    glopts.add_argument('--filt', dest='filt', metavar='INT', default=90,
-                        help='''Filter out column with more than a given
-                        percentage of zeroes''')
+    glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
+                        action='store', default=95, type=float,
+                        help=('[%(default)s%%] maximum percentage of zeroes '
+                              'allowed per column.'))
+    glopts.add_argument('--min_count', dest='min_count', metavar="INT",
+                        action='store', default=None, type=float,
+                        help=('''[%(default)s] minimum number of reads mapped to
+                        a bin (recommended value could be 2500). If set this
+                        option overrides the perc_zero filtering... This option is
+                        slightly slower.'''))
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
                         default=None,
                         help='genomic coordinate from which to start modeling')
+    glopts.add_argument('--chrom_start', dest='chrom_start', metavar="INT", type=float,
+                        default=0,
+                        help='genomic coordinate corresponding to the bin 0 of the input matrices')
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
     glopts.add_argument('--res', dest='res', metavar="INT", type=int,
                         help='resolution of the Hi-C experiment')
+    glopts.add_argument('--fig_format', dest='fig_format', metavar="STR",
+                        default="pdf",
+                        help='''file format and extension for figures and plots
+                        (can be any supported by matplotlib, png, eps...)''')
     glopts.add_argument('--outdir', dest='outdir', metavar="PATH",
                         default=None,
                         help='out directory for results')
@@ -828,6 +962,9 @@ def get_options():
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
+    modelo.add_argument('--seed', dest='seed', metavar="INT",
+                        default=1, type=int,
+                        help=('[%(default)s] seed number from which to start modeling'))
 
     #########################################
     # OPTIMIZATION
@@ -946,7 +1083,7 @@ def get_options():
                 value = True
             elif value == 'False':
                 value = False
-            elif key in ['data', 'norm', 'xname', 'group', 'analyze']:
+            elif key in ['data', 'biases', 'norm', 'xname', 'group', 'analyze']:
                 new_opts.setdefault(key, []).extend(value.split())
                 continue
             new_opts[key] = value
@@ -1007,6 +1144,8 @@ def get_options():
         opts.data = [None] * len(opts.norm)
     else:
         opts.norm = [None] * len(opts.data)
+    if not opts.biases:
+        opts.biases = [None] * len(opts.data)
     if not opts.group:
         opts.group = [len(opts.data)]
     else:
@@ -1027,6 +1166,7 @@ def get_options():
     opts.nkeep_opt   = int(opts.nkeep_opt  )
     opts.ncpus       = int(opts.ncpus      )
     opts.res         = int(opts.res        )
+    opts.chrom_start = int(opts.chrom_start)
 
     # TODO: UNDER TEST
     opts.container   = None #['cylinder', 1000, 5000, 100]
@@ -1034,8 +1174,8 @@ def get_options():
     # do the division to bins
     if not opts.tad_only:
         try:
-            opts.beg = int(float(opts.beg) / opts.res)
-            opts.end = int(float(opts.end) / opts.res)
+            opts.beg = int(float(int(opts.beg) - opts.chrom_start) / opts.res) + 1
+            opts.end = int(float(int(opts.end) - opts.chrom_start) / opts.res)
             if opts.end - opts.beg <= 2:
                 raise Exception('"beg" and "end" parameter should be given in ' +
                                 'genomic coordinates, not bin')
@@ -1043,7 +1183,7 @@ def get_options():
             pass
 
     # Create out-directory
-    name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
+    name = '{0}_{1}_{2}'.format(opts.crm, int((opts.beg - 1)*opts.res + opts.chrom_start), int(opts.end*opts.res + opts.chrom_start))
     if not os.path.exists(os.path.join(opts.outdir, name)):
         os.makedirs(os.path.join(opts.outdir, name))
 

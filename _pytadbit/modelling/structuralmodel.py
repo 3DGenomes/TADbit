@@ -52,6 +52,8 @@ class StructuralModel(dict):
         :returns: distance between one point of the model and an external
            coordinate
         """
+        if part1 == 0 or part2 == 0:
+            raise Exception('Particle number must be strictly positive\n')
         return sqrt((self['x'][part1-1] - self['x'][part2-1])**2 +
                     (self['y'][part1-1] - self['y'][part2-1])**2 +
                     (self['z'][part1-1] - self['z'][part2-1])**2)
@@ -59,7 +61,7 @@ class StructuralModel(dict):
 
     def _square_distance(self, part1, part2):
         """
-        Calculates the square istance between one point of the model and an
+        Calculates the square instance between one point of the model and an
         external coordinate
 
         :param part1: index of a particle in the model
@@ -116,9 +118,9 @@ class StructuralModel(dict):
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
-        rog = sqrt(sum([self._square_distance_to(i,
-                                                 (com['x'], com['y'], com['z']))
-                        for i in xrange(len(self))]) / len(self))
+        rog = sqrt(sum(self._square_distance_to(i,
+                                                (com['x'], com['y'], com['z']))
+                       for i in xrange(len(self))) / len(self))
         return rog
 
 
@@ -545,7 +547,15 @@ class StructuralModel(dict):
                 'g=\"1\" b=\"1\" radius=\"' + str(self['radius']/10.) +
                 # str(self['radius']/2) +
                 '\"/>\n')
+        break_chroms = [1]
+        try:
+            for beg, end in zip(self['description']['start'],self['description']['end']):
+                break_chroms.append((end - beg)/self['description']['resolution']+break_chroms[-1])
+        except:
+            pass
         for i in xrange(1, len(self['x'])):
+            if i in break_chroms[1:]:
+                continue
             out += form % (i, i + 1)
         out += '</marker_set>\n'
 
@@ -658,22 +668,22 @@ class StructuralModel(dict):
             raise TypeError('one of function, list or string is required\n')
         form = '''
 {
-	"chromatin" : {
-		"id" : %(sha)s,
-		"title" : "%(title)s",
-		"source" : "TADbit %(version)s",
-		"metadata": {%(descr)s},
-		"type" : "tadbit",
-	        "data": {
-		    "models":     [
-		        { %(xyz)s },
-		    ],
-	            "clusters":[%(cluster)s],
-      	            "centroid":[%(centroid)s],
-	            "restraints": [[][]],
-		    "chromatinColor" : [ ]
-		}
-	}
+    "chromatin" : {
+        "id" : %(sha)s,
+        "title" : "%(title)s",
+        "source" : "TADbit %(version)s",
+        "metadata": {%(descr)s},
+        "type" : "tadbit",
+            "data": {
+            "models":     [
+                { %(xyz)s },
+            ],
+                "clusters":[%(cluster)s],
+                      "centroid":[%(centroid)s],
+                "restraints": [[][]],
+            "chromatinColor" : [ ]
+        }
+    }
 }
 '''
         fil = {}
@@ -682,7 +692,7 @@ class StructuralModel(dict):
         fil['version'] = version
         fil['descr']   = ''.join('\n', ',\n'.join([
             '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, str) else v)
-            for k, v in self['description'].items()]), '\n')
+            for k, v in self.get('description', {}).items()]), '\n')
         fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
                                                          self['z'][i])
                                    for i in xrange(len(self['x']))])
@@ -740,15 +750,35 @@ class StructuralModel(dict):
             out += model_header(self)
         form = "%s\t%s\t%.3f\t%.3f\t%.3f\n"
         # TODO: do not use resolution directly -> specific to Hi-C
-        for i in xrange(len(self['x'])):
-            out += form % (
-                i + 1,
-                '%s:%s-%s' % (
-                    self['description']['chromosome'],
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * i + 1,
-                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * (i + 1)),
-                round(self['x'][i], 3),
-                round(self['y'][i], 3), round(self['z'][i], 3))
+        chrom_list = self['description']['chromosome']
+        chrom_start = self['description']['start']
+        chrom_end = self['description']['end']
+        if not isinstance(chrom_list, list):
+            chrom_list = [chrom_list]
+            chrom_start = [chrom_start]
+            chrom_end = [chrom_end]
+
+        chrom_start = [(int(c) / int(self['description']['resolution'])
+                        if int(c) else 0)
+                       for c in chrom_start]
+        chrom_end = [(int(c) / int(self['description']['resolution'])
+                      if int(c) else len(self['x']))
+                     for c in chrom_end]
+
+        offset = -chrom_start[0]
+        for crm in xrange(len(chrom_list)):
+            for i in range(chrom_start[crm] + offset, chrom_end[crm] + offset):
+                out += form % (
+                    i + 1,
+                    '%s:%s-%s' % (
+                        chrom_list[crm],
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i - offset) + 1,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i + 1 - offset)),
+                    round(self['x'][i], 3),
+                    round(self['y'][i], 3), round(self['z'][i], 3))
+            offset += (chrom_end[crm] - chrom_start[crm])
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()
@@ -757,6 +787,75 @@ class StructuralModel(dict):
         else:
             return None
 
+    def write_xyz_babel(self, directory, model_num=None, get_path=False,
+                        rndname=True, filename=None):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model using a file format compatible with babel
+        (http://openbabel.org/wiki/XYZ_%28format%29).
+        Outfile is tab separated column with the bead number being the
+        first column, then the genomic coordinate and finally the 3
+        coordinates X, Y and Z
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        :param None filename: overide the default file name writing
+        """
+        if filename:
+            path_f = '%s/%s' % (directory, filename)
+        else:
+            if rndname:
+                path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+            else:
+                path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                    self['rand_init'])
+        out = ''
+        # Write header as number of atoms
+        out += str(len(self['x']))
+        # Write comment as type of molecule
+        out += "\nDNA\n"
+
+        form = "%s\t%.3f\t%.3f\t%.3f\n"
+        # TODO: do not use resolution directly -> specific to Hi-C
+        chrom_list = self['description']['chromosome']
+        chrom_start = self['description']['start']
+        chrom_end = self['description']['end']
+        if not isinstance(chrom_list, list):
+            chrom_list = [chrom_list]
+            chrom_start = [chrom_start]
+            chrom_end = [chrom_end]
+        chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
+        chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
+        offset = 0
+        for crm in xrange(len(chrom_list)):
+            for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
+                out += form % (
+                    i + 1,
+                    '%s:%s-%s' % (
+                        chrom_list[crm],
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i - offset) + 1,
+                        int(chrom_start[crm] or 0) +
+                            int(self['description']['resolution']) * (i + 1 - offset)),
+                    round(self['x'][i], 3),
+                    round(self['y'][i], 3), round(self['z'][i], 3))
+            offset += (chrom_end[crm]-chrom_start[crm])
+        out_f = open(path_f, 'w')
+        out_f.write(out)
+        out_f.close()
+        if get_path:
+            return path_f
+        else:
+            return None
 
     def view_model(self, tool='chimera', savefig=None, cmd=None,
                    center_of_mass=False, gyradius=False, color='index',

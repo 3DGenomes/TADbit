@@ -5,6 +5,29 @@ Definition and mapping of restriction enymes
 """
 
 from re import compile
+from warnings import warn
+
+from scipy.stats import binom_test
+
+from pytadbit.utils.file_handling import magic_open
+
+
+def iupac2regex(restring):
+    """
+    Convert target sites with IUPAC nomenclature to regex pattern
+    """
+    restring = restring.replace('R', '[AG]')
+    restring = restring.replace('Y', '[CT]')
+    restring = restring.replace('M', '[AC]')
+    restring = restring.replace('K', '[GT]')
+    restring = restring.replace('S', '[CG]')
+    restring = restring.replace('W', '[AT]')
+    restring = restring.replace('H', '[ACT]')
+    restring = restring.replace('B', '[CGT]')
+    restring = restring.replace('V', '[ACG]')
+    restring = restring.replace('D', '[AGT]')
+    restring = restring.replace('N', '[ATGC]')
+    return restring
 
 
 def count_re_fragments(fnam):
@@ -30,7 +53,6 @@ def count_re_fragments(fnam):
     return frag_count
 
 
-
 def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
@@ -54,16 +76,31 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     :param genome_seq: a dictionary containing the genomic sequence by
        chromosome
     """
-    enzyme      = RESTRICTION_ENZYMES[enzyme_name]
-    enz_pattern = compile(enzyme.replace('|', ''))
-    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
+    warn('WARNING: not reviewed since multiple-cut branch, and the use of regexpinstead of index')
+    if isinstance(enzyme_name, str):
+        enzyme_names = [enzyme_name]
+    elif isinstance(enzyme_name, list):
+        enzyme_names = enzyme_name
+    enzymes = {}
+    for name in enzyme_names:
+        enzymes[name] = RESTRICTION_ENZYMES[name]
+
+    # we match the full cut-site but report the position after the cut site
+    # (third group of the regexp)
+    restring = ('%s') % ('|'.join(['(?<=%s(?=%s))' % tuple(enzymes[n].split('|'))
+                                   for n in enzymes]))
+    # IUPAC conventions
+    restring = iupac2regex(restring)
+
+    enz_pattern = compile(restring)
+
     frags = {}
     count = 0
     for crm in genome_seq:
         seq = genome_seq[crm]
         frags[crm] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start() + enz_cut
+            pos = match.end() + 1
             frags[crm].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
@@ -71,6 +108,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     if verbose:
         print 'Found %d RE sites' % count
     return frags
+
 
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
@@ -97,9 +135,22 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     :param 100000 frag_chunk: in order to optimize the search for nearby RE
        sites, each chromosome is splitted into chunks.
     """
-    enzyme      = RESTRICTION_ENZYMES[enzyme_name]
-    enz_pattern = compile(enzyme.replace('|', ''))
-    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
+    if isinstance(enzyme_name, basestring):
+        enzyme_names = [enzyme_name]
+    elif isinstance(enzyme_name, list):
+        enzyme_names = enzyme_name
+    enzymes = {}
+    for name in enzyme_names:
+        enzymes[name] = RESTRICTION_ENZYMES[name]
+    # we match the full cut-site but report the position after the cut site
+    # (third group of the regexp)
+    restring = ('%s') % ('|'.join(['(?<=%s(?=%s))' % tuple(enzymes[n].split('|'))
+                                   for n in enzymes]))
+    # IUPAC conventions
+    restring = iupac2regex(restring)
+
+    enz_pattern = compile(restring)
+
     frags = {}
     count = 0
     for crm in genome_seq:
@@ -107,7 +158,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
         frags[crm][0] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start() + enz_cut
+            pos = match.end() + 1
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
@@ -140,9 +191,11 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         print 'Found %d RE sites' % count
     return frags
 
+
 def complementary(seq):
     trs = dict([(nt1, nt2) for nt1, nt2 in zip('ATGCN', 'TACGN')])
     return ''.join([trs[s] for s in seq[::-1]])
+
 
 def repaired(r_enz):
     """
@@ -155,15 +208,75 @@ def repaired(r_enz):
     return complementary(beg + site[min(len(beg), len(end)) :
                                     max(len(beg), len(end))])
 
-def religated(r_enz):
+
+def religateds(r_enzs):
     """
-    returns the resulting sequence after religation of two digested and repaired
-    ends.
+    returns the resulting list of all possible sequences after religation of two
+    digested and repaired ends.
     """
-    site = RESTRICTION_ENZYMES[r_enz]
-    beg, end = site.split('|')
-    site = site.replace('|', '')
-    return beg + site[min(len(beg), len(end)) : max(len(beg), len(end))] + end
+    ligations = {}
+    for r_enz1 in r_enzs:
+        for r_enz2 in r_enzs:
+            site1 = RESTRICTION_ENZYMES[r_enz1]
+            site2 = RESTRICTION_ENZYMES[r_enz2]
+            beg1, end1 = site1.split('|')
+            _, end2 = site2.split('|')
+            site1 = site1.replace('|', '')
+            site2 = site2.replace('|', '')
+            ligations[(r_enz1, r_enz2)] = beg1 + end1[:len(end1)-len(beg1)] + end2
+    return ligations
+
+
+def identify_re(fnam, nreads=100000):
+    """
+    Search most probable restriction enzyme used in the Hi-C experiment.
+    Uses binomial test and some heuristics.
+
+    :param fnam: path to FASTQ file
+    :param 100000 nreads: number of reads to use for prediction, the more the
+       better (and slower)
+
+    :returns: 1- most probable pattern, 2- the corresponding list of restriction
+       enzyme names and 3- p-value of binomial test (which is not necessarily
+       meaningful).
+    """
+    pats = {}
+    for k in RESTRICTION_ENZYMES:
+        pat = RESTRICTION_ENZYMES[k].split('|')[1]
+        if len(pat) < 1:
+            continue
+        pats.setdefault(pat, {'name': [], 're': compile(pat), 'count': 0})
+        pats[pat]['name'].append(k)
+
+    fh = magic_open(fnam)
+    for _ in xrange(nreads):
+        _ = fh.next()
+        s = fh.next()[:14]
+        _ = fh.next()
+        _ = fh.next()
+        for pat in pats:
+            m = pats[pat]['re'].match(s)
+            if m and m.start() == 0:
+                pats[pat]['count'] += 1
+
+    bestks = []
+    best_pv = 1
+    for pv, k in sorted((binom_test(pats[k]['count'], nreads, 0.25**len(k), alternative='greater'), k)
+                        for k in pats if pats[k]['count'])[:10]:
+        # print k, pv
+        if pv <= best_pv:
+            best_pv = pv
+            bestks.append(k)
+    # some times several patterns are equally probable (pv=0.0), in this case
+    # we take the longest pattern that has a unique length.
+    if len(bestks) > 1:
+        lens = [len(k) for k in bestks]
+        lens = dict((l, lens.count(l)) for l in set(lens))
+        bestk = max([k for k in bestks if lens[len(k)] == 1], key=len)
+    else:
+        bestk = bestks[0]
+
+    return bestk, pats[bestk]['name'], best_pv
 
 
 class RE_dict(dict):
@@ -175,7 +288,7 @@ class RE_dict(dict):
                 if nam.lower() == i.lower():
                     return self[nam]
             raise KeyError('Restriction Enzyme %s not found\n' % (i))
-    
+
 
 RESTRICTION_ENZYMES = RE_dict([('AanI'       , 'TTA|TAA'                     ),
                                ('AarI'       , 'CACCTGC|'                    ),

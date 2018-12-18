@@ -7,42 +7,42 @@ Schematic flow chart for five iterations (it = 0->5) starting from the symmetric
 matrix W of size N:
 
    +---------->  Wij
-   |    
+   |
    |              |
    |              v
    |             __
    |             \
    |        Si = /_    Wij
    |            j=0->N
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                   _
    |        DBi = Si / S
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |        Bi = Bi x DBi             ---> keep track, used as expected value
-   |    
+   |
    |              |
    |              v
-   |    
+   |
    |                 Wij
    |       Wij = -----------
-   |              DBi x DBj  
-   |    
+   |              DBi x DBj
+   |
    |              |
    |        it<5 / \ it=5
-   |____________/   \_________   TADbit          _           
+   |____________/   \_________   TADbit          _
     it++                     \`----------> Wij / S    meaning that: Si = O(1)
                              |                        ('Si' tends towards one
                              |                         when 'it' -> infinite)
                              |Strict Imakaev
                              |
                              v
-                             
+
                             Wij
                           -------  meaning that: Si = 1
                            ___
@@ -50,6 +50,87 @@ matrix W of size N:
                            /__ Wi
 
 """
+#===============================================================================
+# try:
+#     import rpy2.robjects as robjects
+#     from rpy2.robjects.packages   import importr
+#     from rpy2.rinterface          import RRuntimeError
+#     try:
+#         dryhic = importr('dryhic')
+#         from numpy import float64
+#     except RRuntimeError:
+#         pass
+# except ImportError:
+#     pass
+#===============================================================================
+
+from subprocess import Popen, PIPE
+from os import path
+
+from numpy import genfromtxt
+
+from pytadbit.utils.file_handling import which
+
+
+def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None,
+         seed=1, **kwargs):
+    """
+    Normalizes according to oneD normalization that takes into account the GC
+    content, mappability and the number of restriction sites per bin.
+
+    Vidal, E., le Dily, F., Quilez, J., Stadhouders, R., Cuartero, Y., Graf, T., Marti-Renom, Marc A., Beato, M., Filion, G. (2017).
+    OneD: increasing reproducibility of Hi-C Samples with abnormal karyotypes.
+    bioRxiv. http://doi.org/10.1101/148254
+
+    :param form: string representing an R Formulae
+    :param None p_fit: proportion of data to be used in fitting (for very
+       large datasets). Number between 0 and 1
+    :param kwargs: dictionary with keys present in the formula and values being
+       lists of equal length.
+       for example:
+           oneD(tot=[1,2,3...],
+                map=[1,2,3...],
+                res=[1,2,3...],
+                cg =[1,2,3...])
+
+    :returns: list of biases to use to normalize the raw matrix of interactions
+    """
+
+    script_path = which('normalize_oneD.R')
+    proc_par = ["Rscript", "--vanilla", script_path]
+
+    in_csv = path.join(tmp_dir, 'tot.csv')
+    proc_par.append(in_csv)
+
+    csvfile = open(in_csv, 'w')
+    headers = sorted(kwargs.keys())
+    csvfile.write(','.join(headers) + '\n')
+    csvfile.write('\n'.join(','.join(str(kwargs[k][i]) for k in headers)
+                            for i in xrange(len(kwargs['tot']))) + '\n')
+    csvfile.close()
+
+    out_csv = path.join(tmp_dir, 'biases.csv')
+    proc_par.append(out_csv)
+
+    proc_par.append('"%s"' % (form))
+
+    if p_fit:
+        proc_par.append(str(p_fit))
+
+    if seed > 1:
+        proc_par.append(str(seed))
+    elif seed < 1:
+        raise Exception(('ERROR: seed number (currently: %d) should be an '
+                         'interger greater than 1 (because of R)') % (seed))
+
+    proc = Popen(proc_par, stderr=PIPE)
+    err = proc.stderr.readlines()
+    print '\n'.join(err)
+
+    biases_oneD = genfromtxt(out_csv, delimiter=',', dtype=float)
+
+    return biases_oneD
+
 
 def _update_S(W):
     S = {}
@@ -60,12 +141,14 @@ def _update_S(W):
     meanS /= len(W)
     return S, meanS
 
+
 def _updateDB(S, meanS, B):
     DB = {}
     for bin1 in S:
         DB[bin1] = float(S[bin1]) / meanS
         B[bin1] *= DB[bin1]
     return DB
+
 
 def _update_W(W, DB):
     for bin1 in W:
@@ -76,6 +159,7 @@ def _update_W(W, DB):
                 W1[bin2] /= DBbin1 * DB[bin2]
             except ZeroDivisionError: # whole row is empty
                 continue
+
 
 def copy_matrix(hic_data, bads):
     W = {}
@@ -91,11 +175,12 @@ def copy_matrix(hic_data, bads):
             W[i][j] = v
     return W
 
+
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False, **kwargs):
     """
     Implementation of iterative correction Imakaev 2012
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param None remove: columns not to consider
@@ -121,7 +206,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     if len(B) == 0:
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     if verbose:
-        print "  - computing baises"
+        print "  - computing biases"
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
@@ -149,14 +234,14 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.
-    
+
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
     :param 0.05 signal_to_noise: to calculate expected interaction counts,
        if not enough reads are observed at a given distance the observations
        of the distance+1 are summed. a signal to noise ratio of < 0.05
        corresponds to > 400 reads.
-    
+
     :returns: a vector of biases (length equal to the size of the matrix)
     """
     min_n = signal_to_noise ** -2. # equals 400 when default
@@ -181,6 +266,7 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
             expc[dist] = val
     return expc
 
+
 def _meandiag(hic_data, dist, diag, min_n, size, bads):
     if hic_data.section_pos:
         for crm in hic_data.section_pos:
@@ -195,11 +281,10 @@ def _meandiag(hic_data, dist, diag, min_n, size, bads):
                 continue
             diag.append(hic_data[i, i + dist])
     sum_diag = sum(diag)
-    if len(diag) == 0:
+    if not diag:
         return dist + 1, 0.
     if sum_diag > min_n:
         return dist + 1, float(sum_diag) / len(diag)
-    elif dist >= size:
+    if dist >= size:
         return dist + 1, float(sum_diag) / len(diag)
-    else:
-        return _meandiag(hic_data, dist + 1, diag, min_n, size, bads)
+    return _meandiag(hic_data, dist + 1, diag, min_n, size, bads)

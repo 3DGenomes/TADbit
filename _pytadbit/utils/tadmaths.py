@@ -1,15 +1,11 @@
 """
 06 Aug 2013
-
-
 """
 
 from bisect    import bisect_left
 from itertools import combinations
-from math      import log10, exp
 from warnings  import warn
 import numpy as np
-
 
 def mad(arr):
     """ Median Absolute Deviation: a "Robust" version of standard deviation.
@@ -22,6 +18,7 @@ def mad(arr):
     med  = np.median(arr)
     return np.median(np.abs(arr - med))
 
+
 def right_double_mad(arr):
     """ Double Median Absolute Deviation: a 'Robust' version of standard deviation.
         Indices variability of the sample.
@@ -33,6 +30,7 @@ def right_double_mad(arr):
     med  = np.median(arr)
     right_mad = np.median(np.abs(arr[arr >  med] - med))
     return right_mad
+
 
 def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
@@ -50,7 +48,7 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
     for _ in xrange(1, jmax):
         contour_guess = contour / guess
-        expcx = exp(-contour_guess) - 1
+        expcx = np.exp(-contour_guess) - 1
         # function
         fx = 2 * pow(guess, 2) * (contour_guess + expcx) - sq_length
         # derivative
@@ -89,7 +87,8 @@ class Interpolate(object):
 
 
 def transform(val):
-    return log10(val)
+    return np.log10(val)
+
 
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
@@ -104,10 +103,12 @@ def nozero_log(values):
         except ValueError:
             values[i] = logminv
 
+
 def nozero_log_list(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     try:
-        transform(0)
+        if not np.isfinite(transform(0)):
+            raise Exception()
         minv = 0.
     except:
         try:
@@ -120,10 +121,12 @@ def nozero_log_list(values):
     logminv = transform(minv)
     return [transform(v) if v else logminv for v in values]
 
+
 def nozero_log_matrix(values, transformation):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     try:
-        transform(0)
+        if not np.isfinite(transform(0)):
+            raise Exception()
         minv = 0.
     except:
         try:
@@ -212,7 +215,6 @@ def calinski_harabasz(scores, clusters):
     return ((between_cluster / (len(cluster_list) - 1))
             /
             (within_cluster / (nmodels - len(cluster_list))))
-
 
 
 def mean_none(values):

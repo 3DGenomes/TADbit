@@ -90,7 +90,7 @@ def main():
                            'installation. Do you want to follow? [y/N]')
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
-    
+
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
@@ -101,6 +101,12 @@ def main():
                                     language = "c",
                                     sources=['src/tadbit_alone_py.c'],
                                     extra_compile_args=['-std=c99'])
+    # c++ module to compute the distance matrix of single model
+    squared_distance_matrix_module = Extension('pytadbit.squared_distance_matrix',
+                                language = "c++",
+                                runtime_library_dirs=['3d-lib/'],
+                                sources=['src/3d-lib/squared_distance_matrix_calculation_py.c'],
+                                extra_compile_args=["-ffast-math"])
     # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 language = "c++",
@@ -193,7 +199,8 @@ def main():
         author_email = 'serra.francois@gmail.com',
         ext_modules  = [pytadbit_module, pytadbit_module_old,
                         eqv_rmsd_module, centroid_module,
-                        consistency_module, aligner3d_module],
+                        consistency_module, aligner3d_module,
+                        squared_distance_matrix_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},
         packages     = ['pytadbit', 'pytadbit.parsers', 'pytadbit.tools',
                         'pytadbit.boundary_aligner', 'pytadbit.utils',
@@ -211,7 +218,7 @@ def main():
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
         scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
-                        'scripts/tadbit'],
+                        'scripts/tadbit', 'scripts/normalize_oneD.R'],
         data_files   = [(path.expanduser('~'),
                          ['extras/.bash_completion'])]
     )

@@ -1,31 +1,20 @@
 
-from pytadbit._version import __version__
 from os import environ
 from subprocess import Popen, PIPE, check_call, CalledProcessError
-import locale
 
-# make sure that we are comparing strings in the same way as the bash sort
-# command used in mapping
-try:
-    locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
-except:
-    environ["LANG"] = "en_US.UTF-8"
-    try:
-        locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
-    except:
-        pass
+from pytadbit._version import __version__
 
-## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
-if not "DISPLAY" in environ:
-    import matplotlib
-    matplotlib.use('Agg')
-else:
-    try:
-        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
-                   shell=True, stdout=PIPE, stderr=PIPE)
-    except CalledProcessError:
-        import matplotlib
-        matplotlib.use('Agg')
+# ## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
+# if not "DISPLAY" in environ:
+#     import matplotlib
+#     matplotlib.use('Agg')
+# else:
+#     try:
+#         check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
+#                    shell=True, stdout=PIPE, stderr=PIPE)
+#     except CalledProcessError:
+#         import matplotlib
+#         matplotlib.use('Agg')
 
 def get_dependencies_version(dico=False):
     """
@@ -107,18 +96,19 @@ def get_dependencies_version(dico=False):
                           sorted(versions.keys())])
 
 
-from pytadbit.hic_data             import HiC_data
-from pytadbit.tadbit               import tadbit, batch_tadbit
-from pytadbit.chromosome           import Chromosome
-from pytadbit.experiment           import Experiment, load_experiment_from_reads
-from pytadbit.chromosome           import load_chromosome
+from pytadbit.hic_data                   import HiC_data
+from pytadbit.tadbit                     import tadbit, batch_tadbit
+from pytadbit.chromosome                 import Chromosome
+from pytadbit.experiment                 import Experiment, load_experiment_from_reads
+from pytadbit.chromosome                 import load_chromosome
 from pytadbit.modelling.structuralmodels import StructuralModels
 from pytadbit.modelling.structuralmodels import load_structuralmodels
-from pytadbit.parsers.hic_parser   import load_hic_data_from_reads
-from pytadbit.modelling.impmodel   import load_impmodel_from_cmm
-from pytadbit.modelling.impmodel   import load_impmodel_from_xyz
-from pytadbit.modelling.impmodel   import IMPmodel
-from pytadbit.parsers.hic_parser   import read_matrix
+from pytadbit.parsers.hic_parser         import load_hic_data_from_reads
+from pytadbit.parsers.hic_parser         import load_hic_data_from_bam
+from pytadbit.modelling.impmodel         import load_impmodel_from_cmm
+from pytadbit.modelling.impmodel         import load_impmodel_from_xyz
+from pytadbit.modelling.impmodel         import IMPmodel
+from pytadbit.parsers.hic_parser         import read_matrix
 try:
     from pytadbit.modelling.impoptimizer import IMPoptimizer
 except ImportError:

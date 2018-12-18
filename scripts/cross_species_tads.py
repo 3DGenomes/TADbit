@@ -21,7 +21,7 @@ def main():
     main function
     """
     opts = get_options()
-    
+
     # load all chromosomes of original genome
     genome = {}
     if opts.verbose:
@@ -48,17 +48,17 @@ def main():
     # save new chromosomes
     save_new_genome(genome if opts.check else new_genome, trace, opts.check,
                     opts.target_species, rootdir)
-    
+
 
 def get_options():
     """
     parse option from call
-    
+
     sys.argv = ['', '--genome', '/home/fransua/db/hi-c/dixon_hsap-mmus/mmus/100Kb/',
                 '--species', 'mus_musculus', '--to_species', 'homo_sapiens',
                 '--from_map', 'NCBIM37', '--to_map', 'GRCm38', '--res', '100000',
                 '-o', '/home/fransua/Box/tadbit/scripts/hsap2mmus/']
-    
+
     """
 
     parser = OptionParser(
@@ -69,7 +69,7 @@ def get_options():
                       help='''path to a directory with a list of
                       chromosomes saved through tadbit (required if not
                       passing chromosomes)''')
-    # parser.add_option('--crm', dest='crm', metavar="PATH", 
+    # parser.add_option('--crm', dest='crm', metavar="PATH",
     #                   help='''path to input file, a chromosome saved through
     #                   tadbit (required if not passing genome)''')
     parser.add_option('--species', dest='original_species', metavar="STRING",
@@ -89,7 +89,7 @@ def get_options():
                       help='''NCBI ID of the assembly we want to map to (i.e.:
                       GRCm38 for mouse or GRCh37 for human) -- Needed with
                       "from_map"''')
-    parser.add_option('--check', 
+    parser.add_option('--check',
                       dest='check', default=False, action='store_true',
                       help='''[%default] do not convert coordinates, just check
                       if convertion is possible. If not border is removed.''')
@@ -104,10 +104,10 @@ def get_options():
                       default=None,
                       help='''Wanted resolution for the detection of TADs (i.e.:
                       100Kb)''')
-    parser.add_option('--verbose', 
+    parser.add_option('--verbose',
                       dest='verbose', default=True, action='store_false',
                       help='''[%default] verbosity''')
-    parser.add_option('--continue', 
+    parser.add_option('--continue',
                       dest='skip', default=True, action='store_false',
                       help='''[%default] skips chromosomes already saved in the
                       output directory''')
