@@ -1805,7 +1805,7 @@ class StructuralModels(object):
                 original_data = self._original_data
             for i in xrange(len(original_data)):
                 for j in xrange(i + off_diag, len(original_data)):
-                    if not model_matrix[i][j] > 0 or not original_data[i][j] > 0:
+                    if not original_data[i][j] > 0:
                         continue
                     oridata.append(original_data[i][j])
                     moddata.append(model_matrix[i][j])
