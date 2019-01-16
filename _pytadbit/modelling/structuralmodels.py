@@ -1,13 +1,14 @@
 """
 19 Jul 2013
 """
-from cPickle                          import load, dump
+from cPickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn
 from string                           import uppercase as uc, lowercase as lc
-from random                           import random
-from os.path                          import exists
+from random                           import random, randint
+from os.path                          import exists, isdir
+from os                               import system 
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
@@ -39,6 +40,7 @@ from pytadbit.utils.extraviews        import tad_coloring
 from pytadbit.utils.extraviews        import tad_border_coloring
 from pytadbit.utils.extraviews        import color_residues
 from pytadbit.modelling.impmodel      import IMPmodel
+from pytadbit.modelling.lammpsmodel   import LAMMPSmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
 from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
@@ -84,13 +86,15 @@ def load_structuralmodels(path_f):
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
             zeros=svd['zeros'], restraints=svd.get('restraints', None),
-            description=svd.get('description', None))
+            description=svd.get('description', None), stages=svd.get('stages', None),
+            models_per_step=svd.get('models_per_step', 0))
     except KeyError:  # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            restraints=svd.get('restraints', None))
+            restraints=svd.get('restraints', None), stages=svd.get('stages', None),
+            models_per_step=svd.get('models_per_step', 0))
 
 
 class StructuralModels(object):
@@ -122,7 +126,7 @@ class StructuralModels(object):
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
                  config=None, experiment=None, zeros=None, restraints=None,
-                 description=None):
+                 description=None, stages=None, models_per_step=0):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -136,6 +140,8 @@ class StructuralModels(object):
         self.experiment     = experiment
         self._restraints    = restraints
         self.description    = description
+        self.stages         = stages or {}
+        self.models_per_step = models_per_step
 
     def __getitem__(self, nam):
         if isinstance(nam, str):
@@ -160,10 +166,14 @@ class StructuralModels(object):
         return len(self.__models)
 
     def __repr__(self):
+        model_type = 'IMP'
+        if isinstance(self.__models[0],LAMMPSmodel):
+            model_type = 'LAMMPS'
+            
         return ('StructuralModels with %s models of %s particles\n' +
                 '   (objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
-                '  IMP modeling used this parameters:\n' +
+                '  %s modeling used this parameters:\n' +
                 '%s\n' +
                 '  Models where clustered into %s clusters') % (
             len(self.__models),
@@ -171,14 +181,22 @@ class StructuralModels(object):
             int(self.__models[0]['objfun']),
             int(self.__models[len(self.__models) - 1]['objfun']),
             len(self.__models) + len(self._bad_models),
+            model_type,
             '\n'.join(['   - %-12s: %s' % (k, v)
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
-    def _extend_models(self, models):
+    def _extend_models(self, models, stages=None):
         """
         add new models to structural models
         """
+        if isinstance(models, StructuralModels):
+            stages = models.stages
+            models = models._StructuralModels__models
+        if not isinstance(models, dict):
+            warn('ERROR: models has to be a StructuralModels object '
+                     'or a dictionary')
+            return
         nbest = len(self.__models)
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
@@ -186,15 +204,37 @@ class StructuralModels(object):
         for m in models.keys():
             if models[m]['rand_init'] in ids:
                 warn('WARNING: found model with same random seed number, '
-                     'SKIPPPING')
-                del(models[m])
+                     'CHANGING rand_init')
+                models[m]['rand_init'] += '-' + str(randint(1,10000))
+                #del(models[m]) # why?
         new_models = {}
-        for i, m in enumerate(sorted(models.values() + self.__models.values(),
-                                     key=lambda x: x['objfun'])):
-            new_models[i] = m
-        self.__models = new_models
-        # keep the same number of best models
-        self.define_best_models(nbest)
+        if len(self.stages) > 1:
+            if stages and len(set(stages.keys()) & set(self.stages.keys())) == len(self.stages):
+                new_stages = {}
+                offset= 0
+                for stg in self.stages:
+                    new_stages[stg] = []
+                    stage_models = [self.__models[m] for m in set(self.stages[stg])] + [models[m] for m in set(stages[stg])] 
+                    for i, m in enumerate(stage_models):
+                        new_models[i+offset] = m
+                        new_stages[stg].append(i+offset)
+                    offset += len(stage_models)
+            else:
+                warn('WARNING: we need the same number of stages '
+                     'to extend the structural models')
+                return
+            self.stages = new_stages
+            self.__models = new_models
+        else:
+            for i, m in enumerate(sorted(models.values() + self.__models.values(),
+                                         key=lambda x: x['objfun'])):
+                new_models[i] = m
+                new_models[i]['index'] = i
+            self.__models = new_models
+            # keep the same number of best models if best models were not all
+            if len(self._bad_models) == 0:
+                nbest = len(new_models) 
+            self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
@@ -556,7 +596,8 @@ class StructuralModels(object):
                                  axe, savefig, z, **kwargs)
         return d
 
-    def get_contact_matrix(self, models=None, cluster=None, cutoff=None,
+    def get_contact_matrix(self, models=None, cluster=None, 
+                           stage=None, cutoff=None,
                            distance=False):
         """
         Returns a matrix with the number of interactions observed below a given
@@ -567,6 +608,8 @@ class StructuralModels(object):
            given set of models can be passed
         :param None cluster: compute the contact matrix only for the models in
            the cluster number 'cluster'
+        :param None stage: compute the contact matrix only for the models in
+            stage number 'stage'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
            Cutoff can also be a list of values, in wich case the returned object
@@ -581,6 +624,8 @@ class StructuralModels(object):
                       if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        elif stage > -1 and stage in self.stages:
+            models = [m for m in self.stages[stage]]
         else:
             models = [m for m in self.__models]
         cutoff_list = True
@@ -600,11 +645,12 @@ class StructuralModels(object):
         frac = 1.0 / len(models)
         #print "#Frac",frac
 
+        all_matrix = []
         for model in models:
             #print model
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
-
+                
             #print model, len(x), len(y), len(z)
             for c in cutoff:
                 #print "#Cutoff",c
@@ -612,6 +658,7 @@ class StructuralModels(object):
                     if squared_distance_matrix[i][j] <= c:
                         matrix[c][i][j] += frac  # * 100
                         matrix[c][j][i] += frac  # * 100
+            
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -855,8 +902,8 @@ class StructuralModels(object):
         else:
             plt.show()
 
-    def contact_map(self, models=None, cluster=None, cutoff=None, axe=None,
-                    savefig=None, savedata=None):
+    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
+                    cutoff=None, axe=None, savefig=None, savedata=None):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -866,6 +913,9 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
+        :param None dynamics: compute the contact map for all the stages
+        :param None stage: compute the contact map only for the models in
+            stage number 'stage'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -878,41 +928,75 @@ class StructuralModels(object):
            of models where these two particles are in contact)
 
         """
+        if dynamics: 
+            if not (savefig or savedata):
+                raise Exception('ERROR: dynamics should only be called ' +
+                                'with savefig or savedata option.\n')
+                return
+            if (savefig and not isdir(savefig)) or (savedata and not isdir(savedata)):
+                raise Exception('ERROR: savefig or savedata should ' +
+                                'be a folder with dynamics option.\n')
+                return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
-        matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
+        matrices = []
+        if dynamics:
+            for stg in self.stages:
+                matrices.append(self.get_contact_matrix(stage=stg, cutoff=cutoff))
+        else:
+            matrices.append(self.get_contact_matrix(models, cluster, stage=stage, cutoff=cutoff))
         show = False
         if savedata:
-            out = open(savedata, 'w')
-            out.write('#Particle1\tParticle2\tModels_percentage\n')
-            for i in xrange(len(matrix)):
-                for j in xrange(i + 1, len(matrix)):
-                    out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
-            out.close()
+            for nbr, matrix in enumerate(matrices):
+                if dynamics:
+                    out = open(savedata+'/stage_'+str(nbr)+'.txt', 'w')
+                else:
+                    out = open(savedata, 'w')
+                out.write('#Particle1\tParticle2\tModels_percentage\n')
+                for i in xrange(len(matrix)):
+                    for j in xrange(i + 1, len(matrix)):
+                        out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
+                out.close()
         if not savefig and not show and not axe:
             return  # stop here, we do not want to display anything
-        if not axe:
-            fig = plt.figure(figsize=(8, 6))
-            axe = fig.add_subplot(111)
-            show = True
-        else:
-            fig = axe.get_figure()
-        cmap = plt.get_cmap('jet')
-        cmap.set_bad('darkgrey', 1)
-        ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
-                         vmin=0, vmax=1, cmap=cmap,
-                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        axe.set_ylabel('Particle')
-        axe.set_xlabel('Particle')
-        cbar = axe.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
-        cbar.ax.set_ylabel('Percentage of models with particles at <' +
-                           '%s nm' % (cutoff))
-        axe.set_title('Contact map')
-        if savefig:
-            tadbit_savefig(savefig)
-        elif show:
-            plt.show()
+        cbar = None
+        for nbr, matrix in enumerate(matrices):
+            if not axe:
+                fig = plt.figure(figsize=(8, 6))
+                axe = fig.add_subplot(111)
+                show = True
+            else:
+                fig = axe.get_figure()
+            cmap = plt.get_cmap('jet')
+            cmap.set_bad('darkgrey', 1)
+            ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
+                             vmin=0, vmax=1, cmap=cmap,
+                             extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+            axe.set_ylabel('Particle')
+            axe.set_xlabel('Particle')
+            if not cbar:
+                cbar = axe.figure.colorbar(ims)
+                oldlabels = cbar.ax.get_yticklabels()
+                newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+                cbar.ax.set_yticklabels(newlabels)
+                cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                                   '%s nm' % (cutoff))
+            if dynamics:
+                axe.set_title('Contact map stage %s' % str(nbr))
+            else:
+                axe.set_title('Contact map')
+            if savefig:
+                if dynamics:
+                    tadbit_savefig(savefig+'/contact_map_stage_'+str(nbr)+'.png')
+                else:
+                    tadbit_savefig(savefig)
+            elif show and not dynamics:
+                plt.show()
+        if dynamics:
+            try:
+                system('ffmpeg -r 50 -i '+savefig+'/contact_map_stage_%d.png -vb 20M -y '+savefig+'/contact_map_all_stages.mpeg')
+            except:
+                pass
 
     def accessibility(self, radius, models=None, cluster=None, nump=100,
                       superradius=200, savefig=None, savedata=None, axe=None,
@@ -1652,7 +1736,8 @@ class StructuralModels(object):
         plt.close('all')
 
 
-    def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
+    def correlate_with_real_data(self, models=None, cluster=None, 
+                                 dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
                                  log_corr=True, contact_matrix=None):
@@ -1665,6 +1750,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the correlation only for the models in the
            cluster number 'cluster'
+        :param None dynamics: compute the correlation for all the stages
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param None savefig: path to a file where to save the image generated;
@@ -1681,145 +1767,184 @@ class StructuralModels(object):
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
         """
+        if dynamics:
+            if not savefig:
+                raise Exception('ERROR: dynamics should only be called ' +
+                                'with savefig option.\n')
+                return
+            if not isdir(savefig):
+                raise Exception('ERROR: savefig should ' +
+                                'be a folder with dynamics option.\n')
+                return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         if contact_matrix:
-            model_matrix = contact_matrix
+            all_original_data = [0]
+            all_model_matrix = [contact_matrix]
         else:
-            model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
-                                                   cutoff=cutoff)
-        oridata = []
-        moddata = []
-        for i in xrange(len(self._original_data)):
-            for j in xrange(i + off_diag, len(self._original_data)):
-                if not model_matrix[i][j] > 0 or not self._original_data[i][j] > 0:
-                    continue
-                oridata.append(self._original_data[i][j])
-                moddata.append(model_matrix[i][j])
-        if corr == 'spearman':
-            corr = spearmanr(moddata, oridata)
-        elif corr == 'pearson':
-            corr = pearsonr(moddata, oridata)
-        elif corr == 'logpearson':
-            corr = pearsonr(nozero_log_list(moddata), nozero_log_list(oridata))
-        elif corr == 'chi2':
-            corr = chisquare(array(moddata), array(oridata))
-            corr = 1. / corr[0], corr[1]
-        else:
-            raise NotImplementedError('ERROR: %s not implemented, must be one ' +
-                                      'of spearman, pearson or frobenius\n')
+            if dynamics:
+                all_model_matrix = []
+                all_original_data = []
+                for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
+                    all_original_data.append(st)
+                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff))
+            else:
+                all_original_data = [0]
+                all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,
+                                                   cutoff=cutoff)]
+        correl = {}
+        for model_matrix, od in zip(all_model_matrix,all_original_data):
+            oridata = []
+            moddata = []
+            if len(model_matrix) == 0:
+                correl[od] = 'Nan'
+                continue
+            if dynamics:
+                original_data = self._original_data[od]
+            else:
+                original_data = self._original_data
+            for i in xrange(len(original_data)):
+                for j in xrange(i + off_diag, len(original_data)):
+                    if not model_matrix[i][j] > 0 or not original_data[i][j] > 0:
+                        continue
+                    oridata.append(original_data[i][j])
+                    moddata.append(model_matrix[i][j])
+            if corr == 'spearman':
+                correl[od] = spearmanr(moddata, oridata)
+            elif corr == 'pearson':
+                correl[od] = pearsonr(moddata, oridata)
+            elif corr == 'logpearson':
+                correl[od] = pearsonr(nozero_log_list(moddata), nozero_log_list(oridata))
+            elif corr == 'chi2':
+                tmpcorr = chisquare(array(moddata), array(oridata))
+                tmpcorr = 1. / tmpcorr[0], tmpcorr[1]
+                correl[od] = tmpcorr
+            else:
+                raise NotImplementedError('ERROR: %s not implemented, must be one ' +
+                                          'of spearman, pearson or frobenius\n')
         if not plot and not savefig:
-            return corr
-        if not axe:
-            fig = plt.figure(figsize=(20, 4.5))
-        else:
-            fig = axe.get_figure()
-        fig.suptitle('Correlation between normalized-real and modeled ' +
-                     'contact maps (correlation=%.4f)' % (corr[0]),
-                     size='x-large')
-        ax = fig.add_subplot(131)
-        # imshow of the modeled data
-        cmap = plt.get_cmap('jet')
-        cmap.set_bad('darkgrey', 1)
-        ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
-                         vmin=0, vmax=1, cmap=cmap,
-                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        ax.set_ylabel('Particle')
-        ax.set_xlabel('Particle')
-        cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
-        cbar.ax.set_ylabel('Percentage of models with particles at <' +
-                           '%s nm' % (cutoff))
-        ax.set_title('Contact map')        # correlation
-
-        ax = fig.add_subplot(132)
-        try:
-            if log_corr:
-                minmoddata = float(min([m for m in moddata if m]))
-                minoridata = float(min([m for m in oridata if m]))
-                moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
-                                    log2([m if m else minoridata / 2 for m in oridata]))
-        except:
-            warn('WARNING: unable to log for correlation with real data...')
-        slope, intercept, r_value, p_value, _ = linregress(moddata, oridata)
-        # slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
-        if midplot == 'classic':
-            lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
-                          ls='--', alpha=.7)
-            ax.legend(lnr, ['p-value: %.3f, R: %.3f' % (p_value, r_value)])
-            ax.plot(moddata, oridata, 'ro', alpha=0.5)
-            ax.set_xlabel('Modelled data')
-            ax.set_ylabel('Real data')
-        elif midplot == 'hexbin':
-            hb = ax.hexbin(moddata, oridata, mincnt=1,
-                           gridsize=50, cmap=plt.cm.Spectral_r)
-            lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
-                          ls='--', alpha=.7)
-            ax.set_xlabel(
-                '%sroportion of models with a particle pair closer than cutoff' % (
-                    'Log p' if log_corr else 'P'))
-            ax.set_ylabel('%sormalized Hi-C count for a particle pair' % (
-                'Log n' if log_corr else 'N'))
-            cbaxes = fig.add_axes([0.41, 0.42, 0.005, 0.45])
-            cbar = plt.colorbar(hb, cax=cbaxes)  # orientation='horizontal')
-            cbar.set_label('Number of particle pairs')
-        elif midplot == 'triple':
-            maxval = max(oridata)
-            minval = min(oridata)
-            ax.set_visible(False)
-            axleft = fig.add_axes([0.42, 0.18, 0.1, 0.65])
-            axleft.spines['right'].set_color('none')
-            axleft.spines['bottom'].set_color('none')
-            axleft.spines['left'].set_smart_bounds(True)
-            axleft.spines['top'].set_smart_bounds(True)
-            axleft.xaxis.set_ticks_position('top')
-            axleft.yaxis.set_ticks_position('left')
-            axleft.set_ylabel('Normalized Hi-C count for a particle pair')
-            axleft.patch.set_visible(False)
-            axbott = fig.add_axes([0.44, 0.13, 0.17, 0.5])
-            axbott.spines['left'].set_color('none')
-            axbott.spines['top'].set_color('none')
-            axbott.spines['left'].set_smart_bounds(True)
-            axbott.spines['bottom'].set_smart_bounds(True)
-            axbott.xaxis.set_ticks_position('bottom')
-            axbott.yaxis.set_ticks_position('right')
-            axbott.patch.set_visible(False)
-            axbott.set_xlabel('Proportion of models with a particle pair ' +
-                              ' interacting')
-            axmidl = fig.add_axes([0.44, 0.18, 0.17, 0.65])
-            axbott.hist(moddata, bins=20, alpha=.2)
-            x, _  = histogram([i if str(i) != '-inf' else 0. for i in oridata],
-                              bins=20)
-            axleft.barh(linspace(minval, maxval, 20), x,
-                        height=(maxval - minval) / 20, alpha=.2)
-            axleft.set_ylim((minval -
-                             (maxval - minval) / 20, maxval +
-                             (maxval - minval) / 20))
-            axmidl.plot(moddata, oridata, 'k.', alpha=.3)
-            axmidl.plot(moddata, intercept + slope * array (moddata), color='k',
-                        ls='--', alpha=.7)
-            axmidl.set_ylim(axleft.get_ylim())
-            axmidl.set_xlim(axbott.get_xlim())
-            axmidl.axis('off')
-            # axmidl.patch.set_visible(False)
-        ax.set_title('Real versus modelled data')
-        ax = fig.add_subplot(133)
-        cmap = plt.get_cmap('jet')
-        cmap.set_bad('darkgrey', 1)
-        ims = ax.imshow(log2(self._original_data), origin='lower',
-                        interpolation="nearest", cmap=cmap,
-                        extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
-        ax.set_ylabel('Genomic bin')
-        ax.set_xlabel('Genomic bin')
-        ax.set_title('Normalized Hi-C count')
-        cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
+            if len(correl) < 2:
+                return correl[next(iter(correl))]
+            return correl
+        cbar = None
+        for model_matrix, od in zip(all_model_matrix,all_original_data):
+            if correl[od] == 'Nan':
+                continue
+            if not axe:
+                fig = plt.figure(figsize=(20, 4.5))
+            else:
+                fig = axe.get_figure()
+            fig.suptitle('Correlation between normalized-real and modeled ' +
+                         'contact maps for stage %s (correlation=%.4f)' % (od, correl[od][0]),
+                         size='x-large')
+            ax = fig.add_subplot(131)
+            # imshow of the modeled data
+            cmap = plt.get_cmap('jet')
+            cmap.set_bad('darkgrey', 1)
+            ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
+                             vmin=0, vmax=1, cmap=cmap,
+                             extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+            ax.set_ylabel('Particle')
+            ax.set_xlabel('Particle')
+            if not cbar:
+                cbar = ax.figure.colorbar(ims)
+                cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+                cbar.ax.set_ylabel('Percentage of models with particles at <' +
+                                   '%s nm' % (cutoff))
+            ax.set_title('Contact map')        # correlation
+    
+            ax = fig.add_subplot(132)
+            try:
+                if log_corr:
+                    minmoddata = float(min([m for m in moddata if m]))
+                    minoridata = float(min([m for m in oridata if m]))
+                    moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
+                                        log2([m if m else minoridata / 2 for m in oridata]))
+            except:
+                warn('WARNING: unable to log for correlation with real data...')
+            slope, intercept, r_value, p_value, _ = linregress(moddata, oridata)
+            # slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
+            if midplot == 'classic':
+                lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
+                              ls='--', alpha=.7)
+                ax.legend(lnr, ['p-value: %.3f, R: %.3f' % (p_value, r_value)])
+                ax.plot(moddata, oridata, 'ro', alpha=0.5)
+                ax.set_xlabel('Modelled data')
+                ax.set_ylabel('Real data')
+            elif midplot == 'hexbin':
+                hb = ax.hexbin(moddata, oridata, mincnt=1,
+                               gridsize=50, cmap=plt.cm.Spectral_r)
+                lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
+                              ls='--', alpha=.7)
+                ax.set_xlabel(
+                    '%sroportion of models with a particle pair closer than cutoff' % (
+                        'Log p' if log_corr else 'P'))
+                ax.set_ylabel('%sormalized Hi-C count for a particle pair' % (
+                    'Log n' if log_corr else 'N'))
+                cbaxes = fig.add_axes([0.41, 0.42, 0.005, 0.45])
+                cbar = plt.colorbar(hb, cax=cbaxes)  # orientation='horizontal')
+                cbar.set_label('Number of particle pairs')
+            elif midplot == 'triple':
+                maxval = max(oridata)
+                minval = min(oridata)
+                ax.set_visible(False)
+                axleft = fig.add_axes([0.42, 0.18, 0.1, 0.65])
+                axleft.spines['right'].set_color('none')
+                axleft.spines['bottom'].set_color('none')
+                axleft.spines['left'].set_smart_bounds(True)
+                axleft.spines['top'].set_smart_bounds(True)
+                axleft.xaxis.set_ticks_position('top')
+                axleft.yaxis.set_ticks_position('left')
+                axleft.set_ylabel('Normalized Hi-C count for a particle pair')
+                axleft.patch.set_visible(False)
+                axbott = fig.add_axes([0.44, 0.13, 0.17, 0.5])
+                axbott.spines['left'].set_color('none')
+                axbott.spines['top'].set_color('none')
+                axbott.spines['left'].set_smart_bounds(True)
+                axbott.spines['bottom'].set_smart_bounds(True)
+                axbott.xaxis.set_ticks_position('bottom')
+                axbott.yaxis.set_ticks_position('right')
+                axbott.patch.set_visible(False)
+                axbott.set_xlabel('Proportion of models with a particle pair ' +
+                                  ' interacting')
+                axmidl = fig.add_axes([0.44, 0.18, 0.17, 0.65])
+                axbott.hist(moddata, bins=20, alpha=.2)
+                x, _  = histogram([i if str(i) != '-inf' else 0. for i in oridata],
+                                  bins=20)
+                axleft.barh(linspace(minval, maxval, 20), x,
+                            height=(maxval - minval) / 20, alpha=.2)
+                axleft.set_ylim((minval -
+                                 (maxval - minval) / 20, maxval +
+                                 (maxval - minval) / 20))
+                axmidl.plot(moddata, oridata, 'k.', alpha=.3)
+                axmidl.plot(moddata, intercept + slope * array (moddata), color='k',
+                            ls='--', alpha=.7)
+                axmidl.set_ylim(axleft.get_ylim())
+                axmidl.set_xlim(axbott.get_xlim())
+                axmidl.axis('off')
+                # axmidl.patch.set_visible(False)
+            ax.set_title('Real versus modelled data')
+            ax = fig.add_subplot(133)
+            cmap = plt.get_cmap('jet')
+            cmap.set_bad('darkgrey', 1)
+            ims = ax.imshow(log2(original_data), origin='lower',
+                            interpolation="nearest", cmap=cmap,
+                            extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+            ax.set_ylabel('Genomic bin')
+            ax.set_xlabel('Genomic bin')
+            ax.set_title('Normalized Hi-C count')
+            cbar = ax.figure.colorbar(ims)
+            cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
+            if savefig:
+                if dynamics:
+                    tadbit_savefig(savefig+'/correlation_plot_stage_'+str(od)+'.png')
+                else:
+                    tadbit_savefig(savefig)
+                
+            elif not axe:
+                plt.show()
         plt.close('all')
-        return corr
+        return correl
 
 
     def view_centroid(self, **kwargs):
@@ -1833,9 +1958,9 @@ class StructuralModels(object):
         self.view_models(tool='plot', show='highlighted', highlight='centroid',
                          **kwargs)
 
-    def view_models(self, models=None, cluster=None, tool='chimera',
-                    show='all', highlight='centroid', savefig=None,
-                    cmd=None, color='index', align=True, **kwargs):
+    def view_models(self, models=None, cluster=None, stage=None, dynamics=None,
+                    tool='chimera', show='all', highlight='centroid', 
+                    savefig=None, cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1845,6 +1970,10 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the visualization only for the models in the
            cluster number 'cluster'
+        :param None stage: compute the visualization only for the models in
+            stage number 'stage'
+        :param None dynamics: compute the visualization for all the stages of the
+            replica number 'dynamics'
         :param 'chimera' tool: path to the external tool used to visualize the
            model. Can also be 'plot', to use matplotlib.
         :param None savefig: path to a file where to save the image OR movie
@@ -1926,6 +2055,10 @@ class StructuralModels(object):
                       if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        elif stage > -1 and stage in self.stages:
+            models = [m for m in self.stages[stage]]
+        elif dynamics > -1:
+            models = self.stages[0] + [self.stages[s+1][dynamics] for s in xrange(len(self.stages)-1)]
         else:
             models = [m for m in self.__models]
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
@@ -2705,7 +2838,7 @@ class StructuralModels(object):
         """
 
         out = open(outfile, 'w')
-        dump(self._reduce_models(), out)
+        dump(self._reduce_models(), out, protocol=HIGHEST_PROTOCOL)
         out.close()
 
     def _reduce_models(self, minimal=False):
@@ -2735,10 +2868,12 @@ class StructuralModels(object):
         to_save['zscore']        = {} if minimal else self._zscores
         to_save['restraints']    = {} if minimal else self._restraints
         to_save['zeros']         = self._zeros
+        to_save['stages']         = self.stages
+        to_save['models_per_step']= self.models_per_step
 
         return to_save
 
-    def _get_models(self, models, cluster):
+    def _get_models(self, models, cluster, stage=None):
         """
         Internal function to transform cluster name, model name, or model list
         into proper list of models processable by StructuralModels functions
@@ -2748,6 +2883,8 @@ class StructuralModels(object):
                       if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        elif stage > -1 and stage in self.stages:
+            models = [m for m in self.stages[stage]]
         else:
             models = [m for m in self.__models]
         return models

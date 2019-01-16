@@ -52,12 +52,10 @@ class HiCBasedRestraints(object):
 
               }
           }
-    
     :param resolution:  number of nucleotides per Hi-C bin. This will be the
        number of nucleotides in each model's particle
     :param zscores: the dictionary of the Z-score values calculated from the
        Hi-C pairwise interactions
-    
     :param 1 close_bins: number of particles away (i.e. the bin number
        difference) a particle pair must be in order to be considered as
        neighbors (e.g. 1 means consecutive particles)
@@ -65,19 +63,20 @@ class HiCBasedRestraints(object):
        used inside TADbit)
     :param None remove_rstrn: list of particles which must not have restrains
 
+
     """
     def __init__(self, nloci, particle_radius,CONFIG,resolution,zscores,
                  chromosomes, close_bins=1,first=None, min_seqdist=0,
-		 remove_rstrn=[]):
+                 remove_rstrn=[]):
 
         self.particle_radius       = particle_radius
-        self.nloci          = nloci
-        self.CONFIG          = CONFIG
-        self.resolution     = resolution
-        self.nnkforce       = CONFIG['kforce']
-        self.min_seqdist     = min_seqdist
-        self.chromosomes     = OrderedDict()
-	self.remove_rstrn    = remove_rstrn
+        self.nloci = nloci
+        self.CONFIG = CONFIG
+        self.resolution = resolution
+        self.nnkforce = CONFIG['kforce']
+        self.min_seqdist = min_seqdist
+        self.chromosomes = OrderedDict()
+        self.remove_rstrn = remove_rstrn
         if chromosomes:
             if isinstance(chromosomes,dict):
                 self.chromosomes[chromosomes['crm']] = chromosomes['end'] - chromosomes['start'] + 1
@@ -88,9 +87,7 @@ class HiCBasedRestraints(object):
                     self.chromosomes[k['crm']] = tot
         else:
             self.chromosomes['UNKNOWN'] = nloci
-             
-        
-        
+
         self.CONFIG['lowrdist'] = self.particle_radius * 2.
     
         if self.CONFIG['lowrdist'] > self.CONFIG['maxdist']:
@@ -101,9 +98,8 @@ class HiCBasedRestraints(object):
                     self.CONFIG['lowrdist'], self.resolution, self.CONFIG['scale']))
     
         # print 'config:', self.CONFIG
-    
         # get SLOPE and regression for all particles of the z-score data
-        
+
         zsc_vals = [zscores[i][j] for i in zscores for j in zscores[i]
                     if abs(int(i) - int(j)) > 1] # condition is to avoid
                                                  # taking into account selfies
@@ -141,10 +137,9 @@ class HiCBasedRestraints(object):
         # 4 - the equilibrium (or maximum or minimum respectively) distance associated to the restraint
     
         HiCbasedRestraints = []
-	nlocis = list(sorted(set(range(self.nloci)) - set(self.remove_rstrn)))
-
-	for ni, i in enumerate(nlocis):
-	    chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
+        nlocis = list(sorted(set(range(self.nloci)) - set(self.remove_rstrn)))
+        for ni, i in enumerate(nlocis):
+            chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
             for j in nlocis[ni+1:]:
                 chr2 = [k for k,v in self.chromosomes.items() if v > j][0]
                 # Compute the sequence separation (in particles) depending on it the restraint changes

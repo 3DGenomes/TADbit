@@ -42,12 +42,15 @@ class IMPoptimizer(object):
        container = ['cylinder', 250, 1500, 50] should be used, and
        in a typical spherical mammalian nuclei (about 6 micrometers of diameter),
        container = ['cylinder', 3000, 0, 50]
+    :param 0 index: zscores index. A list is allowed to optimize several stages; 
+        in that case a weighted correlation is provided
     """
     def __init__(self, experiment, start, end, n_models=500,
-                 n_keep=100, close_bins=1, container=None, tool='imp',tmp_folder=None):
+                 n_keep=100, close_bins=1, container=None, tool='imp',
+                 tmp_folder=None, index=0, anchored_particles=None):
 
         (self.zscores,
-         self.values, zeros) = experiment._sub_experiment_zscore(start, end)
+         self.values, zeros) = experiment._sub_experiment_zscore(start, end, index=index)
         self.resolution = experiment.resolution
         self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         self.nloci = end - start + 1
@@ -89,6 +92,7 @@ class IMPoptimizer(object):
 
         self.tool = tool
         self.tmp_folder = tmp_folder
+        self.anchored_particles = anchored_particles
 
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
@@ -110,12 +114,12 @@ class IMPoptimizer(object):
                         maxdist_range=(400, 1500, 100),
                         lowfreq_range=(-1, 0, 0.1),
                         upfreq_range=(0, 1, 0.1),
-                        dcutoff_range=2,
+                        dcutoff_range=None,
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
-                        use_excluded_volume=True,
-                        timeout_job=300):
+                        use_excluded_volume=True, kforce=5,
+                        ev_kforce=5, timeout_job=300):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -140,12 +144,11 @@ class IMPoptimizer(object):
            The last value of the input tuple is the incremental step for the
            upfreq values. To be precise "freq" refers to the Z-score.
         :param 2 dcutoff_range: upper and lower bounds used to search for
-           the optimal distance cutoff parameter (distance, in number of beads,
-           from which to consider 2 beads as being close). The last value of the
+           the optimal distance cutoff parameter (in nm). The last value of the
            input tuple is the incremental step for scale parameter values
         :param None savedata: concatenate all generated models into a dictionary
            and save it into a file named by this argument
-        :param True verbose: print the results to the standard output
+        :param True verbose: print the results to the standard output 
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -251,7 +254,11 @@ class IMPoptimizer(object):
                                        self.upfreq_range)
         # dcutoff
         if not self.dcutoff_range:
-            self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
+            if dcutoff_arange is None or len(dcutoff_arange) == 0:
+                self.dcutoff_range = [int(2 * self.resolution * float(sc)) for sc in self.scale_range]
+                dcutoff_arange = self.dcutoff_range
+            else:
+                self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
         else:
             self.dcutoff_range = sorted([my_round(i) for i in dcutoff_arange
                                          if not my_round(i) in self.dcutoff_range] +
@@ -291,7 +298,8 @@ class IMPoptimizer(object):
                         print verb + str(round(result, 4))
                 continue
 
-            config_tmp = {'kforce'   : 5,
+            config_tmp = {'kforce'   : float(kforce),
+                          'ev_kforce': float(ev_kforce),
                           'scale'    : float(scale),
                           'kbending' : float(kbending),
                           #'lowrdist' : 1.0, # This parameters is fixed to XXX
@@ -302,61 +310,65 @@ class IMPoptimizer(object):
 
             try:
                 count += 1
-                if self.tool=='imp':
-                    tdm = generate_3d_models(
-                        self.zscores, self.resolution,
-                        self.nloci, n_models=self.n_models,
-                        n_keep=self.n_keep, config=config_tmp,
-                        n_cpus=n_cpus, first=0,
-                        values=self.values, container=self.container,
-                        coords = self.chromosomes,
-                        close_bins=self.close_bins, zeros=self.zeros,
-                        use_HiC=use_HiC, use_confining_environment=use_confining_environment,
-                        use_excluded_volume=use_excluded_volume)
-                elif self.tool=='lammps':
-                    tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
-                                      values=self.values, n_models=self.n_models,
-                                      n_keep=self.n_keep,
-                                      n_cpus=n_cpus,
-                                      verbose=verbose, first=0,coords = self.coords,
-                                      close_bins=self.close_bins, config=config_tmp, container=self.container,
-                                      zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job)
-                result = 0
-                cutoff = my_round(dcutoff_arange[0])
-
-                matrices = tdm.get_contact_matrix(
-                    cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
-                    #cutoff=[i for i in dcutoff_arange])
-                for m in matrices:
-                    cut = int(m**0.5)
-                    sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
-                                                              off_diag=off_diag,
-                                                              contact_matrix=matrices[m])[0]
-
-                    if result < sub_result:
-                        result = sub_result
-                        cutoff = my_round(float(cut) / self.resolution / float(scale))
-                        #cutoff = my_round(float(cut))
-
+                avg_result = dict((i,0) for i in dcutoff_arange) 
+                for i in xrange(len(self.zscores)):
+                    if self.tool=='imp':
+                        tdm = generate_3d_models(
+                            self.zscores[i], self.resolution,
+                            self.nloci, n_models=self.n_models,
+                            n_keep=self.n_keep, config=config_tmp,
+                            n_cpus=n_cpus, first=0,
+                            values=self.values[i], container=self.container,
+                            coords = self.coords,
+                            close_bins=self.close_bins, zeros=self.zeros,
+                            use_HiC=use_HiC, use_confining_environment=use_confining_environment,
+                            use_excluded_volume=use_excluded_volume,
+                            anchored_particles=self.anchored_particles)
+                    elif self.tool=='lammps':
+                        tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
+                                          values=self.values, n_models=self.n_models,
+                                          n_keep=self.n_keep,
+                                          n_cpus=n_cpus,
+                                          verbose=verbose, first=0,coords = self.coords,
+                                          close_bins=self.close_bins, config=config_tmp, container=self.container,
+                                          zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job)
+                    result = 0
+                    matrices = tdm.get_contact_matrix(
+                        #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
+                        cutoff=[int(i) for i in dcutoff_arange])
+                    for m in matrices:
+                        cut = int(m**0.5)
+                        sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
+                                                                  off_diag=off_diag,
+                                                                  contact_matrix=matrices[m])[0]
+                        
+                        avg_result[cut] += sub_result
 
             except Exception, e:
                 print '  SKIPPING: %s' % e
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 
-            if verbose:
-                verb = '  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s' % (
-                    count, scale, kbending, maxdist, lowfreq, upfreq, cutoff)
-                if verbose == 2:
-                    stderr.write(verb + str(round(result, 4)) + '\n')
-                else:
-                    print verb + str(round(result, 4))
-
-            # Store the correlation for the TADbit parameters set
-            self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
-
-            if savedata and result:
-                models[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = tdm._reduce_models(minimal=True)
+            for ct,m in enumerate(avg_result):
+                    
+                result = avg_result[m]/len(self.zscores)
+                
+                cutoff = int(m)
+                
+                if verbose:
+                    verb = '  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s' % (
+                        count+ct, scale, kbending, maxdist, lowfreq, upfreq, cutoff)
+                    if verbose == 2:
+                        stderr.write(verb + str(round(result, 4)) + '\n')
+                    else:
+                        print verb + str(round(result, 4))
+                
+                count += ct
+                # Store the correlation for the TADbit parameters set
+                self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
+    
+                if savedata and result:
+                    models[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = tdm._reduce_models(minimal=True)
 
         if savedata:
             out = open(savedata, 'w')
@@ -695,8 +707,8 @@ class IMPoptimizer(object):
         for (scale, kbending, maxdist, lowfreq, upfreq) in parameters_sets:
             try:
                 cut = sorted(
-                    [c for c in self.dcutoff_range
-                     if (scale, kbending, maxdist, lowfreq, upfreq, c)
+                    [int(c) for c in self.dcutoff_range
+                     if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
                      in self.results],
                     key=lambda x: self.results[
                         (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
