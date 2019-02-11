@@ -39,6 +39,15 @@ def run(opts):
         biases = opts.biases
         mreads = opts.mreads
         inputs = []
+    elif opts.biases or opts.mreads:
+        if not opts.mreads:
+            raise Exception('ERROR: also need to provide BAM file')
+        if not opts.biases:
+            raise Exception('ERROR: also need to provide biases file')
+        biases = opts.biases
+        mreads = opts.mreads
+        inputs = ['NA', 'NA']
+        mkdir(path.join(opts.workdir))
     else:
         biases, mreads, biases_id, mreads_id = load_parameters_fromdb(opts)
         inputs = [biases_id, mreads_id]
@@ -206,6 +215,23 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='JOBs'""")
+        if not cur.fetchall():
+            cur.execute("""
+            create table PATHs
+               (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='SEGMENT_OUTPUTs'""")
         if not cur.fetchall():
@@ -526,10 +552,6 @@ def populate_args(parser):
 
 def check_options(opts):
 
-    # check resume
-    if not path.exists(opts.workdir):
-        raise IOError('ERROR: %s does not exists' % opts.workdir)
-
     # number of cpus
     if opts.cpus == 0:
         opts.cpus = cpu_count()
@@ -563,7 +585,11 @@ def check_options(opts):
         opts.tmpdb = path.join(dbdir, dbfile)
         copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
 
-    if already_run(opts) and not opts.force:
+    try:
+        _already_run = already_run(opts)
+    except IOError:
+        _already_run = False
+    if _already_run and not opts.force:
         if 'tmpdb' in opts and opts.tmpdb:
             remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
