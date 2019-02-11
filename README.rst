@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.4.1             |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+| Current version: v0.4.2             |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
 |                                     |                                                                           |                                                                                             |                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
@@ -50,49 +50,17 @@ Check the label `FAQ <https://github.com/3DGenomes/TADbit/issues?utf8=%E2%9C%93&
 
 If your question is still unanswered feel free to open a new issue.
 
-Docker
-------
+Docker/Singularity Containers
+-----------------------------
 
-This minimal `Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ (resulting in a 3 Gb docker image) can be used to run TADbit in any computer::
+Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>` and 
+`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`) to generate containers are 
+available in the containers folder.
 
-    FROM debian:8
 
-    ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ - _Docker_
 
-    RUN apt-get update --fix-missing && \
-        apt-get install -y wget bzip2 --no-install-recommends && \
-        rm -rf /var/lib/apt/lists/*
-
-    RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-        wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
-            -O ~/miniconda.sh && \
-        /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-        rm ~/miniconda.sh
-
-    ENV PATH /opt/conda/bin:$PATH
-
-    RUN conda config --add channels salilab && conda config --add channels bioconda && \
-        conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam && \
-        conda clean -y --all  && rm -rf /opt/conda/pkgs/*
-
-    RUN wget --quiet --no-check-certificate https://newcontinuum.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%202/GEM-binaries-Linux-x86_64-core_i3-20121106-022124.tbz2 \
-            -O GEM.tbz2 && \
-        tar xvf GEM.tbz2 && cd GEM-*/ && \
-        mv * /usr/local/bin/ && cd .. && rm -rf GEM*
-
-    RUN apt-get update --fix-missing && \
-        apt-get install -y unzip build-essential --no-install-recommends && \
-        wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/dev.zip && unzip dev.zip && \
-        cd TADbit-dev && python setup.py install && cd .. && rm -rf TADbit-dev dev.zip && \
-        apt-get remove -y --purge unzip build-essential && \
-        apt-get autoremove -y && \
-        apt-get autoclean -y && \
-        rm -rf /var/lib/apt/lists/*
-
-    CMD [ "/bin/bash" ]
-
-Build the image by saving this file as :code:`Dockerfile` into an empty folder
-and build the image from inside this empty folder with :code:`docker build -t tadbit .` (~20 minutes)
+Build the image using the :code:`Dockerfile` from inside an empty folder with :code:`docker build -t tadbit .` (~20 minutes)
 
 Once built, run it as :code:`docker run tadbit tadbit map -h`
 
@@ -116,6 +84,14 @@ And finally write the url :code:`http://localhost:8888` in your browser.
 ::
 
   docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
+
+ - _Singularity_
+
+Build the image using the :code:`Singularity` from inside an empty folder with :code:`sudo singularity build tadbit.simg Singularity` (~20 minutes)
+
+Once built, run it as :code:`singularity run tadbit.simg`
+
+You can also install jupyter inside the Singularity by uncommenting the coresponding line in the recipe file.
 
 
 Citation
