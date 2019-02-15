@@ -69,6 +69,7 @@ def run(opts):
         logging.info('  - Ligation sites: %.3f%%', ligated[renz])
     if opts.skip_mapping:
         save_to_db(opts, dangling_ends, ligated, fig_path, [], launch_time, time.localtime())
+        return
 
     # Mapping
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
