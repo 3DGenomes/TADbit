@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master       | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.4.2             |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
+| Current version: v0.4.7             |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                       |                                                               |
 |                                     |                                                                           |                                                                                             |                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
@@ -53,8 +53,8 @@ If your question is still unanswered feel free to open a new issue.
 Docker/Singularity Containers
 -----------------------------
 
-Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>` and 
-`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`) to generate containers are 
+Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>` and
+`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`) to generate containers are
 available in the containers folder.
 
 
