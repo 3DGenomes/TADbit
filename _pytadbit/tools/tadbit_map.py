@@ -76,11 +76,11 @@ def run(opts):
 
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
-                                      '01_mapped_r%d' % (opts.read)),
+                                      '01_mapped_r%d' % (opts.read)), mapper=opts.mapper,
                             r_enz=opts.renz, temp_dir=temp_dir, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=not opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
-                            suffix=param_hash, **opts.gem_param)
+                            suffix=param_hash, mapper_params=opts.mapper_param)
 
     # adjust line count
     if opts.skip:
@@ -127,9 +127,9 @@ def run(opts):
 
 def check_options(opts):
 
-    opts.gem_binary = which(opts.gem_binary)
-    if not opts.gem_binary:
-        raise Exception('\n\nERROR: GEM binary not found, install it from:'
+    opts.mapper_binary = which(opts.mapper_binary)
+    if not opts.mapper_binary:
+        raise Exception('\n\nERROR: Mapper binary not found, for GEM install it from:'
                         '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
                         '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
                         'have a recent computer, the '
@@ -172,7 +172,7 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check paths
-    if not path.exists(opts.index):
+    if opts.mapper == 'gem' and not path.exists(opts.index):
         raise IOError('ERROR: index file not found at ' + opts.index)
 
     if not path.exists(opts.fastq):
@@ -222,24 +222,25 @@ def check_options(opts):
         vlog.close()
 
     # check GEM mapper extra options
-    if opts.gem_param:
-        opts.gem_param = dict([o.split(':') for o in opts.gem_param])
+    if opts.mapper_param:
+        opts.mapper_param = dict([o.split(':') for o in opts.mapper_param])
     else:
-        opts.gem_param = {}
-    gem_valid_option = set(["granularity", "q", "quality-format",
-                            "gem-quality-threshold", "mismatch-alphabet",
-                            "m", "e", "min-matched-bases",
-                            "max-big-indel-length", "s", "strata-after-best",
-                            "fast-mapping", "unique-mapping", "d", "D",
-                            "allow-incomplete-strata", "max-decoded-matches",
-                            "min-decoded-strata", "p", "paired-end-alignment",
-                            "b", "map-both-ends", "min-insert-size",
-                            "max-insert-size", "E", "max-extendable-matches",
-                            "max-extensions-per-match", "unique-pairing"])
-    for k in opts.gem_param:
-        if not k in gem_valid_option:
-            raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
-                                       'or not suported by this tool.') % k)
+        opts.mapper_param = {}
+    if opts.mapper == 'gem':
+        gem_valid_option = set(["granularity", "q", "quality-format",
+                                "gem-quality-threshold", "mismatch-alphabet",
+                                "m", "e", "min-matched-bases",
+                                "max-big-indel-length", "s", "strata-after-best",
+                                "fast-mapping", "unique-mapping", "d", "D",
+                                "allow-incomplete-strata", "max-decoded-matches",
+                                "min-decoded-strata", "p", "paired-end-alignment",
+                                "b", "map-both-ends", "min-insert-size",
+                                "max-insert-size", "E", "max-extendable-matches",
+                                "max-extensions-per-match", "unique-pairing"])
+        for k in opts.mapper_param:
+            if not k in gem_valid_option:
+                raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
+                                           'or not suported by this tool.') % k)
 
     # create empty DB if don't exists
     dbpath = path.join(opts.workdir, 'trace.db')
@@ -482,13 +483,17 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
-    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR",
-                        type=str, default='gem-mapper',
-                        help='[%(default)s] path to GEM mapper binary')
+    mapper.add_argument('--mapper', dest='mapper', metavar="STR",
+                        type=str, default='gem',
+                        help='[%(default)s] mapper used, options are gem or bowtie2')
 
-    mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
+    mapper.add_argument('--mapper_binary', dest='mapper_binary', metavar="STR",
+                        type=str, default='gem-mapper',
+                        help='[%(default)s] path to mapper binary')
+
+    mapper.add_argument('--mapper_param', dest="mapper_param", type=str, default=0,
                         nargs='+',
-                        help='''any parameter that could be passed to the GEM
+                        help='''any parameter that could be passed to the GEM or BOWTIE2
                         mapper. e.g. if we want to set the proportion of
                         mismatches to 0.05 and the maximum indel length to 10,
                         (in GEM it would be: -e 0.05 --max-big-indel-length 10),
