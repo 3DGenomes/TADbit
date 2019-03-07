@@ -539,7 +539,8 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
-    kwargs.update(mapper_params)
+    if mapper_params:
+        kwargs.update(mapper_params)
     # create directories
     for rep in [temp_dir, out_map_dir]:
         mkdir(rep)
