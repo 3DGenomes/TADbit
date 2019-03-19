@@ -299,7 +299,7 @@ def _sam_filter(fnam, fastq_path, unmap_out, map_out):
             read = '%s\t%s\t%s\t%s\t%s:%s:%d:%d\n' % (
                 line.qname, line.seq, line.qual, '1',
                 crm_dict[line.tid],
-                '-' if line.is_reverse else '+', line.pos, len(line.seq))
+                '-' if line.is_reverse else '+', line.pos + 1, len(line.seq))
             map_out.write(read)
         for _ in range(3):
             fastq_in.readline()
