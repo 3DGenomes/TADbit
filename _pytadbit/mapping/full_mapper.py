@@ -4,6 +4,8 @@
 
 import os
 import re
+import copy
+import multiprocessing  as mu
 from warnings import warn
 from tempfile import gettempdir, mkstemp
 from subprocess import CalledProcessError, PIPE, STDOUT, Popen
@@ -11,9 +13,10 @@ from pysam import Samfile
 
 from pytadbit.utils.file_handling import mkdir, which, is_fastq
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
-from pytadbit.parsers.sam_parser import parse_gem_3c
+from pytadbit.parsers.sam_parser import parse_gem_3c, merge_sort
 from pytadbit.mapping.restriction_enzymes import religateds
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import map_re_sites
 from pytadbit.mapping.restriction_enzymes import iupac2regex
 
 
@@ -396,7 +399,8 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
 
 
 def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
-                 r_enz=None, gem_binary='gem-mapper', gem_version=2, **kwargs):
+                 r_enz=None, gem_binary='gem-mapper', gem_version=2, compress=False,
+                 **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
        (start, end) position, or the name of a restriction enzyme. By default it
@@ -468,8 +472,9 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
             gem_binary, '-I', gem_index_path,
             '-t'            , str(nthreads),
             '-F'            , 'SAM',
-            #'--alignment-max-error', '0.04',
             '-o', out_map_path]
+        if compress:
+            gem_cmd += ['--gzip-output']
         if fastq_path2:
             if not r_enz:
                 raise Exception('ERROR: need enzyme name to fragment.')
@@ -721,10 +726,11 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
     return [out for out, _ in outfiles]
 
 def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
-                          genome_seq, out_map, clean=False, mapper_binary=None,
-                          mapper_params=None, **kwargs):
+                          genome_seq, out_map, clean=True, mapper_binary=None,
+                          mapper_params=None, samtools = 'samtools',
+                          **kwargs):
     """
-    Maps FASTQ reads to an indexed reference genome with the knowledge of 
+    Maps FASTQ reads to an indexed reference genome with the knowledge of
     the restriction enzyme used (fragment-based mapping).
 
     :param mapper_index_path: path to index file created from a reference genome
@@ -743,6 +749,7 @@ def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
        written there.
     :param gem-mapper mapper_binary: path to the binary mapper
     :param None mapper_params: extra parameters for the mapper
+    :param samtools samtools: path to samtools binary.
 
     :returns: outfile with the intersected read pairs
     """
@@ -750,6 +757,7 @@ def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
     suffix = kwargs.get('suffix', '')
     suffix = ('_' * (suffix != '')) + suffix
     nthreads = kwargs.get('nthreads', 8)
+    samtools = which(samtools)
     # check out folder
     if not os.path.isdir(os.path.dirname(os.path.abspath(out_map))):
         raise Exception('\n\nERROR: Path to store the output does not exist.\n')
@@ -796,7 +804,7 @@ def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
     base_name2 = os.path.split(fastq_path2)[-1].replace('.gz', '')
     base_name2 = '.'.join(base_name2.split('.')[:-1])
 
-    curr_map2, _ = transform_fastq(
+    curr_map2, count_fastq = transform_fastq(
             fastq_path2, mkstemp(prefix=base_name2 + '_', dir=temp_dir)[1],
             fastq=is_fastq(fastq_path1), nthreads=nthreads, light_storage=True)
 
@@ -805,19 +813,90 @@ def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
     print 'Mapping fragments of remaining reads...'
     _gem_mapping(mapper_index_path, curr_map1, out_map_path,fastq_path2=curr_map2,
                  r_enz=r_enz, gem_binary=gem_binary, gem_version=gem_version, **kwargs)
-    print 'Parsing result...'
-
-    parse_gem_3c(out_map_path, out_map, genome_seq, re_name=r_enz, verbose=False,
-                 clean=True, **kwargs)
-
     # clean
     if clean:
         print '   x removing GEM 3 input %s' % (curr_map1)
         os.system('rm -f %s' % (curr_map1))
         print '   x removing GEM 3 input %s' % (curr_map2)
         os.system('rm -f %s' % (curr_map2))
-        print '   x removing tmp mapped %s' % out_map_path
-        os.system('rm -f %s' % (out_map_path))
+
+    genome_lengths = dict((crm, len(genome_seq[crm])) for crm in genome_seq)
+    frag_chunk = kwargs.get('frag_chunk', 100000)
+    frags = map_re_sites(r_enz, genome_seq, frag_chunk=frag_chunk)
+    if samtools and nthreads > 1:
+        print 'Splitting sam file'
+        # headers
+        for i in xrange(nthreads):
+            os.system(samtools + ' view -H -O SAM %s > "%s_%d"'
+                      % (out_map_path, out_map_path, (i+1)))
+        chunk_lines = int((count_fastq*2.3)/nthreads) # estimate lines in sam with reads and frags
+        os.system(samtools + ''' view -O SAM %s | awk -v n=%d -v FS="\\t" '
+              BEGIN { part=0; line=n }       
+              /^@/ {header = header$0"\\n"; next;} 
+              { if( line>=n && $1!=last_read ) {part++; line=1; printf header > part".sam"; print $0 >> "%s_"part } 
+                else { print $0 >> "%s_"part; line++; } 
+                last_read = $1;
+              }'
+        ''' % (out_map_path, chunk_lines, out_map_path, out_map_path))
+        if clean:
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
+        print 'Parsing results...'
+        kwargs['nthreads'] = 1
+        procs = []
+        results = []
+        pool = mu.Pool(nthreads)
+        for i in xrange(nthreads):
+            frags_shared = copy.deepcopy(frags)
+            procs.append(pool.apply_async(
+                parse_gem_3c, args=('%s_%d' % (out_map_path,(i+1)),
+                                    '%s_parsed_%d' % (out_map_path,(i+1)),
+                                    copy.deepcopy(genome_lengths), frags_shared,
+                                    False, True), kwds=kwargs))
+            results.append('%s_parsed_%d' % (out_map_path,(i+1)))
+        pool.close()
+        pool.join()
+        if clean:
+            for i in xrange(nthreads):
+                print '   x removing tmp mapped %s_%d' % (out_map_path,(i+1))
+                os.system('rm -f %s_%d' % (out_map_path,(i+1)))
+
+        #Final sort and merge
+        nround = 0
+        while len(results) > 1:
+            nround += 1
+            num_procs = min(nthreads,int(len(results)/2))
+            pool = mu.Pool(num_procs)
+            procs = [pool.apply_async(
+                merge_sort,
+                (results.pop(0), results.pop(0), out_map_path+'_%d' % nround, i, True)
+            ) for i in xrange(num_procs)]
+            pool.close()
+            pool.join()
+            for proc in procs:
+                results.append(proc.get())
+
+        map_out = open(out_map, 'w')
+        tmp_reads_fh = open(results[0],'rb')
+        for crm in genome_seq:
+            map_out.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
+        for read_line in tmp_reads_fh:
+            read = read_line.split('\t')
+            map_out.write('\t'.join([read[0]]+read[2:8]+read[9:]))
+        map_out.close()
+        if clean:
+            print '   x removing tmp mapped %s' % results[0]
+            os.system('rm -f %s' % (results[0]))
+
+    else:
+        print 'Parsing result...'
+        parse_gem_3c(out_map_path, out_map, genome_lengths, frags, verbose=False,
+                     tmp_format=False, **kwargs)
+
+        # clean
+        if clean:
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
 
     return out_map
     
