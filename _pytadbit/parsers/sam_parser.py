@@ -270,6 +270,8 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
     try:
         r = next(samiter)
     except StopIteration:
+        # empty SAM file
+        return None
         pass
     while r:
         if not r.is_paired or r.is_unmapped or r.mapq < 4:
@@ -417,6 +419,8 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
             map_out.write('\t'.join([read[0]]+read[2:8]+read[9:]))
         map_out.close()
         os.system('rm -rf ' + tmp_files[0])
+
+    return out_file
 
 def write_reads_to_file(reads, outfiles, tmp_files, nfile):
     if not reads: # can be...

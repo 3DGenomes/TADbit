@@ -23,6 +23,8 @@ from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile
 from multiprocessing                      import cpu_count
+from subprocess                           import PIPE, STDOUT, Popen
+from cPickle                              import load, UnpicklingError
 from argparse                             import HelpFormatter
 from traceback                            import print_exc
 import logging
@@ -32,7 +34,8 @@ import time
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, identify_re
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.utils.file_handling         import which, mkdir, is_fastq
-from pytadbit.mapping.full_mapper         import full_mapping
+from pytadbit.mapping.full_mapper         import full_mapping, fast_fragment_mapping
+from pytadbit.parsers.genome_parser       import parse_fasta
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
@@ -72,15 +75,34 @@ def run(opts):
         return
 
     # Mapping
-    logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
+    if opts.fast_fragment:
+        mkdir(path.join(opts.workdir, '03_filtered_reads'))
+        logging.info('parsing genomic sequence')
+        try:
+            # allows the use of cPickle genome to make it faster
+            genome_seq = load(open(opts.genome[0]))
+        except UnpicklingError:
+            genome_seq = parse_fasta(opts.genome)
 
-    outfiles = full_mapping(opts.index, opts.fastq,
-                            path.join(opts.workdir,
-                                      '01_mapped_r%d' % (opts.read)), mapper=opts.mapper,
-                            r_enz=opts.renz, temp_dir=temp_dir, nthreads=opts.cpus,
-                            frag_map=not opts.iterative, clean=not opts.keep_tmp,
-                            windows=opts.windows, get_nread=True, skip=opts.skip,
-                            suffix=param_hash, mapper_params=opts.mapper_param)
+        logging.info('mapping %s and %s to %s', opts.fastq, opts.fastq2, opts.workdir)
+        outfiles = fast_fragment_mapping(opts.index, opts.fastq, opts.fastq2,
+                                opts.renz[0], genome_seq,
+                                path.join(opts.workdir, '03_filtered_reads',
+                                          'all_r1-r2_intersection_%s.tsv' % param_hash),
+                                clean=not opts.keep_tmp, get_nread=True,
+                                mapper_binary=opts.mapper_binary,
+                                mapper_params=opts.mapper_param, suffix=param_hash,
+                                temp_dir=temp_dir, nthreads=opts.cpus)
+    else:
+        logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
+        outfiles = full_mapping(opts.index, opts.fastq,
+                                path.join(opts.workdir,
+                                          '01_mapped_r%d' % (opts.read)), mapper=opts.mapper,
+                                r_enz=opts.renz, temp_dir=temp_dir, nthreads=opts.cpus,
+                                frag_map=not opts.iterative, clean=not opts.keep_tmp,
+                                windows=opts.windows, get_nread=True, skip=opts.skip,
+                                suffix=param_hash, mapper_binary=opts.mapper_binary,
+                                mapper_params=opts.mapper_param)
 
     # adjust line count
     if opts.skip:
@@ -139,6 +161,27 @@ def check_options(opts):
                         'example (somewhere in your PATH).\n\nNOTE: GEM does '
                         'not provide any binary for MAC-OS.')
 
+    opts.gem_version = 0
+    if opts.mapper == 'gem':
+        opts.gem_version = None
+        try:
+            out, _ = Popen([opts.mapper_binary,'--version'], stdout=PIPE,
+                             stderr=STDOUT).communicate()
+            opts.gem_version = int(out[1])
+        except ValueError as e:
+            opts.gem_version = 2
+            print 'Falling to gem v2'
+
+    if opts.fast_fragment:
+        if opts.gem_version < 3:
+            raise Exception('ERROR: Fast fragment mapping needs GEM v3')
+        if not opts.fastq2 or not path.exists(opts.fastq2):
+            raise Exception('ERROR: Fast fragment mapping needs both fastq files. '
+                            'Please specify --fastq2')
+        if opts.read != 0:
+            raise Exception('ERROR: Fast fragment mapping needs to be specified with --read 0')
+        if not opts.genome: raise Exception('ERROR: Fast fragment mapping needs '
+                                            'the genome parameter.')
     # check RE name
     if opts.renz == ['CHECK']:
         print '\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq)
@@ -172,7 +215,7 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check paths
-    if opts.mapper == 'gem' and not path.exists(opts.index):
+    if not path.exists(opts.index):
         raise IOError('ERROR: index file not found at ' + opts.index)
 
     if not path.exists(opts.fastq):
@@ -226,7 +269,7 @@ def check_options(opts):
         opts.mapper_param = dict([o.split(':') for o in opts.mapper_param])
     else:
         opts.mapper_param = {}
-    if opts.mapper == 'gem':
+    if opts.mapper == 'gem' and opts.gem_version < 3:
         gem_valid_option = set(["granularity", "q", "quality-format",
                                 "gem-quality-threshold", "mismatch-alphabet",
                                 "m", "e", "min-matched-bases",
@@ -348,9 +391,9 @@ def save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, fi
                 window = opts.windows[-1]
             except TypeError:
                 window = 'None'
-            add_path(cur, out, 'SAM/MAP', jobid, opts.workdir)
-            frag = ('none' if opts.iterative else 'frag' if i==len(outfiles) - 1
-                    else 'full')
+            add_path(cur, out,'2D_BED' if opts.read == 0 else 'SAM/MAP', jobid, opts.workdir)
+            frag = ('none' if opts.iterative else 'fast_frag' if opts.read == 0
+                    else 'frag' if i==len(outfiles) - 1 else 'full')
             try:
                 cur.execute("""
     insert into MAPPED_INPUTs
@@ -412,10 +455,25 @@ def populate_args(parser):
                         default=None, type=str, required=True,
                         help='path to a FASTQ files (can be compressed files)')
 
+    glopts.add_argument('--fastq2', dest='fastq2', metavar="PATH", action='store',
+                        default=None, type=str, required=False,
+                        help='''path to a FASTQ file of read 2 (can be compressed
+                        files). Needed for fast_fragment''')
+
     glopts.add_argument('--index', dest='index', metavar="PATH",
                         type=str, required=True,
                         help='''paths to file(s) with indexed FASTA files of the
                         reference genome.''')
+
+    glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
+                        type=str,
+                        help='''paths to file(s) with FASTA files of the
+                        reference genome. Needed for fast_fragment mapping.
+                        If many, files will be concatenated.
+                        I.e.: --genome chr_1.fa chr_2.fa
+                        In this last case, order is important or the rest of the
+                        analysis. Note: it can also be the path to a previously
+                        parsed genome in pickle format.''')
 
     glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, required=True,
@@ -447,6 +505,16 @@ def populate_args(parser):
                         action='store_true',
                         help='''default mapping strategy is fragment based
                         use this flag for iterative mapping''')
+
+    mapper.add_argument('--fast_fragment', dest='fast_fragment', default=False,
+                        action='store_true',
+                        help='''use fast fragment mapping. Both fastq files are mapped using
+                        fragment based mapping in GEM v3. The output file is an intersected
+                        read file than can be used directly in tadbit filter 
+                        (no tadbit parse needed). Access to samtools is needed for
+                        fast_fragment to work.
+                         --fastq2 and --genome needs to be
+                        specified and --read value should be 0.''')
 
     mapper.add_argument('--windows', dest='windows', default=None,
                         nargs='+',
