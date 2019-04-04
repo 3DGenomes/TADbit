@@ -86,7 +86,7 @@ def run(opts):
 
         logging.info('mapping %s and %s to %s', opts.fastq, opts.fastq2, opts.workdir)
         outfiles = fast_fragment_mapping(opts.index, opts.fastq, opts.fastq2,
-                                opts.renz[0], genome_seq,
+                                opts.renz, genome_seq,
                                 path.join(opts.workdir, '03_filtered_reads',
                                           'all_r1-r2_intersection_%s.tsv' % param_hash),
                                 clean=not opts.keep_tmp, get_nread=True,

@@ -479,8 +479,12 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
             if not r_enz:
                 raise Exception('ERROR: need enzyme name to fragment.')
             print 'Using GEM', gem_version, 'with 3c mapping'
-            gem_cmd += ['--i1', fastq_path, '--i2', fastq_path2,
-                        '--restriction-enzyme', r_enz, '--3c']
+            gem_cmd += ['--i1', fastq_path, '--i2', fastq_path2, '--3c']
+            if isinstance(r_enz, str):
+                gem_cmd += ['--restriction-enzyme', r_enz]
+            elif isinstance(r_enz, list):
+                for r_z in r_enz:
+                    gem_cmd += ['--restriction-enzyme', r_z]
         else:
             gem_cmd += ['-i', fastq_path]
     print ' '.join(gem_cmd)
