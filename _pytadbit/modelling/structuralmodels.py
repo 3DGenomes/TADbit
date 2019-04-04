@@ -1740,7 +1740,8 @@ class StructuralModels(object):
                                  dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
-                                 log_corr=True, contact_matrix=None):
+                                 log_corr=True, contact_matrix=None,
+                                 cmap='viridis'):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1839,7 +1840,7 @@ class StructuralModels(object):
                          size='x-large')
             ax = fig.add_subplot(131)
             # imshow of the modeled data
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
                              vmin=0, vmax=1, cmap=cmap,
@@ -1925,7 +1926,7 @@ class StructuralModels(object):
                 # axmidl.patch.set_visible(False)
             ax.set_title('Real versus modelled data')
             ax = fig.add_subplot(133)
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = ax.imshow(log2(original_data), origin='lower',
                             interpolation="nearest", cmap=cmap,
