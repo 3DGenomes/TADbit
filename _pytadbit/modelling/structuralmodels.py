@@ -32,7 +32,7 @@ from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
 from pytadbit.utils.tadmaths          import calinski_harabasz, nozero_log_list
-from pytadbit.utils.tadmaths          import mean_nonefzscore
+from pytadbit.utils.tadmaths          import mean_none
 from pytadbit.utils.extraviews        import plot_3d_model, setup_plot
 from pytadbit.utils.extraviews        import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
