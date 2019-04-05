@@ -903,7 +903,8 @@ class StructuralModels(object):
             plt.show()
 
     def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
-                    cutoff=None, axe=None, savefig=None, savedata=None):
+                    cutoff=None, axe=None, savefig=None, savedata=None,
+                    cmap='viridis'):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -926,6 +927,7 @@ class StructuralModels(object):
         :param None savedata: path to a file where to save the contact map data
            generated, in three columns format (particle1, particle2, percentage
            of models where these two particles are in contact)
+        :param viridis cmap: The Colormap instance
 
         """
         if dynamics: 
@@ -967,7 +969,7 @@ class StructuralModels(object):
                 show = True
             else:
                 fig = axe.get_figure()
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
                              vmin=0, vmax=1, cmap=cmap,
@@ -1588,7 +1590,8 @@ class StructuralModels(object):
         #    plt.show()
         #plt.close('all')
 
-    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
+    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False,
+            cmap='viridis'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1603,6 +1606,7 @@ class StructuralModels(object):
            of the file name will determine the desired format).
         :param False do_normaltest: to display the result of a test of normality
            (D'Agostino and Pearson's test, that combines skew and kurtosis).
+        :param viridis cmap: The Colormap instance
 
         """
 
@@ -1628,8 +1632,8 @@ class StructuralModels(object):
                     zsc_mtrx[j][i] = float('nan')
                     zsc_mtrx[i][j] = float('nan')
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        cmap = jet
-        cmap.set_bad('w', 1.)
+        cmap = plt.get_cmap(cmap)
+        cmap.set_bad('darkgrey', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
@@ -1763,6 +1767,7 @@ class StructuralModels(object):
            appearance
         :param None contact_matrix: input a contact matrix instead of computing
            it from the models
+        :param 'viridis' cmap: The Colormap instance
 
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
