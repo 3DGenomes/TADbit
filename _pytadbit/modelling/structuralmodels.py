@@ -19,6 +19,7 @@ from numpy                            import mean as np_mean
 from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace
+from numpy                            import nanmin, nanmax
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
