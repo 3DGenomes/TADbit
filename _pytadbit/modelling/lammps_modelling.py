@@ -318,7 +318,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                 stages[timepoint+1] = [(t+1+timepoint*nbr_produced_models) for t in xrange(nbr_produced_models)]
                 
         return StructuralModels(
-            len(LOCI), models, {}, resolution, original_data=values,
+            len(LOCI), models, {}, resolution, original_data=values if len(HiCRestraints)>1 else values[0],
             zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
             restraints=HiCRestraints[0]._get_restraints(),
             description=description, stages=stages, models_per_step=timepoints)

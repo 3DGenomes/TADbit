@@ -119,7 +119,8 @@ class IMPoptimizer(object):
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
                         use_excluded_volume=True, kforce=5,
-                        ev_kforce=5, timeout_job=300):
+                        ev_kforce=5, timeout_job=300,
+			kfactor=1, cleanup=False):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -149,6 +150,10 @@ class IMPoptimizer(object):
         :param None savedata: concatenate all generated models into a dictionary
            and save it into a file named by this argument
         :param True verbose: print the results to the standard output 
+	:param 1 kfactor: Factor by which multiply the adjusted (square root) values
+		of the ZScores before feeding them to LAMMPS. Used to decrease
+		maximum values bellow 1. E.j.: kfactor=0.1
+	:param True cleanup: delete lammps folder after completion
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -331,7 +336,8 @@ class IMPoptimizer(object):
                                           n_cpus=n_cpus,
                                           verbose=verbose, first=0,coords = self.coords,
                                           close_bins=self.close_bins, config=config_tmp, container=self.container,
-                                          zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job)
+                                          zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job,
+					  kfactor=kfactor, cleanup=cleanup)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])

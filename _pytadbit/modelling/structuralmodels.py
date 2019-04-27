@@ -19,6 +19,7 @@ from numpy                            import mean as np_mean
 from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace
+from numpy                            import nanmin, nanmax
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
@@ -903,7 +904,8 @@ class StructuralModels(object):
             plt.show()
 
     def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
-                    cutoff=None, axe=None, savefig=None, savedata=None):
+                    cutoff=None, axe=None, savefig=None, savedata=None,
+                    cmap='viridis'):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -926,6 +928,7 @@ class StructuralModels(object):
         :param None savedata: path to a file where to save the contact map data
            generated, in three columns format (particle1, particle2, percentage
            of models where these two particles are in contact)
+        :param viridis cmap: The Colormap instance
 
         """
         if dynamics: 
@@ -967,7 +970,7 @@ class StructuralModels(object):
                 show = True
             else:
                 fig = axe.get_figure()
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
                              vmin=0, vmax=1, cmap=cmap,
@@ -1588,26 +1591,26 @@ class StructuralModels(object):
         #    plt.show()
         #plt.close('all')
 
-    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
+    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False,
+                    cmap='viridis'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
         and in blue Z-scores lower than lower cut-off. Last plot is an histogram
         of the distribution of Z-scores, showing selected regions. Histogram
         also shows the fit to normal distribution.
-
         :param None axe: a matplotlib.axes.Axes object to define the plot
-           appearance
+            appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
+            if None, the image will be shown using matplotlib GUI (the extension
+            of the file name will determine the desired format).
         :param False do_normaltest: to display the result of a test of normality
-           (D'Agostino and Pearson's test, that combines skew and kurtosis).
-
+            (D'Agostino and Pearson's test, that combines skew and kurtosis).
+        :param viridis cmap: The Colormap instance
         """
 
         zsc_mtrx = reduce(lambda x, y: x + y, [[k] + self._zscores[k].keys()
-                                               for k in self._zscores.keys()])
+                                                for k in self._zscores.keys()])
         max_bin = max([int(i) for i in zsc_mtrx])
         zsc_mtrx = [[float('nan') for _ in xrange(max_bin)]
                     for _ in xrange(max_bin)]
@@ -1616,118 +1619,124 @@ class StructuralModels(object):
                 try:
                     zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
                 except KeyError:
-                    continue
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if zsc_mtrx[i][j]:
-                    zsc_mtrx[j][i] = zsc_mtrx[i][j]
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
-                if (self._config['lowfreq'] < zsc_mtrx[i][j] <
-                    self._config['upfreq']):
-                    zsc_mtrx[j][i] = float('nan')
-                    zsc_mtrx[i][j] = float('nan')
+                    try:
+                        zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
+                    except KeyError:
+                        zsc_mtrx[i][j] = 0
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        cmap = jet
-        cmap.set_bad('w', 1.)
+        masked_array_top = ma.array (
+            masked_array, mask=masked_array < self._config['upfreq'])
+        masked_array_bot = ma.array (
+            masked_array, mask=self._config['lowfreq'] < masked_array)
+
+        # color coding
+        if cmap == 'viridis':
+            lowf = plt.get_cmap('Purples')
+            upf = plt.get_cmap('summer')
+        else:
+            lowf = plt.get_cmap('Blues')
+            upf = plt.get_cmap('Reds')
+        cmap =  plt.get_cmap(cmap)
+        cmap.set_bad('darkgrey', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
             fig = axe.get_figure()
         ax = fig.add_subplot(131)
-        ims = ax.imshow(masked_array, origin='lower',
+        ims = ax.imshow(zsc_mtrx, origin='lower',
                         interpolation="nearest", cmap=cmap)
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the normalized Hi-C count')
         cbar = ax.figure.colorbar(ims, cmap=cmap)
         cbar.ax.set_ylabel('Z-score value')
-        #
-        ax = plt.axes([.43, 0.11, .22, .61])
+
+        ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
-                              [self._zscores[v].values()
-                               for v in self._zscores.keys()]))
-        _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
-                                facecolor='none', edgecolor='k', normed=True)
+                                [self._zscores[v].values()
+                                for v in self._zscores.keys()]))
+        try:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k', density=True)
+        except AttributeError:
+            _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
+                                    facecolor='none', edgecolor='k')
         k2, pv = normaltest(zdata)
         normfit = sc_norm.pdf(zdata, np_mean(zdata), np_std(zdata))
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
-        ax.hist(
-            reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                        for v in self._zscores.keys()]),
-            bins=25, linewidth=2, facecolor='none', edgecolor='k',
-            histtype='stepfilled', normed=True)
-        red = cmap(int(255 * (.8 + 1.2) / 2.4))
-        blue = cmap(int(255 * (-.5 + 1.2) / 2.4))
+        try:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled', density=True)
+        except AttributeError:
+            ax.hist(
+                reduce(lambda x, y: x + y, [self._zscores[v].values()
+                                            for v in self._zscores.keys()]),
+                bins=25, linewidth=2, facecolor='none', edgecolor='k',
+                histtype='stepfilled')
         height1 = height2 = 0
+        minv = nanmin(masked_array)
+        maxv = nanmax(masked_array)
         for thispatch in patches:
             beg = thispatch.get_x()
             end = thispatch.get_x() + thispatch.get_width()
             ax.fill_betweenx([0] + [thispatch.get_height()] * 100,
-                             max(beg, self._config['upfreq'])
-                             if end > self._config['upfreq' ] else beg,
-                             min(end, self._config['lowfreq' ])
-                             if beg < self._config['lowfreq'] else end,
-                             color=(
-                                 blue if beg < self._config['lowfreq'] else
-                                 red if end > self._config['upfreq']
-                                 else 'w'))
+                                max(beg, self._config['upfreq'])
+                                if end > self._config['upfreq' ] else beg,
+                                min(end, self._config['lowfreq' ])
+                                if beg < self._config['lowfreq'] else end,
+                                color=(
+                                    lowf(beg / minv) if beg < self._config['lowfreq'] else
+                                    upf (end / maxv) if end > self._config['upfreq']
+                                    else 'w'))
             if end > self._config['lowfreq' ] and beg < self._config['lowfreq']:
                 height1 = thispatch.get_height()
             elif beg < self._config['upfreq'] and end > self._config['upfreq' ]:
                 height2 = thispatch.get_height()
         labels = []
-        p1 = plt.Rectangle((0, 0), 1, 1, fc=blue, color='k')
+        p1 = plt.Rectangle((0, 0), 1, 1, fc=lowf(0.7), color='k')
         labels.append('< %.2f (force particles apart)' % (
             self._config['lowfreq']))
         p2 = plt.Rectangle((0, 0), 1, 1, fc="w", color='k')
         labels.append('Not used (no constraints)')
-        p3 = plt.Rectangle((0, 0), 1, 1, fc=red, color='k')
+        p3 = plt.Rectangle((0, 0), 1, 1, fc=upf(0.7), color='k')
         labels.append('> %.2f (force particles together)' % (
             self._config['upfreq']))
         try:
             ax.legend([p1, p2, p3, normplot[0]], labels + [
                 "Fitted normal distribution" +
                 (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
-                  % (k2, pv)) if do_normaltest else '')],
+                    % (k2, pv)) if do_normaltest else '')],
                 fontsize='small', frameon=False,
                 bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         except TypeError:
             ax.legend([p1, p2, p3, normplot[0]], labels + [
                 "Fitted normal distribution" +
                 (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
-                  % (k2, pv)) if do_normaltest else '')],
+                    % (k2, pv)) if do_normaltest else '')],
                 frameon=False,
                 bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         ax.set_xlabel('Z-scores')
-        ax.set_ylabel('Number of particles')
-        ax.vlines(self._config['lowfreq'], 0, height1, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        ax.vlines(self._config['upfreq'] , 0, height2, color=(.1, .1, .1),
-                  linestyle='--', lw=2, alpha=0.5)
-        #
+        ax.set_ylabel('Proportion of particles')
+        ax.vlines(self._config['lowfreq'], 0, height1, color='k',
+                    linestyle='-', lw=2, alpha=1)
+        ax.vlines(self._config['upfreq'] , 0, height2, color='k',
+                    linestyle='-', lw=2, alpha=1)
+
         ax = fig.add_subplot(133)
-        masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
-        for i in masked_array:
-            for j in xrange(len(i)):
-                try:
-                    i[j].mask
-                    continue
-                except AttributeError:
-                    pass
-                if i[j] > self._config['upfreq']:
-                    i[j] = .8
-                elif i[j] < self._config['lowfreq']:
-                    i[j] = -.5
-        ims = ax.imshow(masked_array, origin='lower', vmin=-1.2, vmax=1.2,
-                        interpolation="nearest", cmap=cmap)
+        _ = ax.imshow(masked_array_top, origin='lower',
+                        interpolation="nearest", cmap=upf)
+        _ = ax.imshow(masked_array_bot, origin='lower',
+                        interpolation="nearest", cmap=lowf)
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax = plt.axes([.42, 0.11, .48, .79])
         ax.set_title('Binary representation of Z-scores used in the ' +
-                     'computation of restraints')
+                        'computation of restraints')
         ax.set_title('Binary representation of Z-scores used in the ' +
-                     'computation of restraints')
+                        'computation of restraints')
         ax.axison = False
         if savefig:
             tadbit_savefig(savefig)
@@ -1740,7 +1749,8 @@ class StructuralModels(object):
                                  dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
-                                 log_corr=True, contact_matrix=None):
+                                 log_corr=True, contact_matrix=None,
+                                 cmap='viridis'):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1762,6 +1772,7 @@ class StructuralModels(object):
            appearance
         :param None contact_matrix: input a contact matrix instead of computing
            it from the models
+        :param 'viridis' cmap: The Colormap instance
 
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
@@ -1805,7 +1816,7 @@ class StructuralModels(object):
                 original_data = self._original_data
             for i in xrange(len(original_data)):
                 for j in xrange(i + off_diag, len(original_data)):
-                    if not model_matrix[i][j] > 0 or not original_data[i][j] > 0:
+                    if not original_data[i][j] > 0:
                         continue
                     oridata.append(original_data[i][j])
                     moddata.append(model_matrix[i][j])
@@ -1839,7 +1850,7 @@ class StructuralModels(object):
                          size='x-large')
             ax = fig.add_subplot(131)
             # imshow of the modeled data
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
                              vmin=0, vmax=1, cmap=cmap,
@@ -1925,7 +1936,7 @@ class StructuralModels(object):
                 # axmidl.patch.set_visible(False)
             ax.set_title('Real versus modelled data')
             ax = fig.add_subplot(133)
-            cmap = plt.get_cmap('jet')
+            cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
             ims = ax.imshow(log2(original_data), origin='lower',
                             interpolation="nearest", cmap=cmap,
