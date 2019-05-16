@@ -23,7 +23,6 @@ from IMP.container import ListSingletonContainer
 from IMP import Model
 from IMP import FloatKey
 
-
 IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
 
@@ -32,8 +31,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None, container=None, use_HiC=True,
-                       use_confining_environment=True, use_excluded_volume=True):
+                       single_particle_restraints=None, first=None, container=None, use_HiC=True,
+                       use_confining_environment=True, use_excluded_volume=True,
+                       initial_conformation=None):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -126,11 +126,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     """
 
-    
-    
     # Main config parameters
     global CONFIG
-
     # Setup CONFIG['container']
     try:
         CONFIG['container'] = {'shape' : container[0],
@@ -176,17 +173,20 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     HiCRestraints = HiCBasedRestraints(nloci,RADIUS,CONFIG,resolution,zscores,
                  chromosomes=coords, close_bins=close_bins,first=first)
-    
+
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models, n_keep, keep_all, HiCRestraints, use_HiC=use_HiC,
-        use_confining_environment=use_confining_environment, use_excluded_volume=use_excluded_volume)
+        n_cpus, n_models, n_keep, keep_all, HiCRestraints,
+        use_HiC=use_HiC, use_confining_environment=use_confining_environment, 
+        use_excluded_volume=use_excluded_volume,
+        single_particle_restraints=single_particle_restraints,
+        initial_conformation=initial_conformation)
 
     try:
         xpr = experiment
         crm = xpr.crm
         description = {'identifier'        : xpr.identifier,
                        'chromosome'        : coords['crm'] if isinstance(coords,dict) else [c['crm'] for c in coords],
-                       'start'             : xpr.resolution * coords['start'] if isinstance(coords,dict) else [xpr.resolution *c['start'] for c in coords],
+                       'start'             : xpr.resolution * (coords['start'] - 1) if isinstance(coords,dict) else [xpr.resolution * (c['start'] - 1) for c in coords],
                        'end'               : xpr.resolution * coords['end'] if isinstance(coords,dict) else [xpr.resolution *c['end'] for c in coords],
                        'species'           : crm.species,
                        'restriction enzyme': xpr.enzyme,
@@ -223,7 +223,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             description=description)
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestraints, use_HiC=True,
-                                   use_confining_environment=True, use_excluded_volume=True):
+                                   use_confining_environment=True, use_excluded_volume=True,
+                                   single_particle_restraints=None, initial_conformation=None):
     """
     Parallelize the
     :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
@@ -236,8 +237,9 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
     jobs = {}
     for rand_init in xrange(START, n_models + START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
-                                           args=(rand_init,HiCRestraints,use_HiC, use_confining_environment,
-                                                 use_excluded_volume))
+                                           args=(rand_init, HiCRestraints, use_HiC,
+                                                 use_confining_environment, use_excluded_volume,
+                                                 single_particle_restraints, initial_conformation))
 
     pool.close()
     pool.join()
@@ -260,7 +262,8 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
 
 
 def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_environment=True,
-                      use_excluded_volume=True):
+                      use_excluded_volume=True, single_particle_restraints=None,
+                      initial_conformation=None):
     """
     Generates one IMP model
 
@@ -279,20 +282,29 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
              'model'      : Model(),
              'particles'  : None,
              'restraints' : None} # 2.6.1 compat
-    model['particles'] = ListSingletonContainer(
-        IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/float(CONFIG['resolution'] * CONFIG['scale'])))  # last number is box size
+    if initial_conformation:
+        ps = []
+        for pos in xrange(len(LOCI)):
+            ps.append(IMP.Particle(model['model'],str(pos)))
+            d = IMP.core.XYZR.setup_particle(ps[-1],float(RADIUS))
+            d.set_coordinates(IMP.algebra.Vector3D(initial_conformation['x'][pos], 
+                                                   initial_conformation['y'][pos],
+                                                   initial_conformation['z'][pos]))
+            d.set_coordinates_are_optimized(True)
+        model['particles'] = ListSingletonContainer(model['model'],ps)    
+    else:
+        model['particles'] = ListSingletonContainer(
+            IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/float(CONFIG['resolution'] * CONFIG['scale'])))  # last number is box size
+        # OPTIONAL:Set the name of each particle
+        for i in range(0, len(LOCI)):
+            p = model['particles'].get_particle(i)
+            p.set_name(str(LOCI[i]))
     #model['particles'] = ListSingletonContainer(
     #    IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000))  # last number is box size
     try:
         model['restraints'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
     except:
         pass
-
-    # OPTIONAL:Set the name of each particle
-    for i in range(0, len(LOCI)):
-        p = model['particles'].get_particle(i)
-        p.set_name(str(LOCI[i]))
-        #print p.get_name()
 
     # Separated function for the confining environment restraint:
     # This function is specific for IMP
@@ -308,6 +320,14 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
         bending_kforce = CONFIG['kbending']
         add_bending_rigidity_restraint(model, theta0, bending_kforce)
 
+    # Anchor particles to fixed points in the model
+    if single_particle_restraints:
+        for ap in single_particle_restraints:
+            ap[1] = [c/(float(CONFIG['resolution'] * CONFIG['scale'])) for c in ap[1]]
+            ap[4] /= float(CONFIG['resolution'] * CONFIG['scale'])
+        # This function is specific for IMP
+        add_single_particle_restraints(model, single_particle_restraints)
+
     # Separated function fot the HiC-based restraints
     if use_HiC:
         # This function is general
@@ -320,18 +340,20 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
     if use_excluded_volume:
         # print "\nEnforcing the excluded_volume_restraints"
         # This function is specific for IMP
-        excluded_volume_kforce = CONFIG['kforce']
+        excluded_volume_kforce = CONFIG['ev_kforce'] if 'ev_kforce' in CONFIG else CONFIG['kforce']
         evr = add_excluded_volume_restraint(model, model['particles'], excluded_volume_kforce)
 
     if verbose == 1:
         try:
             print "Total number of restraints: %i" % (
                 model['model'].get_number_of_restraints())
-            print len(HiCbasedRestraints)
+            if use_HiC:
+                print len(HiCbasedRestraints)
         except:
             print "Total number of restraints: %i" % (
                 model['restraints'].get_number_of_restraints()) # 2.6.1 compat
-            print len(HiCbasedRestraints)
+            if use_HiC:
+                print len(HiCbasedRestraints)
 
     # Separated function for the Conjugate gradient optimization
     if verbose == 1:
@@ -409,8 +431,6 @@ def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints
         except:
             model['restraints'].add_restraint(brr) # 2.6.1 compat
 
-
-
 def add_confining_environment(model): #, restraints):
     model['container'] = CONFIG['container']
 
@@ -439,7 +459,36 @@ def add_confining_environment(model): #, restraints):
     # else:
     #     print "ERROR the shape",model['container']['shape'],"is currently not defined!"
 
+def add_single_particle_restraints(model, single_particle_restraints):
 
+    for restraint in single_particle_restraints:
+
+        if int(restraint[0]) >= len(LOCI):
+            continue
+
+        p1 = model['particles'].get_particle(int(restraint[0]))
+        pos = IMP.algebra.Vector3D(restraint[1])
+
+        kforce = float(restraint[3])
+        dist   = float(restraint[4])
+
+        if restraint[2]  == 'Harmonic':
+            rb = IMP.core.Harmonic(dist, kforce)
+        elif restraint[2] == 'HarmonicUpperBound':
+            rb = IMP.core.HarmonicUpperBound(dist, kforce)
+        elif restraint[2] == 'HarmonicLowerBound':
+            rb = IMP.core.HarmonicLowerBound(dist, kforce)
+        else:
+            print "ERROR: RestraintType",restraint[2],"does not exist!"
+            return
+
+        ss = IMP.core.DistanceToSingletonScore(rb, pos)
+        ar = IMP.core.SingletonRestraint(model['model'], ss, p1)
+        ar.set_name("%sSingleDistanceRestraint%s" % (restraint[2], restraint[0]))
+        try:
+            model['model'].add_restraint(ar)
+        except:
+            model['restraints'].add_restraint(ar) # 2.6.1 compat
 
 def add_hicbased_restraints(model, HiCbasedRestraints): #, restraints):
     # Add the restraints contained in HiCbasedRestraints
@@ -648,4 +697,3 @@ def conjugate_gradient_optimization(model, log_energies):
     #    o.set_kt(temperature)
     #    e = o.optimize(steps)
     #    print str(i) + " " + str(e) + " " + str(o.get_kt())
-

@@ -94,6 +94,12 @@ def run(opts):
         line = fh.next()
         crmM, begM, endM, val = line.split()
         crm = crmM
+        if crmM not in mappability:
+            print('     skipping %s' % crmM) 
+            while crmM not in mappability:
+                line = fh.next()
+                crmM, begM, endM, val = line.split()
+                crm = crmM
         while any(not mappability[c] for c in mappability):
             for begB in xrange(0, len(genome[crmM]), opts.reso):
                 endB = begB + opts.reso
@@ -543,10 +549,14 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
+    try:
+        if already_run(opts):
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(path.join(dbdir, dbfile))
+            exit('WARNING: exact same job already computed, see JOBs table above')
+    except IOError:  # new working directory
+        pass
+
 
 def nice(reso):
     if reso >= 1000000:

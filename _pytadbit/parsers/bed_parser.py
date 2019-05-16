@@ -43,7 +43,6 @@ def parse_bed(fnam, resolution=1):
     :returns: a dictionnary with a count of number of entries found per bin. In
        case column 5 is present the values used tyo weight entries, otherwise
        each entry will weight 1.
-
     """
 
     fhandler = magic_open(fnam)
