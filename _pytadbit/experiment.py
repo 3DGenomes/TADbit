@@ -821,7 +821,7 @@ class Experiment(object):
                     continue
                 zscores.setdefault(str(i), {})
                 zscores[str(i)][str(j)] = values[(i, j)]
-                
+
         if len(self._zscores) > index:
             self._zscores[index] = zscores
         else:
@@ -834,7 +834,7 @@ class Experiment(object):
                      stages=0, initial_conformation='tadbit',
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
                      cleanup=True, single_particle_restraints=None, use_HiC=True,
-                     start_seed=1):
+                     start_seed=1, hide_log=True):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -963,7 +963,7 @@ class Experiment(object):
                                       outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                       verbose=verbose, keep_all=keep_all, first=0,
                                       close_bins=close_bins, config=config, container=container,
-                                      experiment=self, coords=coords, zeros=zeros, 
+                                      experiment=self, coords=coords, zeros=zeros,
                                       single_particle_restraints=single_particle_restraints,
                                       initial_conformation=initial_conformation,
                                       use_HiC=use_HiC, start=start_seed)
@@ -976,8 +976,9 @@ class Experiment(object):
                                       experiment=self, coords=coords, zeros=zeros,
                                       tmp_folder=tmp_folder,timeout_job=timeout_job,
                                       initial_conformation=initial_conformation,
-                                      timesteps_per_k=timesteps_per_k, kfactor=kfactor, 
-                                      adaptation_step=adaptation_step, cleanup=cleanup)
+                                      timesteps_per_k=timesteps_per_k, kfactor=kfactor,
+                                      adaptation_step=adaptation_step, cleanup=cleanup,
+                                      hide_log=hide_log)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
