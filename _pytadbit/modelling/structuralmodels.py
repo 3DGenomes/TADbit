@@ -907,7 +907,7 @@ class StructuralModels(object):
         else:
             plt.show()
 
-    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
+    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None, 
                     cutoff=None, axe=None, savefig=None, savedata=None,
                     cmap='viridis'):
         """
