@@ -291,16 +291,15 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
                                                    initial_conformation['y'][pos],
                                                    initial_conformation['z'][pos]))
             d.set_coordinates_are_optimized(True)
-        model['particles'] = ListSingletonContainer(model['model'],ps)    
+        model['particles'] = ListSingletonContainer(model['model'],ps)
     else:
-        model['particles'] = ListSingletonContainer(
+        model['particles'] = ListSingletonContainer(model['model'],
             IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/float(CONFIG['resolution'] * CONFIG['scale'])))  # last number is box size
         # OPTIONAL:Set the name of each particle
         for i in range(0, len(LOCI)):
             p = model['particles'].get_particle(i)
             p.set_name(str(LOCI[i]))
-    #model['particles'] = ListSingletonContainer(
-    #    IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000))  # last number is box size
+
     try:
         model['restraints'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
     except:

@@ -599,7 +599,7 @@ class StructuralModels(object):
 
     def get_contact_matrix(self, models=None, cluster=None, 
                            stage=None, cutoff=None,
-                           distance=False):
+                           distance=False, show_bad_columns=True):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
@@ -617,6 +617,7 @@ class StructuralModels(object):
            will be a dictionnary of matrices (keys being square cutoffs)
         :param False distance: returns the distance matrix of all_angles against
            all_angles particles instead of a contact_map matrix using the cutoff
+        :param True show_bad_columns: show bad columns in contact map
 
         :returns: matrix frequency of interaction
         """
@@ -629,18 +630,21 @@ class StructuralModels(object):
             models = [m for m in self.stages[stage]]
         else:
             models = [m for m in self.__models]
+        if not cutoff:
+            cutoff = [int(2 * self.resolution * self._config['scale'])]
+            #cutoff = [int(2)] # * self.resolution * self._config['scale'])]
         cutoff_list = True
         if not isinstance(cutoff, list):
             cutoff = [cutoff]
             cutoff_list = False
         cutoff.sort(reverse=True)
-        if not cutoff:
-            cutoff = [int(2 * self.resolution * self._config['scale'])]
-            #cutoff = [int(2)] # * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
-        wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
+        if show_bad_columns:
+            wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
+        else:
+            wloci = [i for i in xrange(self.nloci)]
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
@@ -651,7 +655,7 @@ class StructuralModels(object):
             #print model
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
-                
+
             #print model, len(x), len(y), len(z)
             for c in cutoff:
                 #print "#Cutoff",c
@@ -659,7 +663,7 @@ class StructuralModels(object):
                     if squared_distance_matrix[i][j] <= c:
                         matrix[c][i][j] += frac  # * 100
                         matrix[c][j][i] += frac  # * 100
-            
+
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -1592,7 +1596,7 @@ class StructuralModels(object):
         #plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False,
-                    cmap='viridis'):
+                    stage=0, cmap='viridis'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1609,18 +1613,22 @@ class StructuralModels(object):
         :param viridis cmap: The Colormap instance
         """
 
-        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + self._zscores[k].keys()
-                                                for k in self._zscores.keys()])
+        if stage > -1 and stage in self.stages:
+            stage_zscore = self._zscores[stage]
+        else:
+            raise ValueError('ERROR: please specify a correct stage')
+        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + stage_zscore[k].keys()
+                                                for k in stage_zscore.keys()])
         max_bin = max([int(i) for i in zsc_mtrx])
         zsc_mtrx = [[float('nan') for _ in xrange(max_bin)]
                     for _ in xrange(max_bin)]
         for i in xrange(max_bin):
             for j in xrange(max_bin):
                 try:
-                    zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
+                    zsc_mtrx[i][j] = stage_zscore[str(i)][str(j)]
                 except KeyError:
                     try:
-                        zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
+                        zsc_mtrx[i][j] = stage_zscore[str(j)][str(i)]
                     except KeyError:
                         zsc_mtrx[i][j] = 0
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
@@ -1653,8 +1661,8 @@ class StructuralModels(object):
 
         ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
-                                [self._zscores[v].values()
-                                for v in self._zscores.keys()]))
+                                [stage_zscore[v].values()
+                                for v in stage_zscore.keys()]))
         try:
             _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
                                     facecolor='none', edgecolor='k', density=True)
@@ -1666,14 +1674,14 @@ class StructuralModels(object):
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
         try:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [stage_zscore[v].values()
+                                            for v in stage_zscore.keys()]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled', density=True)
         except AttributeError:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [stage_zscore[v].values()
+                                            for v in stage_zscore.keys()]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled')
         height1 = height2 = 0
@@ -1970,7 +1978,7 @@ class StructuralModels(object):
                          **kwargs)
 
     def view_models(self, models=None, cluster=None, stage=None, dynamics=None,
-                    tool='chimera', show='all', highlight='centroid', 
+                    tool='chimera', show='all', highlight='centroid',
                     savefig=None, cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
