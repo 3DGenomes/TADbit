@@ -266,7 +266,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              steering_pairs=steering_pairs,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=ini_seed,
-                             n_models=n_models, n_keep=n_keep, n_cpus=n_cpus,
+                             n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
                              hide_log=hide_log)
