@@ -1094,7 +1094,7 @@ class Experiment(object):
         if not self._normalization or not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
             for i in idx:
-                self.normalize_hic(index=idx)
+                self.normalize_hic(index=i)
         from pytadbit import Chromosome
         if start < 1:
             raise ValueError('ERROR: start should be higher than 0\n')

@@ -49,6 +49,9 @@ def abortable_worker(func, *args, **kwargs):
         return out
     except multiprocessing.TimeoutError:
         print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+    except:
+        print "Unknown error with process"
+    finally:
         p.terminate()
         raise
 
