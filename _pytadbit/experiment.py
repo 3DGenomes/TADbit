@@ -840,7 +840,7 @@ class Experiment(object):
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
                      outfile=None, config=CONFIG, container=None,
                      tool='imp',tmp_folder=None,timeout_job=10800,
-                     stages=0, initial_conformation='tadbit',
+                     stages=0, initial_conformation=None,
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
                      cleanup=True, single_particle_restraints=None, use_HiC=True,
                      start_seed=1, hide_log=True):
@@ -984,7 +984,7 @@ class Experiment(object):
                                       close_bins=close_bins, config=config, container=container,
                                       experiment=self, coords=coords, zeros=zeros,
                                       tmp_folder=tmp_folder,timeout_job=timeout_job,
-                                      initial_conformation=initial_conformation,
+                                      initial_conformation='tadbit' if not initial_conformation else initial_conformation,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor,
                                       adaptation_step=adaptation_step, cleanup=cleanup,
                                       hide_log=hide_log)

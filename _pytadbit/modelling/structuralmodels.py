@@ -1615,6 +1615,8 @@ class StructuralModels(object):
 
         if stage > -1 and stage in self.stages:
             stage_zscore = self._zscores[stage]
+        elif len(self.stages) == 0:
+            stage_zscore = self._zscores
         else:
             raise ValueError('ERROR: please specify a correct stage')
         zsc_mtrx = reduce(lambda x, y: x + y, [[k] + stage_zscore[k].keys()
