@@ -572,7 +572,7 @@ def lammps_simulate(lammps_folder, run_time,
     #        kseeds.append(rnd)
 
     #pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
-    pool = multiprocessing.Pool(n_cpus)
+    pool = multiprocessing.Pool(processes=n_cpus, maxtasksperchild=n_cpus)
 
     results = []
     def collect_result(result):
