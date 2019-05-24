@@ -244,17 +244,21 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         ref_model = models[0] if reference_model is None else reference_model
-        firstx, firsty, firstz = (self[ref_model]['x'],
-                                  self[ref_model]['y'],
-                                  self[ref_model]['z'])
+        firstx, firsty, firstz = (self[ref_model]['x'][:],
+                                  self[ref_model]['y'][:],
+                                  self[ref_model]['z'][:])
+        mass_center(firstx, firsty, firstz, self._zeros)
         aligned = []
-        for sec in models[1 if reference_model is None else 0:]:
+        for sec in models:
+            if sec == ref_model:
+                continue
             coords = aligner3d_wrapper(firstx, firsty, firstz,
                                        self[sec]['x'],
                                        self[sec]['y'],
                                        self[sec]['z'],
                                        self._zeros,
                                        self.nloci)
+            
             if in_place:
                 self[sec]['x'], self[sec]['y'], self[sec]['z'] = coords
             else:
@@ -267,7 +271,7 @@ class StructuralModels(object):
             x, y, z = (self[ref_model]['x'][:], self[ref_model]['y'][:],
                        self[ref_model]['z'][:])
             mass_center(x, y, z, self._zeros)
-            aligned.insert(ref_model, (x, y, z))
+            aligned.insert(models.index(ref_model), (x, y, z))
             return aligned
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -2531,15 +2535,36 @@ class StructuralModels(object):
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
 
-        if self.__models:
-            aligned_coords = self.align_models(models=models, cluster=cluster)
+        aligned_coords = []
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
+            if models:
+                aligned_coords = self.align_models(models=models)
+            fil['cluster'] = '[]'
+            fil['centroid'] = '[]'
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+            if models:
+                aligned_coords = self.align_models(cluster=cluster)
+            fil['cluster'] = '[[' + ','.join(self.clusters[cluster]) + ']]'
+            fil['centroid'] = '[' + self[self.centroid_model(cluster=cluster)]['rand_init'] + ']'
         else:
-            models = [m for m in self.__models]
+            if len(self.clusters) > 0:
+                models = []
+                for cluster in self.clusters:
+                    models += [self[str(m)]['index'] for m in self.clusters[cluster]]
+                    aligned_coords += self.align_models(cluster=cluster)
+            else:
+                models = [m for m in self.__models]
+                if models:
+                    aligned_coords = self.align_models(models=models)
+            fil['cluster'] = '[' + ','.join('[' + ','.join(self.clusters[c]) + ']'
+                                        for c in self.clusters) + ']'
+            fil['centroid'] = '[' + ','.join(
+                [self[self.centroid_model(cluster=c)]['rand_init']
+                 for c in self.clusters]) + ']'
+
         fil['xyz'] = []
         for m_idx in xrange(len(models)):
             m = models[m_idx]
@@ -2566,11 +2591,6 @@ class StructuralModels(object):
                 for k in self._restraints) + ']'
         except:
             fil['restr'] = '[]'
-        fil['cluster'] = '[' + ','.join('[' + ','.join(self.clusters[c]) + ']'
-                                        for c in self.clusters) + ']'
-        fil['centroid'] = '[' + ','.join(
-            [self[self.centroid_model(cluster=c)]['rand_init']
-             for c in self.clusters]) + ']'
         fil['len_hic_data'] = len(self._original_data)
         try:
             fil['tad_def'] = ','.join(
