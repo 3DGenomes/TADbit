@@ -49,9 +49,10 @@ def abortable_worker(func, *args, **kwargs):
         return out
     except multiprocessing.TimeoutError:
         print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+        p.terminate()
+        raise
     except:
         print "Unknown error with process"
-    finally:
         p.terminate()
         raise
 
@@ -248,7 +249,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                   values=values[0], n_models=n_models, n_keep=n_keep, n_cpus=n_cpus,
                   verbose=verbose, first=first, close_bins=close_bins,
                   config=config, container=container,
-                  coords=coords, zeros=zeros)
+                  coords=coords, zeros=zeros[0])
             print "Succesfully generated tadbit initial conformation \n"
         sm_diameter = float(resolution * CONFIG.HiC['scale'])
         for single_m in sm:
@@ -315,7 +316,11 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     else:
         stages = {}
         timepoints = None
+        allzeros = zeros
         if len(HiCRestraints)>1:
+            allzeros = tuple([all([zero_stg[x] for zero_stg in zeros]) for x in xrange(len(zeros[0]))])
+            #for timepoint in xrange(len(zeros)-1):
+            #    allzeros = tuple([sum(x) for x in zip(allzeros, zeros[timepoint])])
             timepoints = time_dependent_steering_pairs['colvar_dump_freq']
             nbr_produced_models = len(models)/(timepoints*(len(HiCRestraints)-1))
             stages[0] = [i for i in xrange(nbr_produced_models)]
@@ -344,7 +349,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         return StructuralModels(
             len(LOCI), models, {}, resolution, original_data=values \
                 if len(HiCRestraints)>1 else values[0],
-            zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
+            zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=allzeros,
             restraints=HiCRestraints[0]._get_restraints(),
             description=description, stages=stages, models_per_step=timepoints)
 # Initialize the lammps simulation with standard polymer physics based
@@ -567,7 +572,7 @@ def lammps_simulate(lammps_folder, run_time,
     #        kseeds.append(rnd)
 
     #pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
-    pool = multiprocessing.Pool(n_cpus)
+    pool = multiprocessing.Pool(processes=n_cpus, maxtasksperchild=n_cpus)
 
     results = []
     def collect_result(result):
@@ -890,17 +895,17 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("variable step equal step")
                 lmp.command("variable objfun equal f_4")
                 lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
-                
+
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
         timepoints = time_dependent_steering_pairs['colvar_dump_freq']
-    
+
         #if exists("objective_function_profile.txt"):
         #    os.remove("objective_function_profile.txt")
 
-        #print "# Getting the time dependent steering pairs!"        
+        #print "# Getting the time dependent steering pairs!"
         time_dependent_restraints = get_time_dependent_colvars_list(time_dependent_steering_pairs)
         time_points = sorted(time_dependent_restraints.keys())
         print "#Time_points",time_points        
