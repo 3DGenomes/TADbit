@@ -222,7 +222,7 @@ class StructuralModels(object):
         self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,
-                     reference_model=None, **kwargs):
+                     reference_model=None, by_cluster=False, **kwargs):
         """
         Three-dimensional aligner for structural models.
 
@@ -235,6 +235,8 @@ class StructuralModels(object):
            the coordinates of each model. Default is too yield new coordinates of
            each model
         :param None reference_model: align given model to reference model
+        :param False by_cluster: if True align each cluster individually in case
+            we align all the models (models=None)
         """
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
@@ -242,7 +244,24 @@ class StructuralModels(object):
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = [m for m in self.__models]
+            if by_cluster and len(self.clusters) > 0:
+                aligned_coords = [None for _ in xrange(len(self.__models))]
+                for cluster in self.clusters:
+                    clust_aligned_coords = self.align_models(cluster=cluster,
+                                                              in_place=in_place,
+                                                              reference_model=reference_model)
+                    for midx, m in enumerate(self.clusters[cluster]):
+                        aligned_coords[self[str(m)]['index']] = clust_aligned_coords[midx]
+                # Complete with models with singletons
+                if not in_place:
+                    for midx in xrange(len(self.__models)):
+                        if not aligned_coords[midx]:
+                            aligned_coords[midx] = [self[midx]['x'][:],
+                                                    self[midx]['y'][:],
+                                                    self[midx]['z'][:]]
+                return aligned_coords if not in_place else None
+            else:
+                models = [m for m in self.__models]
         ref_model = models[0] if reference_model is None else reference_model
         firstx, firsty, firstz = (self[ref_model]['x'][:],
                                   self[ref_model]['y'][:],
@@ -251,6 +270,8 @@ class StructuralModels(object):
         aligned = []
         for sec in models:
             if sec == ref_model:
+                if not in_place:
+                    aligned.append([firstx, firsty, firstz])
                 continue
             coords = aligner3d_wrapper(firstx, firsty, firstz,
                                        self[sec]['x'],
@@ -258,7 +279,6 @@ class StructuralModels(object):
                                        self[sec]['z'],
                                        self._zeros,
                                        self.nloci)
-            
             if in_place:
                 self[sec]['x'], self[sec]['y'], self[sec]['z'] = coords
             else:
@@ -267,12 +287,8 @@ class StructuralModels(object):
         if in_place:
             mass_center(self[ref_model]['x'], self[ref_model]['y'],
                         self[ref_model]['z'], self._zeros)
-        else:
-            x, y, z = (self[ref_model]['x'][:], self[ref_model]['y'][:],
-                       self[ref_model]['z'][:])
-            mass_center(x, y, z, self._zeros)
-            aligned.insert(models.index(ref_model), (x, y, z))
-            return aligned
+            return None
+        return aligned
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
         """
@@ -2535,30 +2551,18 @@ class StructuralModels(object):
         except AttributeError:
             fil['descr']   = '"description": "Just some models"'
 
-        aligned_coords = []
+        aligned_coords = self.align_models(models=models, cluster=cluster, by_cluster=True)
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
-            if models:
-                aligned_coords = self.align_models(models=models)
             fil['cluster'] = '[]'
             fil['centroid'] = '[]'
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
-            if models:
-                aligned_coords = self.align_models(cluster=cluster)
             fil['cluster'] = '[[' + ','.join(self.clusters[cluster]) + ']]'
             fil['centroid'] = '[' + self[self.centroid_model(cluster=cluster)]['rand_init'] + ']'
         else:
-            if len(self.clusters) > 0:
-                models = []
-                for cluster in self.clusters:
-                    models += [self[str(m)]['index'] for m in self.clusters[cluster]]
-                    aligned_coords += self.align_models(cluster=cluster)
-            else:
-                models = [m for m in self.__models]
-                if models:
-                    aligned_coords = self.align_models(models=models)
+            models = [m for m in self.__models]
             fil['cluster'] = '[' + ','.join('[' + ','.join(self.clusters[c]) + ']'
                                         for c in self.clusters) + ']'
             fil['centroid'] = '[' + ','.join(
