@@ -7,6 +7,7 @@ import re
 from warnings import warn
 from tempfile import gettempdir, mkstemp
 from subprocess import CalledProcessError, PIPE, Popen
+from pysam import Samfile
 
 from pytadbit.utils.file_handling import mkdir, which, is_fastq
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
@@ -262,6 +263,48 @@ def insert_mark_light(header, num):
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
 
+def _bowtie2_filter(fnam, fastq_path, unmap_out, map_out):
+    """
+    Divides reads in a map file in two categories: uniquely mapped, and not.
+    Writes them in two files
+
+    """
+    try:
+        fhandler = Samfile(fnam)
+    except IOError:
+        raise Exception('ERROR: file "%s" not found' % fnam)
+    # getrname chromosome names
+    i = 0
+    crm_dict = {}
+    while True:
+        try:
+            crm_dict[i] = fhandler.getrname(i)
+            i += 1
+        except ValueError:
+            break
+    # iteration over reads
+    unmap_out = open(unmap_out, 'w')
+    map_out   = open(map_out, 'w')
+    fastq_in  = open(fastq_path , 'r')
+    for line in fhandler:
+        line_in = fastq_in.readline()
+        if line.is_unmapped or line.mapq < 4:
+            read = '%s\t%s\t%s\t%s\t%s\n' % (
+                line_in.split('\t', 1)[0].rstrip('\n')[1:],
+                line.seq, line.qual, '-', '-'
+                )
+            unmap_out.write(read)
+        else:
+            read = '%s\t%s\t%s\t%s\t%s:%s:%d:%d\n' % (
+                line.qname, line.seq, line.qual, '1',
+                crm_dict[line.tid],
+                '-' if line.is_reverse else '+', line.pos + 1, len(line.seq))
+            map_out.write(read)
+        for _ in range(3):
+            fastq_in.readline()
+    unmap_out.close()
+    map_out.close()
+    fastq_in.close()
 
 def _gem_filter(fnam, unmap_out, map_out):
     """
@@ -299,6 +342,56 @@ def _gem_filter(fnam, unmap_out, map_out):
         if not bad:
             map_out.write(_strip_read_name(line))
     unmap_out.close()
+    map_out.close()
+
+def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 = None,
+                     bowtie2_binary='bowtie2', bowtie2_params=None, **kwargs):
+    """
+    :param None focus: trims the sequence in the input FASTQ file according to a
+       (start, end) position, or the name of a restriction enzyme. By default it
+       uses the full sequence.
+    """
+    bowtie2_index_path= os.path.abspath(os.path.expanduser(bowtie2_index_path))
+    fastq_path1       = os.path.abspath(os.path.expanduser(fastq_path1))
+    paired_map = False
+    if fastq_path2:
+        fastq_path2       = os.path.abspath(os.path.expanduser(fastq_path2))
+        paired_map = True
+    out_map_path      = os.path.abspath(os.path.expanduser(out_map_path))
+    nthreads          = kwargs.get('nthreads'            , 8)
+
+    # check that we have the GEM binary:
+    bowtie2_binary = which(bowtie2_binary)
+    if not bowtie2_binary:
+        raise Exception('\n\nERROR: bowtie2 binary not found')
+
+    # mapping
+    print 'TO BOWTIE2', fastq_path1, fastq_path2
+    bowtie2_cmd = [
+        bowtie2_binary, '-x', bowtie2_index_path,
+        '-p', str(nthreads), '--reorder', '-S',
+        out_map_path]
+
+    if paired_map:
+        bowtie2_cmd += ['-1',fastq_path1,'-2',fastq_path2]
+    else:
+        bowtie2_cmd += ['-U', fastq_path1]
+
+    if bowtie2_params:
+        for bow_param in bowtie2_params:
+            bowtie2_cmd.append('-'+bow_param)
+            if bowtie2_params[bow_param]:
+                bowtie2_cmd.append(bowtie2_params[bow_param])
+    else:
+        bowtie2_cmd.append('--very-sensitive')
+    print ' '.join(bowtie2_cmd)
+    try:
+        # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
+        out, err = Popen(bowtie2_cmd, stdout=PIPE, stderr=PIPE).communicate()
+    except CalledProcessError as e:
+        print out
+        print err
+        raise Exception(e.output)
 
 
 def _gem_mapping(gem_index_path, fastq_path, out_map_path,
@@ -392,17 +485,18 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path,
         raise Exception(e.output)
 
 
-def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
-                 min_seq_len=15, windows=None, add_site=True, clean=False,
-                 get_nread=False, **kwargs):
+def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
+                 r_enz=None, frag_map=True, min_seq_len=15, windows=None,
+                 add_site=True, clean=False, get_nread=False,
+                 mapper_binary=None, mapper_params=None, **kwargs):
     """
     Maps FASTQ reads to an indexed reference genome. Mapping can be done either
     without knowledge of the restriction enzyme used, or for experiments
     performed without one, like Micro-C (iterative mapping), or using the
     ligation sites created from the digested ends (fragment-based mapping).
 
-    :param gem_index_path: path to index file created from a reference genome
-       using gem-index tool
+    :param mapper_index_path: path to index file created from a reference genome
+       using gem-index tool or bowtie2-build
     :param fastq_path: PATH to FASTQ file, either compressed or not.
     :param out_map_dir: path to a directory where to store mapped reads in MAP
        format .
@@ -431,6 +525,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
        written there.
     :param False get_nreads: returns a list of lists where each element contains
        a path and the number of reads processed
+    :param gem-mapper mapper_binary: path to the binary mapper
+    :param None mapper_params: extra parameters for the mapper
 
     :returns: a list of paths to generated outfiles. To be passed to
        :func:`pytadbit.parsers.map_parser.parse_map`
@@ -443,6 +539,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
+    if mapper_params:
+        kwargs.update(mapper_params)
     # create directories
     for rep in [temp_dir, out_map_dir]:
         mkdir(rep)
@@ -493,17 +591,32 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping full reads...', curr_map
 
         if not skip:
-            _gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
-            # parse map file to extract not uniquely mapped reads
-            print 'Parsing result...'
-            _gem_filter(out_map_path,
-                        curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
-                        os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s%s.map' % (
-                                         beg, end, suffix)))
+            if mapper == 'gem':
+                _gem_mapping(mapper_index_path, curr_map, out_map_path,
+                             gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
+                             **kwargs)
+                # parse map file to extract not uniquely mapped reads
+                print 'Parsing result...'
+                _gem_filter(out_map_path,
+                            curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+                            os.path.join(out_map_dir,
+                                         base_name + '_full_%s-%s%s.map' % (
+                                             beg, end, suffix)))
+            elif mapper == 'bowtie2':
+                _bowtie2_mapping(mapper_index_path, curr_map, out_map_path,
+                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_params=mapper_params, **kwargs)
+                # parse map file to extract not uniquely mapped reads
+                print 'Parsing result...'
+                _bowtie2_filter(out_map_path, curr_map,
+                                curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+                                os.path.join(out_map_dir,
+                                             base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+            else:
+                raise Exception('ERROR: unknown mapper.')
             # clean
             if clean:
-                print '   x removing GEM input %s' % curr_map
+                print '   x removing %s input %s' % (mapper.upper(),curr_map)
                 os.system('rm -f %s' % (curr_map))
                 print '   x removing map %s' % out_map_path
                 os.system('rm -f %s' % (out_map_path))
@@ -526,7 +639,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             light_storage=light_storage)
         # clean
         if clean:
-            print '   x removing pre-GEM input %s' % input_reads
+            print '   x removing pre-%s input %s' % (mapper.upper(),input_reads)
             os.system('rm -f %s' % (input_reads))
         if not win:
             beg, end = 1, 'end'
@@ -534,15 +647,30 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             beg, end = win
         out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
         if not skip:
-            print 'Mapping fragments of remaining reads...'
-            _gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
-            print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
-                        os.path.join(out_map_dir,
-                                     base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+            if mapper == 'gem':
+                print 'Mapping fragments of remaining reads...'
+                _gem_mapping(mapper_index_path, frag_map, out_map_path,
+                             gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
+                             **kwargs)
+                print 'Parsing result...'
+                _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
+                            os.path.join(out_map_dir,
+                                         base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+            elif mapper == 'bowtie2':
+                print 'Mapping fragments of remaining reads...'
+                _bowtie2_mapping(mapper_index_path, frag_map, out_map_path,
+                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_params=mapper_params, **kwargs)
+                print 'Parsing result...'
+                _bowtie2_filter(out_map_path, frag_map,
+                                curr_map + '_fail%s.map' % (suffix),
+                                os.path.join(out_map_dir,
+                                         base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+            else:
+                raise Exception('ERROR: unknown mapper.')
         # clean
         if clean:
-            print '   x removing GEM input %s' % frag_map
+            print '   x removing %s input %s' % (mapper.upper(),frag_map)
             os.system('rm -f %s' % (frag_map))
             print '   x removing failed to map ' + curr_map + '_fail%s.map' % (suffix)
             os.system('rm -f %s' % (curr_map + '_fail%s.map' % (suffix)))
