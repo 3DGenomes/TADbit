@@ -57,7 +57,7 @@ def run(opts):
     # QC plot
     fig_path = path.join(opts.workdir,
                             '%s_%s_%s.png' % (path.split(opts.fastq)[-1],
-                                              '-'.join(opts.renz), param_hash))
+                                              '-'.join(map(str, opts.renz)), param_hash))
     logging.info('Generating Hi-C QC plot')
 
     dangling_ends, ligated = quality_plot(opts.fastq, r_enz=opts.renz,
@@ -149,7 +149,10 @@ def check_options(opts):
         except ValueError:
             print ' -> Nothing found...'
         exit()
-    for renz in opts.renz:
+    for n, renz in enumerate(opts.renz):
+        if renz == 'NONE':
+            opts.renz[n] = None
+            continue
         try:
             _ = RESTRICTION_ENZYMES[renz]
         except KeyError:
@@ -357,9 +360,9 @@ def save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, fi
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',         '%s',          '%s',       %d,              %d,      %d)
      """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,
-            opts.read, '-'.join(opts.renz),
-            ' '.join('%s:%.3f%%' % (r, dangling_ends[r]) for r in opts.renz),
-            ' '.join('%s:%.3f%%' % ('-'.join(r), ligated[r]) for r in ligated),
+            opts.read, '-'.join(map(str, opts.renz)),
+            ' '.join('%s:%.3f%%' % (r, dangling_ends.get(r, float('nan'))) for r in opts.renz),
+            ' '.join('%s:%.3f%%' % ('-'.join(r), ligated.get(r, float('nan'))) for r in ligated),
             get_path_id(cur, opts.workdir),
             get_path_id(cur, out, opts.workdir),
             get_path_id(cur, opts.index, opts.workdir)))
@@ -423,7 +426,8 @@ def populate_args(parser):
     glopts.add_argument('--renz', dest='renz', metavar="STR",
                         type=str, required=True, nargs='+',
                         help='''restriction enzyme name(s). Use "--renz CHECK"
-                        to search for most probable and exit''')
+                        to search for most probable and exit; and use
+                        "--renz NONE" to avoid using RE site information.''')
 
     glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
                         default=[], type=str,
