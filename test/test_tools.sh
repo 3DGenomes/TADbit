@@ -114,7 +114,7 @@ echo -e '' | tee -a $LOG
 echo -e $SEP"\n"$SEP | tee -a $LOG
 echo -e 'Filtering 1/2\n' | tee -a $LOG
 echo -e $SEP"\n   $ " tadbit filter $tmpdir/rep1 --noX | tee -a $LOG
-tadbit filter $tmpdir/rep1  --noX 2>> $LOG
+tadbit filter $tmpdir/rep1 --compress_input --noX 2>> $LOG
 echo -e 'Filtering 2/2\n' | tee -a $LOG
 echo -e $SEP"\n   $ " tadbit filter $tmpdir/rep2 --noX | tee -a $LOG
 tadbit filter $tmpdir/rep2 --noX 2>> $LOG
