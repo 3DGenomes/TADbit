@@ -584,7 +584,10 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
                 count += 1
                 insidx[(dist, end)][pos] = val
             if normalize:
-                total /= float(count)
+                try:
+                    total /= float(count)
+                except ZeroDivisionError:
+                    pass
                 if total == 0:
                     total = float('nan')
                 for pos in range(hic_data.section_pos[crm][0] + end,
