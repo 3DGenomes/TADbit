@@ -45,7 +45,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
+        v = input("%s [%s]" % (string,','.join(valid_values)))
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:
@@ -61,12 +61,12 @@ PYTHON_DEPENDENCIES = [
     ["IMP"       , "Required for 3D modeling.", 0]]
 
 
-print "Checking dependencies..."
+print("Checking dependencies...")
 missing = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
-        print "  *", mname, "cannot be found in your python installation."
-        print "   ->", msg
+        print("  *", mname, "cannot be found in your python installation.")
+        print("   ->", msg)
         if ex:
             missing=True
         else:
@@ -86,8 +86,8 @@ def main():
         print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
               '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
               ' just run "apt-get-install mcl".')
-        follow = raw_input('\n  You still have the option to follow with the ' +
-                           'installation. Do you want to follow? [y/N]')
+        follow = input('\n  You still have the option to follow with the ' +
+                       'installation. Do you want to follow? [y/N]')
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
 
@@ -103,10 +103,10 @@ def main():
                                     extra_compile_args=['-std=c99'])
     # c++ module to compute the distance matrix of single model
     squared_distance_matrix_module = Extension('pytadbit.squared_distance_matrix',
-                                language = "c++",
-                                runtime_library_dirs=['3d-lib/'],
-                                sources=['src/3d-lib/squared_distance_matrix_calculation_py.c'],
-                                extra_compile_args=["-ffast-math"])
+                                               language = "c++",
+                                               runtime_library_dirs=['3d-lib/'],
+                                               sources=['src/3d-lib/squared_distance_matrix_calculation_py.c'],
+                                               extra_compile_args=["-ffast-math"])
     # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 language = "c++",
@@ -160,7 +160,7 @@ def main():
             raise OSError('git not found')
         plus = git_status != ''
         if plus:
-            print '\n\nFOUND changes:\n' + git_status + '.'
+            print('\n\nFOUND changes:\n' + git_status + '.')
         git_version  = git_revision.split('-')[0].strip()
         try:
             git_revision = str(int(git_revision.split('-')[1]) + plus)

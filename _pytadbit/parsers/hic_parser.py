@@ -417,7 +417,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         elif isinstance(thing, file):
             parser = parser or (abc_reader if __is_abc(thing) else autoreader)
             matrix, size, header, masked, sym = parser(thing)
-            print header
+            print(header)
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
