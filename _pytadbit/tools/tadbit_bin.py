@@ -20,7 +20,7 @@ import time
 import sqlite3 as lite
 from numpy                           import zeros_like
 from numpy                           import array
-from numpy                           import ma
+from numpy                           import ma, log, log2
 from matplotlib                      import pyplot as plt
 from matplotlib.ticker               import FuncFormatter
 from pysam                           import AlignmentFile
@@ -50,8 +50,6 @@ def run(opts):
 
     if opts.figsize:
         opts.figsize = map(float, opts.figsize.split(','))
-    else:
-        vmin = vmax = None
 
     clean = True  # change for debug
 
@@ -242,10 +240,12 @@ def run(opts):
                     regions[-1], pltbeg2 if pltbeg2 else 1, pltend2)
                 section_pos = OrderedDict((k, section_pos[k]) for k in section_pos
                                    if k in regions)
+                transform = (log2 if opts.transform == 'log2' else
+                             log if opts.transform == 'log' else lambda x: x)
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,
                     vmin=vmin, vmax=vmax, cmap=opts.cmap,
-                    figsize=opts.figsize,
+                    figsize=opts.figsize, transform=transform,
                     bad_color=opts.bad_color if norm != 'raw' else None)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
@@ -599,6 +599,10 @@ def populate_args(parser):
                         default=None,
                         help='''Range, in log2 scale of the color scale.
                         i.e.: --zrange=-2,2''')
+
+    pltopt.add_argument('--transform', dest='transform', action='store',
+                        default='log2', choices=['log2', 'log', 'none'],
+                        help='''[%(default)s] can be any of [%(choices)s]''')
 
     pltopt.add_argument('--figsize', dest='figsize', action='store',
                         default=None,

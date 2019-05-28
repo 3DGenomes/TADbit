@@ -1383,7 +1383,9 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
         (0, max(h[0]), mindata, maxdata)), **kwargs)
     if triangular:
         axe2.set_yticks([])
-        axe2.set_xlabel('Hi-C Log2 interactions%s' % (
+        axe2.set_xlabel('Hi-C %sinteractions%s' % (
+            'Log2 ' if 'log2' in str(transform) else
+            'Log '  if 'log' in str(transform) else '',
             '\n(Forced color range %s-%s)' % (kwargs['vmin'], kwargs['vmax'])
             if 'vmin' in kwargs and 'vmax' in kwargs else ''))
         axe2.set_ylabel('Count')
@@ -1391,7 +1393,9 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
         axe2.yaxis.tick_right()
         axe2.yaxis.set_label_position("right")
         axe2.set_xticks([])
-        axe2.set_ylabel('Hi-C Log2 interactions%s' % (
+        axe2.set_ylabel('Hi-C %sinteractions%s' % (
+            'Log2 ' if 'log2' in str(transform) else
+            'Log '  if 'log' in str(transform) else '',
             '\n(Forced color range %s-%s)' % (kwargs['vmin'], kwargs['vmax'])
             if 'vmin' in kwargs and 'vmax' in kwargs else ''), rotation=-90,
                         labelpad=20 if 'vmin' in kwargs and 'vmax' in kwargs
