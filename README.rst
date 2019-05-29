@@ -1,7 +1,4 @@
 
-.. image:: https://github.com/3DGenomes/tadbit/raw/TADdyn/doc/source/pictures/TADdyn_logo.png
-   :height: 50
-   :width: 240
 
 +-----------------------+---------------------------------------------------------------------+---------------------------------------------------------------------------------------+---------------------------------------------------------------+
 |                       | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
