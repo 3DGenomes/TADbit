@@ -22,51 +22,56 @@ Documentation
 *************
 
 **Install LAMMPS as a shared library**
-1 - Download lammps
-git clone -b stable https://github.com/lammps/lammps.git mylammps
-2 - Download the colvar modified version
-git clone https://github.com/david-castillo/colvars
-3 - Update the user-defined colvars library
-./colvars/update-colvars-code.sh ./mylammps/
-4 - Compile colvars library
-cd ./mylammps/lib/colvars
-make -f Makefile.g++
-5 - Install lammps as a shared library
-cd ../../src/
-make yes-user-colvars
-make yes-molecule
-make serial mode=shlib
+   1 - Download lammps
+   git clone -b stable https://github.com/lammps/lammps.git mylammps
+   
+   2 - Download the colvar modified version
+   git clone https://github.com/david-castillo/colvars
 
-export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
+   3 - Update the user-defined colvars library
+   ./colvars/update-colvars-code.sh ./mylammps/
 
-cd ../../
+   4 - Compile colvars library
+   cd ./mylammps/lib/colvars
+   make -f Makefile.g++
+
+   5 - Install lammps as a shared library
+   cd ../../src/
+   make yes-user-colvars
+   make yes-molecule
+   make serial mode=shlib
+
+   export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
+
+   cd ../../
 
 **Install packages**
-conda update python
-conda install -c r r-base
-conda install -y scipy           # scientific computing in python
-conda install -y numpy           # scientific computing in python
-conda install -y matplotlib      # to produce plots
-conda install -y jupyter         # this notebook :)
-conda install -y -c https://conda.anaconda.org/bcbio pysam # to deal with SAM/BAM files
-conda install -y -c https://conda.anaconda.org/salilab imp # for 3D modeling
-conda install -y pip             # yet another python package manager
-conda install -y -c bioconda mcl # for clustering
+   conda update python
+   conda install -c r r-base
+   conda install -y scipy           # scientific computing in python
+   conda install -y numpy           # scientific computing in python
+   conda install -y matplotlib      # to produce plots
+   conda install -y jupyter         # this notebook :)
+   conda install -y -c https://conda.anaconda.org/bcbio pysam # to deal with SAM/BAM files
+   conda install -y -c https://conda.anaconda.org/salilab imp # for 3D modeling
+   conda install -y pip             # yet another python package manager
+   conda install -y -c bioconda mcl # for clustering
 
-conda uninstall Pebble
-pip install Pebble==4.3.10
+   conda uninstall Pebble
+   pip install Pebble==4.3.10
 
 **Install TADdyn**
-1 - Download TADdyn from the Github repository
-git clone https://github.com/david-castillo/TADbit.git -b TADdyn TADdyn
-2 - Install TADdyn
-cd TADdyn
-python setup.py install 
-cd ..
+   1 - Download TADdyn from the Github repository
+   git clone https://github.com/david-castillo/TADbit.git -b TADdyn TADdyn
+
+   2 - Install TADdyn
+   cd TADdyn
+   python setup.py install 
+   cd ..
 
 **Try TADdyn**
-cd test/Sox2
-python test_TADdyn_on_Sox2.py
+   cd test/Sox2
+   python test_TADdyn_on_Sox2.py
 
 Citation
 ********
