@@ -22,20 +22,20 @@ Documentation
 *************
 
 **Install LAMMPS as a shared library**
-   1. Download lammps
+   | 1 - Download lammps
    | git clone -b stable https://github.com/lammps/lammps.git mylammps
    
-   2. Download the colvar modified version
+   | 2 - Download the colvar modified version
    | git clone https://github.com/david-castillo/colvars
 
-   3. Update the user-defined colvars library
+   | 3 - Update the user-defined colvars library
    | ./colvars/update-colvars-code.sh ./mylammps/
 
-   4. Compile colvars library
+   | 4 - Compile colvars library
    | cd ./mylammps/lib/colvars
    | make -f Makefile.g++
 
-   5. Install lammps as a shared library
+   | 5 - Install lammps as a shared library
    | cd ../../src/
    | make yes-user-colvars
    | make yes-molecule
@@ -60,17 +60,17 @@ Documentation
    | pip install Pebble==4.3.10
 
 **Install TADdyn**
-   1. Download TADdyn from the Github repository
+   | 1 - Download TADdyn from the Github repository
    | git clone https://github.com/david-castillo/TADbit.git -b TADdyn TADdyn
 
-   2. Install TADdyn
+   | 2 - Install TADdyn
    | cd TADdyn
    | python setup.py install
    | cd ..
 
 **Try TADdyn**
-   cd test/Sox2
-   python test_TADdyn_on_Sox2.py
+   | cd test/Sox2
+   | python test_TADdyn_on_Sox2.py
    
 Citation
 ********
