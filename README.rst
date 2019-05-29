@@ -40,9 +40,9 @@ Documentation
    make yes-user-colvars
    make yes-molecule
    make serial mode=shlib
-
+   
    export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
-
+   
    cd ../../
 
 **Install packages**
@@ -56,7 +56,6 @@ Documentation
    conda install -y -c https://conda.anaconda.org/salilab imp # for 3D modeling
    conda install -y pip             # yet another python package manager
    conda install -y -c bioconda mcl # for clustering
-
    conda uninstall Pebble
    pip install Pebble==4.3.10
 
@@ -66,13 +65,13 @@ Documentation
 
    2 - Install TADdyn
    cd TADdyn
-   python setup.py install 
+   python setup.py install
    cd ..
 
 **Try TADdyn**
    cd test/Sox2
    python test_TADdyn_on_Sox2.py
-
+   
 Citation
 ********
 Please, cite this article if you use TADdyn.
