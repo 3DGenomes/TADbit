@@ -1,10 +1,10 @@
 
 
-+-----------------------+---------------------------------------------------------------------+---------------------------------------------------------------------------------------+---------------------------------------------------------------+
-|                       | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master | .. image:: https://coveralls.io/repos/github/3DGenomes/TADbit/badge.svg?branch=master | .. image:: https://img.shields.io/badge/license-GPL-green.svg |
-| Current version: v0.1 | :target: https://travis-ci.org/3DGenomes/TADbit                     | :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                   |                                                               |
-|                       |                                                                     |                                                                                       |                                                               |
-+-----------------------+---------------------------------------------------------------------+---------------------------------------------------------------------------------------+---------------------------------------------------------------+
++-----------------------+-+
+|                       | |
+| Current version: v0.1 | |
+|                       | |
++-----------------------+-+
 
 
 TADdyn is a Python library that allows to model and explore single or time-series 3C-based data. 
@@ -21,17 +21,17 @@ chromatin models.
 Documentation
 *************
 
-# Install LAMMPS as a shared library
-# 1 - Download lammps
+**Install LAMMPS as a shared library**
+1 - Download lammps
 git clone -b stable https://github.com/lammps/lammps.git mylammps
-# 2 - Download the colvar modified version
+2 - Download the colvar modified version
 git clone https://github.com/david-castillo/colvars
-# 3 - Update the user-defined colvars library
+3 - Update the user-defined colvars library
 ./colvars/update-colvars-code.sh ./mylammps/
-# 4 - Compile colvars library
+4 - Compile colvars library
 cd ./mylammps/lib/colvars
 make -f Makefile.g++
-# 5 - Install lammps as a shared library
+5 - Install lammps as a shared library
 cd ../../src/
 make yes-user-colvars
 make yes-molecule
@@ -41,7 +41,7 @@ export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
 
 cd ../../
 
-# Install packages
+**Install packages**
 conda update python
 conda install -c r r-base
 conda install -y scipy           # scientific computing in python
@@ -56,15 +56,15 @@ conda install -y -c bioconda mcl # for clustering
 conda uninstall Pebble
 pip install Pebble==4.3.10
 
-# Install TADdyn
-# 1 - Download TADdyn from the Github repository
+**Install TADdyn**
+1 - Download TADdyn from the Github repository
 git clone https://github.com/david-castillo/TADbit.git -b TADdyn TADdyn
-# 2 - Install TADdyn
+2 - Install TADdyn
 cd TADdyn
 python setup.py install 
 cd ..
 
-# Try TADdyn
+**Try TADdyn**
 cd test/Sox2
 python test_TADdyn_on_Sox2.py
 
