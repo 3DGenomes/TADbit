@@ -53,18 +53,18 @@ If your question is still unanswered feel free to open a new issue.
 Docker/Singularity Containers
 -----------------------------
 
-Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>` and 
-`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`) to generate containers are 
+Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ and 
+`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`_) to generate containers are 
 available in the containers folder.
 
 
- - _Docker_
+- **Docker**
 
 Build the image using the :code:`Dockerfile` from inside an empty folder with :code:`docker build -t tadbit .` (~20 minutes)
 
 Once built, run it as :code:`docker run tadbit tadbit map -h`
 
-This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_.
+This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_ .
 
 To run a notebook from inside the docker container run :code:`tadbit` docker image as::
 
@@ -81,18 +81,18 @@ From inside docker run::
 And finally write the url :code:`http://localhost:8888` in your browser.
 
 *Note: this can also be done in a single line and running in the background:*
+
 ::
 
   docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
 
- - _Singularity_
+- **Singularity**
 
 Build the image using the :code:`Singularity` from inside an empty folder with :code:`sudo singularity build tadbit.simg Singularity` (~20 minutes)
 
 Once built, run it as :code:`singularity run tadbit.simg`
 
 You can also install jupyter inside the Singularity by uncommenting the coresponding line in the recipe file.
-
 
 Citation
 ********
