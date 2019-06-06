@@ -29,6 +29,11 @@ analysis using one single command line; advanced users may produce
 their own programs using TADbit as a complementary library.
 
 
+Contributors
+************
+
+TADbit is currently developed at the [MarciusLab](http://www.marciuslab.org) with the contributions of François Serra, David Castillo, Marco Di Stefano, Irene Farabella, Mike Goodstadt and many other maembers of our Lab
+
 Documentation
 *************
 
