@@ -120,7 +120,8 @@ class IMPoptimizer(object):
                         use_HiC=True, use_confining_environment=True,
                         use_excluded_volume=True, kforce=5,
                         ev_kforce=5, timeout_job=300,
-			kfactor=1, cleanup=False):
+                        connectivity="FENE", hide_log=True,
+                        kfactor=1, cleanup=False):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -149,11 +150,14 @@ class IMPoptimizer(object):
            input tuple is the incremental step for scale parameter values
         :param None savedata: concatenate all generated models into a dictionary
            and save it into a file named by this argument
-        :param True verbose: print the results to the standard output 
-	:param 1 kfactor: Factor by which multiply the adjusted (square root) values
-		of the ZScores before feeding them to LAMMPS. Used to decrease
-		maximum values bellow 1. E.j.: kfactor=0.1
-	:param True cleanup: delete lammps folder after completion
+        :param True verbose: print the results to the standard output
+        :param True hide_log: do not generate lammps log information
+        :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+            potential for neighbours
+        :param 1 kfactor: Factor by which multiply the adjusted (square root) values
+    		of the ZScores before feeding them to LAMMPS. Used to decrease
+    		maximum values bellow 1. E.j.: kfactor=0.1
+    	:param True cleanup: delete lammps folder after completion
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -315,7 +319,7 @@ class IMPoptimizer(object):
 
             try:
                 count += 1
-                avg_result = dict((i,0) for i in dcutoff_arange) 
+                avg_result = dict((i,0) for i in dcutoff_arange)
                 for i in xrange(len(self.zscores)):
                     if self.tool=='imp':
                         tdm = generate_3d_models(
@@ -333,11 +337,12 @@ class IMPoptimizer(object):
                         tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
                                           values=self.values, n_models=self.n_models,
                                           n_keep=self.n_keep,
-                                          n_cpus=n_cpus,
+                                          n_cpus=n_cpus, connectivity=connectivity,
                                           verbose=verbose, first=0,coords = self.coords,
-                                          close_bins=self.close_bins, config=config_tmp, container=self.container,
-                                          zeros=self.zeros,tmp_folder=self.tmp_folder,timeout_job=timeout_job,
-					  kfactor=kfactor, cleanup=cleanup)
+                                          close_bins=self.close_bins, config=config_tmp,
+                                          container=self.container, zeros=self.zeros,
+                                          tmp_folder=self.tmp_folder,timeout_job=timeout_job,
+					                      hide_log=hide_log, kfactor=kfactor, cleanup=cleanup)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
@@ -717,18 +722,19 @@ class IMPoptimizer(object):
                      if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
                      in self.results],
                     key=lambda x: self.results[
-                        (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
+                        (scale, kbending, maxdist, lowfreq, upfreq, x)])
             except IndexError:
                 print 'Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq)
                 continue
 
-            try:
-                result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, cut)]
-                out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
-                    scale, kbending, maxdist, lowfreq, upfreq, cut, result))
-            except KeyError:
-                print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
-                continue
+            for c in cut:
+                try:
+                    result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, c)]
+                    out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
+                        scale, kbending, maxdist, lowfreq, upfreq, c, result))
+                except KeyError:
+                    print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, c, result)
+                    continue
         out.close()
 
 

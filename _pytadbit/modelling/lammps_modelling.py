@@ -61,7 +61,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
-                       initial_conformation=None, timesteps_per_k=10000,
+                       initial_conformation=None, connectivity="FENE",
+                       timesteps_per_k=10000,
                        kfactor=1, adaptation_step=False, cleanup=False,
                        hide_log=True, remove_rstrn=[]):
     """
@@ -152,6 +153,10 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         the clustering computation. Default will be created in /tmp/ folder
     :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing
         of lammps before is killed
+    :param initial_conformation: lammps input data file with the particles initial conformation.
+    :param True hide_log: do not generate lammps log information
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+        potential for neighbours
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
 
@@ -267,6 +272,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time,
                              initial_conformation=ini_sm_model,
+                             connectivity=connectivity,
                              steering_pairs=steering_pairs,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=ini_seed,
@@ -366,6 +372,9 @@ def init_lammps_run(lmp, initial_conformation,
     :param lmp: lammps instance object.
     :param initial_conformation: lammps input data file with the particles initial conformation.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
+    :param True hide_log: do not generate lammps log information
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic 
+        potential for neighbours
 
     """
 
@@ -491,6 +500,8 @@ def lammps_simulate(lammps_folder, run_time,
     
     :param initial_conformation: structural _models object with the particles initial conformation. 
             http://lammps.sandia.gov/doc/2001/data_format.html
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic potential
+        for neighbours (see init_lammps for details)
     :param run_time: # of timesteps.
     :param None steering_pairs: dictionary with all the info to perform
             steered molecular dynamics.
@@ -661,7 +672,7 @@ def lammps_simulate(lammps_folder, run_time,
 def run_lammps(kseed, lammps_folder, run_time,
                initial_conformation=None, connectivity="FENE",
                neighbor=CONFIG.neighbor,
-               tethering=False, minimize=True, 
+               tethering=False, minimize=True,
                compress_with_pbc=None, compress_without_pbc=None,
                confining_environment=None,
                steering_pairs=None,
@@ -676,6 +687,8 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param initial_conformation_folder: folder where to store lammps input 
         data file with the particles initial conformation. 
         http://lammps.sandia.gov/doc/2001/data_format.html
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+        potential for neighbours (see init_lammps_run) 
     :param run_time: # of timesteps.
     :param None initial_conformation: path to initial conformation file or None 
         for random walk initial start.
