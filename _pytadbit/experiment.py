@@ -840,7 +840,7 @@ class Experiment(object):
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
                      outfile=None, config=CONFIG, container=None,
                      tool='imp',tmp_folder=None,timeout_job=10800,
-                     stages=0, initial_conformation=None,
+                     stages=0, initial_conformation=None, connectivity="FENE",
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
                      cleanup=True, single_particle_restraints=None, use_HiC=True,
                      start_seed=1, hide_log=True):
@@ -907,21 +907,25 @@ class Experiment(object):
               # How much space (radius in nm) ocupies a nucleotide
               'scale'     : 0.005
               }
-        :param imp tool: use imp for montecarlo simulated annealing or lammps for 
-            molecular dynamics 
-        :param None tmp_folder: for lammps simulation, path to a temporary file 
-            created during the clustering computation. Default will be created 
+        :param imp tool: use imp for montecarlo simulated annealing or lammps for
+            molecular dynamics
+        :param None tmp_folder: for lammps simulation, path to a temporary file
+            created during the clustering computation. Default will be created
             in /tmp/ folder
-        :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
+        :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing
             of lammps before is killed
-        :param 0 stages: index of the hic_data/norm data to model. For lammps a list of 
+        :param 0 stages: index of the hic_data/norm data to model. For lammps a list of
             indexes is allowed to perform dynamics between stages
         :param tadbit initial_conformation: initial structure for lammps dynamics.
             'tadbit' to compute the initial conformation with montecarlo simulated annealing
             'random' to compute the initial conformation as a 3D random walk
             {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
                 e.g an IMPModel or LAMMPSModel object
-           
+        :param True hide_log: do not generate lammps log information
+        :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+            potential for neighbours
+        :param True cleanup: delete lammps folder after completion
+
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
@@ -950,7 +954,7 @@ class Experiment(object):
                     break
                 if start < tot and end >= tot:
                     chrs.append(k)
-            
+
             for k in chrs:
                 coords.append({'crm'  : k,
                       'start': 1,
@@ -984,7 +988,9 @@ class Experiment(object):
                                       close_bins=close_bins, config=config, container=container,
                                       experiment=self, coords=coords, zeros=zeros,
                                       tmp_folder=tmp_folder,timeout_job=timeout_job,
-                                      initial_conformation='tadbit' if not initial_conformation else initial_conformation,
+                                      initial_conformation='tadbit' if not initial_conformation \
+                                        else initial_conformation,
+                                      connectivity=connectivity,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor,
                                       adaptation_step=adaptation_step, cleanup=cleanup,
                                       hide_log=hide_log)
