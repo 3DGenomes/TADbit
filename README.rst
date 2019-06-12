@@ -29,6 +29,11 @@ analysis using one single command line; advanced users may produce
 their own programs using TADbit as a complementary library.
 
 
+Contributors
+************
+
+TADbit is currently developed at the  `MarciusLab <http://www.marciuslab.org>`_ with the contributions of François Serra, David Castillo, Marco Di Stefano, Irene Farabella, Mike Goodstadt and many other members of our Lab
+
 Documentation
 *************
 
@@ -53,18 +58,18 @@ If your question is still unanswered feel free to open a new issue.
 Docker/Singularity Containers
 -----------------------------
 
-Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>` and
-`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`) to generate containers are
+Recipe files (`Dockerfile <https://docs.docker.com/engine/reference/builder/>`_ and 
+`Singularity recipe <https://www.sylabs.io/guides/2.6/user-guide/quick_start.html#build-images-from-scratch>`_) to generate containers are 
 available in the containers folder.
 
 
- - _Docker_
+- **Docker**
 
 Build the image using the :code:`Dockerfile` from inside an empty folder with :code:`docker build -t tadbit .` (~20 minutes)
 
 Once built, run it as :code:`docker run tadbit tadbit map -h`
 
-This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_.
+This image contains all dependencies for TADbit and also `jupyter <http://jupyter.org/>`_ .
 
 To run a notebook from inside the docker container run :code:`tadbit` docker image as::
 
@@ -81,18 +86,18 @@ From inside docker run::
 And finally write the url :code:`http://localhost:8888` in your browser.
 
 *Note: this can also be done in a single line and running in the background:*
+
 ::
 
   docker run -d -p 8888:8888 -v /LOCAL_PATH:/mnt tadbit jupyter notebook --ip 0.0.0.0 --allow-root --NotebookApp.token='' > /dev/null &
 
- - _Singularity_
+- **Singularity**
 
 Build the image using the :code:`Singularity` from inside an empty folder with :code:`sudo singularity build tadbit.simg Singularity` (~20 minutes)
 
 Once built, run it as :code:`singularity run tadbit.simg`
 
 You can also install jupyter inside the Singularity by uncommenting the coresponding line in the recipe file.
-
 
 Citation
 ********
@@ -121,6 +126,14 @@ TADbit has been previously used for modeling genomes and genomic domains. Here i
 - TADs as regulons [Le_Dily2014]_
 - Yeast chromosome III [Belton2015]_
 - *Mycoplasma pneumoniae* genome [Trussart2017]_
+- Comparison with super-res imaging [Cattoni2017]_
+- Analysis of time-series Hi-C data during transdifferentiation [Stadhouders2018]_
+- Analysis of cohesin subunits effect on the 3D genome [Kojic2018]_ [Cuadrado2019]_
+- Analysis of MLL mutant on the 3DGenome [Mas2018]_
+- Analysis of internal lamin on the 3DGenome [Pascual-Reguant2018]_
+- Integration with IMGR of super-res data and Hi-C data [Nir2018]_
+- 3D enhancer hubs in diabetes [Miguel-Escalada2019]_
+- Modeling location of RNA in the nucleus [Morf2019]_
 
 Other programs
 --------------
@@ -174,6 +187,7 @@ Past editions
 Bibliography
 ************
 
+
 .. [Ay2015] Ay, F., Vu, T.H., Zeitz, M.J., Varoquaux, N., Carette, J.E., Vert, J.-P., Hoffman, A.R. and Noble, W.S. 2015. Identifying multi-locus chromatin contacts in human cells using tethered multiple 3C. BMC Genomics 16, p. 121.
 
 .. [BaùMarti-Renom2012] Baù, D. and Marti-Renom, M.A. 2012. Genome structure determination via 3C-based data integration by the Integrative Modeling Platform. Methods 58(3), pp. 300–306.
@@ -182,9 +196,15 @@ Bibliography
 
 .. [Belton2015] Belton, J.-M., Lajoie, B.R., Audibert, S., Cantaloube, S., Lassadi, I., Goiffon, I., Baù, D., Marti-Renom, M.A., Bystricky, K. and Dekker, J. 2015. The conformation of yeast chromosome III is mating type dependent and controlled by the recombination enhancer. Cell reports 13(9), pp. 1855–1867.
 
+.. [Cattoni2017] Cattoni, D.I.,  Cardozo-Gizz, A.M.,  Georgieva, M.,  Di Stefano, M.,  Valeri, A.,  Chamousset, D.,  Houbron, C.,  Dejardin, S.,  Fiche, J-B.,  Marti-Renom, M.A.,  Bantignies, F.,  Cavalli, G. and Nollmann, M. (2017) Single-cell absolute contact probability detection reveals that chromosomes are organized by modulated stochasticity. Nature Communications 8 pp 1753  
+
+.. [Cuadrado2019] Cuadrado, A.,  Giménez-Llorente, D.,  Kojic, A.,  Rodríguez-Corsino, M.,  Cuartero, Y.,  Martín-Serrano, G.,  Gómez-López, G.,  Marti-Renom, M.A. and Losada, A. (2019) Specific contributions of cohesin-SA1 and cohesin-SA2 to TADs and Polycomb domains in embryonic stem cells. Cell Reports, in press 
+
 .. [Enright2002] Enright, A. J., Van Dongen, S., & Ouzounis, C. A. (2002). An efficient algorithm for large-scale detection of protein families. Nucleic Acids Research, 30(7), 1575–1584.
 
 .. [Imakaev2012] Imakaev, M., Fudenberg, G., McCord, R.P., Naumova, N., Goloborodko, A., Lajoie, B.R., Dekker, J. and Mirny, L.A. 2012. Iterative correction of Hi-C data reveals hallmarks of chromosome organization. Nature Methods 9(10), pp. 999–1003.
+
+.. [Kojic2018] Kojic, A.,  Cuadrado, A.,  Koninck, A.M.,  Gomez-Lopez, G.,  Rodriguez-Corsino, M.,  Le Dily, F.,  Marti-Renom, M.A. and Losada, A. (2018) Distinct roles of cohesin-SA1 and cohesin-SA2 in 3D chromosome organization. Nature Structural and Molecular Biology 25 pp 496–504  
 
 .. [Le_Dily2014] Le Dily, F., Baù, D., Pohl, A., Vicent, G.P., Serra, F., Soronellas, D., Castellano, G., Wright, R.H.G., Ballare, C., Filion, G., Marti-Renom, M.A. and Beato, M. 2014. Distinct structural transitions of chromatin topological domains correlate with coordinated hormone-induced gene regulation. Genes & Development 28(19), pp. 2151–2162.
 
@@ -192,9 +212,21 @@ Bibliography
 
 .. [Marco-Sola2012] Marco-Sola, S., Sammeth, M., Guigo, R. and Ribeca, P. 2012. The GEM mapper: fast, accurate and versatile alignment by filtration. Nat Methods 9(12), pp. 1185-1188.
 
+.. [Mas2018] Mas, G.,  Blanco, E.,  Ballaré, C.,  Sansó, M.,  Spill, Y.G.,  Hu, D.,  Aoi, Y.,  Le Dily, F.,  Shilatifard, A.,  Marti-Renom, M.A. and Di Croce, L. (2018) Promoter bivalency favors an open architecture of the stem cell genome. Nature Genetics 50 pp 1452–1462
+
+.. [Miguel-Escalada2019] Miguel-Escalada, I.,  Bonàs-Guarch, S.,  Cebola, I.,  Ponsa-Cobas, J.,  Mendieta-Esteban, J. ,  Rolando, D.,  Javierre, B.M.,  Atla, G.,  Farabella, I.,  Morgan, C.C.,  García-Hurtado, J.,  Beucher, A.,  Morán, I.,  Pasquali, L.,  Ramos, M.,  Appel, E.V.R.,  Linneberg, L.,  Gjesing, A.P.,  Witte, D.R.,  Pedersen, O.,  Grarup, N.,  Ravassard, P.,  Mercader, J.M.,  Torrents, D.,  Piemonti, L.,   Berney, T.,  de Koning E.,  Kerr-Conte, J.,  Pattou, F.,  Hansen, T.,   Marti-Renom, M.A.,  Fraser, P. and Ferrer, J. (2019) Human pancreatic islet 3D chromatin architecture provides insights into the genetics of type 2 diabetes. Nature Genetics, in press 
+
+.. [Morf2019] Morf, J.,  Wingett, S.W.,  Farabella, I.,  Cairns, J.,   Furlan-Magaril, M.,  Jiménez-García, L.F.,  Liu, X.,  Craig, F.F.,  Walker, S.,  Segons-Pichon, A.,  Andrews, S.,  Marti-Renom, M.A. and Fraser, P. (2019) RNA proximity sequencing reveals properties of spatial transcriptome organization in the nucleus. Nature Biotechnology, in press   
+
+.. [Nir2018] Nir, G.,  Farabella, I.,  Pérez Estrada, C.,   Ebeling, C.G.,  Beliveau, B.J.,  Sasaki, H.M.,  Lee, S.H.,  Nguyen, S.C.,  McCole, R.B.,  Chattoraj, S.,  Erceg, J.,  Abed, J.A.,  Martins, N.M.C.,   Nguyen, H.Q.,  Hannan, M.A.,  Russell, S.,  Durand, N.C.,  Rao, S.S.P.,  Kishi, J.Y.,  Soler-Vila, P.,  Di Pierro, M.,  Onuchic, J.N.,  Callahan, S.,  Schreiner, J.,  Stuckey, J.,  Yin, P.,  Lieberman Aiden, E.,  Marti-Renom, M.A. and Wu, C.T. (2018) Walking along chromosomes with super-resolution imaging, contact maps, and integrative modeling. PLOS Genetics 14(12) pp e1007872 
+
+.. [Pascual-Reguant2018] Pascual-Reguant. L.,  Blanco, E.,  Galan, S.,  Le Dily, F.,  Cuartero, Y.,  Serra-Bardenys, G.,  di Carlo, V.,  Iturbide, A.,  Cebrià-Costa, J.P.,  Nonell, L.,  García de Herreros, A.,  Di Croce, L.,  Marti-Renom, M.A. and Peiró, S. (2018) Genome-wide mapping of lamin B1 reveals the existence of dynamic and functional euchromatin lamin B1 domains (eLADs) during epithelial-to-mesenchymal transition (EMT).Nature Communications 9(1) pp 3420  
+
 .. [Rao2014] Rao, S.S.P., Huntley, M.H., Durand, N.C., Stamenova, E.K., Bochkov, I.D., Robinson, J.T., Sanborn, A.L., Machol, I., Omer, A.D., Lander, E.S. and Aiden, E.L. 2014. A 3D map of the human genome at kilobase resolution reveals principles of chromatin looping. Cell 159(7), pp. 1665–1680.
 
-.. [Russel2011] Russel, D., Lasker, K., Webb, B., Velázquez-Muriel, J., Tjioe, E., Schneidman-Duhovny, D., et al. (2012). Putting the Pieces Together: Integrative Modeling Platform Software for Structure Determination of Macromolecular Assemblies. PLoS Biology, 10(1), e1001244.
+.. [Russel2011] Russel, D., Lasker, K., Webb, B., Velázquez-Muriel, J., Tjioe, E., Schneidman-Duhovny, D., et al. (2011). Putting the Pieces Together: Integrative Modeling Platform Software for Structure Determination of Macromolecular Assemblies. PLoS Biology, 10(1), e1001244.
+
+.. [Stadhouders2018] Stadhouders, R.,  Vidal, E.,  Serra, F.,  Di Stefano, B.,  Le Dily, F.,  Quilez, J.,  Gomez, A.,  Collombet, S.,  Berenguer, C.,  Cuartero, Y.,  Hecht, J.,  Filion, G.,  Beato, M.,  Marti-Renom, M.A. and Graf, T. (2018) Transcription factors orchestrate dynamic interplay between genome topology and gene regulation during cell reprogramming. Nature Genetics 50 pp 238–249  
 
 .. [Trussart2015] Trussart, M., Serra, F., Baù, D., Junier, I., Serrano, L. and Marti-Renom, M.A. 2015. Assessing the limits of restraint-based 3D modeling of genomes and genomic domains. Nucleic Acids Research 43(7), pp. 3465–3477.
 
