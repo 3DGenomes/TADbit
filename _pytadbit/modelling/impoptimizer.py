@@ -717,18 +717,19 @@ class IMPoptimizer(object):
                      if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
                      in self.results],
                     key=lambda x: self.results[
-                        (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
+                        (scale, kbending, maxdist, lowfreq, upfreq, x)])
             except IndexError:
                 print 'Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq)
                 continue
 
-            try:
-                result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, cut)]
-                out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
-                    scale, kbending, maxdist, lowfreq, upfreq, cut, result))
-            except KeyError:
-                print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
-                continue
+            for c in cut:
+                try:
+                    result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, c)]
+                    out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
+                        scale, kbending, maxdist, lowfreq, upfreq, c, result))
+                except KeyError:
+                    print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, c, result)
+                    continue
         out.close()
 
 
