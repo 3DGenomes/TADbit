@@ -177,7 +177,8 @@ def nice_ba_plot(x, y, unadj_pN, sigmaN, sigmaR, pred, cond1, cond2,
     return axe
 
 def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
-               kde=True, use_odr=True, EV_range=(-1, 1), mid_point=0):
+               kde=True, use_odr=True, EV_range=(-1, 1), mid_point=0,
+               alpha_dot=0.1, legend_loc=2):
     if not axe:
         axe = plt.subplot(111)
     dots = []
@@ -185,13 +186,13 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
     if color_ab:
         try:
             a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] > mid_point and ev2[i] > mid_point])
-            dots.extend(plt.plot(a, b, 'r.', alpha=0.1, label='Bins always in A'))
+            dots.extend(plt.plot(a, b, 'r.', alpha=alpha_dot, label='Bins always in A'))
             num_dots.append(len(a))
         except ValueError:
             pass
         try:
             a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1)) if ev1[i] < mid_point and ev2[i] < mid_point])
-            dots.extend(plt.plot(a, b, 'b.', alpha=0.1, label='Bins always in B'))
+            dots.extend(plt.plot(a, b, 'b.', alpha=alpha_dot, label='Bins always in B'))
             num_dots.append(len(a))
         except ValueError:
             pass
@@ -199,12 +200,12 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
             a, b = zip(*[(ev1[i], ev2[i]) for i in xrange(len(ev1))
                          if (ev1[i] < mid_point and ev2[i] > mid_point)
                          or (ev1[i] > mid_point and ev2[i] < mid_point)])
-            dots.extend(plt.plot(a, b, '.', color='grey', alpha=0.1, label='Bins switching'))
+            dots.extend(plt.plot(a, b, '.', color='grey', alpha=alpha_dot, label='Bins switching'))
             num_dots.append(len(a))
         except ValueError:
             pass
     else:
-        dots.extend(plt.plot(ev1, ev2, '.', color='grey', alpha=0.1, label='Bins'))
+        dots.extend(plt.plot(ev1, ev2, '.', color='grey', alpha=alpha_dot, label='Bins'))
 
     r, p  = st.pearsonr(ev1, ev2)
     plt.xlim(EV_range)
@@ -233,7 +234,7 @@ def compare_AB(ev1, ev2, axe=None, xlabel='', ylabel='', color_ab=False,
     leg = plt.legend(fit_line + [p1] + dots,
                      ['''$y = %s$ (Pearson %.2f)''' % (formula, r),
                       '95% Prediction band'] + dot_labels,
-                     frameon=False, loc=2)
+                     frameon=False, loc=legend_loc)
     # a little bit of cheating here to see the dots
     for l in leg.get_lines():
         if not 'Bins' in l.get_label():

@@ -22,7 +22,7 @@ def main():
                                       verbose=not opts.quiet,
                                       tmpdir=opts.tmpdir, ncpus=opts.cpus)
 
-    insulation_score(hic_data, opts.dists, normalize=opts.normalize,
+    insulation_score(hic_data, opts.dists, normalize=True,
                      savedata=opts.outfile, resolution=resolution)
 
 

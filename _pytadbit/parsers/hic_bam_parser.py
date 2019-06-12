@@ -580,7 +580,7 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
                             '%s/%s' % (len(chunks[0]),len(chunks[0])))
 
 
-def get_biases_region(biases, bin_coords):
+def get_biases_region(biases, bin_coords, check_resolution=None):
     """
     Retrieve biases, decay, and bad bins from a dictionary, and re-index it
     according to a region of interest.
@@ -589,6 +589,12 @@ def get_biases_region(biases, bin_coords):
     # load decay
     if isinstance(biases, str):
         biases = load(open(biases))
+    resolution = biases.get('resolution', float('NaN'))
+    if check_resolution is not None:
+        if check_resolution != resolution:
+            raise ValueError('ERROR: resolution not matching with wanted '
+                             'resolution (wanted: {} vs found: {})'.format(
+                                 check_resolution, resolution))
     decay = biases.get('decay' , {})
     # load biases and bad columns
     bias1  = dict((k - start_bin1, v)

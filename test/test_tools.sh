@@ -15,19 +15,31 @@ echo -e `date` | tee -a $LOG
 echo -e '\n' | tee -a $LOG
 
 echo -e ' - downloading Hi-C experiments 1/3' | tee -a $LOG
-             #sample ID #no quality header #sequence header #split reads #quality filter #quality filter #stop download after 1M
-fastq-dump -A SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -X $nreads
+#sample ID #no quality header #sequence header #split reads #quality filter #quality filter #stop download after 1M
+{
+    parallel-fastq-dump -t 8 -s SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -X $nreads
+} || {
+    fastq-dump -A SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -X $nreads
+}
 mv  SRR4433970_1.fastq $tmpdir/FASTQs/SRR4433970a_1.fastq
 mv  SRR4433970_2.fastq $tmpdir/FASTQs/SRR4433970a_2.fastq
 
 echo -e ' - downloading Hi-C experiments 2/3' | tee -a $LOG
-             #sample ID #no quality header #sequence header #split reads #quality filter #quality filter #start download after 1M #stop downnload after 2M
-fastq-dump -A SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -N $nreads -X $((nreads/2))
+#sample ID #no quality header #sequence header #split reads #quality filter #quality filter #start download after 1M #stop downnload after 2M
+{
+    parallel-fastq-dump -t 8 -s SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -N $nreads -X $((nreads/2))
+} || {
+    fastq-dump               -A SRR4433970 -DQ '+' --defline-seq '@$ac.$si' --split-files --qual-filter --qual-filter-1 -N $nreads -X $((nreads/2))
+}
 mv  SRR4433970_1.fastq $tmpdir/FASTQs/SRR4433970b_1.fastq
 mv  SRR4433970_2.fastq $tmpdir/FASTQs/SRR4433970b_2.fastq
 
 echo -e ' - downloading Hi-C experiments 3/3' | tee -a $LOG
-fastq-dump -A SRR4433971 -DQ '+' --defline-seq '@$ac.$si' --split-files -E  --qual-filter-1 -X $((nreads*2))
+{
+    parallel-fastq-dump -t 8 -s SRR4433971 -DQ '+' --defline-seq '@$ac.$si' --split-files -E --qual-filter-1 -X $((nreads*2))
+} || {
+    fastq-dump               -A SRR4433971 -DQ '+' --defline-seq '@$ac.$si' --split-files -E --qual-filter-1 -X $((nreads*2))
+}
 mv  SRR4433971_1.fastq $tmpdir/FASTQs/SRR4433971_1.fastq
 mv  SRR4433971_2.fastq $tmpdir/FASTQs/SRR4433971_2.fastq
 
@@ -114,7 +126,7 @@ echo -e '' | tee -a $LOG
 echo -e $SEP"\n"$SEP | tee -a $LOG
 echo -e 'Filtering 1/2\n' | tee -a $LOG
 echo -e $SEP"\n   $ " tadbit filter $tmpdir/rep1 --noX | tee -a $LOG
-tadbit filter $tmpdir/rep1  --noX 2>> $LOG
+tadbit filter $tmpdir/rep1 --compress_input --noX 2>> $LOG
 echo -e 'Filtering 2/2\n' | tee -a $LOG
 echo -e $SEP"\n   $ " tadbit filter $tmpdir/rep2 --noX | tee -a $LOG
 tadbit filter $tmpdir/rep2 --noX 2>> $LOG

@@ -49,7 +49,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         r_enzs = [r_enz]
     for k in RESTRICTION_ENZYMES.keys():
         for i in range(len(r_enzs)):
-            if k.lower() == r_enz[i].lower():
+            if k.lower() == str(r_enz[i]).lower():
                 r_enz[i] = k
     # else let it as None
 
@@ -67,7 +67,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         fhandler = proc.stdout
     else:
         fhandler = open(fnam)
-    if not r_enzs:
+    if len(r_enzs) == 1 and r_enzs[0] is None:
         if nreads:
             while True:
                 try:
@@ -150,10 +150,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         fig = axe.get_figure()
         ax2 = fig.add_subplot(212)
     else:  # configure plot
-        if r_enz:  # do both plots
-            _, (ax, ax2) = plt.subplots(2,1, figsize=(15, 12))
+        if len(r_enzs) == 1 and r_enzs[0] is None:  # do both plots
+            _, ax = plt.subplots(1, 1, figsize=(15, 6))
         else:  # only do the quality_plot plot
-            _, ax = plt.subplots(1,1, figsize=(15, 6))
+            _, (ax, ax2) = plt.subplots(2, 1, figsize=(15, 12))
         ax.patch.set_facecolor('lightgrey')
         ax.patch.set_alpha(0.4)
         ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
@@ -177,7 +177,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     ax.tick_params(axis='y', colors='darkblue', **tkw)
     axb = ax.twinx()
     # quality_plot plot
-    axb.plot([henes.count(i) for i in xrange(max_seq_len)], linewidth=1,
+    axb.plot([henes.count(i) for i in range(max_seq_len)], linewidth=1,
              color='black', linestyle='--')
     axb.yaxis.label.set_color('black')
     axb.tick_params(axis='y', colors='black', **tkw)
@@ -191,9 +191,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     ax.set_xlim((0, max_seq_len))
 
     # Hi-C plot
-    if r_enzs:
+    if not (len(r_enzs) == 1 and r_enzs[0] is None):
         ax.set_title('Sequencing Quality and deconvolution (%s %d reads)' % (
-            ', '.join(r_enzs), nreads))
+            ', '.join(map(str, r_enzs)), nreads))
         ax.set_xlabel('')
         plt.setp(ax.get_xticklabels(), visible=False)
         ax2.patch.set_facecolor('lightgrey')
@@ -206,16 +206,16 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         # seq_len is the length of the line to plot. we don't want to plot
         # if there is no room for the cut-site, or ligation site.
         site_len = max((max([len(r_sites[k]) for k in r_sites]),
-                                   max([len(l_sites[k]) for k in l_sites]),
-                                   max([len(d_sites[k]) for k in d_sites])))
+                        max([len(l_sites[k]) for k in l_sites]),
+                        max([len(d_sites[k]) for k in d_sites])))
         seq_len = max_seq_len - site_len
 
         # transform dictionaries of positions into dictionaries of counts
         for r_enz in sites:
-            sites[r_enz] = [sites[r_enz].count(k) for k in xrange(seq_len)] # Undigested
-            fixes[r_enz] = [fixes[r_enz].count(k) for k in xrange(seq_len)] # DE
+            sites[r_enz] = [sites[r_enz].count(k) for k in range(seq_len)] # Undigested
+            fixes[r_enz] = [fixes[r_enz].count(k) for k in range(seq_len)] # DE
         for r1, r2 in liges:
-            liges[(r1, r2)] = [liges[(r1, r2)].count(k) for k in xrange(seq_len)] # OK
+            liges[(r1, r2)] = [liges[(r1, r2)].count(k) for k in range(seq_len)] # OK
 
         # in case the pattern of the repaired cut-site contains the target
         # cut-site pattern. These sites were counted twice, once in the
@@ -227,7 +227,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
 
                 fixes[r_enz] = (fixes[r_enz][:pos] +
                                 [fixes[r_enz][k] - sites[r_enz][k-pos]
-                                 for k in xrange(pos, seq_len)])
+                                 for k in range(pos, seq_len)])
         # same for ligated sites
         for r_enz1 in r_enzs:
             for r_enz2 in r_enzs:
@@ -236,25 +236,25 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 pos = l_sites[(r_enz1, r_enz2)].find(d_sites[r_enz1])
                 fixes[r_enz1] = (fixes[r_enz1][:pos] +
                                  [fixes[r_enz1][k] - liges[(r_enz1, r_enz2)][k - pos]
-                                  for k in xrange(pos, seq_len)])
+                                  for k in range(pos, seq_len)])
 
         # remove anything that could be in between the two read ends
         if paired:
             for k in sites:
-                sites[k][max_seq_len / 2 - site_len:
-                         max_seq_len / 2] = [float('nan')] * site_len
-                fixes[k][max_seq_len / 2 - site_len:
-                         max_seq_len / 2] = [float('nan')] * site_len
+                sites[k][max_seq_len // 2 - site_len:
+                         max_seq_len // 2] = [float('nan')] * site_len
+                fixes[k][max_seq_len // 2 - site_len:
+                         max_seq_len // 2] = [float('nan')] * site_len
             for k in liges:
-                liges[k][max_seq_len / 2 - site_len:
-                         max_seq_len / 2] = [float('nan')] * site_len
+                liges[k][max_seq_len // 2 - site_len:
+                         max_seq_len // 2] = [float('nan')] * site_len
 
         # plot undigested cut-sites
         color = iter(plt.cm.Reds(linspace(0.3, 0.95, len(r_enzs))))
         for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
-            ax2.plot(sites[r_enz], linewidth=2, color = color.next(),
+            ax2.plot(sites[r_enz], linewidth=2, color=color.next(),
                      alpha=0.9,
                      label='Undigested RE site (%s: %s)' % (r_enz, r_sites[r_enz])
                      if any([f > 0 for f in fixes[r_enz]])
@@ -307,23 +307,23 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         lig_cnt = {}
         for k in liges:
             lig_cnt[k] = (nansum(liges[k]) - liges[k][0] -
-                              liges[k][max_seq_len / 2])
+                              liges[k][max_seq_len // 2])
 
         # Count undigested sites
         sit_cnt = {}
         for r_enz in r_enzs:
             sit_cnt[r_enz] = (nansum(sites[r_enz]) - sites[r_enz][0] -
-                              sites[r_enz][max_seq_len / 2])
+                              sites[r_enz][max_seq_len // 2])
 
         # Count Dangling-Ends
         des = {}
         for r_enz in r_enzs:
             if any([f > 0 for f in fixes[r_enz]]):
-                des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(max_seq_len / 2)]
-                                                          if paired else 0))) / nreads)
+                des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(max_seq_len // 2)]
+                                                          if paired else 0))) // nreads)
             else:
-                des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len / 2)]
-                                                         if paired else 0))) / nreads
+                des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len // 2)]
+                                                         if paired else 0))) // nreads
 
         # Decorate plot
         title = ''
@@ -353,6 +353,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         plt.show()
     for k in ligep:
         ligep[k] = (ligep[k] * 100.) / nreads
+    if len(r_enzs) == 1 and r_enzs[0] is None:
+        return {}, {}
     return des, ligep
 
 
@@ -361,4 +363,3 @@ def make_patch_spines_invisible(ax):
     ax.patch.set_visible(False)
     for sp in ax.spines.itervalues():
         sp.set_visible(False)
-
