@@ -34,9 +34,9 @@ for timepoint in xrange(len(nrm_files)):
 # upfreq=1.0
 # maxdist=6.0
 
-for nparticles in [50]:
+for nparticles in [(176,176+50)]:
 
-    models = exp.model_region(1, nparticles, n_models=500, n_keep=100,
+    models = exp.model_region(nparticles[0], nparticles[1], n_models=500, n_keep=100,
                               n_cpus=16, cleanup=False, hide_log=False,
                               initial_conformation='tadbit',                          
                               timesteps_per_k=10000, stages=[0,1,2,3,4,5,6],
@@ -44,7 +44,7 @@ for nparticles in [50]:
                                       'maxdist': 300  , 'upfreq'  : 1.0, 
                                       'lowfreq': -1.0},
                               tool='lammps',
-                              tmp_folder='./TADdyn_on_Sox2_test_%sparticles/' % nparticles,
+                              tmp_folder='./TADdyn_on_Sox2_test_%-%_particles/' % (nparticles[0],nparticles[1]),
                               timeout_job=12000)
 
-    models.save_models("TADdyn_on_Sox2_test_%sparticles.pickle" % nparticles)
+    models.save_models("TADdyn_on_Sox2_test_%-%_particles.pickle" % (nparticles[0],nparticles[1]))
