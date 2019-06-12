@@ -40,6 +40,7 @@ Documentation
    | make yes-user-colvars
    | make yes-molecule
    | make serial mode=shlib
+   | make yes-python
    
    | export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
    
