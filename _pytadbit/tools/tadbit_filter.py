@@ -47,7 +47,8 @@ def run(opts):
 
         # compute the intersection of the two read ends
         print 'Getting intersection between read 1 and read 2'
-        count, multiples = get_intersection(fname1, fname2, reads)
+        count, multiples = get_intersection(fname1, fname2, reads,
+                                            compress=opts.compress_input)
 
         # compute insert size
         print 'Get insert size...'
@@ -373,20 +374,30 @@ def populate_args(parser):
                         pathids. Use tadbit describe to find out which.
                         Needs one PATHid per read, first for read 1,
                         second for read 2.''')
+
+    glopts.add_argument('--compress_input', dest='compress_input',
+                        action='store_true', default=False,
+                        help='''Compress input mapped files when parsing is
+                        done. This is done in background, while next MAP file is
+                        processed, or while reads are sorted.''')
+
     output.add_argument('--format', dest='format', default='mid',
                         choices=['short', 'mid', 'long'],
                         help='''[%(default)s] for compression into pseudo-BAM
                         format. Short contains only positions of reads mapped,
                         mid everything but restriction sites.''')
+
     output.add_argument('--valid', dest='valid', default=False,
                         action='store_true',
                         help='''stores only valid-pairs discards filtered out
                         reads.''')
+
     output.add_argument('--clean', dest='clean', default=False,
                         action='store_true',
                         help='''remove intermediate files. WARNING: together
                         with format "short" or valid options, this may results
                         in losing data''')
+
     glopts.add_argument('--samtools', dest='samtools', metavar="PATH",
                         action='store', default='samtools', type=str,
                         help='''path samtools binary''')

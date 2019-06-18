@@ -16,8 +16,9 @@ from itertools                        import product
 from warnings                         import warn
 from cPickle                          import dump
 from hashlib                          import md5
-from multiprocessing                  import cpu_count
-from concurrent.futures               import TimeoutError
+from functools                        import partial
+from multiprocessing                  import cpu_count, TimeoutError, Pool
+from multiprocessing.dummy            import Pool as ThreadPool
 import sqlite3 as lite
 import subprocess
 import time
@@ -25,7 +26,6 @@ import sys
 import logging
 import collections
 
-from pebble                           import ProcessPool
 from numpy                            import arange
 
 from pytadbit                         import load_structuralmodels
@@ -57,6 +57,22 @@ actions = {0  : "do nothing",
            11 : "persistence length",
            12 : "accessibility",
            13 : "interaction"}
+
+def abortable_worker(func, *args, **kwargs):
+    timeout = kwargs.get('timeout', None)
+    p = ThreadPool(1)
+    res = p.apply_async(func, args=args)
+    try:
+        out = res.get(timeout)  # Wait timeout seconds for func to complete.
+        return out
+    except TimeoutError:
+        print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+        p.terminate()
+        raise
+    except:
+        print "Unknown error with process"
+        p.terminate()
+        raise
 
 def convert_from_unicode(data):
     if isinstance(data, basestring):
@@ -190,7 +206,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         models = load_structuralmodels(modelsfile)
     else:
         n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
-        pool = ProcessPool(max_workers=opts.concurrent_jobs, max_tasks=n_jobs)
+        pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
         for n_job in xrange(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
@@ -198,9 +214,8 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                 scriptname = path.join(job_dir,'_tmp_optim.py')
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
             else:
-                jobs[n_job] = pool.schedule(run_distributed_job, args=(job_dir, script_cmd ,
-                                                                       script_args),
-                                            timeout=opts.timeout_job)
+                jobs[n_job] = partial(abortable_worker, run_distributed_job)
+                pool.apply_async(jobs[n_job], args=(job_dir, script_cmd , script_args))
         pool.close()
         pool.join()
 
@@ -226,7 +241,8 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
                     f.close()
                 system('rm -rf %s' % (job_dir))
             except TimeoutError:
-                logging.info("Model took more than %s seconds to complete ... canceling" % str(opts.timeout_job))
+                logging.info("Model took more than %s seconds to complete ... canceling"
+                             % str(opts.timeout_job))
                 jobs[n_job].cancel()
             except Exception as error:
                 logging.info("Function raised %s" % error)
@@ -549,7 +565,8 @@ def run(opts):
 
         if not opts.not_write_json:
             models.write_json(path.join(outdir, batch_job_hash + '.json'),
-                              title = opts.project+' '+name if opts.project else name)
+                              title = opts.project+' '+name if opts.project else name,
+                              infer_unrestrained=True)
 
         if not (opts.not_write_xyz and opts.not_write_cmm):
             # Save the clustered models into directories for easy visualization with
@@ -1246,10 +1263,12 @@ def load_hic_data(opts):
     try:
         hic = read_matrix(opts.matrix, hic=False,
                           resolution=opts.reso)
+        hic_bads = hic.bads
         if opts.crm: # just to avoid loading the full chromosome to model a small region
             if opts.crm not in hic.chromosomes:
                 raise Exception('ERROR: chromosome %s not in input matrix(%s).' % (opts.crm,
                                                     ','.join([h for h in hic.chromosomes])))
+            hic_bads = {k: v for k, v in hic.bads.items() if k >= opts.beg and k < opts.end}
             hic = hic.get_matrix(focus=(opts.beg+1,opts.end))
             opts.offset = opts.beg
         else:
@@ -1263,12 +1282,19 @@ def load_hic_data(opts):
             cell_type=opts.cell,
             project=opts.project, # user descriptions
             norm_data=[hic], resolution=opts.reso)
+        crm.experiments[0].norm[0].bads = hic_bads
+        crm.experiments[0]._zeros = hic_bads
+        crm.experiments[0]._filtered_cols = True
     except Exception, e:
         #logging.info( str(e))
         warn('WARNING: failed to load data as TADbit standardized matrix\n')
-        if not opts.matrix_beg:
+        if opts.matrix_beg is None:
             raise Exception('"matrix_beg" parameter should be given if ' +
                             'input matrix is not in TADbit abc format')
+        if opts.beg is None:
+            opts.beg = 1
+        if opts.end is None:
+            opts.end = sum(1 for _ in open(opts.matrix))
         opts.beg -= opts.matrix_beg
         opts.end -= opts.matrix_beg
         crm.add_experiment('test',
