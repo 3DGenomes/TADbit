@@ -198,7 +198,7 @@ Bibliography
 
 .. [Cattoni2017] Cattoni, D.I.,  Cardozo-Gizz, A.M.,  Georgieva, M.,  Di Stefano, M.,  Valeri, A.,  Chamousset, D.,  Houbron, C.,  Dejardin, S.,  Fiche, J-B.,  Marti-Renom, M.A.,  Bantignies, F.,  Cavalli, G. and Nollmann, M. (2017) Single-cell absolute contact probability detection reveals that chromosomes are organized by modulated stochasticity. Nature Communications 8 pp 1753  
 
-.. [Cuadrado2019] Cuadrado, A.,  Giménez-Llorente, D.,  Kojic, A.,  Rodríguez-Corsino, M.,  Cuartero, Y.,  Martín-Serrano, G.,  Gómez-López, G.,  Marti-Renom, M.A. and Losada, A. (2019) Specific contributions of cohesin-SA1 and cohesin-SA2 to TADs and Polycomb domains in embryonic stem cells. Cell Reports, in press 
+.. [Cuadrado2019] Cuadrado, A.,  Giménez-Llorente, D.,  Kojic, A.,  Rodríguez-Corsino, M.,  Cuartero, Y.,  Martín-Serrano, G.,  Gómez-López, G.,  Marti-Renom, M.A. and Losada, A. (2019) Specific contributions of cohesin-SA1 and cohesin-SA2 to TADs and Polycomb domains in embryonic stem cells. Cell Reports, 27 3500–3510   
 
 .. [Enright2002] Enright, A. J., Van Dongen, S., & Ouzounis, C. A. (2002). An efficient algorithm for large-scale detection of protein families. Nucleic Acids Research, 30(7), 1575–1584.
 
