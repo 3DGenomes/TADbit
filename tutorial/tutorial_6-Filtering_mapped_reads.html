@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="The HiC_data object" href="tutorial_7-Bin_filtering_and_normalization.html" />
+    <link rel="next" title="Bin filtering and normalization" href="tutorial_7-Bin_filtering_and_normalization.html" />
     <link rel="prev" title="Load mapped read-ends and generate a matrix" href="tutorial_5-Parsing_mapped_reads.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
@@ -42,13 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Filtering</p>
-<ul class="toc-item"><li><p>Filter out dangling ends and self-circles</p>
-</li><li><p>Apply filters on the data</p>
-<ul class="toc-item"><li><p>Evaluate changes</p>
-</li></ul></li><li><p>Save to BAM</p>
-</li></ul></li></ul></div><div class="section" id="filtering">
+  <div class="section" id="filtering">
 <h1>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h1>
 <div class="figure" id="id1">
 <img alt="Filters" src="tutorial/images/Filters.jpeg" />
@@ -99,14 +93,12 @@ affected by each.</p>
 <h2>Apply filters on the data<a class="headerlink" href="#apply-filters-on-the-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="evaluate-changes">
 <h3>Evaluate changes<a class="headerlink" href="#evaluate-changes" title="Permalink to this headline">¶</a></h3>
-<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_13_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_13_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_12_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_12_0.png" />
 <p>Zoom to a single chromosome or a region:</p>
+<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_14_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_14_0.png" />
 <img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_15_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_15_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_16_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_16_0.png" />
-</div>
-</div>
 <div class="section" id="save-to-bam">
-<h2>Save to BAM<a class="headerlink" href="#save-to-bam" title="Permalink to this headline">¶</a></h2>
+<h4>Save to BAM<a class="headerlink" href="#save-to-bam" title="Permalink to this headline">¶</a></h4>
 <p>Working with TSV (tab-separated-value file format) files is very slow.
 For the next part of the tutorial we will be using BAM
 (binary-alignment-map) files, which are compressed and indexed.</p>
@@ -136,6 +128,8 @@ sequenced fragment is involved in a pairwise contact) - S1 and S2 tags
 are the strand orientation of the left and right read-end</p>
 </div>
 </div>
+</div>
+</div>
 
 
           </div>
@@ -154,23 +148,15 @@ are the strand orientation of the left and right read-end</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
@@ -187,7 +173,7 @@ are the strand orientation of the left and right read-end</p>
                         title="previous chapter">Load mapped read-ends and generate a matrix</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_7-Bin_filtering_and_normalization.html"
-                        title="next chapter">The HiC_data object</a></p>
+                        title="next chapter">Bin filtering and normalization</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -211,7 +197,7 @@ are the strand orientation of the left and right read-end</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              >next</a> |</li>
         <li class="right" >
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"

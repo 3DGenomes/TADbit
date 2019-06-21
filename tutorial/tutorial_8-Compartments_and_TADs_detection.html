@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Compartments &#8212; Tadbit 0.1 documentation</title>
+    <title>Compartments and TADs detection &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Comparison of Hi-C experiments" href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" />
-    <link rel="prev" title="The HiC_data object" href="tutorial_7-Bin_filtering_and_normalization.html" /> 
+    <link rel="prev" title="Bin filtering and normalization" href="tutorial_7-Bin_filtering_and_normalization.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +30,7 @@
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
@@ -42,24 +42,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Compartments</p>
-<ul class="toc-item"><li><p>Mouse B cells</p>
-</li><li><p>Mouse iPS cells</p>
-</li><li><p>Compare</p>
-<ul class="toc-item"><li><p>Spot changes in activity</p>
-</li><li><p>Correlate eigenvectors</p>
-</li></ul></li></ul></li><li><p>TADs</p>
-<ul class="toc-item"><li><p>TAD caller algorithms</p>
-<ul class="toc-item"><li><p>TADbit</p>
-</li><li><p>TopDom</p>
-</li><li><p>Insulation score</p>
-</li></ul></li><li><p>Comparison of TAD borders</p>
-<ul class="toc-item"><li><p>Statistical significance of the TAD borders alignments</p>
-</li></ul></li><li><p>Save Chromosome object (with TAD definition)</p>
-</li><li><p>Extra: choosing the best resolution to call TAD borders</p>
-</li></ul></li></ul></div><div class="section" id="compartments">
-<h1>Compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="compartments-and-tads-detection">
+<h1>Compartments and TADs detection<a class="headerlink" href="#compartments-and-tads-detection" title="Permalink to this headline">¶</a></h1>
 <p>Here, we present the analysis to detect the compartments in Mouse B and
 iPS cells. In this example, we will use the GC-content (guanine-cytosine
 content) to identify which bins belong to the A or B compartments. The
@@ -67,16 +51,18 @@ percentage of bases that are either guanine or cytosine on a DNA strand
 correlates directly with gene density and is a good measure to identify
 open and close chromatine.</p>
 <p><strong>*Note</strong>: Compartments are detected on the full genome matrix.*</p>
+<div class="section" id="compartments">
+<h2>Compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="mouse-b-cells">
-<h2>Mouse B cells<a class="headerlink" href="#mouse-b-cells" title="Permalink to this headline">¶</a></h2>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_11_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_11_0.png" />
+<h3>Mouse B cells<a class="headerlink" href="#mouse-b-cells" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_10_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_10_0.png" />
 </div>
 <div class="section" id="mouse-ips-cells">
-<h2>Mouse iPS cells<a class="headerlink" href="#mouse-ips-cells" title="Permalink to this headline">¶</a></h2>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_16_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_16_0.png" />
+<h3>Mouse iPS cells<a class="headerlink" href="#mouse-ips-cells" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_15_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_15_0.png" />
 </div>
 <div class="section" id="compare">
-<h2>Compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h2>
+<h3>Compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
 <p>The assignments of the compartments for the two cell types are stored in
 two different files:</p>
 <p>In another folder, we also saved the coordinates of each computed
@@ -89,14 +75,15 @@ the coordinates correspond to the assignment of the A and B
 compartments, positive values for A compartments and negative values for
 B compartments.</p>
 <p>Load eigenvectors coordinates from files:</p>
+</div>
 <div class="section" id="spot-changes-in-activity">
 <h3>Spot changes in activity<a class="headerlink" href="#spot-changes-in-activity" title="Permalink to this headline">¶</a></h3>
 <p>Plot the difference between each eigenvector along chromosome</p>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_30_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_30_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_29_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_29_0.png" />
 </div>
 <div class="section" id="correlate-eigenvectors">
 <h3>Correlate eigenvectors<a class="headerlink" href="#correlate-eigenvectors" title="Permalink to this headline">¶</a></h3>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_32_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_32_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_31_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_31_0.png" />
 </div>
 </div>
 </div>
@@ -108,21 +95,14 @@ borders at 100kbp resolution.</p>
 
 An example of consistency between TAD borders is shown in the following graph. TAD borders are called at 1 kb resolution (insulation score-based method). We assume that there should be a high ratio of conservation between the 4 replicates and as we see that's true for resolutions lower than approximately 100kbp. If our bin size is for example 50kbp, we only reach the same ratio of consistency if we consider TAD borders found 2 bins away as being the same border in the different replicates.
 
-<img src="images/TAD_calling_resolution.png"> --><img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_40_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_40_0.png" />
-<div class="section" id="tad-caller-algorithms">
-<h2>TAD caller algorithms<a class="headerlink" href="#tad-caller-algorithms" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="tadbit">
-<h3>TADbit<a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h3>
+<img src="images/TAD_calling_resolution.png"> --><img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_39_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_39_0.png" />
 <p>TADbit is the original TAD caller algorithm TADbit is a breakpoint
 detection algorithm that returns the optimal segmentation of the
 chromosome under BIC-penalized likelihood. The model assumes that counts
 have a Poisson distribution and that the expected value of the counts
 decreases like a power-law with the linear distance on the chromosome.</p>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_44_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_44_0.png" />
 <img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_45_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_45_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_46_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_46_0.png" />
-</div>
-<div class="section" id="topdom">
-<h3>TopDom<a class="headerlink" href="#topdom" title="Permalink to this headline">¶</a></h3>
 <p>TopDom identifies TAD borders based on the assumption that contact
 frequencies between regions upstream and downstream of a border are
 lower than those between two regions within a TAD. The algorithm only
@@ -130,11 +110,8 @@ depends on a single parameter corresponding to the window size. The
 algorithm provides a measure (from 0 to 10) of confidence on the
 accuracy of the border detection
 (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/26704975">https://www.ncbi.nlm.nih.gov/pubmed/26704975</a>).</p>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_51_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_51_0.png" />
 <img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_52_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_52_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_53_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_53_0.png" />
-</div>
-<div class="section" id="insulation-score">
-<h3>Insulation score<a class="headerlink" href="#insulation-score" title="Permalink to this headline">¶</a></h3>
 <p>Insulation score (Crane et al. 2015 <a class="reference external" href="https://doi.org/10.1038/nature14450">https://doi.org/10.1038/nature14450</a>)
 can be used to build an insulation profile of the genome and, with a
 simple transformation, to identify TAD borders.</p>
@@ -149,9 +126,7 @@ working with only one bin is a bit to little)</p>
 search for borders.</p>
 <p>Currently the representation is not available in TADbit as for the other
 methods, but we can easily plot it:</p>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_66_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_66_0.png" />
-</div>
-</div>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_65_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_65_0.png" />
 <div class="section" id="comparison-of-tad-borders">
 <h2>Comparison of TAD borders<a class="headerlink" href="#comparison-of-tad-borders" title="Permalink to this headline">¶</a></h2>
 <p>The TAD borders can be aligned, using a simple reciprocal best hit
@@ -159,8 +134,8 @@ strategy:</p>
 <p>In the plots below, each arc represents a TAD. Between two consecutive
 arcs the triangle mark the border. This triangle is colored depending on
 the confidence of the TAD border call.</p>
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_70_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_70_0.png" />
 <img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_71_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_71_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_72_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_72_0.png" />
 <div class="section" id="statistical-significance-of-the-tad-borders-alignments">
 <h3>Statistical significance of the TAD borders alignments<a class="headerlink" href="#statistical-significance-of-the-tad-borders-alignments" title="Permalink to this headline">¶</a></h3>
 <p>In order to asses how well two experiments align, or how conserved are
@@ -172,12 +147,11 @@ distributions of TAD borders.</p>
 of borders conserved in the second experiment, and the proportion of
 borders conserved in the first experiment:</p>
 </div>
-</div>
 <div class="section" id="save-chromosome-object-with-tad-definition">
-<h2>Save Chromosome object (with TAD definition)<a class="headerlink" href="#save-chromosome-object-with-tad-definition" title="Permalink to this headline">¶</a></h2>
+<h3>Save Chromosome object (with TAD definition)<a class="headerlink" href="#save-chromosome-object-with-tad-definition" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="extra-choosing-the-best-resolution-to-call-tad-borders">
-<h2>Extra: choosing the best resolution to call TAD borders<a class="headerlink" href="#extra-choosing-the-best-resolution-to-call-tad-borders" title="Permalink to this headline">¶</a></h2>
+<h3>Extra: choosing the best resolution to call TAD borders<a class="headerlink" href="#extra-choosing-the-best-resolution-to-call-tad-borders" title="Permalink to this headline">¶</a></h3>
 <p>TopDom and the methodology based on insulation score are relatively fast
 computationally and allow to call TAD borders at very high resolution.
 <strong>However</strong> being able to call TAD borders at high resolution does not
@@ -194,10 +168,11 @@ one bin) between the two replicates (iPS and B cells).</p>
 cell types</p>
 <p>We plot the results, as boxplots to group the values of each
 chromosomes:</p>
-<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_91_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_91_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_90_0.png" src="tutorial/../nbpictures//tutorial_8-Compartments_and_TADs_detection_90_0.png" />
 <p>In the case of these experiments it seems that looking for TAD borders
 bellow 50 kb is dangerous, as very few are reproducible. Calling TAD
 borders at 100 kb resolution might be here a good idea.</p>
+</div>
 </div>
 </div>
 
@@ -218,10 +193,9 @@ borders at 100 kb resolution might be here a good idea.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Compartments</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Compartments and TADs detection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tads">TADs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_9-Compare_and_merge_Hi-C_experiments.html#merge-hi-c-experiments">Merge Hi-C experiments</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
@@ -234,7 +208,7 @@ borders at 100 kb resolution might be here a good idea.</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_7-Bin_filtering_and_normalization.html"
-                        title="previous chapter">The HiC_data object</a></p>
+                        title="previous chapter">Bin filtering and normalization</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html"
                         title="next chapter">Comparison of Hi-C experiments</a></p>
@@ -264,7 +238,7 @@ borders at 100 kb resolution might be here a good idea.</p>
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 

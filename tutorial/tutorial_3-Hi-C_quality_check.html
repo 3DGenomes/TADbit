@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>FASTQ format &#8212; Tadbit 0.1 documentation</title>
+    <title>Hi-C quality check &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Iterative vs fragment-based mapping" href="tutorial_4-Mapping.html" />
-    <link rel="prev" title="Search for the reference genome" href="tutorial_2-Preparation_of_the_reference_genome.html" /> 
+    <link rel="prev" title="Preparation of the reference genome" href="tutorial_2-Preparation_of_the_reference_genome.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +30,7 @@
           <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Search for the reference genome"
+          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Preparation of the reference genome"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
@@ -42,13 +42,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>FASTQ format</p>
-</li><li><p>Quality check before mapping</p>
-<ul class="toc-item"><li><p>Check restriction-enzyme used</p>
-</li><li><p>Plot PHRED score and ligation/digestion sites</p>
-</li></ul></li></ul></div><div class="section" id="fastq-format">
-<h1>FASTQ format<a class="headerlink" href="#fastq-format" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="hi-c-quality-check">
+<h1>Hi-C quality check<a class="headerlink" href="#hi-c-quality-check" title="Permalink to this headline">¶</a></h1>
 <p>The file is organized in 4 lines per read: 1. starting with <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>, the
 header of the DNA sequence with the read id (plus optional fields) 2.
 the DNA sequence 3. starting with <code class="docutils literal notranslate"><span class="pre">+</span></code>, the header of the sequence
@@ -68,16 +63,15 @@ human readable. Check
 </pre></div>
 </div>
 <p>There are 400 M lines in the file, which means 100M reads in total.</p>
-</div>
 <div class="section" id="quality-check-before-mapping">
-<h1>Quality check before mapping<a class="headerlink" href="#quality-check-before-mapping" title="Permalink to this headline">¶</a></h1>
+<h2>Quality check before mapping<a class="headerlink" href="#quality-check-before-mapping" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="check-restriction-enzyme-used">
-<h2>Check restriction-enzyme used<a class="headerlink" href="#check-restriction-enzyme-used" title="Permalink to this headline">¶</a></h2>
+<h3>Check restriction-enzyme used<a class="headerlink" href="#check-restriction-enzyme-used" title="Permalink to this headline">¶</a></h3>
 <p>Most important to analyze Hi-C dataset is the restriction enzyme used in
 the experiment. TADbit provides a simple function to check for it:</p>
 </div>
 <div class="section" id="plot-phred-score-and-ligation-digestion-sites">
-<h2>Plot PHRED score and ligation/digestion sites<a class="headerlink" href="#plot-phred-score-and-ligation-digestion-sites" title="Permalink to this headline">¶</a></h2>
+<h3>Plot PHRED score and ligation/digestion sites<a class="headerlink" href="#plot-phred-score-and-ligation-digestion-sites" title="Permalink to this headline">¶</a></h3>
 <p>In order to quickly assess the quality of the HiC experiment (before
 mapping), and given that we know the restriction enzyme used, we can
 check the proportion of reads with ligation sites as well as the number
@@ -106,6 +100,7 @@ correlated with the percentage of dangling-ends.</p>
 enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -124,23 +119,15 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Hi-C quality check</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
@@ -154,7 +141,7 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_2-Preparation_of_the_reference_genome.html"
-                        title="previous chapter">Search for the reference genome</a></p>
+                        title="previous chapter">Preparation of the reference genome</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_4-Mapping.html"
                         title="next chapter">Iterative vs fragment-based mapping</a></p>
@@ -184,7 +171,7 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
           <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Search for the reference genome"
+          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Preparation of the reference genome"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 

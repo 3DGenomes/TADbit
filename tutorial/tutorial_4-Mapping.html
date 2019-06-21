@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Load mapped read-ends and generate a matrix" href="tutorial_5-Parsing_mapped_reads.html" />
-    <link rel="prev" title="FASTQ format" href="tutorial_3-Hi-C_quality_check.html" /> 
+    <link rel="prev" title="Hi-C quality check" href="tutorial_3-Hi-C_quality_check.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +30,7 @@
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+          <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
@@ -42,15 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Iterative vs fragment-based mapping</p>
-<ul class="toc-item"><li><p>Advantages of iterative mapping</p>
-</li><li><p>Advantages of fragment-based mapping</p>
-</li></ul></li><li><p>Mapping</p>
-<ul class="toc-item"><li><p>Iterative mapping</p>
-</li><li><p>Fragment-based mapping</p>
-</li></ul></li><li><p>References</p>
-</li></ul></div><div class="section" id="iterative-vs-fragment-based-mapping">
+  <div class="section" id="iterative-vs-fragment-based-mapping">
 <h1>Iterative vs fragment-based mapping<a class="headerlink" href="#iterative-vs-fragment-based-mapping" title="Permalink to this headline">¶</a></h1>
 <p>Iterative mapping first proposed by <a class="reference external" href="#cite-Imakaev2012a">(Imakaev et al.,
 2012)</a>, allows to map usually a high number of
@@ -99,16 +91,11 @@ fragment-based mapping, or a combination of both.</p>
 used by TADbit are relatively strict, <strong>a non negligible proportion of
 the reads will be mis-mapped</strong>, and this applies <strong>at each iteration of
 the mapping.</strong></p>
-<div class="section" id="iterative-mapping">
-<h2>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h2>
 <p>Here an example of use as iterative mapping: (Estimated time 15h with 8
 cores)</p>
 <p><em>Note: the execution of this notebook should be repeated for each of the
 4 replicates</em></p>
 <p>And for the second side of the read-end:</p>
-</div>
-<div class="section" id="fragment-based-mapping">
-<h2>Fragment-based mapping<a class="headerlink" href="#fragment-based-mapping" title="Permalink to this headline">¶</a></h2>
 <p>The fragment-based mapping strategy works in 2 steps: 1. The read-ends
 are mapped entirely, assuming that no ligation occurred in them. 2. For
 unmapped read-ends, the function searches for a ligation site (e.g. in
@@ -212,10 +199,8 @@ title = {{The GEM mapper: fast, accurate and versatile alignment by filtration}}
 year = {2012}
 }
 
---></div>
-</div>
-<div class="section" id="references">
-<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+--><div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p>[^](#ref-1) Imakaev, Maxim V and Fudenberg, Geoffrey and McCord, Rachel
 Patton and Naumova, Natalia and Goloborodko, Anton and Lajoie, Bryan R
 and Dekker, Job and Mirny, Leonid A. 2012. <em>Iterative correction of Hi-C
@@ -237,6 +222,7 @@ the fly chromatin colors</em>.
 and Ribeca, Paolo. 2012. <em>The GEM mapper: fast, accurate and versatile
 alignment by filtration</em>.</p>
 </div>
+</div>
 
 
           </div>
@@ -255,23 +241,15 @@ alignment by filtration</em>.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
@@ -285,7 +263,7 @@ alignment by filtration</em>.</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_3-Hi-C_quality_check.html"
-                        title="previous chapter">FASTQ format</a></p>
+                        title="previous chapter">Hi-C quality check</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_5-Parsing_mapped_reads.html"
                         title="next chapter">Load mapped read-ends and generate a matrix</a></p>
@@ -315,7 +293,7 @@ alignment by filtration</em>.</p>
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+          <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 

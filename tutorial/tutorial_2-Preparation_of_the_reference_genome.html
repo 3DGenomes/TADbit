@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Search for the reference genome &#8212; Tadbit 0.1 documentation</title>
+    <title>Preparation of the reference genome &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="FASTQ format" href="tutorial_3-Hi-C_quality_check.html" />
+    <link rel="next" title="Hi-C quality check" href="tutorial_3-Hi-C_quality_check.html" />
     <link rel="prev" title="Retrieve HiC dataset from NCBI" href="tutorial_1-Retrieve_published_HiC_datasets.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+          <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"
@@ -42,18 +42,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Search for the reference genome</p>
-<ul class="toc-item"><li><p>Mus musculus’s reference genome sequence</p>
-</li></ul></li><li><p>Download from the NCBI</p>
-<ul class="toc-item"><li><p>List of chromosomes/contigs</p>
-</li><li><p>Sequences of each chromosome/contig</p>
-</li><li><p>Concatenate all contigs/chromosomes into single files</p>
-</li></ul></li><li><p>Creation of an index file for GEM mapper</p>
-<ul class="toc-item"><li><p>Compute mappability values needed for bias specific normalizations</p>
-</li><li><p>Cleanup</p>
-</li></ul></li></ul></div><div class="section" id="search-for-the-reference-genome">
-<h1>Search for the reference genome<a class="headerlink" href="#search-for-the-reference-genome" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="preparation-of-the-reference-genome">
+<h1>Preparation of the reference genome<a class="headerlink" href="#preparation-of-the-reference-genome" title="Permalink to this headline">¶</a></h1>
 <p>Usually NGS reads are mapped against a reference genome containing only
 the assembled chromosomes, and not the remaining contigs. And this
 methodology is perfectly valid. However in order to decrease the
@@ -80,12 +70,12 @@ unassembled contigs, used exclusively for mapping.</p>
 <p>From there we obtain these identifiers:</p>
 <p><em>The variables defined above can be modified for any other species,
 resulting in new results for the following commands.</em></p>
-</div>
-</div>
 <div class="section" id="download-from-the-ncbi">
-<h1>Download from the NCBI<a class="headerlink" href="#download-from-the-ncbi" title="Permalink to this headline">¶</a></h1>
+<h3>Download from the NCBI<a class="headerlink" href="#download-from-the-ncbi" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="list-of-chromosomes-contigs">
-<h2>List of chromosomes/contigs<a class="headerlink" href="#list-of-chromosomes-contigs" title="Permalink to this headline">¶</a></h2>
+<h4>List of chromosomes/contigs<a class="headerlink" href="#list-of-chromosomes-contigs" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
 </div>
 <div class="section" id="sequences-of-each-chromosome-contig">
 <h2>Sequences of each chromosome/contig<a class="headerlink" href="#sequences-of-each-chromosome-contig" title="Permalink to this headline">¶</a></h2>
@@ -95,12 +85,12 @@ NCBI</p>
 <div class="section" id="concatenate-all-contigs-chromosomes-into-single-files">
 <h2>Concatenate all contigs/chromosomes into single files<a class="headerlink" href="#concatenate-all-contigs-chromosomes-into-single-files" title="Permalink to this headline">¶</a></h2>
 <p>Remove all the other files (with single chromosome/contig)</p>
-</div>
-</div>
 <div class="section" id="creation-of-an-index-file-for-gem-mapper">
-<h1>Creation of an index file for GEM mapper<a class="headerlink" href="#creation-of-an-index-file-for-gem-mapper" title="Permalink to this headline">¶</a></h1>
+<h3>Creation of an index file for GEM mapper<a class="headerlink" href="#creation-of-an-index-file-for-gem-mapper" title="Permalink to this headline">¶</a></h3>
 <p>The path to the index file will be:
 <strong>``{dirname}/{species}-{assembly}/{species}_contigs.gem``</strong></p>
+</div>
+</div>
 <div class="section" id="compute-mappability-values-needed-for-bias-specific-normalizations">
 <h2>Compute mappability values needed for bias specific normalizations<a class="headerlink" href="#compute-mappability-values-needed-for-bias-specific-normalizations" title="Permalink to this headline">¶</a></h2>
 <p>In this case we can use the FASTA of the genome whithout contigs and
@@ -128,23 +118,15 @@ follow these step:</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
@@ -161,7 +143,7 @@ follow these step:</p>
                         title="previous chapter">Retrieve HiC dataset from NCBI</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_3-Hi-C_quality_check.html"
-                        title="next chapter">FASTQ format</a></p>
+                        title="next chapter">Hi-C quality check</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -185,7 +167,7 @@ follow these step:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+          <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              >next</a> |</li>
         <li class="right" >
           <a href="tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"

@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Modeling a region of the chromatin" href="tutorial_11-3D_Models_production_and_analysis.html" />
+    <link rel="next" title="Modelling a region of the chromatin" href="tutorial_11-3D_Models_production_and_analysis.html" />
     <link rel="prev" title="Comparison of Hi-C experiments" href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modeling a region of the chromatin"
+          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modelling a region of the chromatin"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
@@ -42,13 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Experimental data assessment and model parameters optimisation</p>
-<ul class="toc-item"><li><p>Data preparation</p>
-</li><li><p>Data modellability assessment via MMP score</p>
-</li><li><p>Data Transformation and scoring function</p>
-</li><li><p>Optimization of parameters</p>
-</li></ul></li></ul></div><div class="section" id="experimental-data-assessment-and-model-parameters-optimisation">
+  <div class="section" id="experimental-data-assessment-and-model-parameters-optimisation">
 <h1>Experimental data assessment and model parameters optimisation<a class="headerlink" href="#experimental-data-assessment-and-model-parameters-optimisation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="data-preparation">
 <h2>Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
@@ -60,9 +54,9 @@ columns will be modelled, but will have no experimental data applied.</p>
 <p>Here we load the data previous data already normalised.</p>
 <p>Load raw data matrices, and normalized matrices</p>
 <p>It is a good practice to check that the data is there:</p>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_12_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_12_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_11_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_11_0.png" />
 <p>Focus on the genomic region to model.</p>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_14_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_14_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_13_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_13_0.png" />
 </div>
 <div class="section" id="data-modellability-assessment-via-mmp-score">
 <h2>Data modellability assessment via MMP score<a class="headerlink" href="#data-modellability-assessment-via-mmp-score" title="Permalink to this headline">¶</a></h2>
@@ -111,9 +105,8 @@ bound harmonic oscillator.</p>
 <div class="figure">
 <img alt="" src="tutorial/images/tadbit_restraints.png" />
 </div>
-</div>
 <div class="section" id="optimization-of-parameters">
-<h2>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h2>
+<h3>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h3>
 <p>We need to identified empirically (via a grid-search optimisation) the
 optimal parameters for the mdoelling procedure:</p>
 <ul class="simple">
@@ -150,13 +143,14 @@ represents the original data.</p>
 <div class="figure">
 <img alt="" src="tutorial/images/Contact_map.png" />
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_24_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_24_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_23_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_23_0.png" />
 <p>Refine optimization in a small region:</p>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_27_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_27_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_29_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_29_0.png" />
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_31_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_31_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_26_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_26_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_28_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_28_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_30_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_30_0.png" />
 <p>For the other replicate, we can reduce the space of search:</p>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_35_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_35_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_34_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_34_0.png" />
+</div>
 </div>
 </div>
 
@@ -179,7 +173,7 @@ represents the original data.</p>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Experimental data assessment and model parameters optimisation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_11-3D_Models_production_and_analysis.html">Modeling a region of the chromatin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_11-3D_Models_production_and_analysis.html">Modelling a region of the chromatin</a></li>
 </ul>
 </li>
 </ul>
@@ -194,7 +188,7 @@ represents the original data.</p>
                         title="previous chapter">Comparison of Hi-C experiments</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_11-3D_Models_production_and_analysis.html"
-                        title="next chapter">Modeling a region of the chromatin</a></p>
+                        title="next chapter">Modelling a region of the chromatin</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -218,7 +212,7 @@ represents the original data.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modeling a region of the chromatin"
+          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modelling a region of the chromatin"
              >next</a> |</li>
         <li class="right" >
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"

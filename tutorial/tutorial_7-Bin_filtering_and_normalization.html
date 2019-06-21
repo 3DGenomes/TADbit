@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>The HiC_data object &#8212; Tadbit 0.1 documentation</title>
+    <title>Bin filtering and normalization &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Compartments" href="tutorial_8-Compartments_and_TADs_detection.html" />
+    <link rel="next" title="Compartments and TADs detection" href="tutorial_8-Compartments_and_TADs_detection.html" />
     <link rel="prev" title="Filtering" href="tutorial_6-Filtering_mapped_reads.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments"
+          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"
@@ -42,27 +42,10 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>The HiC_data object</p>
-</li><li><p>Filter bins with low interaction counts</p>
-</li><li><p>Normalization algorithms</p>
-<ul class="toc-item"><li><p>Iterative Correction and Eigenvector decomposition (ICE)</p>
-<ul class="toc-item"><li><p>Save biases</p>
-</li></ul></li><li><p>Vanilla coverage normalization</p>
-<ul class="toc-item"><li><p>Save biases</p>
-</li></ul></li><li><p>Square root vanilla coverage (SQRT) normalization</p>
-<ul class="toc-item"><li><p>Save biases</p>
-</li></ul></li><li><p>OneD normalization</p>
-<ul class="toc-item"><li><p>Save biases</p>
-</li></ul></li><li><p>Comparison</p>
-</li><li><p>Other normalizations</p>
-</li><li><p>Best normalization</p>
-</li></ul></li><li><p>References</p>
-</li></ul></div><div class="section" id="the-hic-data-object">
-<h1>The HiC_data object<a class="headerlink" href="#the-hic-data-object" title="Permalink to this headline">¶</a></h1>
-</div>
+  <div class="section" id="bin-filtering-and-normalization">
+<h1>Bin filtering and normalization<a class="headerlink" href="#bin-filtering-and-normalization" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="filter-bins-with-low-interaction-counts">
-<h1>Filter bins with low interaction counts<a class="headerlink" href="#filter-bins-with-low-interaction-counts" title="Permalink to this headline">¶</a></h1>
+<h2>Filter bins with low interaction counts<a class="headerlink" href="#filter-bins-with-low-interaction-counts" title="Permalink to this headline">¶</a></h2>
 <p>In this case, the filtering we are applying is divided in two steps: 1.
 First we ask to remove all columns having a total of less than 10
 interactions (<code class="docutils literal notranslate"><span class="pre">min_count=10</span></code>). This is a relatively loose filtering.
@@ -74,21 +57,21 @@ interaction counts one should require that each bin contains a minimum
 percentage (default 75%) of cells with no-zero counts, or a minimum
 number of interactions in total (for good quality data the recommended
 value could be 2500).*</p>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_7_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_7_1.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_6_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_6_1.png" />
 <p>At 100 kb it makes no sense to view the full matrix (your matrix will
 have more cells than your screen have pixels), so it is much more
 informative to plot a specific region of the genome only using the
 <code class="docutils literal notranslate"><span class="pre">focus</span></code> parameter.</p>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_12_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_12_1.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_11_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_11_1.png" />
 </div>
 <div class="section" id="normalization-algorithms">
-<h1>Normalization algorithms<a class="headerlink" href="#normalization-algorithms" title="Permalink to this headline">¶</a></h1>
+<h2>Normalization algorithms<a class="headerlink" href="#normalization-algorithms" title="Permalink to this headline">¶</a></h2>
 <p><strong>*Note</strong>: if columns with a lot of zeroes are present the ICE
 normalization will last very long to converge, and these low-coverage
 columns will present, at the end of the normalization, few cells with
 very high values of interaction*</p>
 <div class="section" id="iterative-correction-and-eigenvector-decomposition-ice">
-<h2>Iterative Correction and Eigenvector decomposition (ICE)<a class="headerlink" href="#iterative-correction-and-eigenvector-decomposition-ice" title="Permalink to this headline">¶</a></h2>
+<h3>Iterative Correction and Eigenvector decomposition (ICE)<a class="headerlink" href="#iterative-correction-and-eigenvector-decomposition-ice" title="Permalink to this headline">¶</a></h3>
 <p>ICE normalization <a class="reference external" href="#cite-Imakaev2012a">(Imakaev et al., 2012)</a>
 assumes an equal experimental visibility of each bin and seeks
 iteratively for biases that equalize the sum of counts per bin in the
@@ -103,34 +86,34 @@ matrix <span class="math notranslate nohighlight">\(M\)</span> is iteratively co
 \[M_{i,j} = \frac{W_{i,j}}{\sqrt{\sum_{n=0}^N{W_{i,n}} \times \sum_{n=0}^N{W_{n,j}}}}\]</div>
 <p>This normalization has usually a quite strong effect, and visually the
 matrices look very smooth and regular.</p>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_18_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_18_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_17_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_17_0.png" />
+</div>
 <div class="section" id="save-biases">
 <h3>Save biases<a class="headerlink" href="#save-biases" title="Permalink to this headline">¶</a></h3>
 </div>
-</div>
 <div class="section" id="vanilla-coverage-normalization">
-<h2>Vanilla coverage normalization<a class="headerlink" href="#vanilla-coverage-normalization" title="Permalink to this headline">¶</a></h2>
+<h3>Vanilla coverage normalization<a class="headerlink" href="#vanilla-coverage-normalization" title="Permalink to this headline">¶</a></h3>
 <p>The vanilla normalization <a class="reference external" href="#cite-Rao2014">(Rao et al., 2014)</a> is a
 variation of the ICE where a single iteration is performed.</p>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_24_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_24_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_23_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_23_0.png" />
+</div>
 <div class="section" id="id1">
 <h3>Save biases<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 </div>
-</div>
 <div class="section" id="square-root-vanilla-coverage-sqrt-normalization">
-<h2>Square root vanilla coverage (SQRT) normalization<a class="headerlink" href="#square-root-vanilla-coverage-sqrt-normalization" title="Permalink to this headline">¶</a></h2>
+<h3>Square root vanilla coverage (SQRT) normalization<a class="headerlink" href="#square-root-vanilla-coverage-sqrt-normalization" title="Permalink to this headline">¶</a></h3>
 <p>The SQRT vanilla normalization <a class="reference external" href="#cite-Rao2014">(Rao et al., 2014)</a>
 is a variation of the Vanilla coverage where each element in the matrix
 is divided by the square root of the product of sums of counts.</p>
 <div class="math notranslate nohighlight">
 \[M_{i,j} = \frac{W_{i,j}}{\sqrt{\sum_{n=0}^N{W_{i,n}} \times \sum_{n=0}^N{W_{n,j}}}}\]</div>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_30_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_30_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_29_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_29_0.png" />
+</div>
 <div class="section" id="id2">
 <h3>Save biases<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 </div>
-</div>
 <div class="section" id="oned-normalization">
-<h2>OneD normalization<a class="headerlink" href="#oned-normalization" title="Permalink to this headline">¶</a></h2>
+<h3>OneD normalization<a class="headerlink" href="#oned-normalization" title="Permalink to this headline">¶</a></h3>
 <p>OneD normalization <a class="reference external" href="#cite-Vidal2018">(Vidal et al., 2018)</a> is based
 on fitting a non-linear model between the total amount of contacts per
 bin and the known biases: - GC content - number of RE sites (the most
@@ -142,18 +125,18 @@ order to allow user to modify them.</p>
 <p>get mappability ~2 min</p>
 <p>get GC content ~ 30 sec</p>
 <p>compute r_sites ~30 sec</p>
-<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_47_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_47_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_46_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_46_0.png" />
+</div>
 <div class="section" id="id3">
 <h3>Save biases<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 </div>
-</div>
 <div class="section" id="comparison">
-<h2>Comparison<a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h2>
+<h3>Comparison<a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h3>
 <p>By eye, the effect of choosing one normalization over an other is often
 very small</p>
 </div>
 <div class="section" id="other-normalizations">
-<h2>Other normalizations<a class="headerlink" href="#other-normalizations" title="Permalink to this headline">¶</a></h2>
+<h3>Other normalizations<a class="headerlink" href="#other-normalizations" title="Permalink to this headline">¶</a></h3>
 <p>ICE and Vanilla normalizations are widely used however other, more
 convoluted, normalizations <a class="reference external" href="#cite-hu2012hicnorm">(Hu et al., 2012)</a>
 <a class="reference external" href="#cite-Yaffe2011">(Yaffe and Tanay, 2011)</a> can be used outside
@@ -161,7 +144,7 @@ TADbit and then loaded in TADbit as normalized matrices for further
 analysis.</p>
 </div>
 <div class="section" id="best-normalization">
-<h2>Best normalization<a class="headerlink" href="#best-normalization" title="Permalink to this headline">¶</a></h2>
+<h3>Best normalization<a class="headerlink" href="#best-normalization" title="Permalink to this headline">¶</a></h3>
 <p>Which is the best normalization to use is a question that can not be
 answered easily because it depends on the type of data and the type of
 analysis.</p>
@@ -238,9 +221,8 @@ year = {2014}
 }
 
 --></div>
-</div>
 <div class="section" id="references">
-<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h3>
 <p>[^](#ref-1) Imakaev, Maxim V and Fudenberg, Geoffrey and McCord, Rachel
 Patton and Naumova, Natalia and Goloborodko, Anton and Lajoie, Bryan R
 and Dekker, Job and Mirny, Leonid A. 2012. <em>Iterative correction of Hi-C
@@ -265,6 +247,8 @@ of Hi-C contact maps eliminates systematic biases to characterize global
 chromosomal architecture.</em>.
 <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/22001755">URL</a></p>
 </div>
+</div>
+</div>
 
 
           </div>
@@ -283,23 +267,15 @@ chromosomal architecture.</em>.
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
@@ -316,7 +292,7 @@ chromosomal architecture.</em>.
                         title="previous chapter">Filtering</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_8-Compartments_and_TADs_detection.html"
-                        title="next chapter">Compartments</a></p>
+                        title="next chapter">Compartments and TADs detection</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -340,7 +316,7 @@ chromosomal architecture.</em>.
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments"
+          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              >next</a> |</li>
         <li class="right" >
           <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"

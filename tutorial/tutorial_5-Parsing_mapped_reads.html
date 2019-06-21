@@ -42,22 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1><p>Table of Contents</p>
-</h1><div class="toc"><ul class="toc-item"><li><p>Load mapped read-ends and generate a matrix</p>
-<ul class="toc-item"><li><p>Extract uniquely mapped reads</p>
-<ul class="toc-item"><li><p>Load genomic sequence to map restriction sites</p>
-</li><li><p>Iterative mapping results</p>
-</li><li><p>Fragment-based mapping results</p>
-</li></ul></li><li><p>Keep only uniquely mapped reads pairs</p>
-</li></ul></li><li><p>Quality check of the Hi-C experiment</p>
-<ul class="toc-item"><li><p>Interaction count vs. genomic separation!</p>
-<ul class="toc-item"><li><p>Note: decay by chromosome</p>
-</li></ul></li><li><p>Coverage per bin</p>
-</li><li><p>First Hi-C map</p>
-</li><li><p>Insert size</p>
-</li><li><p>Distance between mapped read-ends classified by their orientation</p>
-</li></ul></li><li><p>References</p>
-</li></ul></div><div class="section" id="load-mapped-read-ends-and-generate-a-matrix">
+  <div class="section" id="load-mapped-read-ends-and-generate-a-matrix">
 <h1>Load mapped read-ends and generate a matrix<a class="headerlink" href="#load-mapped-read-ends-and-generate-a-matrix" title="Permalink to this headline">¶</a></h1>
 <p>We read now each mapped read-ends in the map files and extact the ones
 that are uniquely mapped. For each of these uniquely mapped read-ends,
@@ -75,21 +60,21 @@ for the fragment-based and iterative mapping strategies.</p>
 <div class="section" id="load-genomic-sequence-to-map-restriction-sites">
 <h3>Load genomic sequence to map restriction sites<a class="headerlink" href="#load-genomic-sequence-to-map-restriction-sites" title="Permalink to this headline">¶</a></h3>
 </div>
+</div>
 <div class="section" id="iterative-mapping-results">
-<h3>Iterative mapping results<a class="headerlink" href="#iterative-mapping-results" title="Permalink to this headline">¶</a></h3>
+<h2>Iterative mapping results<a class="headerlink" href="#iterative-mapping-results" title="Permalink to this headline">¶</a></h2>
 <p>In case we haven’t stored the location of each of the reads we could
 load them as follow:</p>
 <p>Load all reads, and check if they are uniquely mapped. The Result is
 stored in two separate tab-separated-values (tsv) files that will
 contain the essential information of each read-end</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_16_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_16_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_15_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_15_0.png" />
 </div>
 <div class="section" id="fragment-based-mapping-results">
-<h3>Fragment-based mapping results<a class="headerlink" href="#fragment-based-mapping-results" title="Permalink to this headline">¶</a></h3>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_22_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_22_0.png" />
+<h2>Fragment-based mapping results<a class="headerlink" href="#fragment-based-mapping-results" title="Permalink to this headline">¶</a></h2>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_21_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_21_0.png" />
 <p><em>Note: From now on we are going to focus only on the results of the
 **fragment based mapping*</em>.*</p>
-</div>
 </div>
 <div class="section" id="keep-only-uniquely-mapped-reads-pairs">
 <h2>Keep only uniquely mapped reads pairs<a class="headerlink" href="#keep-only-uniquely-mapped-reads-pairs" title="Permalink to this headline">¶</a></h2>
@@ -97,13 +82,11 @@ contain the essential information of each read-end</p>
 </div>
 <div class="section" id="quality-check-of-the-hi-c-experiment">
 <h1>Quality check of the Hi-C experiment<a class="headerlink" href="#quality-check-of-the-hi-c-experiment" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="interaction-count-vs-genomic-separation">
-<h2>Interaction count vs. genomic separation!<a class="headerlink" href="#interaction-count-vs-genomic-separation" title="Permalink to this headline">¶</a></h2>
 <p>According to the fractal globule model <a class="reference external" href="#cite-Mirny2011">(Mirny,
 2011)</a> the slope between 700 kb and 10 Mb should be
 around -1 in log scale</p>
 <div class="section" id="note-decay-by-chromosome">
-<h3>Note: decay by chromosome<a class="headerlink" href="#note-decay-by-chromosome" title="Permalink to this headline">¶</a></h3>
+<h2>Note: decay by chromosome<a class="headerlink" href="#note-decay-by-chromosome" title="Permalink to this headline">¶</a></h2>
 <p>With a bit of coding we can also extract the decay by chromosome.</p>
 <p>Although the level of interaction changes depending on the chromosome
 (and the number of chromosomes, cf: chrX), the slope is relatively
@@ -111,15 +94,11 @@ constant, and in very few occasions we may observe line crossings.</p>
 <p>Differences in the slopes observed between chromosomes or conditions
 relates to gains or losses of close or long range interactions <a class="reference external" href="#cite-Kojic2018">(Kojic
 et al. 2018)</a>.</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_38_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_38_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_37_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_37_0.png" />
 <p><em>Note: these **decay are computed on the raw data*</em>, and although the
 slopes may not change dramatically, it is a <strong>good practice to repeate
 this analysis and interpret the results also once the data are
 normalized</strong>.*</p>
-</div>
-</div>
-<div class="section" id="coverage-per-bin">
-<h2>Coverage per bin<a class="headerlink" href="#coverage-per-bin" title="Permalink to this headline">¶</a></h2>
 <p>In an ideal situation, the number of reads per bin along the genome is
 expected to be homogeneous across the genome. However, PCR artifacts
 (see for example the middle of the chromosome 3 below) or variations in
@@ -127,10 +106,7 @@ the distributions of GC content, mappability or the number of RE
 cut-sites along the genome can cause heterogeneity. In the following
 sections, we will discuss how to correct for these sources of
 heterogeneity.</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_43_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_43_0.png" />
-</div>
-<div class="section" id="first-hi-c-map">
-<h2>First Hi-C map<a class="headerlink" href="#first-hi-c-map" title="Permalink to this headline">¶</a></h2>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_42_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_42_0.png" />
 <p>The plot bellow is probably the most informative, in order to infer the
 quality of an Hi-C experiment. This plot shows on the left part: - The
 histogram of the interaction counts. - The interaction count as a
@@ -150,32 +126,26 @@ the principal structural features of the matrix. In the raw matrix shown
 here, we can see, for instance, that here the maxima of the first
 eigenvector seem to be correlated with the presence of low-coverage
 bins.*</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_47_1.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_47_1.png" />
-</div>
-<div class="section" id="insert-size">
-<h2>Insert size<a class="headerlink" href="#insert-size" title="Permalink to this headline">¶</a></h2>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_46_1.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_46_1.png" />
 <p>From the reads that are mapped in a single RE fragment we can infer the
 average insert size:</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_51_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_51_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_50_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_50_0.png" />
 <p>The median size of the sequenced DNA fragments is thus 187 nt.</p>
 <p><strong>*Note</strong>: This distribution is usually peaked at smaller values than
 the one measured experimentally (with a Bioanalyzer for example). This
 difference is due in part to the fact that, here, we are only measuring
 dangling-ends that may be, on average, shorter than other reads.*</p>
-</div>
-<div class="section" id="distance-between-mapped-read-ends-classified-by-their-orientation">
-<h2>Distance between mapped read-ends classified by their orientation<a class="headerlink" href="#distance-between-mapped-read-ends-classified-by-their-orientation" title="Permalink to this headline">¶</a></h2>
 <p>The following function in TADbit allows to measure the size of the
 sequenced fragment. If we set the parameter <code class="docutils literal notranslate"><span class="pre">valid-pairs</span></code> to
 <code class="docutils literal notranslate"><span class="pre">False</span></code>, we will look only at the interactions captured within RE
 fragments (similarly to the <code class="docutils literal notranslate"><span class="pre">insert_sizes</span></code> function above):</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_57_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_57_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_56_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_56_0.png" />
 <p>This function separates each read-end pair into 4 categories depending
 of the orientation of the strand in which each maps.</p>
 <p>Having a look at the minimum distance from which the orientation of the
 mapped read-ends is even, is also useful for the interpretation of the
 results and for the definition of filters.</p>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_59_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_59_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_58_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_58_0.png" />
 <p>We can see that when the distance between the mapped read-ends is larger
 than ~1 kb, the orientation is even (25% each category). Meaning that
 bellow this size interactions are very likely to be extra-dangling-ends
@@ -231,23 +201,15 @@ Structural &amp; Molecular Biologyvolume 25, pages496–504 (2018)
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>

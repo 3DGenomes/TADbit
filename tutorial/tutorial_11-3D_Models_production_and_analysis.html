@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Modeling a region of the chromatin &#8212; Tadbit 0.1 documentation</title>
+    <title>Modelling a region of the chromatin &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -42,8 +42,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="modeling-a-region-of-the-chromatin">
-<h1>Modeling a region of the chromatin<a class="headerlink" href="#modeling-a-region-of-the-chromatin" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="modelling-a-region-of-the-chromatin">
+<h1>Modelling a region of the chromatin<a class="headerlink" href="#modelling-a-region-of-the-chromatin" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="load-previous-data">
 <h2>Load previous data<a class="headerlink" href="#load-previous-data" title="Permalink to this headline">¶</a></h2>
 <p>Load raw data matrices, and normalized matrices</p>
@@ -114,11 +114,12 @@ By default the centroid (the model closer to the median) is highlighted.</p>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_37_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_37_0.png" />
 <p>And use Chimera (<a class="reference external" href="https://www.cgl.ucsf.edu/chimera/">https://www.cgl.ucsf.edu/chimera/</a>) for the
 visualization of the 3D structure</p>
-</div>
 <div class="section" id="model-analysis">
-<h2>Model analysis<a class="headerlink" href="#model-analysis" title="Permalink to this headline">¶</a></h2>
+<h3>Model analysis<a class="headerlink" href="#model-analysis" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
 <div class="section" id="align-models">
-<h3>Align models<a class="headerlink" href="#align-models" title="Permalink to this headline">¶</a></h3>
+<h2>Align models<a class="headerlink" href="#align-models" title="Permalink to this headline">¶</a></h2>
 <p>In the Montecarlo simulation each of the models is built starting from a
 random initial conformation. Therefore models are not aligned in a
 preferred orientation. We can use the function align_models to rotate
@@ -132,11 +133,11 @@ of clusters is shown in the resulting graph. This allows us to detect
 common sets of contacts in the ensemble.</p>
 </div>
 <div class="section" id="deconvolve">
-<h3>Deconvolve<a class="headerlink" href="#deconvolve" title="Permalink to this headline">¶</a></h3>
+<h2>Deconvolve<a class="headerlink" href="#deconvolve" title="Permalink to this headline">¶</a></h2>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_46_1.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_46_1.png" />
 </div>
 <div class="section" id="clustering">
-<h3>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h3>
+<h2>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h2>
 <p>The clustering of the models by Markov Cluster Algorith (MCL) or Ward
 can be based on different statistics measures (score, rmsd, drmsd or
 eqv). By default a score computed as a combination of rmsd, drmsd and
@@ -147,7 +148,7 @@ population and their OF values.</p>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_53_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_53_0.png" />
 </div>
 <div class="section" id="consistency">
-<h3>Consistency<a class="headerlink" href="#consistency" title="Permalink to this headline">¶</a></h3>
+<h2>Consistency<a class="headerlink" href="#consistency" title="Permalink to this headline">¶</a></h2>
 <p>Model consistency gives a measure of the variability of the particles
 accross a set of models. Particles in the same position accross
 different models are considered consistent if their distance is less
@@ -156,7 +157,7 @@ than the given cutoff.</p>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_57_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_57_0.png" />
 </div>
 <div class="section" id="dna-density-plots">
-<h3>DNA density plots<a class="headerlink" href="#dna-density-plots" title="Permalink to this headline">¶</a></h3>
+<h2>DNA density plots<a class="headerlink" href="#dna-density-plots" title="Permalink to this headline">¶</a></h2>
   <p>
 
 From the 3D models, the DNA density (or local compactness) can be<p>calculated as the ratio of the bin size (in base pairs) and the
@@ -173,14 +174,14 @@ consecutives beads.</p>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_63_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_63_0.png" />
 </div>
 <div class="section" id="walking-angle">
-<h3>Walking Angle<a class="headerlink" href="#walking-angle" title="Permalink to this headline">¶</a></h3>
+<h2>Walking Angle<a class="headerlink" href="#walking-angle" title="Permalink to this headline">¶</a></h2>
   <p>
 
 Walking\_angle plots the angle between triplets of contiguous<p>particles. The higher are these values the straighter are the models.</p>
 </p><img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_66_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_66_0.png" />
 </div>
 <div class="section" id="particles-interactions">
-<h3>Particles interactions<a class="headerlink" href="#particles-interactions" title="Permalink to this headline">¶</a></h3>
+<h2>Particles interactions<a class="headerlink" href="#particles-interactions" title="Permalink to this headline">¶</a></h2>
   <p>
 
 We can plot for each particle the number of interactions (particles<p>closer than the given cutoff)</p>
@@ -188,7 +189,7 @@ We can plot for each particle the number of interactions (particles<p>closer tha
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_70_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_70_0.png" />
 </div>
 <div class="section" id="accessibility">
-<h3>Accessibility<a class="headerlink" href="#accessibility" title="Permalink to this headline">¶</a></h3>
+<h2>Accessibility<a class="headerlink" href="#accessibility" title="Permalink to this headline">¶</a></h2>
   <p>
 
 The accessibility is calculated by considering a mesh surface around<p>the model and checking if each point of this mesh could be replaced by
@@ -202,7 +203,7 @@ proceding to the accessibility calculation.</p>
 <img alt="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_74_0.png" src="tutorial/../nbpictures//tutorial_11-3D_Models_production_and_analysis_74_0.png" />
 </div>
 <div class="section" id="calculating-distances-between-particles">
-<h3>Calculating distances between particles<a class="headerlink" href="#calculating-distances-between-particles" title="Permalink to this headline">¶</a></h3>
+<h2>Calculating distances between particles<a class="headerlink" href="#calculating-distances-between-particles" title="Permalink to this headline">¶</a></h2>
 <p>To inspect the distance between two particles in the models we can use
 the median_3d_dist function which give us not only the median distance
 considering all the models but also an histogram of the different values
@@ -219,7 +220,6 @@ as a bed-like file, the models either as a xyz bed-like file or as cmm
 to visualize with Chimera.</p>
 <p>We can also export the models and clusters to a JSON for a later
 inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/3dg/tadkit/">http://sgt.cnag.cat/3dg/tadkit/</a>)</p>
-</div>
 </div>
 </div>
 
@@ -242,7 +242,7 @@ inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_10-Modeling_parameters_optimization.html">Experimental data assessment and model parameters optimisation</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Modeling a region of the chromatin</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Modelling a region of the chromatin</a></li>
 </ul>
 </li>
 </ul>
