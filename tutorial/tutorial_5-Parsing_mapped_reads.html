@@ -1,0 +1,309 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Load mapped read-ends and generate a matrix &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Filtering" href="tutorial_6-Filtering_mapped_reads.html" />
+    <link rel="prev" title="Iterative vs fragment-based mapping" href="tutorial_4-Mapping.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Load mapped read-ends and generate a matrix</p>
+<ul class="toc-item"><li><p>Extract uniquely mapped reads</p>
+<ul class="toc-item"><li><p>Load genomic sequence to map restriction sites</p>
+</li><li><p>Iterative mapping results</p>
+</li><li><p>Fragment-based mapping results</p>
+</li></ul></li><li><p>Keep only uniquely mapped reads pairs</p>
+</li></ul></li><li><p>Quality check of the Hi-C experiment</p>
+<ul class="toc-item"><li><p>Interaction count vs. genomic separation!</p>
+<ul class="toc-item"><li><p>Note: decay by chromosome</p>
+</li></ul></li><li><p>Coverage per bin</p>
+</li><li><p>First Hi-C map</p>
+</li><li><p>Insert size</p>
+</li><li><p>Distance between mapped read-ends classified by their orientation</p>
+</li></ul></li><li><p>References</p>
+</li></ul></div><div class="section" id="load-mapped-read-ends-and-generate-a-matrix">
+<h1>Load mapped read-ends and generate a matrix<a class="headerlink" href="#load-mapped-read-ends-and-generate-a-matrix" title="Permalink to this headline">¶</a></h1>
+<p>We read now each mapped read-ends in the map files and extact the ones
+that are uniquely mapped. For each of these uniquely mapped read-ends,
+we store: - The strand - The genomic location (most upstream position is
+reported for both sequences mapped in forward and reverse strand) - The
+chromosome - The sequence itself - The <strong>restriction enzyme fragment</strong>
+on which it is located</p>
+<p>This information will be used to filter the reads and, finally, to
+construct the interaction matrix. Above we show the same analysis done
+for the fragment-based and iterative mapping strategies.</p>
+<div class="section" id="extract-uniquely-mapped-reads">
+<h2>Extract uniquely mapped reads<a class="headerlink" href="#extract-uniquely-mapped-reads" title="Permalink to this headline">¶</a></h2>
+<p><em>Note: the execution of this notebook should be repeated for each of the
+4 replicates</em></p>
+<div class="section" id="load-genomic-sequence-to-map-restriction-sites">
+<h3>Load genomic sequence to map restriction sites<a class="headerlink" href="#load-genomic-sequence-to-map-restriction-sites" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="iterative-mapping-results">
+<h3>Iterative mapping results<a class="headerlink" href="#iterative-mapping-results" title="Permalink to this headline">¶</a></h3>
+<p>In case we haven’t stored the location of each of the reads we could
+load them as follow:</p>
+<p>Load all reads, and check if they are uniquely mapped. The Result is
+stored in two separate tab-separated-values (tsv) files that will
+contain the essential information of each read-end</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_16_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_16_0.png" />
+</div>
+<div class="section" id="fragment-based-mapping-results">
+<h3>Fragment-based mapping results<a class="headerlink" href="#fragment-based-mapping-results" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_22_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_22_0.png" />
+<p><em>Note: From now on we are going to focus only on the results of the
+**fragment based mapping*</em>.*</p>
+</div>
+</div>
+<div class="section" id="keep-only-uniquely-mapped-reads-pairs">
+<h2>Keep only uniquely mapped reads pairs<a class="headerlink" href="#keep-only-uniquely-mapped-reads-pairs" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="quality-check-of-the-hi-c-experiment">
+<h1>Quality check of the Hi-C experiment<a class="headerlink" href="#quality-check-of-the-hi-c-experiment" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="interaction-count-vs-genomic-separation">
+<h2>Interaction count vs. genomic separation!<a class="headerlink" href="#interaction-count-vs-genomic-separation" title="Permalink to this headline">¶</a></h2>
+<p>According to the fractal globule model <a class="reference external" href="#cite-Mirny2011">(Mirny,
+2011)</a> the slope between 700 kb and 10 Mb should be
+around -1 in log scale</p>
+<div class="section" id="note-decay-by-chromosome">
+<h3>Note: decay by chromosome<a class="headerlink" href="#note-decay-by-chromosome" title="Permalink to this headline">¶</a></h3>
+<p>With a bit of coding we can also extract the decay by chromosome.</p>
+<p>Although the level of interaction changes depending on the chromosome
+(and the number of chromosomes, cf: chrX), the slope is relatively
+constant, and in very few occasions we may observe line crossings.</p>
+<p>Differences in the slopes observed between chromosomes or conditions
+relates to gains or losses of close or long range interactions <a class="reference external" href="#cite-Kojic2018">(Kojic
+et al. 2018)</a>.</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_38_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_38_0.png" />
+<p><em>Note: these **decay are computed on the raw data*</em>, and although the
+slopes may not change dramatically, it is a <strong>good practice to repeate
+this analysis and interpret the results also once the data are
+normalized</strong>.*</p>
+</div>
+</div>
+<div class="section" id="coverage-per-bin">
+<h2>Coverage per bin<a class="headerlink" href="#coverage-per-bin" title="Permalink to this headline">¶</a></h2>
+<p>In an ideal situation, the number of reads per bin along the genome is
+expected to be homogeneous across the genome. However, PCR artifacts
+(see for example the middle of the chromosome 3 below) or variations in
+the distributions of GC content, mappability or the number of RE
+cut-sites along the genome can cause heterogeneity. In the following
+sections, we will discuss how to correct for these sources of
+heterogeneity.</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_43_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_43_0.png" />
+</div>
+<div class="section" id="first-hi-c-map">
+<h2>First Hi-C map<a class="headerlink" href="#first-hi-c-map" title="Permalink to this headline">¶</a></h2>
+<p>The plot bellow is probably the most informative, in order to infer the
+quality of an Hi-C experiment. This plot shows on the left part: - The
+histogram of the interaction counts. - The interaction count as a
+function of the genomic distance between the interacting sequences. -
+Some statistics on the specificity of the interaction: (i) the total
+number of interactions; (ii) the cis-to-trans ratio (expected to be at
+least between 50 or 60% in mammals), (iii and iv) the minimum and the
+maximum values of the ineraction matrix.</p>
+<p>and on the right part:</p>
+<ul class="simple">
+<li>The interaction matrix.</li>
+<li>The first 3 eigenvectors of the interaction matrix are shown on top
+of the matrix itself.</li>
+</ul>
+<p><strong>*Note</strong>: The first 3 eigenvectors of the interaction matrix highlight
+the principal structural features of the matrix. In the raw matrix shown
+here, we can see, for instance, that here the maxima of the first
+eigenvector seem to be correlated with the presence of low-coverage
+bins.*</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_47_1.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_47_1.png" />
+</div>
+<div class="section" id="insert-size">
+<h2>Insert size<a class="headerlink" href="#insert-size" title="Permalink to this headline">¶</a></h2>
+<p>From the reads that are mapped in a single RE fragment we can infer the
+average insert size:</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_51_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_51_0.png" />
+<p>The median size of the sequenced DNA fragments is thus 187 nt.</p>
+<p><strong>*Note</strong>: This distribution is usually peaked at smaller values than
+the one measured experimentally (with a Bioanalyzer for example). This
+difference is due in part to the fact that, here, we are only measuring
+dangling-ends that may be, on average, shorter than other reads.*</p>
+</div>
+<div class="section" id="distance-between-mapped-read-ends-classified-by-their-orientation">
+<h2>Distance between mapped read-ends classified by their orientation<a class="headerlink" href="#distance-between-mapped-read-ends-classified-by-their-orientation" title="Permalink to this headline">¶</a></h2>
+<p>The following function in TADbit allows to measure the size of the
+sequenced fragment. If we set the parameter <code class="docutils literal notranslate"><span class="pre">valid-pairs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>, we will look only at the interactions captured within RE
+fragments (similarly to the <code class="docutils literal notranslate"><span class="pre">insert_sizes</span></code> function above):</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_57_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_57_0.png" />
+<p>This function separates each read-end pair into 4 categories depending
+of the orientation of the strand in which each maps.</p>
+<p>Having a look at the minimum distance from which the orientation of the
+mapped read-ends is even, is also useful for the interpretation of the
+results and for the definition of filters.</p>
+<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_59_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_59_0.png" />
+<p>We can see that when the distance between the mapped read-ends is larger
+than ~1 kb, the orientation is even (25% each category). Meaning that
+bellow this size interactions are very likely to be extra-dangling-ends
+or re-ligated fragments, with no useful structural information.</p>
+<!--bibtex
+@article{Mirny2011,
+abstract = {The fractal globule is a compact polymer state that emerges during polymer condensation as a result of topological constraints which prevent one region of the chain from passing across another one. This long-lived intermediate state was introduced in 1988 (Grosberg et al. 1988) and has not been observed in experiments or simulations until recently (Lieberman-Aiden et al. 2009). Recent characterization of human chromatin using a novel chromosome conformational capture technique brought the fractal globule into the spotlight as a structural model of human chromosome on the scale of up to 10 Mb (Lieberman-Aiden et al. 2009). Here, we present the concept of the fractal globule, comparing it to other states of a polymer and focusing on its properties relevant for the biophysics of chromatin. We then discuss properties of the fractal globule that make it an attractive model for chromatin organization inside a cell. Next, we connect the fractal globule to recent studies that emphasize topological constraints as a primary factor driving formation of chromosomal territories. We discuss how theoretical predictions, made on the basis of the fractal globule model, can be tested experimentally. Finally, we discuss whether fractal globule architecture can be relevant for chromatin packing in other organisms such as yeast and bacteria.},
+author = {Mirny, Leonid a},
+doi = {10.1007/s10577-010-9177-0},
+file = {:home/fransua/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Mirny - 2011 - The fractal globule as a model of chromatin architecture in the cell.pdf:pdf},
+issn = {1573-6849},
+journal = {Chromosome research : an international journal on the molecular, supramolecular and evolutionary aspects of chromosome biology},
+keywords = {Biophysics,Chromatin,Chromatin: ultrastructure,Chromosomes, Human,Fractals,Humans,Models, Molecular,Protein Conformation,Protein Folding},
+mendeley-groups = {Research articles,projects/FEBS{\_}review/modeling{\_}perspectives},
+month = {jan},
+number = {1},
+pages = {37--51},
+pmid = {21274616},
+title = {{The fractal globule as a model of chromatin architecture in the cell.}},
+url = {http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3040307{\&}tool=pmcentrez{\&}rendertype=abstract},
+volume = {19},
+year = {2011}
+}
+--></div>
+</div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<p>[^](#ref-1) Mirny, Leonid a. 2011. <em>The fractal globule as a model of
+chromatin architecture in the cell.</em>.
+<a class="reference external" href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3040307%7B&amp;%7Dtool=pmcentrez%7B&amp;%7Drendertype=abstract">URL</a></p>
+<p>[^](#ref-2) Aleksandar Kojic, Ana Cuadrado, Magali De Koninck, Daniel
+Giménez-Llorente, Miriam Rodríguez-Corsino, Gonzalo Gómez-López,
+François Le Dily, Marc A. Marti-Renom &amp; Ana Losada. <em>Distinct roles of
+cohesin-SA1 and cohesin-SA2 in 3D chromosome organization.</em> Nature
+Structural &amp; Molecular Biologyvolume 25, pages496–504 (2018)
+<a class="reference external" href="https://www.nature.com/articles/s41594-018-0070-4">URL</a></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_4-Mapping.html"
+                        title="previous chapter">Iterative vs fragment-based mapping</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_6-Filtering_mapped_reads.html"
+                        title="next chapter">Filtering</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

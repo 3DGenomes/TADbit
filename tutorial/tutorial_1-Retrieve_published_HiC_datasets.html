@@ -1,0 +1,261 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Retrieve HiC dataset from NCBI &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Search for the reference genome" href="tutorial_2-Preparation_of_the_reference_genome.html" />
+    <link rel="prev" title="Tutorials" href="../tutorial.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Search for the reference genome"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Retrieve HiC dataset from NCBI</p>
+<ul class="toc-item"><li><ul class="toc-item"><li><p>Compression</p>
+</li><li><p>Cleanup</p>
+</li></ul></li></ul></li><li><p>References</p>
+</li></ul></div><div class="section" id="retrieve-hic-dataset-from-ncbi">
+<h1>Retrieve HiC dataset from NCBI<a class="headerlink" href="#retrieve-hic-dataset-from-ncbi" title="Permalink to this headline">¶</a></h1>
+<p>We will use data from <a class="reference external" href="#cite-ralph">(Stadhouders R, Vidal E, Serra F, Di Stefano B
+et al. 2018)</a>, which comes from mouse cells where Hi-C
+experiment where conducted in different states during highly-efficient
+somatic cell reprogramming.</p>
+<p>The data can be downloaded from:</p>
+<p><a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53463">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53463</a></p>
+<p>Once downloaded the files can be converted to the FASTQ format in order
+for TADbit to read them.</p>
+<p>The easiest way to download the data might be through the <code class="docutils literal notranslate"><span class="pre">fastq-dump</span></code>
+program from the SRA Toolkit
+(<a class="reference external" href="http://www.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=show&amp;f=software&amp;m=software&amp;s=software">http://www.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=show&amp;f=software&amp;m=software&amp;s=software</a>).</p>
+<p>We download 100M reads for each of 4 replicates (2 replicates from B
+cells and 2 from Pluripotent Stem Cells),and organize each in two files,
+one per read-end (this step is long and can take <strong>up to 6 hours</strong>):</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">FASTQs</span>
+
+<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344921</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344921_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344921_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+
+<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344925</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344925_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344925_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+
+<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344969</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344969_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344969_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+
+<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344973</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344973_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344973_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+</pre></div>
+</div>
+<p>Files are renamed for convenience.</p>
+<p><em>Note: the parameter used here for fastq-dump are for generating simple
+FASTQ files, -DQ ‘+’ tells to put a single plus sign as header of the
+quality input, ``–defline-seq ‘&#64;$ac.$si’`` reduces the information in
+the headers to the accession number and the read id, ``–split-files``
+is to separate both read-ends in different files, finally
+``-X 100000000`` is to download only the first 100 Million reads of each
+replicate</em></p>
+<p><em>Note: alternatively you can also directly download the FASTQ from
+http://www.ebi.ac.uk/</em></p>
+<div class="section" id="compression">
+<h2>Compression<a class="headerlink" href="#compression" title="Permalink to this headline">¶</a></h2>
+<p>Each of these 8 files, contains 100M reads of 75 nucleotides each, and
+occupies ~17 Gb (total 130 Gb).</p>
+<p>Internally we use DSRC <a class="reference external" href="#cite-roguski2014dsrc">(Roguski and Deorowicz,
+2014)</a> that allows better compression ration
+and, more importantly, faster decompression:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+</pre></div>
+</div>
+<p>After compression we reduce the total size to 27 Gb (<strong>20% of the
+original size, and dsrc ensures fast reading of the compressed data</strong>)</p>
+<p><em>Note:</em> - <em>using gzip instead reduces size to ~38 Gb (occupies ~40% more
+than dsrc compressed files)</em> - <em>using bzip2 instead reduces size to ~31
+Gb (occupies ~15% more than dsrc compressed files)</em></p>
+<p><em>Both are much slower to generate and read</em></p>
+</div>
+<div class="section" id="cleanup">
+<h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this headline">¶</a></h2>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<p>[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
+<em>Transcription factors orchestrate dynamic interplay between genome
+topology and gene regulation during cell reprogramming</em>.</p>
+<p>[^](#ref-4) Roguski, :raw-latex:<a href="#id1"><span class="problematic" id="id2">`</span></a>Lukasz <a href="#id3"><span class="problematic" id="id4">`</span></a>and Deorowicz, Sebastian.
+2014. <em>DSRC 2—Industry-oriented compression of FASTQ files</em>.</p>
+<!--bibtex
+@article{le2014distinct,
+  title={Distinct structural transitions of chromatin topological domains correlate with coordinated hormone-induced gene regulation},
+  author={Le Dily, Fran{\c{c}}ois and Ba{\`u}, Davide and Pohl, Andy and Vicent, Guillermo P and Serra, Fran{\c{c}}ois and Soronellas, Daniel and Castellano, Giancarlo and Wright, Roni HG and Ballare, Cecilia and Filion, Guillaume and others},
+  journal={Genes \& development},
+  volume={28},
+  number={19},
+  pages={2151--2162},
+  year={2014},
+  publisher={Cold Spring Harbor Lab}
+}
+@article{roguski2014dsrc,
+  title={DSRC 2—Industry-oriented compression of FASTQ files},
+  author={Roguski, {\L}ukasz and Deorowicz, Sebastian},
+  journal={Bioinformatics},
+  volume={30},
+  number={15},
+  pages={2213--2215},
+  year={2014},
+  publisher={Oxford Univ Press}
+}
+--></div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../tutorial.html"
+                        title="previous chapter">Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_2-Preparation_of_the_reference_genome.html"
+                        title="next chapter">Search for the reference genome</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_2-Preparation_of_the_reference_genome.html" title="Search for the reference genome"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

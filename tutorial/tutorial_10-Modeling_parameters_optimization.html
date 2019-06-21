@@ -1,0 +1,239 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Experimental data assessment and model parameters optimisation &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modeling a region of the chromatin" href="tutorial_11-3D_Models_production_and_analysis.html" />
+    <link rel="prev" title="Comparison of Hi-C experiments" href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modeling a region of the chromatin"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Experimental data assessment and model parameters optimisation</p>
+<ul class="toc-item"><li><p>Data preparation</p>
+</li><li><p>Data modellability assessment via MMP score</p>
+</li><li><p>Data Transformation and scoring function</p>
+</li><li><p>Optimization of parameters</p>
+</li></ul></li></ul></div><div class="section" id="experimental-data-assessment-and-model-parameters-optimisation">
+<h1>Experimental data assessment and model parameters optimisation<a class="headerlink" href="#experimental-data-assessment-and-model-parameters-optimisation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-preparation">
+<h2>Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
+<p>The first step to generate three-dimensional (3D) models of a specific
+genomic regions is to filter columns with low counts and with no
+diagonal count in order to remove outliers or problematic columns from
+the interaction matrix. The particles associated with the filtered
+columns will be modelled, but will have no experimental data applied.</p>
+<p>Here we load the data previous data already normalised.</p>
+<p>Load raw data matrices, and normalized matrices</p>
+<p>It is a good practice to check that the data is there:</p>
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_12_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_12_0.png" />
+<p>Focus on the genomic region to model.</p>
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_14_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_14_0.png" />
+</div>
+<div class="section" id="data-modellability-assessment-via-mmp-score">
+<h2>Data modellability assessment via MMP score<a class="headerlink" href="#data-modellability-assessment-via-mmp-score" title="Permalink to this headline">¶</a></h2>
+<p>We can use the Matrix Modeling Potential (MMP) score (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4402535/">Trussart M. et
+al. Nature Communication,
+2017</a>) to
+identify a priori whether the interaction matrices have the potential of
+being use for modeling. The MMP score ranges from 0 to 1 and combines
+three different measures: the contribution of the significant
+eigenvectors, the skewness and the kurtosis of the distribution of
+Z-scores.</p>
+<div class="figure">
+<img alt="" src="tutorial/images/mmp_score.png" />
+</div>
+</div>
+<div class="section" id="data-transformation-and-scoring-function">
+<h2>Data Transformation and scoring function<a class="headerlink" href="#data-transformation-and-scoring-function" title="Permalink to this headline">¶</a></h2>
+<p>This step is automatically done in TADbit. A a weight is generated for
+each pair of interactions proportional to their interaction count as in
+formula:</p>
+<div class="math notranslate nohighlight">
+\[weight(I, J) = \frac{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}\]</div>
+<p>The raw data are then multiplied by this weight. In the case that
+multiple experiments are used, the weighted interaction values are
+normalised using a factor (default set as 1) in order to compare between
+experiments. Then, a Z-score of the off-diagonal normalised/weighted
+interaction is calculated as in formula:</p>
+<div class="math notranslate nohighlight">
+\[zscore(I, J) = \frac{log_{10}(weight(I, J) \times matrix(I, J)) - mean(log_{10}(weight \times matrix))}{stddev(log_{10}(weight \times matrix))}\]</div>
+<p>The Z-scores are then transformed to distance restraints. To define the
+type of restraints between each pair of particles. we need to identified
+empirically three optimal parameters (i) a maximal distance between two
+non-interacting particles (maxdist), (ii) a lower-bound cutoff to define
+particles that do not interact frequently (lowfreq) and (iii) an
+upper-bound cutoff to define particles that do interact frequently
+(upfreq). In TADbit this is done via a grid search approach.</p>
+<p>The following picture shows the different component of the scoring
+funtion that is optimised during the Monte Carlo simulated annealing
+sampling protocol. Two consecutive particles are spatially restrained by
+a harmonic oscillator with an equilibrium distance that corresponds to
+the sum of their radii. Non-consecutive particles with contact
+frequencies above the upper-bound cutoff are restrained by a harmonic
+oscillator at an equilibrium distance, while those below the lower-bound
+cutoff are maintained further than an equilibrium distance by a lower
+bound harmonic oscillator.</p>
+<div class="figure">
+<img alt="" src="tutorial/images/tadbit_restraints.png" />
+</div>
+</div>
+<div class="section" id="optimization-of-parameters">
+<h2>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h2>
+<p>We need to identified empirically (via a grid-search optimisation) the
+optimal parameters for the mdoelling procedure:</p>
+<ul class="simple">
+<li>maxdist: maximal distance assosiated two interacting particles.</li>
+<li>upfreq: to define particles that do interact frequently (defines
+attraction)</li>
+<li>lowfreq: to define particles that do not interact frequently (
+defines repulsion)</li>
+<li>dcutoff: the definition of “contact” in units of bead diameter. Value
+of 2 means that a contact will occur when 2 beads are closer than 2
+times their diameter. This will be used to compare 3D models with
+Hi-C interaction maps.</li>
+</ul>
+<p>Pairs of beads interacting less than lowfreq (left dashed line) are
+penalized if they are closer than their assigned minimum distance
+(Harmonic lower bound). Pairs of beads interacting more than ufreq
+(right dashed line) are penalized if they are further apart than their
+assigned maximum distance (Harmonic upper bound). Pairs of beads which
+interaction fall in between lowfreq and upfreq are not penalized except
+if they are neighbours (Harmonic)</p>
+<div class="figure">
+<img alt="" src="tutorial/images/tadbit_distance_freq_fitting.png" />
+</div>
+<p>In the parameter optimization step we are going to give a set of ranges
+for the different search parameters. For each possible combination
+TADbit will produce a set of models.</p>
+<p>In each individual model we consider that two beads are in contact if
+their distance in 3D space is lower than the specified distance cutoff.
+TADbit builds a cumulative contact map for each set of models as shown
+in the schema below. The contact map is then compared with the Hi-C
+interaction experiment by means of a Spearman correlation coefficient.
+The sets having higher correlation coefficients are those that best
+represents the original data.</p>
+<div class="figure">
+<img alt="" src="tutorial/images/Contact_map.png" />
+</div>
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_24_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_24_0.png" />
+<p>Refine optimization in a small region:</p>
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_27_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_27_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_29_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_29_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_31_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_31_0.png" />
+<p>For the other replicate, we can reduce the space of search:</p>
+<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_35_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_35_0.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Experimental data assessment and model parameters optimisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_11-3D_Models_production_and_analysis.html">Modeling a region of the chromatin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html"
+                        title="previous chapter">Comparison of Hi-C experiments</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_11-3D_Models_production_and_analysis.html"
+                        title="next chapter">Modeling a region of the chromatin</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_11-3D_Models_production_and_analysis.html" title="Modeling a region of the chromatin"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

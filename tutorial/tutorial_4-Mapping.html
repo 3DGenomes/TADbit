@@ -1,0 +1,333 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Iterative vs fragment-based mapping &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Load mapped read-ends and generate a matrix" href="tutorial_5-Parsing_mapped_reads.html" />
+    <link rel="prev" title="FASTQ format" href="tutorial_3-Hi-C_quality_check.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Iterative vs fragment-based mapping</p>
+<ul class="toc-item"><li><p>Advantages of iterative mapping</p>
+</li><li><p>Advantages of fragment-based mapping</p>
+</li></ul></li><li><p>Mapping</p>
+<ul class="toc-item"><li><p>Iterative mapping</p>
+</li><li><p>Fragment-based mapping</p>
+</li></ul></li><li><p>References</p>
+</li></ul></div><div class="section" id="iterative-vs-fragment-based-mapping">
+<h1>Iterative vs fragment-based mapping<a class="headerlink" href="#iterative-vs-fragment-based-mapping" title="Permalink to this headline">¶</a></h1>
+<p>Iterative mapping first proposed by <a class="reference external" href="#cite-Imakaev2012a">(Imakaev et al.,
+2012)</a>, allows to map usually a high number of
+reads. However other methodologies, less “brute-force” can be used to
+take into account the chimeric nature of the Hi-C reads.</p>
+<p>A simple alternative is to allow split mapping.</p>
+<p>Another way consists in <em>pre-truncating</em> <a class="reference external" href="#cite-Ay2015a">(Ay and Noble,
+2015)</a> reads that contain a ligation site and map only
+the longest part of the read <a class="reference external" href="#cite-Wingett2015">(Wingett et al.,
+2015)</a>.</p>
+<p>Finally, an intermediate approach, <em>fragment-based</em>, consists in mapping
+full length reads first, and than splitting unmapped reads at the
+ligation sites <a class="reference external" href="#cite-Serra2017">(Serra et al. 2017)</a>.</p>
+<div class="figure" id="id1">
+<img alt="mapping strategies" src="tutorial/images/mapping.png" />
+<p class="caption"><span class="caption-text">mapping strategies</span></p>
+</div>
+<div class="section" id="advantages-of-iterative-mapping">
+<h2>Advantages of iterative mapping<a class="headerlink" href="#advantages-of-iterative-mapping" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>It’s the only solution when no restriction enzyme has been used (i.e.
+micro-C)</li>
+<li>Can be faster when few windows (2 or 3) are used</li>
+</ul>
+</div>
+<div class="section" id="advantages-of-fragment-based-mapping">
+<h2>Advantages of fragment-based mapping<a class="headerlink" href="#advantages-of-fragment-based-mapping" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Generally faster</li>
+<li>Safer: mapped reads are generally larger than 25-30 nm (the largest
+window used in iterative mapping). Less reads are mapped, but the
+difference is usually canceled or reversed when looking for
+“valid-pairs”.</li>
+</ul>
+<p><em>Note:</em> We use <strong>GEM2</strong> <a class="reference external" href="#cite-Marco-Sola2012">(Marco-Sola et al.
+2012)</a>, performance are very similar to
+Bowtie2, and in some cases slightly better.</p>
+<p><em>For now TADbit is only compatible with GEM2.</em></p>
+</div>
+</div>
+<div class="section" id="mapping">
+<h1>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h1>
+<p>The full mapping function can be used to perform either iterative or
+fragment-based mapping, or a combination of both.</p>
+<p><strong>It is important to note</strong> that although the default mapping parameters
+used by TADbit are relatively strict, <strong>a non negligible proportion of
+the reads will be mis-mapped</strong>, and this applies <strong>at each iteration of
+the mapping.</strong></p>
+<div class="section" id="iterative-mapping">
+<h2>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h2>
+<p>Here an example of use as iterative mapping: (Estimated time 15h with 8
+cores)</p>
+<p><em>Note: the execution of this notebook should be repeated for each of the
+4 replicates</em></p>
+<p>And for the second side of the read-end:</p>
+</div>
+<div class="section" id="fragment-based-mapping">
+<h2>Fragment-based mapping<a class="headerlink" href="#fragment-based-mapping" title="Permalink to this headline">¶</a></h2>
+<p>The fragment-based mapping strategy works in 2 steps: 1. The read-ends
+are mapped entirely, assuming that no ligation occurred in them. 2. For
+unmapped read-ends, the function searches for a ligation site (e.g. in
+the case of MboI this would correspond to <code class="docutils literal notranslate"><span class="pre">GATCGATC</span></code> and in the case
+of HindIII to <code class="docutils literal notranslate"><span class="pre">AAGCTAGCTT</span></code>). The read-end is split accordingly
+replacing the ligation site by two RE sites:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                   <span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">one</span><span class="o">---</span><span class="n">AAGCTAGCTT</span><span class="o">----</span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">two</span>
+<span class="n">will</span> <span class="n">be</span> <span class="n">split</span> <span class="ow">in</span><span class="p">:</span>
+                   <span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">one</span><span class="o">---</span><span class="n">AAGCTT</span>
+<span class="ow">and</span><span class="p">:</span>
+                                           <span class="n">AAGCTT</span><span class="o">----</span><span class="n">read</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">part</span><span class="o">-</span><span class="n">two</span>
+</pre></div>
+</div>
+<p><em>Note: **if no ligation site is found*</em>, step two will be repeated using
+digested RE site as split point (<code class="docutils literal notranslate"><span class="pre">AAGCT</span></code> in the case of HindIII). This
+is done in order to be protected against sequencing errors. When this
+path is followed the digested RE site is removed, but not replaced. <strong>If
+digested RE sites are not found either, the read will be classified as
+unmapped</strong>.*</p>
+<p><em>Note: **both mapping strategies can be combined*</em>, for example defining
+the windows as previously (iterative mapping), but also give a RE name*
+<code class="docutils literal notranslate"><span class="pre">r_enz=MboI</span></code> <em>and setting</em> <code class="docutils literal notranslate"><span class="pre">frag_map=True</span></code> <em>like this if a read has
+not been mapped in any window, TADbit will also try to apply the
+fragment-based strategy.</em></p>
+<!--bibtex
+@article{Imakaev2012a,
+abstract = {Extracting biologically meaningful information from chromosomal interactions obtained with genome-wide chromosome conformation capture (3C) analyses requires the elimination of systematic biases. We present a computational pipeline that integrates a strategy to map sequencing reads with a data-driven method for iterative correction of biases, yielding genome-wide maps of relative contact probabilities. We validate this ICE (iterative correction and eigenvector decomposition) technique on published data obtained by the high-throughput 3C method Hi-C, and we demonstrate that eigenvector decomposition of the obtained maps provides insights into local chromatin states, global patterns of chromosomal interactions, and the conserved organization of human and mouse chromosomes.},
+author = {Imakaev, Maxim V and Fudenberg, Geoffrey and McCord, Rachel Patton and Naumova, Natalia and Goloborodko, Anton and Lajoie, Bryan R and Dekker, Job and Mirny, Leonid A},
+doi = {10.1038/nmeth.2148},
+file = {:home/fransua/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Imakaev et al. - 2012 - Iterative correction of Hi-C data reveals hallmarks of chromosome organization.pdf:pdf},
+issn = {1548-7105},
+journal = {Nature methods},
+keywords = {Hi-C},
+mendeley-groups = {stats/Hi-C,Research articles},
+mendeley-tags = {Hi-C},
+month = {oct},
+number = {10},
+pages = {999--1003},
+pmid = {22941365},
+title = {{Iterative correction of Hi-C data reveals hallmarks of chromosome organization.}},
+url = {http://www.ncbi.nlm.nih.gov/pubmed/22941365},
+volume = {9},
+year = {2012}
+}
+@article{Ay2015a,
+author = {Ay, Ferhat and Noble, William Stafford},
+doi = {10.1186/s13059-015-0745-7},
+file = {:home/fransua/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Ay, Noble - 2015 - Analysis methods for studying the 3D architecture of the genome.pdf:pdf},
+issn = {1474-760X},
+journal = {Genome Biology},
+keywords = {Chromatin conformation capture,Genome architecture,Hi-C,Three-dimensional genome,Three-dimensional modeling,chromatin,conformation capture,genome architecture,in many other applications,ranging from genome assem-,review,three-dimensional genome,three-dimensional modeling},
+mendeley-groups = {Research articles},
+mendeley-tags = {Hi-C,review},
+number = {1},
+pages = {183},
+publisher = {Genome Biology},
+title = {{Analysis methods for studying the 3D architecture of the genome}},
+url = {http://genomebiology.com/2015/16/1/183},
+volume = {16},
+year = {2015}
+}
+@article{Wingett2015,
+abstract = {HiCUP is a pipeline for processing sequence data generated by Hi-C and Capture Hi-C (CHi-C) experiments, which are techniques used to investigate three-dimensional genomic organisation. The pipeline maps data to a specified reference genome and removes artefacts that would otherwise hinder subsequent analysis. HiCUP also produces an easy-to-interpret yet detailed quality control (QC) report that assists in refining experimental protocols for future studies. The software is freely available and has already been used for processing Hi-C and CHi-C data in several recently published peer-reviewed studies.},
+author = {Wingett, Steven and Ewels, Philip and Furlan-Magaril, Mayra and Nagano, Takashi and Schoenfelder, Stefan and Fraser, Peter and Andrews, Simon},
+doi = {10.12688/f1000research.7334.1},
+file = {:home/fransua/Downloads/f1000research-4-7903.pdf:pdf},
+issn = {2046-1402},
+journal = {F1000Research},
+mendeley-groups = {Computer programs/Hi-C/Hi-C processing},
+pages = {1310},
+pmid = {26835000},
+title = {{HiCUP: pipeline for mapping and processing Hi-C data.}},
+url = {http://f1000research.com/articles/4-1310/v1},
+volume = {4},
+year = {2015}
+}
+@article{Serra2016,
+abstract = {The sequence of a genome is insufficient to understand all genomic processes carried out in the cell nucleus. To achieve this, the knowledge of its three- dimensional architecture is necessary. Advances in genomic technologies and the development of new analytical methods, such as Chromosome Conformation Capture (3C) and its derivatives, now permit to investigate the spatial organization of genomes. However, inferring structures from raw contact data is a tedious process for shortage of available tools. Here we present TADbit, a computational framework to analyze and model the chromatin fiber in three dimensions. To illustrate the use of TADbit, we automatically modeled 50 genomic domains from the fly genome revealing differential structural features of the previously defined chromatin colors, establishing a link between the conformation of the genome and the local chromatin composition. More generally, TADbit allows to obtain three-dimensional models ready for visualization from 3C-based experiments and to characterize their relation to gene expression and epigenetic states. TADbit is open-source and available for download from http://www.3DGenomes.org.},
+author = {Serra, Fran{\c{c}}ois and Ba{\`{u}}, Davide and Filion, Guillaume and Marti-Renom, Marc A.},
+doi = {10.1101/036764},
+file = {:home/fransua/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Serra et al. - 2016 - Structural features of the fly chromatin colors revealed by automatic three-dimensional modeling.pdf:pdf},
+journal = {bioRxiv},
+keywords = {3d,Hi-C,capture,genome architecture,genome reconstruction chromosome conformation,modeling,optimization,resampling,restraint-based,three-dimensional genome reconstruction},
+mendeley-groups = {Research articles,projects/WIREs{\_}review/modeling{\_}tools,Computer programs/Hi-C/Hi-C modeling},
+mendeley-tags = {Hi-C,modeling,optimization,resampling},
+pages = {1--29},
+title = {{Structural features of the fly chromatin colors revealed by automatic three-dimensional modeling.}},
+url = {http://biorxiv.org/content/early/2016/01/15/036764},
+year = {2016}
+}
+@misc{Marco-Sola2012,
+abstract = {Because of ever-increasing throughput requirements of sequencing data, most existing short-read aligners have been designed to focus on speed at the expense of accuracy. The Genome Multitool (GEM) mapper can leverage string matching by filtration to search the alignment space more efficiently, simultaneously delivering precision (performing fully tunable exhaustive searches that return all existing matches, including gapped ones) and speed (being several times faster than comparable state-of-the-art tools).},
+author = {Marco-Sola, Santiago and Sammeth, Michael and Guig{\'{o}}, Roderic and Ribeca, Paolo},
+booktitle = {Nature Methods},
+doi = {10.1038/nmeth.2221},
+isbn = {1548-7105 (Electronic)$\backslash$r1548-7091 (Linking)},
+issn = {1548-7091},
+mendeley-groups = {Research articles},
+pmid = {23103880},
+title = {{The GEM mapper: fast, accurate and versatile alignment by filtration}},
+year = {2012}
+}
+
+--></div>
+</div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<p>[^](#ref-1) Imakaev, Maxim V and Fudenberg, Geoffrey and McCord, Rachel
+Patton and Naumova, Natalia and Goloborodko, Anton and Lajoie, Bryan R
+and Dekker, Job and Mirny, Leonid A. 2012. <em>Iterative correction of Hi-C
+data reveals hallmarks of chromosome organization.</em>.
+<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/22941365">URL</a></p>
+<p>[^](#ref-2) Ay, Ferhat and Noble, William Stafford. 2015. <em>Analysis
+methods for studying the 3D architecture of the genome</em>.
+<a class="reference external" href="http://genomebiology.com/2015/16/1/183">URL</a></p>
+<p>[^](#ref-3) Wingett, Steven and Ewels, Philip and Furlan-Magaril, Mayra
+and Nagano, Takashi and Schoenfelder, Stefan and Fraser, Peter and
+Andrews, Simon. 2015. <em>HiCUP: pipeline for mapping and processing Hi-C
+data.</em>. <a class="reference external" href="http://f1000research.com/articles/4-1310/v1">URL</a></p>
+<p>[^](#ref-4) François Serra, Davide Baù, Mike Goodstadt, David Castillo,
+Guillaume Filion and Marc A. Marti-Renom. 2017. <em>Automatic analysis and
+3D-modelling of Hi-C data using TADbit reveals structural features of
+the fly chromatin colors</em>.
+<a class="reference external" href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005665">URL</a></p>
+<p>[^](#ref-5) Marco-Sola, Santiago and Sammeth, Michael and Guigó, Roderic
+and Ribeca, Paolo. 2012. <em>The GEM mapper: fast, accurate and versatile
+alignment by filtration</em>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_3-Hi-C_quality_check.html"
+                        title="previous chapter">FASTQ format</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_5-Parsing_mapped_reads.html"
+                        title="next chapter">Load mapped read-ends and generate a matrix</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_3-Hi-C_quality_check.html" title="FASTQ format"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

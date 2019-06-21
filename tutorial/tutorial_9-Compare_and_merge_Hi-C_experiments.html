@@ -1,0 +1,240 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Comparison of Hi-C experiments &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Experimental data assessment and model parameters optimisation" href="tutorial_10-Modeling_parameters_optimization.html" />
+    <link rel="prev" title="Compartments" href="tutorial_8-Compartments_and_TADs_detection.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_10-Modeling_parameters_optimization.html" title="Experimental data assessment and model parameters optimisation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Comparison of Hi-C experiments</p>
+<ul class="toc-item"><li><p>Load previous data</p>
+</li><li><p>Comparison between replicates</p>
+<ul class="toc-item"><li><p>Mouse B cell</p>
+<ul class="toc-item"><li><p>The Spearman rank correlation of the matrix diagonals</p>
+</li><li><p>The correlation of the eigenvectors</p>
+</li><li><p>The reproducibility score (Q)</p>
+</li></ul></li><li><p>Mouse iPS cell</p>
+<ul class="toc-item"><li><p>The Spearman rank correlation of the matrix diagonals</p>
+</li><li><p>The correlation of the eigenvectors</p>
+</li><li><p>The reproducibility score (Q)</p>
+</li></ul></li></ul></li><li><p>Comparison between cell types</p>
+<ul class="toc-item"><li><p>Replicate 1</p>
+</li><li><p>Replicate 2</p>
+</li></ul></li></ul></li><li><p>Merge Hi-C experiments</p>
+<ul class="toc-item"><li><p>Normalizing merged data</p>
+</li></ul></li></ul></div><div class="section" id="comparison-of-hi-c-experiments">
+<h1>Comparison of Hi-C experiments<a class="headerlink" href="#comparison-of-hi-c-experiments" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="load-previous-data">
+<h2>Load previous data<a class="headerlink" href="#load-previous-data" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="comparison-between-replicates">
+<h2>Comparison between replicates<a class="headerlink" href="#comparison-between-replicates" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mouse-b-cell">
+<h3>Mouse B cell<a class="headerlink" href="#mouse-b-cell" title="Permalink to this headline">¶</a></h3>
+<p>We load the hic_data object from the BAM file</p>
+<p>We compare the interactions of the two Hi-C matrices at a given
+distance.</p>
+<div class="section" id="the-spearman-rank-correlation-of-the-matrix-diagonals">
+<h4>The Spearman rank correlation of the matrix diagonals<a class="headerlink" href="#the-spearman-rank-correlation-of-the-matrix-diagonals" title="Permalink to this headline">¶</a></h4>
+<p>In the plot we represent the Spearman rank correlation of the diagonals
+of the matrices starting from the main diagonal until the diagonal at
+10Mbp.</p>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_14_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_14_0.png" />
+<p>The SCC score as in HiCrep (see <a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>)
+is also computed. The value of SCC ranges from −1 to 1 and can be
+interpreted in a way similar to the standard correlation</p>
+</div>
+<div class="section" id="the-correlation-of-the-eigenvectors">
+<h4>The correlation of the eigenvectors<a class="headerlink" href="#the-correlation-of-the-eigenvectors" title="Permalink to this headline">¶</a></h4>
+<p>Since the eigenvectors of a matrix capture its internal correlations
+[26], two matrices with highly correlation of eigenvectors are
+considered to have similar structure.</p>
+<p>In this case we limit the computation to the first 6 eigenvectors</p>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_20_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_20_0.png" />
+</div>
+<div class="section" id="the-reproducibility-score-q">
+<h4>The reproducibility score (Q)<a class="headerlink" href="#the-reproducibility-score-q" title="Permalink to this headline">¶</a></h4>
+<p>Computed as in HiC-spector
+(<a class="reference external" href="https://doi.org/10.1093/bioinformatics/btx152">https://doi.org/10.1093/bioinformatics/btx152</a>), it is also based on
+comparing eigenvectors. The reproducibility score ranges from 0 (low
+similarity) to 1 (identity).</p>
+</div>
+</div>
+<div class="section" id="mouse-ips-cell">
+<h3>Mouse iPS cell<a class="headerlink" href="#mouse-ips-cell" title="Permalink to this headline">¶</a></h3>
+<p>We load the hic_data object from the BAM file</p>
+<p>We compare the interactions of the two Hi-C matrices at a given
+distance.</p>
+<div class="section" id="id1">
+<h4>The Spearman rank correlation of the matrix diagonals<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>In the plot we represent the Spearman rank correlation of the diagonals
+of the matrices starting from the main diagonal until the diagonal at
+10Mbp.</p>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_31_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_31_0.png" />
+<p>The SCC score as in HiCrep (see <a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>)
+is also computed. The value of SCC ranges from −1 to 1 and can be
+interpreted in a way similar to the standard correlation</p>
+</div>
+<div class="section" id="id2">
+<h4>The correlation of the eigenvectors<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>Since the eigenvectors of a matrix capture its internal correlations
+[26], two matrices with highly correlation of eigenvectors are
+considered to have similar structure.</p>
+<p>In this case we limit the computation to the first 6 eigenvectors</p>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_37_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_37_0.png" />
+</div>
+<div class="section" id="id3">
+<h4>The reproducibility score (Q)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>Computed as in HiC-spector
+(<a class="reference external" href="https://doi.org/10.1093/bioinformatics/btx152">https://doi.org/10.1093/bioinformatics/btx152</a>), it is also based on
+comparing eigenvectors. The reproducibility score ranges from 0 (low
+similarity) to 1 (identity).</p>
+</div>
+</div>
+</div>
+<div class="section" id="comparison-between-cell-types">
+<h2>Comparison between cell types<a class="headerlink" href="#comparison-between-cell-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="replicate-1">
+<h3>Replicate 1<a class="headerlink" href="#replicate-1" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_44_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_44_0.png" />
+<p>We expect a lower SCC score between different cell types</p>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_48_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_48_0.png" />
+</div>
+<div class="section" id="replicate-2">
+<h3>Replicate 2<a class="headerlink" href="#replicate-2" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_52_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_52_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_55_0.png" src="tutorial/../nbpictures//tutorial_9-Compare_and_merge_Hi-C_experiments_55_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="merge-hi-c-experiments">
+<h1>Merge Hi-C experiments<a class="headerlink" href="#merge-hi-c-experiments" title="Permalink to this headline">¶</a></h1>
+<p>Once agreed that experiments are similar, they can be merged.</p>
+<p>Here is a simple way to merge valid pairs. Arguably we may want to merge
+unfiltered data but the difference would be minimal specially with
+non-replicates.</p>
+<div class="section" id="normalizing-merged-data">
+<h2>Normalizing merged data<a class="headerlink" href="#normalizing-merged-data" title="Permalink to this headline">¶</a></h2>
+<p>All in one loop to: - filter - normalize - generate intra-chromosome and
+genomic matrices</p>
+<p>All datasets are analysed at various resolutions.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tutorial_8-Compartments_and_TADs_detection.html">Compartments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_8-Compartments_and_TADs_detection.html#tads">TADs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Comparison of Hi-C experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#merge-hi-c-experiments">Merge Hi-C experiments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_8-Compartments_and_TADs_detection.html"
+                        title="previous chapter">Compartments</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_10-Modeling_parameters_optimization.html"
+                        title="next chapter">Experimental data assessment and model parameters optimisation</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_10-Modeling_parameters_optimization.html" title="Experimental data assessment and model parameters optimisation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

@@ -1,0 +1,232 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Filtering &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The HiC_data object" href="tutorial_7-Bin_filtering_and_normalization.html" />
+    <link rel="prev" title="Load mapped read-ends and generate a matrix" href="tutorial_5-Parsing_mapped_reads.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1><p>Table of Contents</p>
+</h1><div class="toc"><ul class="toc-item"><li><p>Filtering</p>
+<ul class="toc-item"><li><p>Filter out dangling ends and self-circles</p>
+</li><li><p>Apply filters on the data</p>
+<ul class="toc-item"><li><p>Evaluate changes</p>
+</li></ul></li><li><p>Save to BAM</p>
+</li></ul></li></ul></div><div class="section" id="filtering">
+<h1>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h1>
+<div class="figure" id="id1">
+<img alt="Filters" src="tutorial/images/Filters.jpeg" />
+<p class="caption"><span class="caption-text">Filters</span></p>
+</div>
+<p>Pairs of mapped read-ends are filtered in order to keep only valid
+pairs. The filters available in TADbit are these one: 1.
+<strong>Self-circle</strong>: both read-ends are mapped to the same RE fragment in
+<em>opposed</em> orientation. 2. <strong>Dangling-end</strong>: both read-ends are mapped to
+the same RE fragment in <em>facing</em> orientation. 3. <strong>Error</strong>: both
+read-ends are mapped to the same RE fragment in the same orientation. 4.
+<strong>Extra dangling-end</strong>: the read-ends are mapped to different RE
+fragments in <em>facing</em> orientation, but are close enough (&lt;
+<em>max_molecule_length</em> bp) from the RE cut-site to be considered part
+of adjacent RE fragments that were not separated by digestion. The
+<em>max_molecule_length</em> parameter can be inferred from the
+<em>fragment_size</em> function previously detailed. 5. <strong>Too close from RE
+sites (or semi-dangling-end)</strong>: the start position of one of the
+read-end is too close (5 bp by default) from the RE cutting site. 6.
+<strong>Too short</strong>: one of the read-ends is mapped to RE fragments of less
+than 75bp. These are removed since there is ambiguity on where the
+read-end is mapped as it could also belong to any of the two neighboring
+RE fragments. 7. <strong>Too large</strong>: the read-ends are mapped to long RE
+fragments (default: 100 kb, P &lt; 10-5 to occur in a randomized genome)
+and they likely represent poorly assembled or repetitive regions. 8.
+<strong>Over-represented</strong>: the read-ends coming from the top 0.5% most
+frequently detected RE fragments, they may represent PCR artefacts,
+random breaks, or genome assembly errors. 9. <strong>PCR artefacts or
+duplicated</strong>: the combination of the start positions, mapped length, and
+strands of both read-ends are identical. In this case, only one copy is
+kept. 10. <strong>Random breaks</strong>: the start position of one read-end is too
+far (&gt; <em>minimum_distance_to_RE</em>) from the RE cut-site. These are
+produced most probably by non-canonical enzyme activity or by random
+physical breakage of the chromatin. Note, that to filter all these types
+of fragments the minimum_distance_to_RE parameter should be larger
+than the <em>maximum_fragment_length</em>.</p>
+<div class="section" id="filter-out-dangling-ends-and-self-circles">
+<h2>Filter out dangling ends and self-circles<a class="headerlink" href="#filter-out-dangling-ends-and-self-circles" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">max_molecule_length</span></code> parameter used to filter-out
+pseudo-dangling-ends can be extracted from the <code class="docutils literal notranslate"><span class="pre">insert_size</span></code> function
+in previous section.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">min_distance_to_re</span></code>, that affects the detection of random breaks,
+should be large enough in order to contain almost all the fragments.</p>
+<p>This generates a dictionary with the different filters and the reads
+affected by each.</p>
+</div>
+<div class="section" id="apply-filters-on-the-data">
+<h2>Apply filters on the data<a class="headerlink" href="#apply-filters-on-the-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="evaluate-changes">
+<h3>Evaluate changes<a class="headerlink" href="#evaluate-changes" title="Permalink to this headline">¶</a></h3>
+<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_13_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_13_0.png" />
+<p>Zoom to a single chromosome or a region:</p>
+<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_15_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_15_0.png" />
+<img alt="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_16_0.png" src="tutorial/../nbpictures//tutorial_6-Filtering_mapped_reads_16_0.png" />
+</div>
+</div>
+<div class="section" id="save-to-bam">
+<h2>Save to BAM<a class="headerlink" href="#save-to-bam" title="Permalink to this headline">¶</a></h2>
+<p>Working with TSV (tab-separated-value file format) files is very slow.
+For the next part of the tutorial we will be using BAM
+(binary-alignment-map) files, which are compressed and indexed.</p>
+<p><strong>Note</strong>: The fields we use in TADbit to generate a BAM file are not the
+conventional ones, we modify them as follows to store only the necessary
+information for the remaining part of the analysis: - Read ID (same as
+in the original FASTQ file) - Flag (binary mask for the application of
+the 10 filters previously described): 1. self-circle 2. dangling-end 3.
+error 4. extra dangling-end 5. too close from RES 6. too short 7. too
+large 8. over-represented 9. duplicated 10. random breaks 11.
+inter-chromosomal</p>
+<p>For example if we want to keep only pairs of read-ends that are
+excelusively inter-fragment contacts and that are not duplicated, we
+would apply filters 1, 2, 3 (self-circle, dangling-ends, errors) and 9
+(duplicated) resulting in a binary number like this: 00100000111 which
+translates in decimal: 263. We could thus obtain these read-pairs with
+<code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">view</span> <span class="pre">-F</span> <span class="pre">263</span></code>. - Chromosome ID of the first read-end -
+Genomic position of the first read-end - MAPQ set to 0 - Pseudo CIGAR
+replaced by the mapped length of the first read-end, and information
+about current copy (each pair is present twice in the BAM, P: first
+copy, S: second copy) - Chromosome ID of the second read-end - Genomic
+position of the second read-end - Mapped length of the second pair-end -
+Nothing (*) (the field is usually reserved to sequence) - Nothing (*)
+(the field is usually reserved to quality) - TC tag indicating single
+(1) or multi contact (3 6 … number being the number of times a given
+sequenced fragment is involved in a pairwise contact) - S1 and S2 tags
+are the strand orientation of the left and right read-end</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Search for the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#download-from-the-ncbi">Download from the NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html#creation-of-an-index-file-for-gem-mapper">Creation of an index file for GEM mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">FASTQ format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html#quality-check-before-mapping">Quality check before mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">The HiC_data object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#filter-bins-with-low-interaction-counts">Filter bins with low interaction counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#normalization-algorithms">Normalization algorithms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_5-Parsing_mapped_reads.html"
+                        title="previous chapter">Load mapped read-ends and generate a matrix</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_7-Bin_filtering_and_normalization.html"
+                        title="next chapter">The HiC_data object</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_7-Bin_filtering_and_normalization.html" title="The HiC_data object"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>
