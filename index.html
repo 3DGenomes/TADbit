@@ -1,36 +1,24 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Welcome to TADbit’s documentation! &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>Welcome to TADbit’s documentation! &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installing TADbit on GNU/Linux" href="install.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +28,7 @@
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -50,7 +38,7 @@
           <div class="body" role="main">
             
   <div class="section" id="welcome-to-tadbit-s-documentation">
-<h1>Welcome to TADbit&#8217;s documentation!<a class="headerlink" href="#welcome-to-tadbit-s-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Welcome to TADbit’s documentation!<a class="headerlink" href="#welcome-to-tadbit-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>TADbit is a computational package that deals with 3C-based data (more
 specifically Hi-C data). It handles all the steps from the alignment of
 paired-end reads to the detection of Topologically Associating Domain
@@ -79,10 +67,14 @@ the TADbit API.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#conda">Conda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#python-libraries">Python libraries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#imp-3d-modeling">IMP - 3D modeling</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#mcl-clustering">MCL - clustering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#chimera-visualization">Chimera - visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#gem-mapper">GEM Mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#dryhic-for-oned-normalization">DryHiC for oneD normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#dsrc-fastq-compressor">DSRC FASTQ compressor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#liftover">LiftOver</a></li>
 </ul>
 </li>
@@ -91,20 +83,25 @@ the TADbit API.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_0_mapping.html">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1_general.html">Getting started</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_3_clustering.html">TAD clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html">Compartments and TADs detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4_data_normalization.html">Hi-C data processing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html">Parameter optimization for IMP.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html">Three-dimensional modeling of chromatine structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_7_single_model_analysis.html">Structural analysis of a chromatin model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html">Experimental data assessment and model parameters optimisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html">Modelling a region of the chromatin</a></li>
 </ul>
 </li>
 </ul>
@@ -127,7 +124,6 @@ the TADbit API.</p>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_mapping.html#filtering">Filtering</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="reference/reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_chromosome.html">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_chromosome.html#load-chromosome">Load chromosome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/reference_chromosome.html#experimentlist-class">ExperimentList class</a></li>
@@ -142,8 +138,8 @@ the TADbit API.</p>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_impmodel.html">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/reference_utils.html">Utilities</a></li>
 </ul>
@@ -164,7 +160,7 @@ the TADbit API.</p>
             <p class="logo"><a href="#">
               <img class="logo" src="_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="#">Table Of Contents</a></h3>
+<h3><a href="#">Table of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
@@ -178,12 +174,14 @@ the TADbit API.</p>
                         title="next chapter">Installing TADbit on GNU/Linux</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -199,13 +197,13 @@ the TADbit API.</p>
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 21, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

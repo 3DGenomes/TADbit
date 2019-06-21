@@ -6,9 +6,15 @@ From FASTQ files to interaction matrices
 ----------------------------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
-   tutorial/tutorial_0_mapping
+   tutorial/tutorial_1-Retrieve_published_HiC_datasets
+   tutorial/tutorial_2-Preparation_of_the_reference_genome
+   tutorial/tutorial_3-Hi-C_quality_check
+   tutorial/tutorial_4-Mapping
+   tutorial/tutorial_5-Parsing_mapped_reads
+   tutorial/tutorial_6-Filtering_mapped_reads
+   tutorial/tutorial_7-Bin_filtering_and_normalization
 
 
 Identification and Analysis of TADs and Compartments
@@ -17,9 +23,8 @@ Identification and Analysis of TADs and Compartments
 .. toctree::
    :maxdepth: 2
    
-   tutorial/tutorial_1_general
-   tutorial/tutorial_2_boundary_alignment
-   tutorial/tutorial_3_clustering
+   tutorial/tutorial_8-Compartments_and_TADs_detection
+   tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments
 
 
 Three-dimentional modelling
@@ -28,7 +33,5 @@ Three-dimentional modelling
 .. toctree::
    :maxdepth: 2
 
-   tutorial/tutorial_4_data_normalization
-   tutorial/tutorial_5_parameter_optimization
-   tutorial/tutorial_6_modelling_and_analysis
-   tutorial/tutorial_7_single_model_analysis
+   tutorial/tutorial_10-Modeling_parameters_optimization
+   tutorial/tutorial_11-3D_Models_production_and_analysis

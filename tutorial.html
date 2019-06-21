@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Retrieve HiC dataset from NCBI" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" />
-    <link rel="prev" title="Installing TADbit on GNU/Linux under conda" href="install.html" /> 
+    <link rel="prev" title="Installing TADbit on GNU/Linux" href="install.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +30,7 @@
           <a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="install.html" title="Installing TADbit on GNU/Linux under conda"
+          <a href="install.html" title="Installing TADbit on GNU/Linux"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>
@@ -54,7 +54,6 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html#mapping">Mapping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
@@ -66,18 +65,15 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html">Compartments and TADs detection</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#compartments">Compartments</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#tads">TADs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#tads">TADs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#comparison-of-tad-borders">Comparison of TAD borders</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#load-previous-data">Load previous data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#mouse-b-cell">Mouse B cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#mouse-ips-cell">Mouse iPS cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#replicate-1">Replicate 1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#replicate-2">Replicate 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#comparison-between-replicates">Comparison between replicates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#comparison-between-cell-types">Comparison between cell types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#merge-hi-c-experiments">Merge Hi-C experiments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#normalizing-merged-data">Normalizing merged data</a></li>
 </ul>
 </li>
 </ul>
@@ -124,9 +120,7 @@
             </a></p>
 <h3><a href="index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux under conda</a></li>
-<li class="toctree-l1"><a class="reference internal" href="install.html#software">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
@@ -136,14 +130,12 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html#mapping">Mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html">Compartments and TADs detection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#tads">TADs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a></li>
 </ul>
 </li>
@@ -161,7 +153,7 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="install.html"
-                        title="previous chapter">Installing TADbit on GNU/Linux under conda</a></p>
+                        title="previous chapter">Installing TADbit on GNU/Linux</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html"
                         title="next chapter">Retrieve HiC dataset from NCBI</a></p>
@@ -191,7 +183,7 @@
           <a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"
              >next</a> |</li>
         <li class="right" >
-          <a href="install.html" title="Installing TADbit on GNU/Linux under conda"
+          <a href="install.html" title="Installing TADbit on GNU/Linux"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>

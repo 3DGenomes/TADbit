@@ -56,12 +56,25 @@ human readable. Check
 <span class="n">dsrc</span> <span class="n">d</span> <span class="o">-</span><span class="n">s</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span> <span class="o">|</span> <span class="n">head</span> <span class="o">-</span><span class="n">n</span> <span class="mi">8</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">
+&#64;SRR5344921.1
+ACCACTGATGGCACCACTGTTGTACTTTAGGATCGATCACTCCTTATACGCACATAGGAAACACTGACTAGAGGG
++
+&#64;B&#64;B&#64;&gt;1&gt;=;1&#64;EG0B0;1=E1:&gt;&gt;1111&lt;?=1E9=0&gt;&lt;C:&lt;&gt;11=11?1=ECDC1&gt;1=&#64;FD1&lt;:1?C#######
+&#64;SRR5344921.2
+GGGCTTTTTTTGGCTGGGAGACTATTTATAACTGCTTCTATTTCTTTAGGGGATATGGGACTGTTTAGAAGGTCA
++
+BCCBBFGGGG&#64;GEGGGGDGEBGEF&#64;&lt;1FGGEFGGECGG&#64;FEGGGEG&gt;&#64;1=09/BFGGEG111C&lt;F1&gt;11BGF1=1
+</pre>
 <p>Count the number of lines in the file (4 times the number of reads)</p>
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
 
 <span class="n">dsrc</span> <span class="n">d</span> <span class="o">-</span><span class="n">s</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span> <span class="o">|</span> <span class="n">wc</span> <span class="o">-</span><span class="n">l</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">
+400000000
+</pre>
 <p>There are 400 M lines in the file, which means 100M reads in total.</p>
 <div class="section" id="quality-check-before-mapping">
 <h2>Quality check before mapping<a class="headerlink" href="#quality-check-before-mapping" title="Permalink to this headline">¶</a></h2>
@@ -69,6 +82,17 @@ human readable. Check
 <h3>Check restriction-enzyme used<a class="headerlink" href="#check-restriction-enzyme-used" title="Permalink to this headline">¶</a></h3>
 <p>Most important to analyze Hi-C dataset is the restriction enzyme used in
 the experiment. TADbit provides a simple function to check for it:</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">identify_re</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pat</span><span class="p">,</span> <span class="n">enz</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">identify_re</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_B_rep1_1.fastq.dsrc&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="s1">&#39;- Most probable pattern: </span><span class="si">%s</span><span class="s1">, matching enzymes: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pat</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">enz</span><span class="p">))</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+- Most probable pattern: GATC, matching enzymes: BssMI,DpnII,Sau3AI,MboI,Kzo9I,Bsp143I,NdeII,BstMBI,BfuCI
+</pre>
 </div>
 <div class="section" id="plot-phred-score-and-ligation-digestion-sites">
 <h3>Plot PHRED score and ligation/digestion sites<a class="headerlink" href="#plot-phred-score-and-ligation-digestion-sites" title="Permalink to this headline">¶</a></h3>
@@ -78,6 +102,16 @@ check the proportion of reads with ligation sites as well as the number
 of reads starting by a cut-site.</p>
 <p>These numbers will give us a first hint on the <strong>efficiencies of two
 critical steps in the HiC experiment, the digestion and the ligation.</strong></p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="k">import</span> <span class="n">quality_plot</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r_enz</span> <span class="o">=</span> <span class="s1">&#39;MboI&#39;</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span>
+<span class="n">repl</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>
+</pre></div>
+</div>
 <p>The plot on the top represents the typical per nucleotide quality
 profile of NGS reads, with, in addition, the proportion of <code class="docutils literal notranslate"><span class="pre">N</span></code> found
 at each position.</p>
@@ -96,6 +130,9 @@ efficiency. - The <strong>percentage of non-ligated digested</strong>
 (dangling-ends), which relates to the ligation efficiency. - The
 <strong>percentage of read-ends with a ligation site</strong>, which is negatively
 correlated with the percentage of dangling-ends.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq.dsrc&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">),</span> <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><em>Note: this plot is **compatible with the use of multiple restriction
 enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
 </div>
@@ -113,9 +150,7 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
             </a></p>
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
@@ -125,7 +160,6 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>

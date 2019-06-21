@@ -44,6 +44,33 @@
             
   <div class="section" id="bin-filtering-and-normalization">
 <h1>Bin filtering and normalization<a class="headerlink" href="#bin-filtering-and-normalization" title="Permalink to this headline">¶</a></h1>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
+<span class="n">repl</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>
+
+<span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span>
+    <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.bam&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">),</span>
+    <span class="n">reso</span><span class="p">,</span> <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+(Matrix size 27269x27269)                                                    [2019-01-11 12:35:55]
+
+- Parsing BAM (122 chunks)                                                   [2019-01-11 12:35:55]
+   .......... .......... .......... .......... ..........     50/122
+   .......... .......... .......... .......... ..........    100/122
+   .......... .......... ..                                  122/122
+
+- Getting matrices                                                           [2019-01-11 12:37:01]
+   .......... .......... .......... .......... ..........     50/122
+   .......... .......... .......... .......... ..........    100/122
+   .......... .......... ..                                  122/122
+</pre>
 <div class="section" id="filter-bins-with-low-interaction-counts">
 <h2>Filter bins with low interaction counts<a class="headerlink" href="#filter-bins-with-low-interaction-counts" title="Permalink to this headline">¶</a></h2>
 <p>In this case, the filtering we are applying is divided in two steps: 1.
@@ -57,11 +84,43 @@ interaction counts one should require that each bin contains a minimum
 percentage (default 75%) of cells with no-zero counts, or a minimum
 number of interactions in total (for good quality data the recommended
 value could be 2500).*</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">draw_hist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">by_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+WARNING: Using twice min_count as the matrix was symmetricized and contains twice as many interactions as the original
+</pre>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_6_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_6_1.png" />
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;removed </span><span class="si">{:,}</span><span class="s1"> columns out of </span><span class="si">{:,}</span><span class="s1"> (</span><span class="si">{:.1f}</span><span class="s1">%)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">),</span>
+                                                           <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">))</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+removed 2,660 columns out of 27,269 (9.8%)
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;removed </span><span class="si">{:,}</span><span class="s1"> columns out of </span><span class="si">{:,}</span><span class="s1"> (</span><span class="si">{:.1f}</span><span class="s1">%)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">),</span>
+                                                           <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">))</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+removed 2,660 columns out of 27,269 (9.8%)
+</pre>
 <p>At 100 kb it makes no sense to view the full matrix (your matrix will
 have more cells than your screen have pixels), so it is much more
 informative to plot a specific region of the genome only using the
 <code class="docutils literal notranslate"><span class="pre">focus</span></code> parameter.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+/home/dcastillo/miniconda2/lib/python2.7/site-packages/matplotlib/axes/_base.py:3477: UserWarning: Attempted to set non-positive ylimits for log-scale axis; invalid limits will be ignored.
+  'Attempted to set non-positive ylimits for log-scale axis; '
+/home/dcastillo/miniconda2/lib/python2.7/site-packages/pytadbit/utils/tadmaths.py:90: RuntimeWarning: divide by zero encountered in log10
+  return np.log10(val)
+</pre>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_11_1.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_11_1.png" />
 </div>
 <div class="section" id="normalization-algorithms">
@@ -86,19 +145,87 @@ matrix <span class="math notranslate nohighlight">\(M\)</span> is iteratively co
 \[M_{i,j} = \frac{W_{i,j}}{\sqrt{\sum_{n=0}^N{W_{i,n}} \times \sum_{n=0}^N{W_{n,j}}}}\]</div>
 <p>This normalization has usually a quite strong effect, and visually the
 matrices look very smooth and regular.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+iterative correction
+  - copying matrix
+  - computing biases
+          1083.000        5384.660      101635.000    0  17.87492
+          4407.395        5483.780        8251.728    1   0.50475
+          4560.550        5512.003        6238.145    2   0.17261
+          5116.644        5521.481        6119.412    3   0.10829
+          5173.833        5524.944        5781.389    4   0.06355
+          5374.323        5526.241        5761.161    5   0.04251
+          5380.193        5526.744        5621.079    6   0.02652
+          5470.168        5526.942        5623.500    7   0.01747
+          5465.095        5527.021        5561.686    8   0.01120
+          5506.121        5527.053        5567.812    9   0.00737
+          5500.600        5527.066        5539.771   10   0.00479
+          5519.386        5527.071        5544.417   11   0.00314
+          5515.770        5527.073        5531.733   12   0.00205
+          5524.250        5527.074        5534.470   13   0.00134
+          5522.248        5527.075        5528.790   14   0.00087
+          5526.033        5527.075        5530.231   15   0.00057
+          5525.014        5527.075        5527.710   16   0.00037
+          5526.688        5527.075        5528.422   17   0.00024
+          5526.195        5527.075        5527.312   18   0.00016
+          5526.929        5527.075        5527.650   19   0.00010
+          5526.699        5527.075        5527.165   20   0.00007
+          5527.019        5527.075        5527.321   21   0.00004
+          5526.915        5527.075        5527.110   22   0.00003
+          5527.053        5527.075        5527.180   23   0.00002
+          5527.006        5527.075        5527.089   24   0.00001
+          5527.066        5527.075        5527.120   25   0.00001
+rescaling to factor 1
+  - getting the sum of the matrix
+    =&gt; 24609.000
+  - rescaling biases
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+
+<span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_17_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_17_0.png" />
 </div>
 <div class="section" id="save-biases">
 <h3>Save biases<a class="headerlink" href="#save-biases" title="Permalink to this headline">¶</a></h3>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">save_biases</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_ICE_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="vanilla-coverage-normalization">
 <h3>Vanilla coverage normalization<a class="headerlink" href="#vanilla-coverage-normalization" title="Permalink to this headline">¶</a></h3>
 <p>The vanilla normalization <a class="reference external" href="#cite-Rao2014">(Rao et al., 2014)</a> is a
 variation of the ICE where a single iteration is performed.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+iterative correction
+  - copying matrix
+  - computing biases
+rescaling to factor 1
+  - getting the sum of the matrix
+    =&gt; 25061.997
+  - rescaling biases
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+
+<span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_23_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_23_0.png" />
 </div>
 <div class="section" id="id1">
 <h3>Save biases<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">save_biases</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_Vanilla_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="square-root-vanilla-coverage-sqrt-normalization">
 <h3>Square root vanilla coverage (SQRT) normalization<a class="headerlink" href="#square-root-vanilla-coverage-sqrt-normalization" title="Permalink to this headline">¶</a></h3>
@@ -107,10 +234,31 @@ is a variation of the Vanilla coverage where each element in the matrix
 is divided by the square root of the product of sums of counts.</p>
 <div class="math notranslate nohighlight">
 \[M_{i,j} = \frac{W_{i,j}}{\sqrt{\sum_{n=0}^N{W_{i,n}} \times \sum_{n=0}^N{W_{n,j}}}}\]</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sqrt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+iterative correction
+  - copying matrix
+  - computing biases
+rescaling to factor 1
+  - getting the sum of the matrix
+    =&gt; 1790593.806
+  - rescaling biases
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+
+<span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_29_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_29_0.png" />
 </div>
 <div class="section" id="id2">
 <h3>Save biases<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">save_biases</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_SQRT_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="oned-normalization">
 <h3>OneD normalization<a class="headerlink" href="#oned-normalization" title="Permalink to this headline">¶</a></h3>
@@ -122,18 +270,115 @@ mappability</p>
 <p>As the estimation of each of this statistics is very important for the
 normalization, they are left outside the normalization function, in
 order to allow user to modify them.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.bed_parser</span>          <span class="k">import</span> <span class="n">parse_mappability_bedGraph</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span>         <span class="k">import</span> <span class="n">oneD</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">RESTRICTION_ENZYMES</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span>       <span class="k">import</span> <span class="n">parse_fasta</span><span class="p">,</span> <span class="n">get_gc_content</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fasta</span> <span class="o">=</span> <span class="s1">&#39;genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa&#39;</span>
+<span class="n">genome</span> <span class="o">=</span> <span class="n">parse_fasta</span><span class="p">(</span><span class="n">fasta</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>get mappability ~2 min</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f_mappability</span> <span class="o">=</span> <span class="s1">&#39;genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.50mer.bedGraph&#39;</span>
+
+<span class="n">mappability</span> <span class="o">=</span> <span class="n">parse_mappability_bedGraph</span><span class="p">(</span><span class="n">f_mappability</span><span class="p">,</span> <span class="n">reso</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+saving mappabilty to cache...
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">genome</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">mappability</span><span class="p">:</span>
+        <span class="n">mappability</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="p">)</span> <span class="o">/</span> <span class="n">reso</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mappability</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="p">)</span> <span class="o">/</span> <span class="n">reso</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">mappability</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="p">)</span> <span class="o">/</span> <span class="n">reso</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">mappability</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span>
+<span class="n">mappability</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
+                     <span class="p">(</span><span class="n">mappability</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">genome</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>get GC content ~ 30 sec</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gc_content</span> <span class="o">=</span> <span class="n">get_gc_content</span><span class="p">(</span><span class="n">genome</span><span class="p">,</span> <span class="n">reso</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>compute r_sites ~30 sec</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">re_site</span> <span class="o">=</span> <span class="n">RESTRICTION_ENZYMES</span><span class="p">[</span><span class="s1">&#39;MboI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">n_rsites</span>  <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">genome</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="p">[</span><span class="n">crm</span><span class="p">]),</span> <span class="n">reso</span><span class="p">):</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">genome</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span> <span class="o">+</span> <span class="n">reso</span> <span class="o">+</span> <span class="mi">400</span><span class="p">]</span>
+        <span class="n">n_rsites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">re_site</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sum_cols</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span> <span class="k">else</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="mf">0.0</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span> <span class="k">else</span> <span class="n">hic_data</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">))]</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biases</span> <span class="o">=</span> <span class="n">oneD</span><span class="p">(</span><span class="n">tot</span><span class="o">=</span><span class="n">sum_cols</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="n">mappability</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="n">n_rsites</span><span class="p">,</span> <span class="n">cg</span><span class="o">=</span><span class="n">gc_content</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="ansi-block highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">biases</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+
+<span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr19&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_46_0.png" src="tutorial/../nbpictures//tutorial_7-Bin_filtering_and_normalization_46_0.png" />
 </div>
 <div class="section" id="id3">
 <h3>Save biases<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span><span class="o">.</span><span class="n">save_biases</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_oneD_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="comparison">
 <h3>Comparison<a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h3>
 <p>By eye, the effect of choosing one normalization over an other is often
 very small</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span> <span class="k">import</span> <span class="n">plot_HiC_matrix</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">22</span><span class="p">,</span> <span class="mi">21</span><span class="p">))</span>
+<span class="n">axe</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Raw data&#39;</span><span class="p">)</span>
+<span class="n">matrix</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:10000000-40000000&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plot_HiC_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span><span class="c1">#  vmin=0.5,</span>
+                <span class="n">triangular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axe</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">norm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;SQRT&#39;</span><span class="p">,</span> <span class="s1">&#39;oneD&#39;</span><span class="p">,</span> <span class="s1">&#39;Vanilla&#39;</span><span class="p">,</span> <span class="s1">&#39;ICE&#39;</span><span class="p">],</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="c1"># load biases</span>
+    <span class="n">hic_data</span><span class="o">.</span><span class="n">load_biases</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{3}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">norm</span><span class="p">))</span>
+    <span class="c1"># retrieve data as matrix</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:10000000-40000000&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># define subplot</span>
+    <span class="n">axe</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+    <span class="c1"># draw plot</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">plot_HiC_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span>
+                    <span class="n">vmin</span><span class="o">=-</span><span class="mf">0.5</span> <span class="k">if</span> <span class="n">norm</span><span class="o">==</span><span class="s1">&#39;oneD&#39;</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># manually adjust color scale depending on the normalization</span>
+                    <span class="n">bad_color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">triangular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+/home/dcastillo/miniconda2/lib/python2.7/site-packages/ipykernel_launcher.py:5: RuntimeWarning: divide by zero encountered in log2
+  &quot;&quot;&quot;
+/home/dcastillo/miniconda2/lib/python2.7/site-packages/ipykernel_launcher.py:18: RuntimeWarning: divide by zero encountered in log2
+</pre>
 </div>
 <div class="section" id="other-normalizations">
 <h3>Other normalizations<a class="headerlink" href="#other-normalizations" title="Permalink to this headline">¶</a></h3>
@@ -261,9 +506,7 @@ chromosomal architecture.</em>.
             </a></p>
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux under conda</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html#software">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html#installing-tadbit-on-gnu-linux">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
@@ -273,7 +516,6 @@ chromosomal architecture.</em>.
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_5-Parsing_mapped_reads.html#references">References</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Bin filtering and normalization</a></li>
 </ul>
