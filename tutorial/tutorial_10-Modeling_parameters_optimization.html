@@ -127,12 +127,12 @@ columns will be modelled, but will have no experimental data applied.</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_11_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_11_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_11_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_11_0.png" />
 <p>Focus on the genomic region to model.</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_13_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_13_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" />
 </div>
 <div class="section" id="data-modellability-assessment-via-mmp-score">
 <h2>Data modellability assessment via MMP score<a class="headerlink" href="#data-modellability-assessment-via-mmp-score" title="Permalink to this headline">¶</a></h2>
@@ -147,14 +147,14 @@ Z-scores.</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="k">import</span> <span class="n">mmp_score</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mmp_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:30000000-36000000&#39;</span><span class="p">),</span> <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;images/mmp_score.png&#39;</span><span class="p">)</span>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mmp_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:30000000-36000000&#39;</span><span class="p">),</span> <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;../nbpictures/mmp_score.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
 (0.8049955427707568, 0.788681592624057, 0.6737285903820441, 0.9006937517389604)
 </pre>
 <div class="figure">
-<img alt="" src="tutorial/images/mmp_score.png" />
+<img alt="" src="../_images/mmp_score.png" />
 </div>
 </div>
 <div class="section" id="data-transformation-and-scoring-function">
@@ -188,7 +188,7 @@ oscillator at an equilibrium distance, while those below the lower-bound
 cutoff are maintained further than an equilibrium distance by a lower
 bound harmonic oscillator.</p>
 <div class="figure">
-<img alt="" src="tutorial/images/tadbit_restraints.png" />
+<img alt="" src="../_images/tadbit_restraints.png" />
 </div>
 <div class="section" id="optimization-of-parameters">
 <h3>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h3>
@@ -213,7 +213,7 @@ assigned maximum distance (Harmonic upper bound). Pairs of beads which
 interaction fall in between lowfreq and upfreq are not penalized except
 if they are neighbours (Harmonic)</p>
 <div class="figure">
-<img alt="" src="tutorial/images/tadbit_distance_freq_fitting.png" />
+<img alt="" src="../_images/tadbit_distance_freq_fitting.png" />
 </div>
 <p>In the parameter optimization step we are going to give a set of ranges
 for the different search parameters. For each possible combination
@@ -226,7 +226,7 @@ interaction experiment by means of a Spearman correlation coefficient.
 The sets having higher correlation coefficients are those that best
 represents the original data.</p>
 <div class="figure">
-<img alt="" src="tutorial/images/Contact_map.png" />
+<img alt="" src="../_images/Contact_map.png" />
 </div>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                                    <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
@@ -352,7 +352,7 @@ Optimizing 61 particles
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_23_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_23_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_23_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_23_0.png" />
 <p>Refine optimization in a small region:</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">1750</span><span class="p">],</span>
@@ -381,7 +381,7 @@ Optimizing 61 particles
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_26_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_26_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_26_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_26_0.png" />
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2250</span><span class="p">],</span>
                        <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
@@ -415,7 +415,7 @@ xx        0.01    0               2000    0       0.3     2       0.8858
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_28_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_28_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_28_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_28_0.png" />
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                        <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2250</span><span class="p">],</span>
@@ -465,7 +465,7 @@ xx        0.01    0               2250    0       0.3     2       0.8855
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_30_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_30_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_30_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_30_0.png" />
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -520,7 +520,7 @@ Optimizing 61 particles
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_34_0.png" src="tutorial/../nbpictures//tutorial_10-Modeling_parameters_optimization_34_0.png" />
+<img alt="../_images/tutorial_10-Modeling_parameters_optimization_34_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_34_0.png" />
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -605,7 +605,7 @@ Optimizing 61 particles
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 21, 2019.
+      Last updated on Jun 23, 2019.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -145,7 +145,7 @@ Getting Multiple contacts
     <span class="n">total_reads</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_15_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_15_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_15_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_15_0.png" />
 </div>
 <div class="section" id="fragment-based-mapping-results">
 <h2>Fragment-based mapping results<a class="headerlink" href="#fragment-based-mapping-results" title="Permalink to this headline">¶</a></h2>
@@ -198,7 +198,7 @@ Getting Multiple contacts
 <span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">total_reads</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_21_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_21_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_21_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_21_0.png" />
 <p><em>Note: From now on we are going to focus only on the results of the
 **fragment based mapping*</em>.*</p>
 </div>
@@ -297,7 +297,7 @@ et al. 2018)</a>.</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">110</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_37_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_37_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_37_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_37_0.png" />
 <p><em>Note: these **decay are computed on the raw data*</em>, and although the
 slopes may not change dramatically, it is a <strong>good practice to repeate
 this analysis and interpret the results also once the data are
@@ -316,7 +316,7 @@ heterogeneity.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_42_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_42_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_42_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_42_0.png" />
 <pre class="ansi-block literal-block">
 &lt;Figure size 900x900 with 0 Axes&gt;
 </pre>
@@ -349,7 +349,7 @@ bins.*</p>
 /home/fransua/.miniconda2/lib/python2.7/site-packages/matplotlib/axes/_axes.py:6571: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
   warnings.warn(&quot;The 'normed' kwarg is deprecated, and has been &quot;
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_46_1.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_46_1.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_46_1.png" src="../_images/tutorial_5-Parsing_mapped_reads_46_1.png" />
 <p>From the reads that are mapped in a single RE fragment we can infer the
 average insert size:</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">insert_sizes</span>
@@ -358,7 +358,7 @@ average insert size:</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_50_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_50_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_50_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_50_0.png" />
 <pre class="ansi-block literal-block">
 [187.0, 697.0]
 </pre>
@@ -377,7 +377,7 @@ fragments (similarly to the <code class="docutils literal notranslate"><span cla
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_strand_bias_by_distance</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">valid_pairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">20000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_56_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_56_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_56_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_56_0.png" />
 <p>This function separates each read-end pair into 4 categories depending
 of the orientation of the strand in which each maps.</p>
 <p>Having a look at the minimum distance from which the orientation of the
@@ -386,7 +386,7 @@ results and for the definition of filters.</p>
 <div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_strand_bias_by_distance</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">20000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_58_0.png" src="tutorial/../nbpictures//tutorial_5-Parsing_mapped_reads_58_0.png" />
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_58_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_58_0.png" />
 <p>We can see that when the distance between the mapped read-ends is larger
 than ~1 kb, the orientation is even (25% each category). Meaning that
 bellow this size interactions are very likely to be extra-dangling-ends
@@ -499,7 +499,7 @@ Structural &amp; Molecular Biologyvolume 25, pages496–504 (2018)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 21, 2019.
+      Last updated on Jun 23, 2019.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

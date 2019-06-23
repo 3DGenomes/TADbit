@@ -19,14 +19,8 @@ https://en.wikipedia.org/wiki/Phred\_quality\_score for more details)
 
 .. ansi-block::
 
-    @SRR5344921.1
-    ACCACTGATGGCACCACTGTTGTACTTTAGGATCGATCACTCCTTATACGCACATAGGAAACACTGACTAGAGGG
-    +
-    @B@B@>1>=;1@EG0B0;1=E1:>>1111<?=1E9=0><C:<>11=11?1=ECDC1>1=@FD1<:1?C#######
-    @SRR5344921.2
-    GGGCTTTTTTTGGCTGGGAGACTATTTATAACTGCTTCTATTTCTTTAGGGGATATGGGACTGTTTAGAAGGTCA
-    +
-    BCCBBFGGGG@GEGGGGDGEBGEF@<1FGGEFGGECGG@FEGGGEG>@1=09/BFGGEG111C<F1>11BGF1=1
+    terminate called after throwing an instance of 'dsrc::DsrcException'
+      what():  Cannot open file to read:FASTQs/mouse_B_rep1_1.fastq.dsrc
 
 
 Count the number of lines in the file (4 times the number of reads)

@@ -2,7 +2,7 @@
 Filtering
 =========
 
-.. figure:: images/Filters.jpeg
+.. figure:: ../nbpictures/Filters.jpeg
    :alt: Filters
 
    Filters

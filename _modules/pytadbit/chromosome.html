@@ -1,42 +1,30 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>pytadbit.chromosome &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>pytadbit.chromosome &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
@@ -587,7 +575,7 @@
                 <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;batch&#39;</span><span class="p">):</span>
                     <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">xpr</span><span class="o">.</span><span class="n">name</span>
             <span class="n">siz</span> <span class="o">=</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">__add__</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">xprs</span><span class="p">)</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">xprs</span><span class="p">)</span>
             <span class="n">tmp</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;silent&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
             <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">_zeros</span> <span class="k">else</span> <span class="mi">0</span>
                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span>
@@ -967,13 +955,13 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">,</span> <span class="n">crm</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="n">crm</span>
 
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">nam</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">nam</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
@@ -983,7 +971,7 @@
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span>
             <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
@@ -1001,7 +989,7 @@
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__delitem__</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">nam</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">nam</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
@@ -1012,14 +1000,14 @@
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Experiment </span><span class="si">%s</span><span class="s1"> not found</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
 
-    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentList.append"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.ExperimentList.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]:</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
-            <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span></div>
+            <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">AlignmentDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
@@ -1034,7 +1022,7 @@
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">AlignmentDict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nam</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">AlignmentDict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nam</span><span class="p">)))</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">nam</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
@@ -1048,7 +1036,7 @@
 <span class="sd">    base pairs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ChromosomeSize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ChromosomeSize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">RelativeChromosomeSize</span><span class="p">(</span><span class="nb">int</span><span class="p">):</span>
@@ -1059,7 +1047,7 @@
 <span class="sd">    Only used for TAD alignment randomization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">RelativeChromosomeSize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RelativeChromosomeSize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -1070,7 +1058,7 @@
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="../../index.html">Table Of Contents</a></h3>
+<h3><a href="../../index.html">Table of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
@@ -1081,12 +1069,14 @@
 
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1099,15 +1089,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

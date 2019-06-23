@@ -18,7 +18,7 @@ Finally, an intermediate approach, *fragment-based*, consists in mapping
 full length reads first, and than splitting unmapped reads at the
 ligation sites \ `(Serra et al. 2017) <#cite-Serra2017>`__.
 
-.. figure:: images/mapping.png
+.. figure:: ../nbpictures/mapping.png
    :alt: mapping strategies
 
    mapping strategies

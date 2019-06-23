@@ -143,7 +143,7 @@ Z-scores.
 
 .. code:: ipython2
 
-    mmp_score(hic_data1.get_matrix(focus='chr3:30000000-36000000'), savefig='images/mmp_score.png')
+    mmp_score(hic_data1.get_matrix(focus='chr3:30000000-36000000'), savefig='../nbpictures/mmp_score.png')
 
 
 
@@ -154,7 +154,7 @@ Z-scores.
 
 
 
-.. figure:: images/mmp_score.png
+.. figure:: ../nbpictures/mmp_score.png
    :alt: 
 
 Data Transformation and scoring function
@@ -192,7 +192,7 @@ oscillator at an equilibrium distance, while those below the lower-bound
 cutoff are maintained further than an equilibrium distance by a lower
 bound harmonic oscillator.
 
-.. figure:: images/tadbit_restraints.png
+.. figure:: ../nbpictures/tadbit_restraints.png
    :alt: 
 
 Optimization of parameters
@@ -219,7 +219,7 @@ assigned maximum distance (Harmonic upper bound). Pairs of beads which
 interaction fall in between lowfreq and upfreq are not penalized except
 if they are neighbours (Harmonic)
 
-.. figure:: images/tadbit_distance_freq_fitting.png
+.. figure:: ../nbpictures/tadbit_distance_freq_fitting.png
    :alt: 
 
 In the parameter optimization step we are going to give a set of ranges
@@ -234,7 +234,7 @@ interaction experiment by means of a Spearman correlation coefficient.
 The sets having higher correlation coefficients are those that best
 represents the original data.
 
-.. figure:: images/Contact_map.png
+.. figure:: ../nbpictures/Contact_map.png
    :alt: 
 
 .. code:: ipython2

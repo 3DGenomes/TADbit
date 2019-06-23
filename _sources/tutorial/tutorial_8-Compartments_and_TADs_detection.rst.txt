@@ -340,7 +340,7 @@ borders at 100kbp resolution.
 
    An example of consistency between TAD borders is shown in the following graph. TAD borders are called at 1 kb resolution (insulation score-based method). We assume that there should be a high ratio of conservation between the 4 replicates and as we see that's true for resolutions lower than approximately 100kbp. If our bin size is for example 50kbp, we only reach the same ratio of consistency if we consider TAD borders found 2 bins away as being the same border in the different replicates.
 
-   <img src="images/TAD_calling_resolution.png"> -->
+   <img src="../nbpictures/TAD_calling_resolution.png"> -->
 
 .. code:: ipython2
 
