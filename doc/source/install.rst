@@ -4,14 +4,105 @@ Installing TADbit on GNU/Linux
 
 .. contents::
 
-.. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
-
+.. note::  at the moment the installation has been tested under Ubuntu-linux, Centos 7 and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
 
 **TADbit requires python2 >= 2.6 as well as several dependencies that
 are listed below.**
 
 Dependencies
 ------------
+
+Conda
+~~~~~
+
+The installation of TADbit under a conda environment is the recommended.
+
+Conda (http://conda.pydata.org/docs/index.html) is a package manager,
+mainly hosting python programs, that is very useful when no root access
+is available and the softwares have complicated dependencies.
+
+To install it (**in case you don't already have it**) just download the
+installer from http://conda.pydata.org/miniconda.html
+
+.. code:: bash
+
+    %%bash
+    
+    wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+
+
+.. ansi-block::
+
+    2018-09-28 00:39:07 URL:https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh [41787735/41787735] -> "miniconda.sh" [1]
+
+
+And run it with all the default options. The installer will create a
+``miniconda2`` folder in your home directory where all the programs that
+you need will be stored (including python).
+
+Alternatively you can also use this oneliner:
+
+.. code:: bash
+
+    %%bash
+    
+    bash miniconda.sh -b -p $HOME/miniconda2
+
+
+.. ansi-block::
+
+    PREFIX=/home/fransua/miniconda2
+    installing: python-2.7.15-h1571d57_0 ...
+    installing: ca-certificates-2018.03.07-0 ...
+    installing: conda-env-2.6.0-1 ...
+    installing: libgcc-ng-8.2.0-hdf63c60_1 ...
+    installing: libstdcxx-ng-8.2.0-hdf63c60_1 ...
+    installing: libffi-3.2.1-hd88cf55_4 ...
+    installing: ncurses-6.1-hf484d3e_0 ...
+    installing: openssl-1.0.2p-h14c3975_0 ...
+    installing: yaml-0.1.7-had09818_2 ...
+    installing: zlib-1.2.11-ha838bed_2 ...
+    installing: libedit-3.1.20170329-h6b74fdf_2 ...
+    installing: readline-7.0-h7b6447c_5 ...
+    installing: tk-8.6.8-hbc83047_0 ...
+    installing: sqlite-3.24.0-h84994c4_0 ...
+    installing: asn1crypto-0.24.0-py27_0 ...
+    installing: certifi-2018.8.24-py27_1 ...
+    installing: chardet-3.0.4-py27_1 ...
+    installing: enum34-1.1.6-py27_1 ...
+    installing: futures-3.2.0-py27_0 ...
+    installing: idna-2.7-py27_0 ...
+    installing: ipaddress-1.0.22-py27_0 ...
+    installing: pycosat-0.6.3-py27h14c3975_0 ...
+    installing: pycparser-2.18-py27_1 ...
+    installing: pysocks-1.6.8-py27_0 ...
+    installing: ruamel_yaml-0.15.46-py27h14c3975_0 ...
+    installing: six-1.11.0-py27_1 ...
+    installing: cffi-1.11.5-py27he75722e_1 ...
+    installing: setuptools-40.2.0-py27_0 ...
+    installing: cryptography-2.3.1-py27hc365091_0 ...
+    installing: wheel-0.31.1-py27_0 ...
+    installing: pip-10.0.1-py27_0 ...
+    installing: pyopenssl-18.0.0-py27_0 ...
+    installing: urllib3-1.23-py27_0 ...
+    installing: requests-2.19.1-py27_0 ...
+    installing: conda-4.5.11-py27_0 ...
+    installation finished.
+
+
+.. ansi-block::
+
+    Python 2.7.15 :: Anaconda, Inc.
+
+
+Add path to ``miniconda2`` folder in your ``PATH``, either by adding a
+line in your .bashrc file:
+
+.. code:: bash
+
+    %%bash
+    
+    echo export PATH=\"$HOME/miniconda2/bin:\$PATH\" >> $HOME/.bashrc
 
 Python libraries
 ~~~~~~~~~~~~~~~~
@@ -33,6 +124,23 @@ Optional packages (but **highly** recommended):
 and use easy\_install to get these packages (e.g.
 "``easy_install scipy``\ ").
 
+With conda you can install most of the needed dependencies:
+
+.. code:: bash
+
+    %%bash
+    
+    ## required
+    conda install -y -q scipy                                      # scientific computing in python
+    conda install -y -q numpy                                      # scientific computing in python
+    conda install -y -q matplotlib                                 # to plot
+    conda install -y -q -c https://conda.anaconda.org/bcbio pysam  # to deal with SAM/BAM files
+    
+    ## optional
+    conda install -y -q jupyter                                    # this notebook :)
+    conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment
+
+
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
 
@@ -51,77 +159,12 @@ or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
 
     conda install -c https://conda.anaconda.org/salilab imp
 
-These options may be easier than the source compilation explained
-bellow.
+These options may be easier than the source compilation.
 
 From source
 ^^^^^^^^^^^
 
-The three-dimensional (3D) structure of a given genomic region is done
-via the IMP package. TADbit has been tested with **IMP version 2.0.1**,
-**IMP version 2.1.1** (recommended IMP versions to be installed) and
-**IMP version 2.5**. The installation procedure reported in this manual
-describes how to install IMP on Ubuntu machines (installation tested on
-Ubuntu versions 12.04, 13.04 and 14.04). However, we do not provide
-support for installing IMP; installation instructions for IMP can be
-found on the IMP website (http://salilab.org/imp/nightly/doc/html/).
-
-Install the required libraries:
-
-::
-
-    sudo apt-get install cmake
-    sudo apt-get install libboost1.49-all-dev
-    sudo apt-get install libhdf5-dev
-    sudo apt-get install swig
-    sudo apt-get install libcgal-dev
-    sudo apt-get install python-dev
-
-.. note:: For Ubuntu 13.10 *libboost1.53-all-dev* should be installed
-instead. For Ubuntu 14.04 *libboost1.54-all-dev* should be installed
-instead.
-
-Download the IMP tarball file from http://salilab.org/imp/ and
-uncompress it:
-
-::
-
-    wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
-    tar xzvf imp-2.0.1.tar.gz
-
-Create a directory for the IMP instalaltion.
-
-::
-
-    mkdir IMP
-
-Move into the IMP directory and compile the code (*Note:* the ``-j``
-option stands for the number of CPUs you want to assign to the compiler;
-the higher the faster).
-
-::
-
-    cd IMP
-    cmake ../imp-2.0.1 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
-    make -j4 
-
-Once the compilation has finished, open the file setup\_environment.sh
-in your IMP directory and copy the first lines into your ``~/.bashrc``
-file (if this file in not present in your home directory, create it).
-These lines should look like:
-
-::
-
-    LD_LIBRARY_PATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH
-
-    PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
-    export PYTHONPATH
-
-.. note::  Important note:
-           Do not copy the lines above, copy them 
-           from ``setup_environment.sh``, where *SOMETHING* 
-           is replaced by your real path to IMP.
+Check https://integrativemodeling.org/download-linux.html
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~
@@ -133,6 +176,12 @@ machines it can be automatically installed with:
 ::
 
     sudo apt-get install mcl
+    
+or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
+
+::
+
+    conda install -y -q -c bioconda mcl
 
 *Note: if the MCL executable is not found by TADbit, an alternative
 clustering method will be used. Nevertheless we strongly recommend to
@@ -147,6 +196,224 @@ Chimera is available at: http://www.cgl.ucsf.edu/chimera/
 
 *This software is only needed for the visualization of 3D models from
 inside TADbit.*
+
+GEM Mapper
+~~~~~~~~~~
+
+To install GEM, go to the download page:
+https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/
+and download the ``i3`` version (the other version is for older
+computers, and you usually won't have to use it).
+
+.. code:: bash
+
+    %%bash
+    
+    wget -nv -O GEM.tbz2 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2/download
+
+
+.. ansi-block::
+
+    2019-01-15 14:12:09 URL:https://netcologne.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2 [33847526/33847526] -> "GEM.tbz2" [1]
+
+
+Uncompress the archive:
+
+.. code:: bash
+
+    %%bash
+    
+    tar -xjvf GEM.tbz2
+
+
+.. ansi-block::
+
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-indexer_bwt-dna
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/transcriptome-2-genome
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-mappability
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-indexer
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-indexer_generate
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-mappability-retriever
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/External/
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/External/gemtools
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/External/LICENSE
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gemtools
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-rna-mapper
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-retriever
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-2-sam
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-indexer_fasta2meta+cont
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gtf-2-junctions
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-2-wig
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-2-gem
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-info
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/compute-transcriptome
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/LICENSE
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/splits-2-junctions
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/gem-mapper
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/gem-indexer.man
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/gem-mapper.man
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/gem-2-sam.man
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/gem-2-gem.man
+    GEM-binaries-Linux-x86_64-core_i3-20130406-045632/man/gem-mappability.man
+
+
+And copy the needed binaries to somewhere in your PATH, like:
+
+.. code:: bash
+
+    %%bash
+    
+    rm -f GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/LICENCE
+
+.. code:: bash
+
+    %%bash
+    
+    cp GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/* ~/miniconda2/bin/
+
+Cleanup
+
+.. code:: bash
+
+    %%bash
+    
+    rm -rf GEM-binaries-Linux-x86_64-core_i3-20121106-022124
+    rm -f GEM.tbz2
+
+TADbit supports also `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/index.shtml>`__ mapper
+
+DryHiC for oneD normalization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to use oneD normalization install dryhic from: https://github.com/qenvio/dryhic
+
+From an R console type:
+
+::
+
+    install.packages("devtools")
+
+    devtools::install_github("qenvio/dryhic")
+
+**Or** execute this cell:
+
+.. code:: bash
+
+    %%bash
+    
+    R -e '
+    install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic")'
+
+
+.. ansi-block::
+
+    
+    R version 3.4.2 (2017-09-28) -- "Short Summer"
+    Copyright (C) 2017 The R Foundation for Statistical Computing
+    Platform: x86_64-pc-linux-gnu (64-bit)
+    
+    R is free software and comes with ABSOLUTELY NO WARRANTY.
+    You are welcome to redistribute it under certain conditions.
+    Type 'license()' or 'licence()' for distribution details.
+    
+      Natural language support but running in an English locale
+    
+    R is a collaborative project with many contributors.
+    Type 'contributors()' for more information and
+    'citation()' on how to cite R or R packages in publications.
+    
+    Type 'demo()' for some demos, 'help()' for on-line help, or
+    'help.start()' for an HTML browser interface to help.
+    Type 'q()' to quit R.
+    
+    > install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic", force=TRUE)
+    gfortran   -fpic  -g -O2 -fstack-protector-strong  -c fwdb.f -o fwdb.o
+    gfortran   -fpic  -g -O2 -fstack-protector-strong  -c viterbi.f -o viterbi.o
+    gcc -std=gnu99 -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o dryhic.so fwdb.o viterbi.o -lgfortran -lm -lquadmath -L/usr/lib/R/lib -lR
+    > 
+    > 
+
+
+.. ansi-block::
+
+    Installing package into ‘/home/fransua/R/x86_64-pc-linux-gnu-library/3.4’
+    (as ‘lib’ is unspecified)
+    trying URL 'http://cran.us.r-project.org/src/contrib/devtools_1.13.6.tar.gz'
+    Content type 'application/x-gzip' length 486446 bytes (475 KB)
+    ==================================================
+    downloaded 475 KB
+    
+    * installing *source* package ‘devtools’ ...
+    ** package ‘devtools’ successfully unpacked and MD5 sums checked
+    ** R
+    ** inst
+    ** preparing package for lazy loading
+    ** help
+    *** installing help indices
+    ** building package indices
+    ** installing vignettes
+    ** testing if installed package can be loaded
+    * DONE (devtools)
+    
+    The downloaded source packages are in
+    	‘/tmp/Rtmp1j1AUG/downloaded_packages’
+    Downloading GitHub repo qenvio/dryhic@master
+    from URL https://api.github.com/repos/qenvio/dryhic/zipball/master
+    Installing dryhic
+    '/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+      CMD INSTALL '/tmp/Rtmp1j1AUG/devtools6acf4c30139e/qenvio-dryhic-764e0f0'  \
+      --library='/home/fransua/R/x86_64-pc-linux-gnu-library/3.4' --install-tests 
+    
+    * installing *source* package ‘dryhic’ ...
+    ** libs
+    installing to /home/fransua/R/x86_64-pc-linux-gnu-library/3.4/dryhic/libs
+    ** R
+    ** inst
+    ** preparing package for lazy loading
+    ** help
+    *** installing help indices
+    ** building package indices
+    ** testing if installed package can be loaded
+    * DONE (dryhic)
+
+
+DSRC FASTQ compressor
+~~~~~~~~~~~~~~~~~~~~~
+
+DSRC is a FASTQ compressor, it's not a mandatory requirement, but the size
+of their compressed files is significantly smaller than using gunzip (>30%), 
+and, more importantly, the access to them can be parallelized, and is much
+faster than any other alternative.
+
+It can be downloaded from https://github.com/lrog/dsrc
+
+.. code:: bash
+
+    %%bash
+    
+    wget -nv http://sun.aei.polsl.pl/dsrc/download/2.0rc/dsrc
+
+
+.. ansi-block::
+
+    2018-09-28 00:46:48 URL:http://sun.aei.polsl.pl/dsrc/download/2.0rc/dsrc [1761768/1761768] -> "dsrc" [1]
+
+
+.. code:: bash
+
+    %%bash
+    
+    chmod +x dsrc
+
+And the needed binaries to somewhere in your PATH, like:
+
+.. code:: bash
+
+    %%bash
+    
+    mv dsrc ~/miniconda2/bin/
 
 LiftOver
 ~~~~~~~~
