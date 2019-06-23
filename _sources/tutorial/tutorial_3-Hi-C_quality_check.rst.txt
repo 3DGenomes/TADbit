@@ -19,8 +19,14 @@ https://en.wikipedia.org/wiki/Phred\_quality\_score for more details)
 
 .. ansi-block::
 
-    terminate called after throwing an instance of 'dsrc::DsrcException'
-      what():  Cannot open file to read:FASTQs/mouse_B_rep1_1.fastq.dsrc
+    @SRR5344921.1
+    ACCACTGATGGCACCACTGTTGTACTTTAGGATCGATCACTCCTTATACGCACATAGGAAACACTGACTAGAGGG
+    +
+    @B@B@>1>=;1@EG0B0;1=E1:>>1111<?=1E9=0><C:<>11=11?1=ECDC1>1=@FD1<:1?C#######
+    @SRR5344921.2
+    GGGCTTTTTTTGGCTGGGAGACTATTTATAACTGCTTCTATTTCTTTAGGGGATATGGGACTGTTTAGAAGGTCA
+    +
+    BCCBBFGGGG@GEGGGGDGEBGEF@<1FGGEFGGECGG@FEGGGEG>@1=09/BFGGEG111C<F1>11BGF1=1
 
 
 Count the number of lines in the file (4 times the number of reads)
@@ -112,6 +118,19 @@ correlated with the percentage of dangling-ends.
 .. code:: ipython2
 
     quality_plot('FASTQs/mouse_{0}_{1}_1.fastq.dsrc'.format(cell, repl), r_enz=r_enz, nreads=1000000)
+
+
+
+.. image:: ../nbpictures//tutorial_3-Hi-C_quality_check_17_0.png
+
+
+
+
+.. ansi-block::
+
+    ({'MboI': 3.8757}, {('MboI', 'MboI'): 20.5069})
+
+
 
 *Note: this plot is **compatible with the use of multiple restriction
 enzymes** (which is why the ligation site is labeled as MboI-MboI)*
