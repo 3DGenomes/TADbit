@@ -37,10 +37,6 @@ Quality check and plotting
 
 .. autofunction:: quality_plot
 
-.. autofunction:: count_reads_approx
-
-.. autofunction:: count_reads
-
 
 Filtering
 ---------
@@ -48,8 +44,6 @@ Filtering
 .. currentmodule:: pytadbit.mapping.restriction_enzymes
 
 .. autofunction:: map_re_sites
-
-.. autofunction:: religated
 
 .. autofunction:: repaired
    

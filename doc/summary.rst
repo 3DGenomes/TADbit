@@ -171,11 +171,13 @@ Experiment class
 Hic_data module
 ---------------
 
+   - isclose:                                https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python/33024979#33024979
+
 HiC_data class
 ++++++++++++++
     This may also hold the print/write-to-file matrix functions
 
-      - `add_sections <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections>`_: Add genomic coordinate to HiC_data object by getting them from a fasta                                             file containing chromosome sequences. Orders matters.
+      - `add_sections <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences. Orders matters.
 
       - `add_sections_from_fasta <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences
 
@@ -183,9 +185,15 @@ HiC_data class
 
       - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
 
-      - `get_hic_data_as_csr <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr>`_: Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
+      - find_compartments_beta [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
+
+      - `get_hic_data_as_csr <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr>`_: Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary
 
       - `get_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix>`_: returns a matrix.
+
+      - load_biases:                         Load biases, decay and bad columns from pickle file
+
+      - save_biases:                         Save biases, decay and bad columns in pickle format (to be loaded by                                             the function load_hic_data_from_bam)
 
       - `sum <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.sum>`_: Sum Hi-C data matrix                                             WARNING: parameters are not meant to be used by external users
 
@@ -206,6 +214,8 @@ Mapping module
 
    - eq_reads:                               Compare reads accounting for multicontacts
 
+   - merge_bams:                             Merge two bam files with samtools into one.
+
    - `merge_2d_beds <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.merge_2d_beds>`_: Merge two result files (file resulting from get_intersection or from                                             the filtering) into one.
 
 Mapping analyze module
@@ -215,17 +225,21 @@ Mapping analyze module
 
    - `plot_genomic_distribution <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_genomic_distribution>`_ [#first]_ [#second]_: Plot the number of reads in bins along the genome (or along a given                                             chromosome).
 
-   - `plot_strand_bias_by_distance <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_strand_bias_by_distance>`_ [#first]_: Classify reads into for categories depending on the strand on which each end                                             is mapped, and plots the proportion of each of these categories in function                                             of the genomic distance between them.                                             The four categories are:                                                                                          - Both read-ends mapped in the forward strand                                             - Both read-ends mapped in the reverse strand                                             - First read-end in the forward strand1, second in the reverse                                             - First read-end in the reverse strand1, second in the forward                                                                                          Note: First/second read-ends are according to their genomic coordinates.                                                                                          The plot is divided in two halves, in order to use different zooms for                                             read-ends mapped very close, and read-ends further (by default the first                                             half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).
+   - `plot_strand_bias_by_distance <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_strand_bias_by_distance>`_ [#first]_: Classify reads into four categories depending on the strand on which each                                             of its end is mapped, and plots the proportion of each of these categories                                             in function of the genomic distance between them.                                                                                          Only full mapped reads mapped on two diferent restriction fragments (still                                             same chromosome) are considered.                                                                                          The four categories are:                                             - Both read-ends mapped on the same strand (forward)                                             - Both read-ends mapped on the same strand (reverse)                                             - Both read-ends mapped on the different strand (facing), like extra-dangling-ends                                             - Both read-ends mapped on the different strand (opposed), like extra-self-circles
 
    - `hic_map <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map>`_ [#first]_ [#second]_: function to retrieve data from HiC-data object. Data can be stored as                                             a square matrix, or drawn using matplotlib
+
+   - `correlate_matrices <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices>`_ [#first]_ [#second]_: Compare the interactions of two Hi-C matrices at a given distance,                                             with Spearman rank correlation.                                                                                          Also computes the SCC reproducibility score as in HiCrep (see                                             https://doi.org/10.1101/gr.220640.117).
+
+   - get_reproducibility:                    Compute reproducibility score similarly to HiC-spector                                             (https://doi.org/10.1093/bioinformatics/btx152)
 
    - `plot_iterative_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_iterative_mapping>`_ [#first]_: Plots the number of reads mapped at each step of the mapping process (in the                                             case of the iterative mapping, each step is mapping process with a given                                             size of fragments).
 
    - `plot_distance_vs_interactions <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_distance_vs_interactions>`_ [#first]_: Plot the number of interactions observed versus the genomic distance between                                             the mapped ends of the read. The slope is expected to be around -1, in                                             logarithmic scale and between 700 kb and 10 Mb (according to the prediction                                             of the fractal globule model).
 
-   - `correlate_matrices <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices>`_ [#first]_ [#second]_: Compare the interactions of two Hi-C matrices at a given distance,                                             with Spearman rank correlation
+   - fragment_size [#first]_:                Plots the distribution of dangling-ends lengths
 
-   - `insert_sizes <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.insert_sizes>`_ [#first]_: Plots the distribution of dangling-ends lengths
+   - `insert_sizes <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.insert_sizes>`_ [#first]_: Deprecated function, use fragment_size
 
 Mapping filter module
 ---------------------
@@ -237,20 +251,24 @@ Mapping filter module
 Mapping full_mapper module
 --------------------------
 
-   - `full_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping>`_: Maps FASTQ reads to an indexed reference genome. Mapping can be done either                                             without knowledge of the restriction enzyme used, or for experiments                                             performed without one, like Micro-C (iterative mapping), or using the                                             ligation sites created from the digested ends (fragment-based mapping).
-
    - transform_fastq:                        Given a FASTQ file it can split it into chunks of a given number of reads,                                             trim each read according to a start/end positions or split them into                                             restriction enzyme fragments
+
+   - `full_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping>`_: Maps FASTQ reads to an indexed reference genome. Mapping can be done either                                             without knowledge of the restriction enzyme used, or for experiments                                             performed without one, like Micro-C (iterative mapping), or using the                                             ligation sites created from the digested ends (fragment-based mapping).
 
 Mapping restriction_enzymes module
 ----------------------------------
 
    - map_re_sites_nochunk:                   map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                                                                                                                       In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
+   - religateds:                             returns the resulting list of all possible sequences after religation of two                                             digested and repaired ends.
+
    - `repaired <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.repaired>`_: returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
 
    - `map_re_sites <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.map_re_sites>`_: map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                                                                                                                       In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-   - `religated <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.religated>`_: returns the resulting sequence after religation of two digested and repaired                                             ends.
+   - identify_re:                            Search most probable restriction enzyme used in the Hi-C experiment.                                             Uses binomial test and some heuristics.
+
+   - iupac2regex:                            Convert target sites with IUPAC nomenclature to regex pattern
 
 Modelling imp_modelling module
 ------------------------------
@@ -275,9 +293,9 @@ Modelling impoptimizer module
 
 IMPoptimizer class
 ++++++++++++++++++
-    This class optimizes a set of parameters (scale, maxdist, lowfreq and
-    upfreq) in order to maximize the correlation between the models generated
-    by IMP and the input data.
+    This class optimizes a set of parameters (scale, kbending, maxdist, lowfreq, and
+    upfreq) in order to maximize the correlation between the contact matrix computed on
+    the generted models (generated by IMP, or lammps) and the input contact map.
 
       - `get_best_parameters_dict <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict>`_: 
 
@@ -287,9 +305,7 @@ IMPoptimizer class
 
       - `plot_2d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
 
-      - `plot_3d <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d>`_: A grid of heatmaps representing the result of the optimization.
-
-      - `run_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             maxdist, lowfreq and upfreq) in the given ranges of values.
+      - `run_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             kbending, maxdist, lowfreq and upfreq) in the given ranges of values.                                             The range can be expressed as a list.
 
       - `write_result <http://3dgenomes.github.io/TADbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.write_result>`_: This function writes a log file of all the values tested for each                                             parameter, and the resulting correlation value.                                                                                          This file can be used to load or merge data a posteriori using                                             the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file
 
@@ -329,6 +345,8 @@ IMPmodel class
       - `write_cmm <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.write_cmm>`_ [#second]_: Save a model in the cmm format, read by Chimera                                             (http://www.cgl.ucsf.edu/chimera).                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
 
       - `write_xyz <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodel.html#pytadbit.modelling.impmodel.StructuralModel.write_xyz>`_ [#second]_: Writes a xyz file containing the 3D coordinates of each particle in the                                             model.                                             Outfile is tab separated column with the bead number being the                                             first column, then the genomic coordinate and finally the 3                                             coordinates X, Y and Z                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
+
+      - write_xyz_babel [#second]_:          Writes a xyz file containing the 3D coordinates of each particle in the                                             model using a file format compatible with babel                                             (http://openbabel.org/wiki/XYZ_%28format%29).                                             Outfile is tab separated column with the bead number being the                                             first column, then the genomic coordinate and finally the 3                                             coordinates X, Y and Z                                             **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
 
 Modelling structuralmodels module
 ---------------------------------
@@ -372,6 +390,10 @@ StructuralModels class
 
       - `get_contact_matrix <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.get_contact_matrix>`_: Returns a matrix with the number of interactions observed below a given                                             cutoff distance.
 
+      - get_persistence_length [#first]_ [#second]_: Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
+
+      - infer_unrestrained_particle_coords:  if a given particle (and direct neighbors) have no restraints. Infer                                             the coordinates by linear interpolation using closest particles with                                             restraints.
+
       - `interactions <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.interactions>`_ [#first]_ [#second]_: Plots, for each particle, the number of interactions (particles closer                                             than the given cut-off). The value given is the average for all models.
 
       - `median_3d_dist <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.median_3d_dist>`_ [#first]_: Computes the median distance between two particles over a set of models
@@ -397,12 +419,25 @@ StructuralModels class
 Parsers bed_parser module
 -------------------------
 
+   - parse_mappability_bedGraph:             parse BEDgraph containing mappability.                                             GEM mappability file obtained with:                                                                                          gem-indexer -i hg38.fa -o hg38                                             gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8                                             gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer                                             wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw                                             bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph
+
    - parse_bed:                              simple BED and BEDgraph parser that only checks for the fields 1, 2, 3 and 5                                             (or 1, 2 and 3 if 5 not availbale).
 
 Parsers genome_parser module
 ----------------------------
 
+   - get_gc_content:                         Get GC content by bins of a given size. Ns are nottaken into account in the                                             calculation, only the number of Gs and Cs over As, Ts, Gs and Cs
+
    - `parse_fasta <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta>`_: Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
+
+Parsers hic_bam_parser module
+-----------------------------
+
+   - get_filters:                            get all filters
+
+   - get_biases_region:                      Retrieve biases, decay, and bad bins from a dictionary, and re-index it                                             according to a region of interest.
+
+   - bed2D_to_BAMhic:                        function adapted from Enrique Vidal <enrique.vidal@crg.eu> scipt to convert                                             2D beds into compressed BAM format.                                                                                          Gets the *_both_filled_map.tsv contacts from TADbit (and the corresponding                                             filter files) and outputs a modified indexed BAM with the following fields:                                                                                          - read ID                                             - filtering flag (see codes in header)                                             - chromosome ID of the first pair of the contact                                             - genomic position of the first pair of the contact                                             - MAPQ set to 0                                             - pseudo CIGAR with sequence length and info about current copy (P: first copy, S: second copy)                                             - chromosome ID of the second pair of the contact                                             - genomic position of the second pair of the contact                                             - mapped length of the second pair of the contact                                             - sequence is missing (*)                                             - quality is missing (*)                                             - TC tag indicating single (1) or multi contact (3 6
 
 Parsers hic_parser module
 -------------------------
@@ -410,6 +445,10 @@ Parsers hic_parser module
    - optimal_reader:                         Reads a matrix generated by TADbit.                                             Can be slower than autoreader, but uses almost a third of the memory
 
    - autoreader:                             Auto-detect matrix format of HiC data file.
+
+   - load_hic_data_from_bam:                 
+
+   - abc_reader:                             Read matrix stored in 3 column format (bin1, bin2, value)
 
    - `read_matrix <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix>`_: Read and checks a matrix from a file (using                                             autoreader) or a list.
 
@@ -463,13 +502,17 @@ Tadbit module
 Utils extraviews module
 -----------------------
 
+   - plot_HiC_matrix [#first]_:              Plot HiC matrix with histogram of values inside color bar.
+
+   - add_subplot_axes:                       from https://stackoverflow.com/questions/17458580/embedding-small-plots-inside-subplots-in-matplotlib/35966183
+
    - `compare_models <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.compare_models>`_: Plots the difference of contact maps of two group of structural models.
 
    - `plot_3d_model <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_model>`_ [#first]_: Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model                                             using matplotlib
 
    - `color_residues <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.color_residues>`_: Function to color residues from blue to red.
 
-   - `plot_2d_optimization_result <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_2d_optimization_result>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
+   - `plot_2d_optimization_result <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_2d_optimization_result>`_ [#first]_: A grid of heatmaps representing the result of the optimization.                                             The maps will be divided in different pages depending on the 'scale' and 'kbending' values.                                             In each page there will be different maps depending the 'maxdist' values.                                             Each map has 'upfreq' values along the x-axes, and 'lowfreq' values along the y-axes.
 
    - colorize:                               Colorize with ANSII colors a string for printing in shell. this acording to                                             a given number between 0 and 10
 
@@ -485,19 +528,17 @@ Utils extraviews module
 
    - nicer:                                  writes resolution number for human beings.
 
+   - pcolormesh_45deg [#first]_:             Draw triangular matrix
+
 Utils fastq_utils module
 ------------------------
 
-   - `count_reads_approx <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.utils.fastq_utils.count_reads_approx>`_: Get the approximate number of reads in a FASTQ file. By averaging the sizes                                             of a given sample od randomly selected reads, and relating this mean to the                                             size of the file.
-
    - `quality_plot <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.utils.fastq_utils.quality_plot>`_ [#first]_: Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme                                             (RE) name is provided, can also represent the distribution of digested and                                             undigested RE sites and estimate an expected proportion of dangling-ends.                                                                                          Proportion of dangling-ends is inferred by counting the number of times a                                             dangling-end site, is found at the beginning of any of the reads (divided by                                             the number of reads).
-
-   - `count_reads <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.utils.fastq_utils.count_reads>`_: Count the number of reads in a FASTQ file (can be slow on big files, try                                             count_reads_approx)
-
-   - estimate_cardinality:                   Estimates the number of unique elements in the input set values.                                                                                          from: http://blog.notdot.net/2012/09/Dam-Cool-Algorithms-Cardinality-Estimation                                                                                          Arguments:                                             values: An iterator of hashable elements to estimate the cardinality of.                                             k: The number of bits of hash to use as a bucket number; there will be 2**k buckets.
 
 Utils file_handling module
 --------------------------
+
+   - is_fastq:                               Check if a given file is in fastq format
 
    - `magic_open <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.file_handling.magic_open>`_: To read uncompressed zip gzip bzip2 or tar.xx files
 
@@ -515,6 +556,8 @@ Utils hic_filtering module
    - `hic_filtering_for_modelling <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling>`_ [#first]_: Call filtering function, to remove artifactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
 
    - filter_by_zero_count:                   
+
+   - filter_by_cis_percentage [#first]_:     Define artifactual columns with either too low or too high counts of                                             interactions by compraing their percentage of cis interactions                                             (inter-chromosomal).
 
 Utils hmm module
 ----------------
@@ -557,13 +600,13 @@ Utils three_dim_stats module
 
    - `dihedral <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.dihedral>`_: Calculates dihedral angle between 4 points in 3D (array with x,y,z)
 
+   - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
+
    - `generate_circle_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points>`_: Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
    - mass_center:                            Transforms coordinates according to the center of mass
 
    - generate_sphere_points:                 Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
-
-   - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
 
    - `calc_eqv_rmsd <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd>`_: Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
 
@@ -574,6 +617,8 @@ Utils three_dim_stats module
    - fast_square_distance:                   Calculates the square distance between two coordinates.
 
    - `angle_between_3_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points>`_: Calculates the angle between 3 particles                                                                                          Given three particles A, B and C, the angle g (angle ACB, shown below):
+
+   - mmp_score [#first]_:                    
 
    - build_mesh:                             Main function for the calculation of the accessibility of a model.
 
