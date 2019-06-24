@@ -1,37 +1,25 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Parsers &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>Parsers &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Boundary Aligner" href="reference_aligner.html" />
     <link rel="prev" title="TAD clustering" href="reference_clustering.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +32,7 @@
         <li class="right" >
           <a href="reference_clustering.html" title="TAD clustering"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -60,30 +48,30 @@
 <dt id="pytadbit.parsers.hic_parser.read_matrix">
 <code class="descclassname">pytadbit.parsers.hic_parser.</code><code class="descname">read_matrix</code><span class="sig-paren">(</span><em>things</em>, <em>parser=None</em>, <em>hic=True</em>, <em>resolution=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#read_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.read_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and checks a matrix from a file (using
-<code class="xref py py-func docutils literal"><span class="pre">pytadbit.parser.hic_parser.autoreader()</span></code>) or a list.</p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.parser.hic_parser.autoreader()</span></code>) or a list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>things</strong> &#8211; might be either a file name, a file handler or a list of
+<li><strong>things</strong> – might be either a file name, a file handler or a list of
 list (all with same length)</li>
-<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – <p>a parser function that returns a tuple of lists
 representing the data matrix,
 with this file example.tsv:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
 <span class="n">chrT_001</span>       <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
 <span class="n">chrT_002</span>       <span class="mi">86</span>      <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
 <span class="n">chrT_003</span>       <span class="mi">159</span>     <span class="mi">216</span>     <span class="mi">437</span>     <span class="mi">105</span>
 <span class="n">chrT_004</span>       <span class="mi">100</span>     <span class="mi">111</span>     <span class="mi">146</span>     <span class="mi">278</span>
 </pre></div>
 </div>
-<p>the output of parser(&#8216;example.tsv&#8217;) might be:
-<code class="docutils literal"><span class="pre">([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span> <span class="pre">110,</span>
+<p>the output of parser(‘example.tsv’) might be:
+<code class="docutils literal notranslate"><span class="pre">([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span> <span class="pre">110,</span>
 <span class="pre">105,</span> <span class="pre">278])</span></code></p>
 </li>
-<li><strong>resolution</strong> (<em>1</em>) &#8211; resolution of the matrix</li>
-<li><strong>hic</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, TADbit assumes that files contains normalized
+<li><strong>resolution</strong> (<em>1</em>) – resolution of the matrix</li>
+<li><strong>hic</strong> (<em>True</em>) – if False, TADbit assumes that files contains normalized
 data</li>
 </ul>
 </td>
@@ -104,12 +92,12 @@ returns number or rows</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fnam</strong> &#8211; tsv file with reads1 and reads2</li>
-<li><strong>resolution</strong> &#8211; the resolution of the experiment (size of a bin in
+<li><strong>fnam</strong> – tsv file with reads1 and reads2</li>
+<li><strong>resolution</strong> – the resolution of the experiment (size of a bin in
 bases)</li>
-<li><strong>genome_seq</strong> &#8211; a dictionary containing the genomic sequence by
+<li><strong>genome_seq</strong> – a dictionary containing the genomic sequence by
 chromosome</li>
-<li><strong>get_sections</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; for very very high resolution, when the column
+<li><strong>get_sections</strong> (<em>False</em>) – for very very high resolution, when the column
 index does not fit in memory</li>
 </ul>
 </td>
@@ -120,7 +108,7 @@ index does not fit in memory</li>
 
 <dl class="function">
 <dt id="pytadbit.parsers.genome_parser.parse_fasta">
-<code class="descclassname">pytadbit.parsers.genome_parser.</code><code class="descname">parse_fasta</code><span class="sig-paren">(</span><em>f_names</em>, <em>chr_names=None</em>, <em>chr_filter=None</em>, <em>chr_regexp=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.parsers.genome_parser.</code><code class="descname">parse_fasta</code><span class="sig-paren">(</span><em>f_names</em>, <em>chr_names=None</em>, <em>chr_filter=None</em>, <em>chr_regexp=None</em>, <em>verbose=True</em>, <em>save_cache=True</em>, <em>reload_cache=False</em>, <em>only_length=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a list of fasta files, or just one fasta.</p>
 <p>WARNING: The order is important</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -128,11 +116,15 @@ index does not fit in memory</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>f_names</strong> &#8211; list of pathes to files, or just a single path</li>
-<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; pass list of chromosome names, or just one. If None
+<li><strong>f_names</strong> – list of pathes to files, or just a single path</li>
+<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – pass list of chromosome names, or just one. If None
 are passed, then chromosome names will be inferred from fasta headers</li>
-<li><strong>chr_filter</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; use only chromosome in the input list</li>
-<li><strong>chr_regexp</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; use only chromosome matching</li>
+<li><strong>chr_filter</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – use only chromosome in the input list</li>
+<li><strong>chr_regexp</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – use only chromosome matching</li>
+<li><strong>save_cache</strong> (<em>True</em>) – save a cached version of this file for faster
+loadings (~4 times faster)</li>
+<li><strong>reload_cache</strong> (<em>False</em>) – reload cached genome</li>
+<li><strong>only_length</strong> (<em>False</em>) – returns dictionary with length of genome,not sequence</li>
 </ul>
 </td>
 </tr>
@@ -159,18 +151,18 @@ the closest downstream RE site</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>f_names1</strong> &#8211; a list of path to sam/bam files corresponding to the
+<li><strong>f_names1</strong> – a list of path to sam/bam files corresponding to the
 mapping of read1, can also  be just one file</li>
-<li><strong>f_names1</strong> &#8211; a list of path to sam/bam files corresponding to the
+<li><strong>f_names1</strong> – a list of path to sam/bam files corresponding to the
 mapping of read2, can also  be just one file</li>
-<li><strong>out_file1</strong> &#8211; path to outfile tab separated format containing mapped
+<li><strong>out_file1</strong> – path to outfile tab separated format containing mapped
 read1 information</li>
-<li><strong>out_file1</strong> &#8211; path to outfile tab separated format containing mapped
+<li><strong>out_file1</strong> – path to outfile tab separated format containing mapped
 read2 information</li>
-<li><strong>genome_seq</strong> &#8211; a dictionary generated by <code class="xref py py-func docutils literal"><span class="pre">pyatdbit.parser.genome_parser.parse_fasta()</span></code>.
+<li><strong>genome_seq</strong> – a dictionary generated by <code class="xref py py-func docutils literal notranslate"><span class="pre">pyatdbit.parser.genome_parser.parse_fasta()</span></code>.
 containing the genomic sequence</li>
-<li><strong>re_name</strong> &#8211; name of the restriction enzyme used</li>
-<li><strong>mapper</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; software used to map (supported are GEM and BOWTIE2).
+<li><strong>re_name</strong> – name of the restriction enzyme used</li>
+<li><strong>mapper</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – software used to map (supported are GEM and BOWTIE2).
 Guessed from file by default.</li>
 </ul>
 </td>
@@ -184,14 +176,14 @@ Guessed from file by default.</li>
 <code class="descclassname">pytadbit.parsers.tad_parser.</code><code class="descname">parse_tads</code><span class="sig-paren">(</span><em>handler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/tad_parser.html#parse_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.tad_parser.parse_tads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a tab separated value file that contains the list of TADs of a given
 experiment. This file might have been generated whith the
-<code class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.print_result_R()</span></code> or with the R binding for tadbit</p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.tadbit.print_result_R()</span></code> or with the R binding for tadbit</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>handler</strong> &#8211; path to file</li>
-<li><strong>bin_size</strong> (<em>1</em>) &#8211; resolution of the experiment</li>
+<li><strong>handler</strong> – path to file</li>
+<li><strong>bin_size</strong> (<em>1</em>) – resolution of the experiment</li>
 </ul>
 </td>
 </tr>
@@ -200,7 +192,7 @@ experiment. This file might have been generated whith the
 </tr>
 </tbody>
 </table>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TAD_num</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TAD_num</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
            <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
            <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
            <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}}</span>
@@ -219,14 +211,13 @@ experiment. This file might have been generated whith the
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="../index.html">Table Of Contents</a></h3>
+<h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -234,8 +225,8 @@ experiment. This file might have been generated whith the
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impmodel.html">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
@@ -251,12 +242,14 @@ experiment. This file might have been generated whith the
                         title="next chapter">Boundary Aligner</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -275,14 +268,14 @@ experiment. This file might have been generated whith the
         <li class="right" >
           <a href="reference_clustering.html" title="TAD clustering"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 28, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

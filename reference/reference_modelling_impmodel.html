@@ -1,0 +1,227 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>IMPmodel class &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="StructuralModels class" href="reference_modelling_structuralmodels.html" />
+    <link rel="prev" title="IMPoptimizer class" href="reference_modelling_impoptimizer.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_modelling_impoptimizer.html" title="IMPoptimizer class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <dl class="function">
+<dt id="pytadbit.modelling.impmodel.load_impmodel_from_cmm">
+<code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">marker_set</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7347.50964739&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7743.92836303&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-8283.39749204&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.00990099009901&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.990099009901&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;2&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7647.90254377&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7308.1816344&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-7387.75932893&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.019801980198&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.980198019802&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">link</span> <span class="n">id1</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">id2</span><span class="o">=</span><span class="s2">&quot;2&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;250.0&quot;</span><span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">marker_set</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.modelling.impmodel.load_impmodel_from_xyz">
+<code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ID              : some identifier</span>
+<span class="c1"># SPECIES         : None</span>
+<span class="c1"># CELL TYPE       : None</span>
+<span class="c1"># EXPERIMENT TYPE : Hi-C</span>
+<span class="c1"># RESOLUTION      : 10000</span>
+<span class="c1"># ASSEMBLY        : None</span>
+<span class="c1"># CHROMOSOME      : 19</span>
+<span class="c1"># START           : 1</span>
+<span class="c1"># END             : 50</span>
+<span class="mi">1</span>  <span class="mi">19</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">10000</span>        <span class="mf">44.847</span>     <span class="mf">412.828</span>    <span class="o">-</span><span class="mf">162.673</span>
+<span class="mi">2</span>  <span class="mi">19</span><span class="p">:</span><span class="mi">10001</span><span class="o">-</span><span class="mi">20000</span>   <span class="o">-</span><span class="mf">55.574</span>     <span class="mf">396.869</span>    <span class="o">-</span><span class="mf">129.782</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="impmodel-class">
+<h1>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pytadbit.modelling.impmodel.IMPmodel">
+<em class="property">class </em><code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">IMPmodel</code><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for the IMP modeling results. The container is a dictionary
+with the following keys:</p>
+<ul class="simple">
+<li>log_objfun: The list of IMP objective function values</li>
+<li>objfun: The final objective function value of the corresponding model</li>
+<li>rand_init: Random number generator feed (needed for model reproducibility)</li>
+<li>x, y, z: 3D coordinates of each particles. Each represented as a list</li>
+</ul>
+<dl class="method">
+<dt id="pytadbit.modelling.impmodel.IMPmodel.objective_function">
+<code class="descname">objective_function</code><span class="sig-paren">(</span><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function plots the objective function value per each Monte-Carlo
+step.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>log</strong> (<em>False</em>) – log plot</li>
+<li><strong>smooth</strong> (<em>True</em>) – curve smoothing</li>
+<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+appearance</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">IMPmodel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_modelling_impoptimizer.html"
+                        title="previous chapter">IMPoptimizer class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_modelling_structuralmodels.html"
+                        title="next chapter">StructuralModels class</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_modelling_impoptimizer.html" title="IMPoptimizer class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

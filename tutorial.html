@@ -1,37 +1,25 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Tutorials &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>Tutorials &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Mapping paired-end reads from NGS experiment (with GEM)" href="tutorial/tutorial_0_mapping.html" />
+    <link rel="next" title="Retrieve HiC dataset from NCBI" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" />
     <link rel="prev" title="Installing TADbit on GNU/Linux" href="install.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -39,12 +27,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial/tutorial_0_mapping.html" title="Mapping paired-end reads from NGS experiment (with GEM)"
+          <a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -59,13 +47,15 @@
 <h2>From FASTQ files to interaction matrices<a class="headerlink" href="#from-fastq-files-to-interaction-matrices" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_0_mapping.html">Mapping paired-end reads from NGS experiment (with GEM)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_0_mapping.html#download-and-index-reference-genome">Download and index reference genome</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_0_mapping.html#mapping">Mapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_0_mapping.html#filter-reads">Filter reads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_0_mapping.html#filtering-and-normalization">Filtering and normalization</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </div>
 </div>
@@ -73,22 +63,17 @@
 <h2>Identification and Analysis of TADs and Compartments<a class="headerlink" href="#identification-and-analysis-of-tads-and-compartments" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_1_general.html">Getting started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#hi-c-data-format">Hi-C data format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#experiment-objects">Experiment objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#find-topologically-associating-domains">Find Topologically Associating Domains</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#finding-tads-in-related-hi-c-experiments">Finding TADs in related Hi-C experiments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#forbidden-regions-and-centromeres">Forbidden regions and centromeres</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_1_general.html#saving-and-restoring-data">Saving and restoring data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html">Compartments and TADs detection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#compartments">Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#tads">TADs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html#comparison-of-tad-borders">Comparison of TAD borders</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html#aligning-boundaries">Aligning boundaries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html#alignment-objects">Alignment objects</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_3_clustering.html">TAD clustering</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_3_clustering.html#compare-two-tads">Compare two TADs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#comparison-between-replicates">Comparison between replicates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#comparison-between-cell-types">Comparison between cell types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#merge-hi-c-experiments">Merge Hi-C experiments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html#normalizing-merged-data">Normalizing merged data</a></li>
 </ul>
 </li>
 </ul>
@@ -98,27 +83,25 @@
 <h2>Three-dimentional modelling<a class="headerlink" href="#three-dimentional-modelling" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_4_data_normalization.html">Hi-C data processing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_4_data_normalization.html#data-filtering">Data filtering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_4_data_normalization.html#data-normalization">Data normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html">Experimental data assessment and model parameters optimisation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html#data-preparation">Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html#data-modellability-assessment-via-mmp-score">Data modellability assessment via MMP score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html#data-transformation-and-scoring-function">Data Transformation and scoring function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html">Parameter optimization for IMP.</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html#optimization-of-imp-3d-modeling-parameters">Optimization of IMP 3D modeling parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html#visualize-the-results">Visualize the results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html#retrieve-best-parameters">Retrieve best parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html">Three-dimensional modeling of chromatine structure</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html#model-the-3d-structure-of-a-selected-tad">Model the 3D structure of a selected TAD</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html#model-analysis">Model analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html#save-and-load-models-and-analysis">Save and load models and analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html#related-software">Related Software</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_7_single_model_analysis.html">Structural analysis of a chromatin model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_7_single_model_analysis.html#general-shape-of-the-model">General shape of the model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_7_single_model_analysis.html#chromatin-accessibility-fitting-objects-inside-the-model">Chromatin accessibility: fitting objects inside the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html">Modelling a region of the chromatin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#load-previous-data">Load previous data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#modeling">Modeling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#structural-models">Structural Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#align-models">Align models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#deconvolve">Deconvolve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#clustering">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#consistency">Consistency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#dna-density-plots">DNA density plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#walking-angle">Walking Angle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#particles-interactions">Particles interactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#accessibility">Accessibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html#calculating-distances-between-particles">Calculating distances between particles</a></li>
 </ul>
 </li>
 </ul>
@@ -135,25 +118,30 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="index.html">Table Of Contents</a></h3>
+<h3><a href="index.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_0_mapping.html">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5-Parsing_mapped_reads.html#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1_general.html">Getting started</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_3_clustering.html">TAD clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_8-Compartments_and_TADs_detection.html">Compartments and TADs detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_9-Compare_and_merge_Hi-C_experiments.html">Comparison of Hi-C experiments</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#three-dimentional-modelling">Three-dimentional modelling</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_4_data_normalization.html">Hi-C data processing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_5_parameter_optimization.html">Parameter optimization for IMP.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_6_modelling_and_analysis.html">Three-dimensional modeling of chromatine structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_7_single_model_analysis.html">Structural analysis of a chromatin model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_10-Modeling_parameters_optimization.html">Experimental data assessment and model parameters optimisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_11-3D_Models_production_and_analysis.html">Modelling a region of the chromatin</a></li>
 </ul>
 </li>
 </ul>
@@ -167,16 +155,18 @@
   <p class="topless"><a href="install.html"
                         title="previous chapter">Installing TADbit on GNU/Linux</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tutorial/tutorial_0_mapping.html"
-                        title="next chapter">Mapping paired-end reads from NGS experiment (with GEM)</a></p>
+  <p class="topless"><a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html"
+                        title="next chapter">Retrieve HiC dataset from NCBI</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -190,18 +180,18 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial/tutorial_0_mapping.html" title="Mapping paired-end reads from NGS experiment (with GEM)"
+          <a href="tutorial/tutorial_1-Retrieve_published_HiC_datasets.html" title="Retrieve HiC dataset from NCBI"
              >next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Installing TADbit on GNU/Linux"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

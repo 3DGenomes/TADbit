@@ -1,0 +1,509 @@
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Load mapped read-ends and generate a matrix &#8212; Tadbit 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Filtering" href="tutorial_6-Filtering_mapped_reads.html" />
+    <link rel="prev" title="Iterative vs fragment-based mapping" href="tutorial_4-Mapping.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="load-mapped-read-ends-and-generate-a-matrix">
+<h1>Load mapped read-ends and generate a matrix<a class="headerlink" href="#load-mapped-read-ends-and-generate-a-matrix" title="Permalink to this headline">¶</a></h1>
+<p>We read now each mapped read-ends in the map files and extact the ones
+that are uniquely mapped. For each of these uniquely mapped read-ends,
+we store: - The strand - The genomic location (most upstream position is
+reported for both sequences mapped in forward and reverse strand) - The
+chromosome - The sequence itself - The <strong>restriction enzyme fragment</strong>
+on which it is located</p>
+<p>This information will be used to filter the reads and, finally, to
+construct the interaction matrix. Above we show the same analysis done
+for the fragment-based and iterative mapping strategies.</p>
+<div class="section" id="extract-uniquely-mapped-reads">
+<h2>Extract uniquely mapped reads<a class="headerlink" href="#extract-uniquely-mapped-reads" title="Permalink to this headline">¶</a></h2>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># replicate and enzyme used</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>  <span class="c1"># or mouse_PSC</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>  <span class="c1"># or rep2</span>
+</pre></div>
+</div>
+<p><em>Note: the execution of this notebook should be repeated for each of the
+4 replicates</em></p>
+<div class="section" id="load-genomic-sequence-to-map-restriction-sites">
+<h3>Load genomic sequence to map restriction sites<a class="headerlink" href="#load-genomic-sequence-to-map-restriction-sites" title="Permalink to this headline">¶</a></h3>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span> <span class="k">import</span> <span class="n">parse_fasta</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">genome_seq</span> <span class="o">=</span> <span class="n">parse_fasta</span><span class="p">(</span><span class="s1">&#39;genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Loading cached genome
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.map_parser</span> <span class="k">import</span> <span class="n">parse_map</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="iterative-mapping-results">
+<h2>Iterative mapping results<a class="headerlink" href="#iterative-mapping-results" title="Permalink to this headline">¶</a></h2>
+<p>In case we haven’t stored the location of each of the reads we could
+load them as follow:</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">maps1</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r1/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq_full_1-</span><span class="si">{2}</span><span class="s1">.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+
+<span class="n">maps2</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r2/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_2.fastq_full_1-</span><span class="si">{2}</span><span class="s1">.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>Load all reads, and check if they are uniquely mapped. The Result is
+stored in two separate tab-separated-values (tsv) files that will
+contain the essential information of each read-end</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/iterativ/$cell\_$rep/02_parsing
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parse_map</span><span class="p">(</span><span class="n">maps1</span><span class="p">,</span> <span class="n">maps2</span><span class="p">,</span>
+          <span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads1_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+          <span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads2_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+          <span class="n">genome_seq</span><span class="o">=</span><span class="n">genome_seq</span><span class="p">,</span> <span class="n">re_name</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Searching and mapping RE sites to the reference genome
+Found 6669655 RE sites
+Loading read1
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-25.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-35.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-45.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-55.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-65.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-75.map
+Merge sort....................................................................................
+Getting Multiple contacts
+Loading read2
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-25.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-35.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-45.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-55.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-65.map
+loading file: results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-75.map
+Merge sort...................................................................................
+Getting Multiple contacts
+</pre>
+<pre class="ansi-block literal-block">
+({0: {1: 69012817, 2: 4693142, 3: 2552881, 4: 1982032, 5: 1225598, 6: 1031718},
+  1: {1: 68026433,
+   2: 4866307,
+   3: 2558036,
+   4: 2103111,
+   5: 1271540,
+   6: 1153164}},
+ {0: {0: 80498187}, 1: {0: 79978590}})
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_iterative_mapping</span>
+
+<span class="n">total_reads</span> <span class="o">=</span> <span class="mi">100000000</span>
+
+<span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span>
+    <span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads1_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+    <span class="s1">&#39;results/iterativ/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads2_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+    <span class="n">total_reads</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_15_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_15_0.png" />
+</div>
+<div class="section" id="fragment-based-mapping-results">
+<h2>Fragment-based mapping results<a class="headerlink" href="#fragment-based-mapping-results" title="Permalink to this headline">¶</a></h2>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/fragment/$cell\_$rep/02_parsing
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">maps1</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r1/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq_full_1-end.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r1/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq_frag_1-end.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">)]</span>
+
+<span class="n">maps2</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r2/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_2.fastq_full_1-end.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/01_mapping/mapped_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_r2/&#39;</span>
+          <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_2.fastq_frag_1-end.map&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parse_map</span><span class="p">(</span><span class="n">maps1</span><span class="p">,</span> <span class="n">maps2</span><span class="p">,</span>
+          <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads1_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+          <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads2_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+          <span class="n">genome_seq</span><span class="o">=</span><span class="n">genome_seq</span><span class="p">,</span> <span class="n">re_name</span><span class="o">=</span><span class="s1">&#39;MboI&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Searching and mapping RE sites to the reference genome
+Found 6669655 RE sites
+Loading read1
+loading file: results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-end.map
+loading file: results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_frag_1-end.map
+Merge sort...........................................................................................
+Getting Multiple contacts
+Loading read2
+loading file: results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_full_1-end.map
+loading file: results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2/mouse_B_rep1_2.fastq_frag_1-end.map
+Merge sort........................................................................................
+Getting Multiple contacts
+</pre>
+<pre class="ansi-block literal-block">
+({0: {1: 64750569, 2: 25664719}, 1: {1: 61548041, 2: 26467447}},
+ {0: {0: 74098430, 1: 8157782, 2: 431}, 1: {0: 71100363, 1: 8456843, 2: 479}})
+</pre>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reads1</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads1_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">)</span>
+<span class="n">reads2</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/02_parsing/reads2_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_iterative_mapping</span>
+
+<span class="n">total_reads</span> <span class="o">=</span> <span class="mi">100000000</span>
+
+<span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">total_reads</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_21_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_21_0.png" />
+<p><em>Note: From now on we are going to focus only on the results of the
+**fragment based mapping*</em>.*</p>
+</div>
+<div class="section" id="keep-only-uniquely-mapped-reads-pairs">
+<h2>Keep only uniquely mapped reads pairs<a class="headerlink" href="#keep-only-uniquely-mapped-reads-pairs" title="Permalink to this headline">¶</a></h2>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping</span> <span class="k">import</span> <span class="n">get_intersection</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/fragment/$cell\_$rep/03_filtering
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reads</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_intersection</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Getting intersection of reads 1 and reads 2:
+
+  .......... .......... .......... .......... ..........     50 milion reads
+  .......... .......... .......... .......... ...
+Found 68707083 pair of reads mapping uniquely
+Sorting each temporary file by genomic coordinate
+    1025/1025 sorted files
+Removing temporary files...
+</pre>
+<pre class="ansi-block literal-block">
+(68707083, {2: 9191166, 3: 154507, 4: 17})
+</pre>
+</div>
+</div>
+<div class="section" id="quality-check-of-the-hi-c-experiment">
+<h1>Quality check of the Hi-C experiment<a class="headerlink" href="#quality-check-of-the-hi-c-experiment" title="Permalink to this headline">¶</a></h1>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_distance_vs_interactions</span>
+
+<span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>According to the fractal globule model <a class="reference external" href="#cite-Mirny2011">(Mirny,
+2011)</a> the slope between 700 kb and 10 Mb should be
+around -1 in log scale</p>
+<div class="section" id="note-decay-by-chromosome">
+<h2>Note: decay by chromosome<a class="headerlink" href="#note-decay-by-chromosome" title="Permalink to this headline">¶</a></h2>
+<p>With a bit of coding we can also extract the decay by chromosome.</p>
+<p>Although the level of interaction changes depending on the chromosome
+(and the number of chromosomes, cf: chrX), the slope is relatively
+constant, and in very few occasions we may observe line crossings.</p>
+<p>Differences in the slopes observed between chromosomes or conditions
+relates to gains or losses of close or long range interactions <a class="reference external" href="#cite-Kojic2018">(Kojic
+et al. 2018)</a>.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">load_hic_data_from_reads</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">min_diff</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="n">max_diff</span>  <span class="o">=</span> <span class="mi">200</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">cnum</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chrY&#39;</span><span class="p">,</span><span class="s1">&#39;chrMT&#39;</span><span class="p">]:</span>
+        <span class="k">continue</span>
+    <span class="n">dist_intr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">min_diff</span><span class="p">,</span> <span class="nb">min</span><span class="p">((</span><span class="n">max_diff</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">c</span><span class="p">]))):</span>
+        <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+        <span class="n">dist_intr</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">diff</span><span class="p">):</span>
+            <span class="n">dist_intr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hic_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">diff</span><span class="p">])</span>
+    <span class="n">mean_intrp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dist_intr</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">mean_intrp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean_intrp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">xp</span><span class="p">,</span> <span class="n">yp</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">min_diff</span><span class="p">,</span> <span class="n">max_diff</span><span class="p">),</span> <span class="n">mean_intrp</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xp</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">yp</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">mean_intrp</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">5.25</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">cnum</span> <span class="o">/</span> <span class="mf">4.3</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span>
+               <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">5.25</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">cnum</span> <span class="o">/</span> <span class="mf">4.3</span><span class="p">),</span> <span class="n">mean_intrp</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">c</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">mean_intrp</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;number of interactions&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Distance between bins (in 100 kb bins)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">110</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_37_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_37_0.png" />
+<p><em>Note: these **decay are computed on the raw data*</em>, and although the
+slopes may not change dramatically, it is a <strong>good practice to repeate
+this analysis and interpret the results also once the data are
+normalized</strong>.*</p>
+<p>In an ideal situation, the number of reads per bin along the genome is
+expected to be homogeneous across the genome. However, PCR artifacts
+(see for example the middle of the chromosome 3 below) or variations in
+the distributions of GC content, mappability or the number of RE
+cut-sites along the genome can cause heterogeneity. In the following
+sections, we will discuss how to correct for these sources of
+heterogeneity.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">plot_genomic_distribution</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000</span><span class="p">),</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_42_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_42_0.png" />
+<pre class="ansi-block literal-block">
+&lt;Figure size 900x900 with 0 Axes&gt;
+</pre>
+<p>The plot bellow is probably the most informative, in order to infer the
+quality of an Hi-C experiment. This plot shows on the left part: - The
+histogram of the interaction counts. - The interaction count as a
+function of the genomic distance between the interacting sequences. -
+Some statistics on the specificity of the interaction: (i) the total
+number of interactions; (ii) the cis-to-trans ratio (expected to be at
+least between 50 or 60% in mammals), (iii and iv) the minimum and the
+maximum values of the ineraction matrix.</p>
+<p>and on the right part:</p>
+<ul class="simple">
+<li>The interaction matrix.</li>
+<li>The first 3 eigenvectors of the interaction matrix are shown on top
+of the matrix itself.</li>
+</ul>
+<p><strong>*Note</strong>: The first 3 eigenvectors of the interaction matrix highlight
+the principal structural features of the matrix. In the raw matrix shown
+here, we can see, for instance, that here the maxima of the first
+eigenvector seem to be correlated with the presence of low-coverage
+bins.*</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+/home/fransua/.miniconda2/lib/python2.7/site-packages/matplotlib/axes/_axes.py:6571: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
+  warnings.warn(&quot;The 'normed' kwarg is deprecated, and has been &quot;
+</pre>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_46_1.png" src="../_images/tutorial_5-Parsing_mapped_reads_46_1.png" />
+<p>From the reads that are mapped in a single RE fragment we can infer the
+average insert size:</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">insert_sizes</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_50_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_50_0.png" />
+<pre class="ansi-block literal-block">
+[187.0, 697.0]
+</pre>
+<p>The median size of the sequenced DNA fragments is thus 187 nt.</p>
+<p><strong>*Note</strong>: This distribution is usually peaked at smaller values than
+the one measured experimentally (with a Bioanalyzer for example). This
+difference is due in part to the fact that, here, we are only measuring
+dangling-ends that may be, on average, shorter than other reads.*</p>
+<p>The following function in TADbit allows to measure the size of the
+sequenced fragment. If we set the parameter <code class="docutils literal notranslate"><span class="pre">valid-pairs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>, we will look only at the interactions captured within RE
+fragments (similarly to the <code class="docutils literal notranslate"><span class="pre">insert_sizes</span></code> function above):</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span>  <span class="n">plot_strand_bias_by_distance</span>
+</pre></div>
+</div>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_strand_bias_by_distance</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">valid_pairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">20000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_56_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_56_0.png" />
+<p>This function separates each read-end pair into 4 categories depending
+of the orientation of the strand in which each maps.</p>
+<p>Having a look at the minimum distance from which the orientation of the
+mapped read-ends is even, is also useful for the interpretation of the
+results and for the definition of filters.</p>
+<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_strand_bias_by_distance</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">20000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_5-Parsing_mapped_reads_58_0.png" src="../_images/tutorial_5-Parsing_mapped_reads_58_0.png" />
+<p>We can see that when the distance between the mapped read-ends is larger
+than ~1 kb, the orientation is even (25% each category). Meaning that
+bellow this size interactions are very likely to be extra-dangling-ends
+or re-ligated fragments, with no useful structural information.</p>
+<!--bibtex
+@article{Mirny2011,
+abstract = {The fractal globule is a compact polymer state that emerges during polymer condensation as a result of topological constraints which prevent one region of the chain from passing across another one. This long-lived intermediate state was introduced in 1988 (Grosberg et al. 1988) and has not been observed in experiments or simulations until recently (Lieberman-Aiden et al. 2009). Recent characterization of human chromatin using a novel chromosome conformational capture technique brought the fractal globule into the spotlight as a structural model of human chromosome on the scale of up to 10 Mb (Lieberman-Aiden et al. 2009). Here, we present the concept of the fractal globule, comparing it to other states of a polymer and focusing on its properties relevant for the biophysics of chromatin. We then discuss properties of the fractal globule that make it an attractive model for chromatin organization inside a cell. Next, we connect the fractal globule to recent studies that emphasize topological constraints as a primary factor driving formation of chromosomal territories. We discuss how theoretical predictions, made on the basis of the fractal globule model, can be tested experimentally. Finally, we discuss whether fractal globule architecture can be relevant for chromatin packing in other organisms such as yeast and bacteria.},
+author = {Mirny, Leonid a},
+doi = {10.1007/s10577-010-9177-0},
+file = {:home/fransua/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Mirny - 2011 - The fractal globule as a model of chromatin architecture in the cell.pdf:pdf},
+issn = {1573-6849},
+journal = {Chromosome research : an international journal on the molecular, supramolecular and evolutionary aspects of chromosome biology},
+keywords = {Biophysics,Chromatin,Chromatin: ultrastructure,Chromosomes, Human,Fractals,Humans,Models, Molecular,Protein Conformation,Protein Folding},
+mendeley-groups = {Research articles,projects/FEBS{\_}review/modeling{\_}perspectives},
+month = {jan},
+number = {1},
+pages = {37--51},
+pmid = {21274616},
+title = {{The fractal globule as a model of chromatin architecture in the cell.}},
+url = {http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3040307{\&}tool=pmcentrez{\&}rendertype=abstract},
+volume = {19},
+year = {2011}
+}
+--></div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>[^](#ref-1) Mirny, Leonid a. 2011. <em>The fractal globule as a model of
+chromatin architecture in the cell.</em>.
+<a class="reference external" href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3040307%7B&amp;%7Dtool=pmcentrez%7B&amp;%7Drendertype=abstract">URL</a></p>
+<p>[^](#ref-2) Aleksandar Kojic, Ana Cuadrado, Magali De Koninck, Daniel
+Giménez-Llorente, Miriam Rodríguez-Corsino, Gonzalo Gómez-López,
+François Le Dily, Marc A. Marti-Renom &amp; Ana Losada. <em>Distinct roles of
+cohesin-SA1 and cohesin-SA2 in 3D chromosome organization.</em> Nature
+Structural &amp; Molecular Biologyvolume 25, pages496–504 (2018)
+<a class="reference external" href="https://www.nature.com/articles/s41594-018-0070-4">URL</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tutorial_1-Retrieve_published_HiC_datasets.html">Retrieve HiC dataset from NCBI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2-Preparation_of_the_reference_genome.html">Preparation of the reference genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3-Hi-C_quality_check.html">Hi-C quality check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html">Iterative vs fragment-based mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_4-Mapping.html#mapping">Mapping</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Load mapped read-ends and generate a matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-check-of-the-hi-c-experiment">Quality check of the Hi-C experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_6-Filtering_mapped_reads.html">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7-Bin_filtering_and_normalization.html">Bin filtering and normalization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads-and-compartments">Identification and Analysis of TADs and Compartments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_4-Mapping.html"
+                        title="previous chapter">Iterative vs fragment-based mapping</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_6-Filtering_mapped_reads.html"
+                        title="next chapter">Filtering</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_6-Filtering_mapped_reads.html" title="Filtering"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_4-Mapping.html" title="Iterative vs fragment-based mapping"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright .
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

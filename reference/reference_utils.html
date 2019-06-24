@@ -1,37 +1,25 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Utilities &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>Utilities &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Bibliography" href="../biblio.html" />
     <link rel="prev" title="StructuralModels class" href="reference_modelling_structuralmodels.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +32,7 @@
         <li class="right" >
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -78,21 +66,21 @@ info. May be used to ensure reproducibility.</p>
 one the most accurate way to compare clustering methods
 <a class="reference internal" href="../biblio.html#milligancooper1985" id="id2">[MilliganCooper1985]</a> <a class="reference internal" href="../biblio.html#tibshirani2001" id="id3">[Tibshirani2001]</a>.</p>
 <p>The CH score is:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[CH(k) = \frac{B(k) / (k-1)}{W(k)/(n - k)}\]</div>
-<p>Where <span class="math">\(B(k)\)</span> and <span class="math">\(W(k)\)</span> are the between and within cluster sums
-of squares, with <span class="math">\(k\)</span> clusters, and <span class="math">\(n\)</span> the total number of
+<p>Where <span class="math notranslate nohighlight">\(B(k)\)</span> and <span class="math notranslate nohighlight">\(W(k)\)</span> are the between and within cluster sums
+of squares, with <span class="math notranslate nohighlight">\(k\)</span> clusters, and <span class="math notranslate nohighlight">\(n\)</span> the total number of
 elements (models in this case).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>scores</strong> &#8211; a dict with, as keys, a tuple with a pair of models; and, as
+<li><strong>scores</strong> – a dict with, as keys, a tuple with a pair of models; and, as
 value, the distance between these models.</li>
-<li><strong>clusters</strong> &#8211; a dict with, as key, the cluster number, and as value a
+<li><strong>clusters</strong> – a dict with, as key, the cluster number, and as value a
 list of models</li>
-<li><strong>nmodels</strong> &#8211; total number of models</li>
+<li><strong>nmodels</strong> – total number of models</li>
 </ul>
 </td>
 </tr>
@@ -113,8 +101,8 @@ optimization.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> &#8211; 3D numpy array contating correlation values</li>
-<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) &#8211; tuple of axes to
+<li><strong>result</strong> – 3D numpy array contating correlation values</li>
+<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) – tuple of axes to
 represent. The order will define which parameter will be placed on the
 w, z, y or x axe.</li>
 </ul>
@@ -126,25 +114,34 @@ w, z, y or x axe.</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_2d_optimization_result">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_2d_optimization_result</code><span class="sig-paren">(</span><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>dcutoff=None</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em>, <em>clim=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>A grid of heatmaps representing the result of the optimization.</p>
+<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_2d_optimization_result</code><span class="sig-paren">(</span><em>result</em>, <em>axes=('scale'</em>, <em>'kbending'</em>, <em>'maxdist'</em>, <em>'lowfreq'</em>, <em>'upfreq')</em>, <em>dcutoff=None</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em>, <em>clim=None</em>, <em>cmap='inferno'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>A grid of heatmaps representing the result of the optimization. In the optimization
+up to 5 parameters can be optimized: ‘scale’, ‘kbending’, ‘maxdist’, ‘lowfreq’, and ‘upfreq’.
+The maps will be divided in different pages depending on the ‘scale’ and ‘kbending’ values.
+In each page there will be different maps depending the ‘maxdist’ values.
+Each map has ‘upfreq’ values along the x-axes, and ‘lowfreq’ values along the y-axes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> &#8211; 3D numpy array contating correlation values</li>
-<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) &#8211; tuple of axes to
-represent. The order will define which parameter will be placed on the
-w, z, y or x axe.</li>
-<li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation value to identifie.</li>
-<li><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dict can be passed here in order to fix a given axe,
-e.g.: {&#8216;scale&#8217;: 0.001, &#8216;maxdist&#8217;: 500}</li>
-<li><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; optimized cutoff</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
-if None, the image will be shown using matplotlib GUI (the extension
-of the file name will determine the desired format).</li>
-<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; color scale. If None max and min values are used.</li>
+<li><strong>result</strong> – 3D numpy array contating the computed correlation values</li>
+<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'kbending'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'lowfreq'</em><em>,</em><em>'upfreq'</em>) – tuple of axes
+to represent. The order is important here. It will define which parameter
+will be placed respectively on the v, w, z, y, or x axes.</li>
+<li><strong>show_best</strong> (<em>0</em>) – number of best correlation value to highlight in the heatmaps.
+The best correlation is highlithed by default</li>
+<li><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a dict can be passed here in order to fix a given parameter value,
+e.g.: {‘scale’: 0.001, ‘kbending’: 30, ‘maxdist’: 500} will represent all the
+correlation values at fixed ‘scale’, ‘kbending’, and ‘maxdist’ values,
+respectively equal to 0.001, 30, and 500.</li>
+<li><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – The distance cutoff (dcutoff) used to compute the contact matrix
+in the models.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the generated image.
+If None, the image will be displayed using matplotlib GUI. NOTE: the extension
+of the file name will automatically determine the desired format.</li>
+<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</li>
+<li><strong>cmap</strong> (<em>inferno</em>) – matplotlib colormap</li>
 </ul>
 </td>
 </tr>
@@ -161,15 +158,15 @@ of the file name will determine the desired format).</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>sm1</strong> &#8211; a StructuralModel</li>
-<li><strong>sm2</strong> &#8211; a StructuralModel</li>
-<li><strong>dcutoff</strong> (<em>150</em>) &#8211; distance threshold (nm) to determine if two
+<li><strong>sm1</strong> – a StructuralModel</li>
+<li><strong>sm2</strong> – a StructuralModel</li>
+<li><strong>dcutoff</strong> (<em>150</em>) – distance threshold (nm) to determine if two
 particles are in contact</li>
-<li><strong>models</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – if None (default) the contact map will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
-cluster number &#8216;cluster&#8217;</li>
+<li><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – compute the contact map only for the models in the
+cluster number ‘cluster’</li>
 </ul>
 </td>
 </tr>
@@ -185,7 +182,7 @@ cluster number &#8216;cluster&#8217;</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> &#8211; a given <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of rgb tuples (red, green, blue), each between 0 and 1.</td>
 </tr>
@@ -203,8 +200,8 @@ in scale of grey, from light to dark grey (again first to last border)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model</strong> &#8211; a given <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>tads</strong> &#8211; a dictionary of TADs, Experiments.tads can be directly passed</li>
+<li><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
+<li><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</li>
 </ul>
 </td>
 </tr>
@@ -226,8 +223,8 @@ TAD)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model</strong> &#8211; a given <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>tads</strong> &#8211; a dictionary of TADs, Experiments.tads can be directly passed</li>
+<li><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
+<li><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</li>
 </ul>
 </td>
 </tr>
@@ -240,7 +237,7 @@ TAD)</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_3d_model">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_3d_model</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>label=False</em>, <em>axe=None</em>, <em>thin=False</em>, <em>savefig=None</em>, <em>show_axe=False</em>, <em>azimuth=-90</em>, <em>elevation=0.0</em>, <em>color='index'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_3d_model</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>label=False</em>, <em>axe=None</em>, <em>thin=False</em>, <em>savefig=None</em>, <em>show_axe=False</em>, <em>azimuth=-90</em>, <em>elevation=0.0</em>, <em>color='index'</em>, <em>smooth=0.001</em>, <em>particle_size=50</em>, <em>alpha_part=0.5</em>, <em>lw_main=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
 using matplotlib</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -248,28 +245,30 @@ using matplotlib</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> &#8211; a <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; show labels</li>
-<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+<li><strong>model</strong> – a <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
+<li><strong>label</strong> (<em>False</em>) – show labels</li>
+<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</li>
-<li><strong>thin</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a thin black line instead of representing particles
+<li><strong>thin</strong> (<em>False</em>) – draw a thin black line instead of representing particles
 and edges</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>smooth</strong> (<em>0.001</em>) – connction between particles is smoothed according to
+the input condition</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>azimuth</strong> (<em>-90</em>) &#8211; angle to rotate camera along the y axis</li>
-<li><strong>elevation</strong> (<em>0</em>) &#8211; angle to rotate camera along the x axis</li>
-<li><strong>color</strong> (<em>'index'</em>) &#8211; <p>can be:</p>
+<li><strong>azimuth</strong> (<em>-90</em>) – angle to rotate camera along the y axis</li>
+<li><strong>elevation</strong> (<em>0</em>) – angle to rotate camera along the x axis</li>
+<li><strong>color</strong> (<em>'index'</em>) – <p>can be:</p>
 <ul>
 <li><dl class="first docutils">
 <dt>a string as:</dt>
 <dd><ul class="first last">
-<li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
-<li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
-<li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
+<li>’<strong>index</strong>’ to color particles according to their position in the
+model (<a class="reference internal" href="#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
+<li>’<strong>tad</strong>’ to color particles according to the TAD they belong to
+(<a class="reference internal" href="#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
+<li>’<strong>border</strong>’ to color particles marking borders. Color according to
+their score (<a class="reference internal" href="#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -298,17 +297,17 @@ to view models.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cmm_files</strong> &#8211; list of .cmm files</li>
-<li><strong>chimera_bin</strong> (<em>'chimera'</em>) &#8211; path to chimera binary</li>
-<li><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of command lines for chimera</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save generated image</li>
-<li><strong>center_of_mass</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, draws the center of mass</li>
-<li><strong>gyradius</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; increment the radius of the center of mass by the
+<li><strong>cmm_files</strong> – list of .cmm files</li>
+<li><strong>chimera_bin</strong> (<em>'chimera'</em>) – path to chimera binary</li>
+<li><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – list of command lines for chimera</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save generated image</li>
+<li><strong>center_of_mass</strong> (<em>False</em>) – if True, draws the center of mass</li>
+<li><strong>gyradius</strong> (<em>False</em>) – increment the radius of the center of mass by the
 value of the radius of girations given.</li>
-<li><strong>align</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; align models</li>
-<li><strong>grid</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; tile models</li>
-<li><strong>higlight</strong> (<em>'all'</em>) &#8211; higlights a given model, or group of models.
-Can be either &#8216;all&#8217;, or a model number</li>
+<li><strong>align</strong> (<em>False</em>) – align models</li>
+<li><strong>grid</strong> (<em>False</em>) – tile models</li>
+<li><strong>higlight</strong> (<em>'all'</em>) – higlights a given model, or group of models.
+Can be either ‘all’, or a model number</li>
 </ul>
 </td>
 </tr>
@@ -329,18 +328,18 @@ stored in the dictionary Experiment._zeros.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrx</strong> &#8211; Hi-C matrix of a given experiment</li>
-<li><strong>silent</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>matrx</strong> – Hi-C matrix of a given experiment</li>
+<li><strong>silent</strong> (<em>False</em>) – does not warn for removed columns</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; remove row/columns with zero in the diagonal</li>
-<li><strong>perc_zero</strong> (<em>90</em>) &#8211; maximum percentage of cells with no interactions
+<li><strong>diagonal</strong> (<em>True</em>) – remove row/columns with zero in the diagonal</li>
+<li><strong>perc_zero</strong> (<em>90</em>) – maximum percentage of cells with no interactions
 allowed.</li>
-<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; minimum number of reads mapped to a bin (recommended
+<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
-filtering... This option is slightly slower.</li>
-<li><strong>auto</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, only filters based on the given percentage
+filtering… This option is slightly slower.</li>
+<li><strong>auto</strong> (<em>True</em>) – if False, only filters based on the given percentage
 zeros</li>
 </ul>
 </td>
@@ -361,7 +360,7 @@ calculation of the z-score</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; either a path to a file, or a file handler</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – either a path to a file, or a file handler</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">opened file ready to be iterated</td>
 </tr>
@@ -379,8 +378,8 @@ calculation of the z-score</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>folder</strong> &#8211; folder/drive to measure</li>
-<li><strong>div</strong> (<em>2</em>) &#8211; divide the size by (div*1024) to get the size in Mb (3 is Gb...)</li>
+<li><strong>folder</strong> – folder/drive to measure</li>
+<li><strong>div</strong> (<em>2</em>) – divide the size by (div*1024) to get the size in Mb (3 is Gb…)</li>
 </ul>
 </td>
 </tr>
@@ -390,7 +389,7 @@ calculation of the z-score</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">calc_eqv_rmsd</code><span class="sig-paren">(</span><em>models</em>, <em>nloci</em>, <em>zeros</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">calc_eqv_rmsd</code><span class="sig-paren">(</span><em>models</em>, <em>beg</em>, <em>end</em>, <em>zeros</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the RMSD, dRMSD, the number of equivalent positions and a score
 combining these three measures. The measure are done between a group of
 models in a one against all manner.</p>
@@ -399,25 +398,26 @@ models in a one against all manner.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>nloci</strong> &#8211; number of particles per model</li>
-<li><strong>zeros</strong> &#8211; list of True/False representing particles to skip</li>
-<li><strong>dcutoff</strong> (<em>200</em>) &#8211; distance in nanometer from which it is considered
+<li><strong>beg</strong> – start particle number of the region to compare</li>
+<li><strong>end</strong> – end particle number of the region to compare</li>
+<li><strong>zeros</strong> – list of True/False representing particles to skip</li>
+<li><strong>dcutoff</strong> (<em>200</em>) – distance in nanometer from which it is considered
 that two particles are separated.</li>
-<li><strong>fact</strong> (<em>0.75</em>) &#8211; Factor for equivalent positions</li>
-<li><strong>one</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True assumes that only two models are passed, and
+<li><strong>fact</strong> (<em>0.75</em>) – Factor for equivalent positions</li>
+<li><strong>one</strong> (<em>False</em>) – if True assumes that only two models are passed, and
 returns the rmsd of their comparison</li>
-<li><strong>what</strong> (<em>'score'</em>) &#8211; values to return. Can be one of &#8216;score&#8217;, &#8216;rmsd&#8217;,
-&#8216;drmsd&#8217; or &#8216;eqv&#8217;</li>
-<li><strong>normed</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; normalize result by maximum value (only applies to rmsd
+<li><strong>what</strong> (<em>'score'</em>) – values to return. Can be one of ‘score’, ‘rmsd’,
+‘drmsd’ or ‘eqv’</li>
+<li><strong>normed</strong> (<em>True</em>) – normalize result by maximum value (only applies to rmsd
 and drmsd)</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>a score of each pairwise comparison according to:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[score_i = eqvs_i \times \frac{dRMSD_i / max(dRMSD)}
                                 {RMSD_i / max(RMSD)}\]</div>
-<p>where <span class="math">\(eqvs_i\)</span> is the number of equivalent position for the ith
+<p>where <span class="math notranslate nohighlight">\(eqvs_i\)</span> is the number of equivalent position for the ith
 pairwise model comparison.</p>
 </p>
 </td>
@@ -435,8 +435,8 @@ pairwise model comparison.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>part1</strong> &#8211; coordinate (dict format with x, y, z keys)</li>
-<li><strong>part2</strong> &#8211; coordinate (dict format with x, y, z keys)</li>
+<li><strong>part1</strong> – coordinate (dict format with x, y, z keys)</li>
+<li><strong>part2</strong> – coordinate (dict format with x, y, z keys)</li>
 </ul>
 </td>
 </tr>
@@ -456,8 +456,8 @@ pairwise model comparison.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>part1</strong> &#8211; coordinate in list format (x, y, z)</li>
-<li><strong>part2</strong> &#8211; coordinate in list format (x, y, z)</li>
+<li><strong>part1</strong> – coordinate in list format (x, y, z)</li>
+<li><strong>part2</strong> – coordinate in list format (x, y, z)</li>
 </ul>
 </td>
 </tr>
@@ -473,7 +473,7 @@ pairwise model comparison.</p>
 <code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">angle_between_3_points</code><span class="sig-paren">(</span><em>point1</em>, <em>point2</em>, <em>point3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>      <span class="n">A</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>      <span class="n">A</span>
      <span class="o">/|</span>
     <span class="o">/</span><span class="n">i</span><span class="o">|</span>
   <span class="n">c</span><span class="o">/</span>  <span class="o">|</span>
@@ -489,16 +489,16 @@ pairwise model comparison.</p>
 </pre></div>
 </div>
 <p>is given by the theorem of Al-Kashi:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[b^2 = a^2 + c^2 - 2ac\cos(g)\]</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>point1</strong> &#8211; list of 3 coordinate for x, y and z</li>
-<li><strong>point2</strong> &#8211; list of 3 coordinate for x, y and z</li>
-<li><strong>point3</strong> &#8211; list of 3 coordinate for x, y and z</li>
+<li><strong>point1</strong> – list of 3 coordinate for x, y and z</li>
+<li><strong>point2</strong> – list of 3 coordinate for x, y and z</li>
+<li><strong>point3</strong> – list of 3 coordinate for x, y and z</li>
 </ul>
 </td>
 </tr>
@@ -527,16 +527,16 @@ for details</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> &#8211; x coordinate of a point somewhere on the circle</li>
-<li><strong>y</strong> &#8211; y coordinate of a point somewhere on the circle</li>
-<li><strong>z</strong> &#8211; z coordinate of a point somewhere on the circle</li>
-<li><strong>a</strong> &#8211; x coordinate of the center</li>
-<li><strong>b</strong> &#8211; y coordinate of the center</li>
-<li><strong>c</strong> &#8211; z coordinate of the center</li>
-<li><strong>u</strong> &#8211; 1st element of a vector in the same plane as the circle</li>
-<li><strong>v</strong> &#8211; 2nd element of a vector in the same plane as the circle</li>
-<li><strong>w</strong> &#8211; 3rd element of a vector in the same plane as the circle</li>
-<li><strong>n</strong> &#8211; number of points in the circle</li>
+<li><strong>x</strong> – x coordinate of a point somewhere on the circle</li>
+<li><strong>y</strong> – y coordinate of a point somewhere on the circle</li>
+<li><strong>z</strong> – z coordinate of a point somewhere on the circle</li>
+<li><strong>a</strong> – x coordinate of the center</li>
+<li><strong>b</strong> – y coordinate of the center</li>
+<li><strong>c</strong> – z coordinate of the center</li>
+<li><strong>u</strong> – 1st element of a vector in the same plane as the circle</li>
+<li><strong>v</strong> – 2nd element of a vector in the same plane as the circle</li>
+<li><strong>w</strong> – 3rd element of a vector in the same plane as the circle</li>
+<li><strong>n</strong> – number of points in the circle</li>
 </ul>
 </td>
 </tr>
@@ -559,14 +559,13 @@ for details</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="../index.html">Table Of Contents</a></h3>
+<h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -574,8 +573,8 @@ for details</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impmodel.html">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a></li>
 </ul>
@@ -591,12 +590,14 @@ for details</p>
                         title="next chapter">Bibliography</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -615,14 +616,14 @@ for details</p>
         <li class="right" >
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,37 +1,25 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>From FASTQ to matrix &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>From FASTQ to matrix &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="HiC_data class" href="reference_hic_data.html" />
+    <link rel="next" title="Chromosome class" href="reference_chromosome.html" />
     <link rel="prev" title="Reference Guide" href="index.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -39,12 +27,12 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="reference_hic_data.html" title="HiC_data class"
+          <a href="reference_chromosome.html" title="Chromosome class"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Reference Guide"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -60,7 +48,7 @@
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytadbit.mapping.full_mapper.full_mapping">
-<code class="descclassname">pytadbit.mapping.full_mapper.</code><code class="descname">full_mapping</code><span class="sig-paren">(</span><em>gem_index_path</em>, <em>fastq_path</em>, <em>out_map_dir</em>, <em>r_enz=None</em>, <em>frag_map=True</em>, <em>min_seq_len=15</em>, <em>windows=None</em>, <em>add_site=True</em>, <em>clean=False</em>, <em>get_nread=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.full_mapper.</code><code class="descname">full_mapping</code><span class="sig-paren">(</span><em>mapper_index_path</em>, <em>fastq_path</em>, <em>out_map_dir</em>, <em>mapper='gem'</em>, <em>r_enz=None</em>, <em>frag_map=True</em>, <em>min_seq_len=15</em>, <em>windows=None</em>, <em>add_site=True</em>, <em>clean=False</em>, <em>get_nread=False</em>, <em>mapper_binary=None</em>, <em>mapper_params=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps FASTQ reads to an indexed reference genome. Mapping can be done either
 without knowledge of the restriction enzyme used, or for experiments
 performed without one, like Micro-C (iterative mapping), or using the
@@ -70,20 +58,20 @@ ligation sites created from the digested ends (fragment-based mapping).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>gem_index_path</strong> &#8211; path to index file created from a reference genome
-using gem-index tool</li>
-<li><strong>fastq_path</strong> &#8211; PATH to FASTQ file, either compressed or not.</li>
-<li><strong>out_map_dir</strong> &#8211; path to a directory where to store mapped reads in MAP
+<li><strong>mapper_index_path</strong> – path to index file created from a reference genome
+using gem-index tool or bowtie2-build</li>
+<li><strong>fastq_path</strong> – PATH to FASTQ file, either compressed or not.</li>
+<li><strong>out_map_dir</strong> – path to a directory where to store mapped reads in MAP
 format .</li>
-<li><strong>r_enz</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the restriction enzyme used in the experiment e.g.
+<li><strong>r_enz</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – name of the restriction enzyme used in the experiment e.g.
 HindIII. This is optional if frag_map option is False</li>
-<li><strong>frag_map</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; two step mapper, first full length is mapped, then
+<li><strong>frag_map</strong> (<em>True</em>) – two step mapper, first full length is mapped, then
 remaining, unmapped reads, are divided into restriction-enzyme fragments
 andeach is mapped.</li>
-<li><strong>add_site</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; when splitting the sequence by ligated sites found,
+<li><strong>add_site</strong> (<em>True</em>) – when splitting the sequence by ligated sites found,
 removes the ligation site, and put back the original RE site.</li>
-<li><strong>min_seq_len</strong> (<em>15</em>) &#8211; minimum size of a fragment to map</li>
-<li><strong>windows</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>tuple of ranges for beginning and end of the
+<li><strong>min_seq_len</strong> (<em>15</em>) – minimum size of a fragment to map</li>
+<li><strong>windows</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – <p>tuple of ranges for beginning and end of the
 mapping. This parameter allows to do classical iterative mapping, e.g.</p>
 <blockquote>
 <div>windows=((1,25),(1,30),(1,35),(1,40),(1,45),(1,50))</div></blockquote>
@@ -92,23 +80,25 @@ mapping. This parameter allows to do classical iterative mapping, e.g.</p>
 <dd>windows=((1,101),)</dd>
 </dl>
 </li>
-<li><strong>clean</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove intermediate files created in temp_dir</li>
-<li><strong>nthreads</strong> (<em>4</em>) &#8211; number of threads to use for mapping (number of CPUs)</li>
-<li><strong>max_edit_distance</strong> (<em>0.04</em>) &#8211; The maximum number of edit operations allowed
+<li><strong>clean</strong> (<em>False</em>) – remove intermediate files created in temp_dir</li>
+<li><strong>nthreads</strong> (<em>4</em>) – number of threads to use for mapping (number of CPUs)</li>
+<li><strong>max_edit_distance</strong> (<em>0.04</em>) – The maximum number of edit operations allowed
 while verifying candidate matches by dynamic programming.</li>
-<li><strong>mismatches</strong> (<em>0.04</em>) &#8211; The maximum number of nucleotide substitutions
+<li><strong>mismatches</strong> (<em>0.04</em>) – The maximum number of nucleotide substitutions
 allowed while mapping each k-mer. It is always guaranteed that, however
 other options are chosen, all the matches up to the specified number of
 substitutions will be found by the program.</li>
-<li><strong>temp_dir</strong> (<em>/tmp</em>) &#8211; important to change. Intermediate FASTQ files will be
+<li><strong>temp_dir</strong> (<em>/tmp</em>) – important to change. Intermediate FASTQ files will be
 written there.</li>
-<li><strong>get_nreads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; returns a list of lists where each element contains
+<li><strong>get_nreads</strong> (<em>False</em>) – returns a list of lists where each element contains
 a path and the number of reads processed</li>
+<li><strong>mapper_binary</strong> (<em>gem-mapper</em>) – path to the binary mapper</li>
+<li><strong>mapper_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – extra parameters for the mapper</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of paths to generated outfiles. To be passed to
-<code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.map_parser.parse_map()</span></code></p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.parsers.map_parser.parse_map()</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -128,54 +118,54 @@ a square matrix, or drawn using matplotlib</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> &#8211; can be either a path to a file with pre-processed reads
+<li><strong>data</strong> – can be either a path to a file with pre-processed reads
 (filtered or not), or a Hi-C-data object</li>
-<li><strong>resolution</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; at which to bin the data (try having a dense matrix
+<li><strong>resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – at which to bin the data (try having a dense matrix
 with &lt; 10% of cells with zero interaction counts). Note: not necessary
-if a hic_data object is passed as &#8216;data&#8217;.</li>
-<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; used normalized data, based on precalculated biases</li>
-<li><strong>masked</strong> &#8211; a list of columns to be removed. Usually because to few
+if a hic_data object is passed as ‘data’.</li>
+<li><strong>normalized</strong> (<em>False</em>) – used normalized data, based on precalculated biases</li>
+<li><strong>masked</strong> – a list of columns to be removed. Usually because to few
 interactions</li>
-<li><strong>by_chrom</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; <p>data can be stored in a partitioned way. This
+<li><strong>by_chrom</strong> (<em>False</em>) – <p>data can be stored in a partitioned way. This
 parameter can take the values of:</p>
 <blockquote>
 <div><ul>
-<li>&#8216;intra&#8217;: one output per each chromosome will be created</li>
+<li>’intra’: one output per each chromosome will be created</li>
 <li><dl class="first docutils">
-<dt>&#8216;inter&#8217;: one output per each possible pair of chromosome will be</dt>
+<dt>’inter’: one output per each possible pair of chromosome will be</dt>
 <dd>created</dd>
 </dl>
 </li>
-<li>&#8216;all&#8217;  : both of the above outputs</li>
+<li>’all’  : both of the above outputs</li>
 </ul>
 </div></blockquote>
 </li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output images. Note that, if
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path where to store the output images. Note that, if
 the by_chrom option is used, then savefig will be the name of the
 directory containing the output files.</li>
-<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output matrices. Note that, if
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path where to store the output matrices. Note that, if
 the by_chrom option is used, then savefig will be the name of the
 directory containing the output files.</li>
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can be either two number (i.e.: (1, 100)) specifying the
+<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – can be either two number (i.e.: (1, 100)) specifying the
 start and end position of the sub-matrix to display (start and end, along
 the diagonal of the original matrix); or directly a chromosome name; or
-two chromosome names (i.e.: focus=(&#8216;chr2, chrX&#8217;)), in order to store the
+two chromosome names (i.e.: focus=(‘chr2, chrX’)), in order to store the
 data corresponding to inter chromosomal interactions between these two
 chromosomes</li>
-<li><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; plot the correlation between genomic distance and
+<li><strong>decay</strong> (<em>True</em>) – plot the correlation between genomic distance and
 interactions (usually a decay).</li>
-<li><strong>force_image</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; force to generate an image even if resolution is
-crazy...</li>
-<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
+<li><strong>force_image</strong> (<em>False</em>) – force to generate an image even if resolution is
+crazy…</li>
+<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – cutoff for the upper and lower bound in the coloring scale
 of the heatmap. (perc_clim should be set to None)</li>
-<li><strong>perc_clim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
+<li><strong>perc_clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – cutoff for the upper and lower bound in the coloring scale
 of the heatmap; in percentile. (clim should be set to None)</li>
-<li><strong>pdf</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; when using the bny_chrom option, to specify the format of
+<li><strong>pdf</strong> (<em>False</em>) – when using the bny_chrom option, to specify the format of
 the stored images</li>
-<li><strong>cmap</strong> (<em>jet</em>) &#8211; color map to be used for the heatmap; &#8220;tadbit&#8221; color map is
+<li><strong>cmap</strong> (<em>jet</em>) – color map to be used for the heatmap; “tadbit” color map is
 also implemented and will use percentiles of the distribution of
 interactions to defines intensities of red.</li>
-<li><strong>decay_resolution</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; chromatin fragment size to consider when
+<li><strong>decay_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – chromatin fragment size to consider when
 calculating decay of the number of interactions with genomic distance.
 Default is equal to resolution of the matrix.</li>
 </ul>
@@ -188,71 +178,43 @@ Default is equal to resolution of the matrix.</li>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.insert_sizes">
 <code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">insert_sizes</code><span class="sig-paren">(</span><em>fnam</em>, <em>savefig=None</em>, <em>nreads=None</em>, <em>max_size=99.9</em>, <em>axe=None</em>, <em>show=False</em>, <em>xlog=False</em>, <em>stats=('median'</em>, <em>'perc_max')</em>, <em>too_large=10000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#insert_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.insert_sizes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots the distribution of dangling-ends lengths
-:param fnam: input file name
-:param None savefig: path where to store the output images.
-:param 99.9 max_size: top percentage of distances to consider, within the</p>
-<blockquote>
-<div>top 0.01% are usually found very long outliers.</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xlog</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent x axis in logarithmic scale</li>
-<li><strong>'perc_max'</strong><strong>) </strong><strong>stats</strong> (<em></em><em>(</em><em>'median'</em><em>,</em><em></em>) &#8211; <p>returns this set of values calculated from the
-distribution of insert/fragment sizes. Possible values are:</p>
-<blockquote>
-<div><ul>
-<li>&#8216;median&#8217; median of the distribution</li>
-<li>&#8216;perc_max&#8217; percentil defined by the other parameter &#8216;max_size&#8217;</li>
-<li><dl class="first docutils">
-<dt>&#8216;first_deacay&#8217; starting from the median of the distribution to the</dt>
-<dd>first window where 10 consecutive insert sizes are counted less than
-a given value (this given value is equal to the sum of all
-sizes divided by 100 000)</dd>
-</dl>
-</li>
-<li>&#8216;MAD&#8217; Double Median Adjusted Deviation</li>
-</ul>
-</div></blockquote>
-</li>
-<li><strong>too_large</strong> (<em>10000</em>) &#8211; upper bound limit for fragment size to consider</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the median value and the percentile inputed as max_size.</p>
-</td>
-</tr>
-</tbody>
-</table>
+<dd><p>Deprecated function, use fragment_size</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.correlate_matrices">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>intra=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>normalized=False</em>, <em>remove_bad_columns=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compare the interactions of two Hi-C matrices at a given distance,
-with Spearman rank correlation</p>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>intra=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>min_dist=1</em>, <em>normalized=False</em>, <em>remove_bad_columns=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Compare the interactions of two Hi-C matrices at a given distance,</dt>
+<dd>with Spearman rank correlation.</dd>
+<dt>Also computes the SCC reproducibility score as in HiCrep (see</dt>
+<dd><a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>). It’s implementation is inspired
+by the version implemented in dryhic by Enrique Vidal
+(<a class="reference external" href="https://github.com/qenvio/dryhic">https://github.com/qenvio/dryhic</a>).</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hic_data1</strong> &#8211; Hi-C-data object</li>
-<li><strong>hic_data2</strong> &#8211; Hi-C-data object</li>
-<li><strong>resolution</strong> (<em>1</em>) &#8211; to be used for scaling the plot</li>
-<li><strong>max_dist</strong> (<em>10</em>) &#8211; maximum distance from diagonal (e.g. 10 mean we will
+<li><strong>hic_data1</strong> – Hi-C-data object</li>
+<li><strong>hic_data2</strong> – Hi-C-data object</li>
+<li><strong>resolution</strong> (<em>1</em>) – to be used for scaling the plot</li>
+<li><strong>max_dist</strong> (<em>10</em>) – maximum distance from diagonal (e.g. 10 mean we will
 not look further than 10 times the resolution)</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
-<li><strong>intra</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; only takes into account intra-chromosomal contacts</li>
-<li><strong>show</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
-<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; use normalized data</li>
-<li><strong>remove_bads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the union of bad columns between samples
+<li><strong>min_dist</strong> (<em>1</em>) – minimum distance from diagonal (set to 0 to reproduce
+result from HicRep)</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to save the plot</li>
+<li><strong>intra</strong> (<em>False</em>) – only takes into account intra-chromosomal contacts</li>
+<li><strong>show</strong> (<em>False</em>) – displays the plot</li>
+<li><strong>normalized</strong> (<em>False</em>) – use normalized data</li>
+<li><strong>remove_bads</strong> (<em>True</em>) – computes the union of bad columns between samples
 and exclude them from the comparison</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of correlations and list of genomic distances</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of correlations, list of genomic distances, SCC and standard
+deviation of SCC</p>
 </td>
 </tr>
 </tbody>
@@ -261,37 +223,50 @@ and exclude them from the comparison</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_strand_bias_by_distance">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_strand_bias_by_distance</code><span class="sig-paren">(</span><em>fnam</em>, <em>nreads=None</em>, <em>half_step=20</em>, <em>half_len=2000</em>, <em>full_step=500</em>, <em>full_len=50000</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Classify reads into for categories depending on the strand on which each end
-is mapped, and plots the proportion of each of these categories in function
-of the genomic distance between them.
-The four categories are:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Both read-ends mapped in the forward strand</li>
-<li>Both read-ends mapped in the reverse strand</li>
-<li>First read-end in the forward strand1, second in the reverse</li>
-<li>First read-end in the reverse strand1, second in the forward</li>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_strand_bias_by_distance</code><span class="sig-paren">(</span><em>fnam</em>, <em>nreads=1000000</em>, <em>valid_pairs=True</em>, <em>half_step=20</em>, <em>half_len=2000</em>, <em>full_step=500</em>, <em>full_len=50000</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classify reads into four categories depending on the strand on which each
+of its end is mapped, and plots the proportion of each of these categories
+in function of the genomic distance between them.</p>
+<p>Only full mapped reads mapped on two diferent restriction fragments (still
+same chromosome) are considered.</p>
+<dl class="docutils">
+<dt>The four categories are:</dt>
+<dd><ul class="first last simple">
+<li>Both read-ends mapped on the same strand (forward)</li>
+<li>Both read-ends mapped on the same strand (reverse)</li>
+<li>Both read-ends mapped on the different strand (facing), like extra-dangling-ends</li>
+<li>Both read-ends mapped on the different strand (opposed), like extra-self-circles</li>
 </ul>
-</div></blockquote>
-<p>Note: First/second read-ends are according to their genomic coordinates.</p>
-<p>The plot is divided in two halves, in order to use different zooms for
-read-ends mapped very close, and read-ends further (by default the first
-half goes from a distance of 0 to 2 kb, and the second from 2 kb to 50 kb).</p>
+</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fnam</strong> &#8211; input file name with the intersection of the two read-ends mapped</li>
-<li><strong>nreads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; number of reads to process (default: all reads)</li>
-<li><strong>half_len</strong> (<em>2000</em>) &#8211; limit in the X axis of the first plot</li>
-<li><strong>half_step</strong> (<em>20</em>) &#8211; to bin distances between read-ends in the first plot</li>
-<li><strong>full_len</strong> (<em>2000</em>) &#8211; limit in the X axis of the second plot</li>
-<li><strong>full_step</strong> (<em>20</em>) &#8211; to bin distances between read-ends in the second plot</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output images.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Params fnam:</th><td class="field-body">path to tsv file with intersection of mapped ends</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params True valid_pairs:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">consider only read-ends mapped
+on different restriction fragments. If False, considers only read-ends
+mapped on the same restriction fragment.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Params 1000000 nreads:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">number of reads used to plot (if None, all will be used)</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params 20 half_step:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">binning for the first part of the plot</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Params 2000 half_len:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">maximum distance for the first part of the plot</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params 500 full_step:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">binning for the second part of the plot</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Params 50000 full_len:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">maximum distance for the second part of the plot</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None savefig:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">path to save figure</td>
 </tr>
 </tbody>
 </table>
@@ -307,15 +282,15 @@ eigenvectors, with Pearson correlation</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hic_data1</strong> &#8211; Hi-C-data object</li>
-<li><strong>hic_data2</strong> &#8211; Hi-C-data object</li>
-<li><strong>nvect</strong> (<em>6</em>) &#8211; number of eigenvectors to compare</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
-<li><strong>show</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
-<li><strong>normalized</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; use normalized data</li>
-<li><strong>remove_bads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the union of bad columns between samples
+<li><strong>hic_data1</strong> – Hi-C-data object</li>
+<li><strong>hic_data2</strong> – Hi-C-data object</li>
+<li><strong>nvect</strong> (<em>6</em>) – number of eigenvectors to compare</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to save the plot</li>
+<li><strong>show</strong> (<em>False</em>) – displays the plot</li>
+<li><strong>normalized</strong> (<em>False</em>) – use normalized data</li>
+<li><strong>remove_bads</strong> (<em>True</em>) – computes the union of bad columns between samples
 and exclude them from the comparison</li>
-<li><strong>kwargs</strong> &#8211; any argument to pass to matplotlib imshow function</li>
+<li><strong>kwargs</strong> – any argument to pass to matplotlib imshow function</li>
 </ul>
 </td>
 </tr>
@@ -338,14 +313,15 @@ of the fractal globule model).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> &#8211; input file name, or HiC_data object or list of lists</li>
-<li><strong>min_diff</strong> (<em>10</em>) &#8211; lower limit (in number of bins)</li>
-<li><strong>max_diff</strong> (<em>1000</em>) &#8211; upper limit (in number of bins) to look for</li>
-<li><strong>resolution</strong> (<em>100</em>) &#8211; group reads that are closer than this resolution
+<li><strong>data</strong> – input file name (either tsv or TADbit generated BAM), or
+HiC_data object or list of lists</li>
+<li><strong>min_diff</strong> (<em>10</em>) – lower limit (in number of bins)</li>
+<li><strong>max_diff</strong> (<em>1000</em>) – upper limit (in number of bins) to look for</li>
+<li><strong>resolution</strong> (<em>100</em>) – group reads that are closer than this resolution
 parameter</li>
-<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 </ul>
@@ -374,11 +350,11 @@ size of fragments).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fnam</strong> &#8211; input file name</li>
-<li><strong>total_reads</strong> &#8211; total number of reads in the initial FASTQ file</li>
-<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+<li><strong>fnam</strong> – input file name</li>
+<li><strong>total_reads</strong> – total number of reads in the initial FASTQ file</li>
+<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 </ul>
@@ -393,7 +369,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_genomic_distribution">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>ylim=None</em>, <em>yscale=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>chr_names=None</em>, <em>nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em>fnam</em>, <em>first_read=None</em>, <em>resolution=10000</em>, <em>ylim=None</em>, <em>yscale=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>chr_names=None</em>, <em>nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the number of reads in bins along the genome (or along a given
 chromosome).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -401,19 +377,20 @@ chromosome).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fnam</strong> &#8211; input file name</li>
-<li><strong>first_read</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; uses first read.</li>
-<li><strong>resolution</strong> (<em>100</em>) &#8211; group reads that are closer than this resolution
+<li><strong>fnam</strong> – input file name</li>
+<li><strong>first_read</strong> (<em>True</em>) – uses first read.</li>
+<li><strong>resolution</strong> (<em>100</em>) – group reads that are closer than this resolution
 parameter</li>
-<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple of lower and upper bound for the y axis</li>
-<li><strong>yscale</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if set_bad to &#8220;log&#8221; values will be represented in log2
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a tuple of lower and upper bound for the y axis</li>
+<li><strong>yscale</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – if set_bad to “log” values will be represented in log2
 scale</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output read counts per bin.</li>
-<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can pass a list of chromosome names in case only some
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path where to store the output read counts per bin.</li>
+<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – can pass a list of chromosome names in case only some
 them the need to be plotted (this option may last even more than default)</li>
+<li><strong>nreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – number of reads to process (default: all reads)</li>
 </ul>
 </td>
 </tr>
@@ -423,7 +400,7 @@ them the need to be plotted (this option may last even more than default)</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.fastq_utils.quality_plot">
-<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">quality_plot</code><span class="sig-paren">(</span><em>fnam</em>, <em>r_enz=None</em>, <em>nreads=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>paired=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">quality_plot</code><span class="sig-paren">(</span><em>fnam</em>, <em>r_enz=None</em>, <em>nreads=inf</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>paired=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme
 (RE) name is provided, can also represent the distribution of digested and
 undigested RE sites and estimate an expected proportion of dangling-ends.</p>
@@ -435,61 +412,18 @@ the number of reads).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fnam</strong> &#8211; path to FASTQ file</li>
-<li><strong>nreads</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; max number of reads to read, not necesary to read all</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+<li><strong>fnam</strong> – path to FASTQ file</li>
+<li><strong>nreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – max number of reads to read, not necesary to read all</li>
+<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>paired</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; is input FASTQ contains both ends</li>
+<li><strong>paired</strong> (<em>False</em>) – is input FASTQ contains both ends</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the percentage of dangling-ends (sensu stricto) and the percentage of
 reads with at least a ligation site.</p>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.fastq_utils.count_reads_approx">
-<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">count_reads_approx</code><span class="sig-paren">(</span><em>fnam</em>, <em>samples=1000</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#count_reads_approx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.count_reads_approx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the approximate number of reads in a FASTQ file. By averaging the sizes
-of a given sample od randomly selected reads, and relating this mean to the
-size of the file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fnam</strong> &#8211; path to FASTQ file</li>
-<li><strong>samples</strong> (<em>1000</em>) &#8211; number of reads to sample. 1000 generally gives an
-accuracy bellow 0.1%</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; prints Number of reads and accuracy (based on standard
-error of the mean)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">number of reads estimated</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.fastq_utils.count_reads">
-<code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">count_reads</code><span class="sig-paren">(</span><em>fnam</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#count_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.count_reads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count the number of reads in a FASTQ file (can be slow on big files, try
-count_reads_approx)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fnam</strong> &#8211; path to file</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the number of reads (number of lines divided by four)</td>
 </tr>
 </tbody>
 </table>
@@ -506,39 +440,32 @@ Position of a RE site is defined as the genomic coordinate of the first
 nucleotide after the first cut (genomic coordinate starts at 1).</p>
 <p>In the case of HindIII the genomic coordinate is this one:</p>
 <dl class="docutils">
-<dt>123456 789...</dt>
+<dt>123456 789…</dt>
 <dd><div class="first line-block">
 <div class="line"><br /></div>
 </div>
 <p class="last">v</p>
 </dd>
 </dl>
-<p>&#8212;&#8211;A|AGCT T&#8212;&#8212;&#8212;&#8212;&#8211;
-&#8212;&#8211;T TCGA|A&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+<p>—–A|AGCT T————–
+—–T TCGA|A————–</p>
 <p>In this example the coordinate of the RE site would be 7.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>enzyme_name</strong> &#8211; name of the enzyme to map (upper/lower case are
+<li><strong>enzyme_name</strong> – name of the enzyme to map (upper/lower case are
 important)</li>
-<li><strong>genome_seq</strong> &#8211; a dictionary containing the genomic sequence by
+<li><strong>genome_seq</strong> – a dictionary containing the genomic sequence by
 chromosome</li>
-<li><strong>frag_chunk</strong> (<em>100000</em>) &#8211; in order to optimize the search for nearby RE
+<li><strong>frag_chunk</strong> (<em>100000</em>) – in order to optimize the search for nearby RE
 sites, each chromosome is splitted into chunks.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.mapping.restriction_enzymes.religated">
-<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">religated</code><span class="sig-paren">(</span><em>r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#religated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.religated" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns the resulting sequence after religation of two digested and repaired
-ends.</p>
 </dd></dl>
 
 <dl class="function">
@@ -557,7 +484,7 @@ ends, marking dangling ends.</p>
 <dt>Dealing with multiple contacts:</dt>
 <dd><ul class="first last">
 <li><p class="first">a pairwise contact is created for each possible combnation of the
-multicontacts. The name of the read is extended by &#8216;# 1/3&#8217; in case
+multicontacts. The name of the read is extended by ‘# 1/3’ in case
 the reported pairwise contact corresponds to the first of 3 possibles</p>
 </li>
 <li><p class="first">it may happen that different contacts are mapped on a single RE fragment
@@ -578,11 +505,11 @@ in the positive strand)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fname1</strong> &#8211; path to a tab separated file generated by the function
-<a class="reference internal" href="reference_parser.html#pytadbit.parsers.sam_parser.parse_sam" title="pytadbit.parsers.sam_parser.parse_sam"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.sam_parser.parse_sam()</span></code></a></li>
-<li><strong>fname2</strong> &#8211; path to a tab separated file generated by the function
-<a class="reference internal" href="reference_parser.html#pytadbit.parsers.sam_parser.parse_sam" title="pytadbit.parsers.sam_parser.parse_sam"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.sam_parser.parse_sam()</span></code></a></li>
-<li><strong>out_path</strong> &#8211; path to an outfile. It will written in a similar format as
+<li><strong>fname1</strong> – path to a tab separated file generated by the function
+<a class="reference internal" href="reference_parser.html#pytadbit.parsers.sam_parser.parse_sam" title="pytadbit.parsers.sam_parser.parse_sam"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.parsers.sam_parser.parse_sam()</span></code></a></li>
+<li><strong>fname2</strong> – path to a tab separated file generated by the function
+<a class="reference internal" href="reference_parser.html#pytadbit.parsers.sam_parser.parse_sam" title="pytadbit.parsers.sam_parser.parse_sam"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.parsers.sam_parser.parse_sam()</span></code></a></li>
+<li><strong>out_path</strong> – path to an outfile. It will written in a similar format as
 the inputs</li>
 </ul>
 </td>
@@ -608,8 +535,8 @@ fragment cought together, can be 3, 4, 5..)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>path1</strong> &#8211; path to first file</li>
-<li><strong>path2</strong> &#8211; path to first file</li>
+<li><strong>path1</strong> – path to first file</li>
+<li><strong>path2</strong> – path to second file</li>
 </ul>
 </td>
 </tr>
@@ -624,14 +551,14 @@ fragment cought together, can be 3, 4, 5..)</p>
 <dt id="pytadbit.mapping.filter.filter_reads">
 <code class="descclassname">pytadbit.mapping.filter.</code><code class="descname">filter_reads</code><span class="sig-paren">(</span><em>fnam</em>, <em>output=None</em>, <em>max_molecule_length=500</em>, <em>over_represented=0.005</em>, <em>max_frag_size=100000</em>, <em>min_frag_size=100</em>, <em>re_proximity=5</em>, <em>verbose=True</em>, <em>savedata=None</em>, <em>min_dist_to_re=750</em>, <em>fast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#filter_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.filter_reads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter mapped pair of reads in order to remove experimental artifacts (e.g.
-dangling-ends, self-circle, PCR artifacts...)</p>
+dangling-ends, self-circle, PCR artifacts…)</p>
 <dl class="docutils">
-<dt>Applied filters are:    </dt>
+<dt>Applied filters are:</dt>
 <dd><dl class="first last docutils">
 <dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
-<dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
+<dd>point to the outside (—-&lt;===—===&gt;—)</dd>
 <dt>2- dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
-<dd>point to the inside (&#8212;-===&gt;&#8212;&lt;===&#8212;)</dd>
+<dd>point to the inside (—-===&gt;—&lt;===—)</dd>
 <dt>3- error <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
 <dd>point in the same direction</dd>
 <dt>4- extra dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from different RE fragment but</span></dt>
@@ -661,25 +588,25 @@ enzyme activity or random physical breakage of the chromatin.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fnam</strong> &#8211; path to file containing the pair of reads in tsv format, file
-generated by <code class="xref py py-func docutils literal"><span class="pre">pytadbit.mapping.mapper.get_intersection()</span></code></li>
-<li><strong>output</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; PATH where to write files containing IDs of filtered
+<li><strong>fnam</strong> – path to file containing the pair of reads in tsv format, file
+generated by <code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.mapping.mapper.get_intersection()</span></code></li>
+<li><strong>output</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – PATH where to write files containing IDs of filtered
 reads. Uses fnam by default.</li>
-<li><strong>max_molecule_length</strong> (<em>500</em>) &#8211; facing reads that are within
-max_molecule_length, will be classified as &#8216;extra dangling-ends&#8217;</li>
-<li><strong>over_represented</strong> (<em>0.005</em>) &#8211; to remove the very top fragment containing
+<li><strong>max_molecule_length</strong> (<em>500</em>) – facing reads that are within
+max_molecule_length, will be classified as ‘extra dangling-ends’</li>
+<li><strong>over_represented</strong> (<em>0.005</em>) – to remove the very top fragment containing
 more reads</li>
-<li><strong>max_frag_size</strong> (<em>100000</em>) &#8211; maximum fragment size allowed (fragments should
+<li><strong>max_frag_size</strong> (<em>100000</em>) – maximum fragment size allowed (fragments should
 not span over several bins)</li>
-<li><strong>min_frag_size</strong> (<em>100</em>) &#8211; remove fragment that are too short (shorter than
+<li><strong>min_frag_size</strong> (<em>100</em>) – remove fragment that are too short (shorter than
 the sequenced read length)</li>
-<li><strong>re_proximity</strong> (<em>5</em>) &#8211; should be adjusted according to RE site, to filter
+<li><strong>re_proximity</strong> (<em>5</em>) – should be adjusted according to RE site, to filter
 semi-dangling-ends</li>
-<li><strong>min_dist_to_re</strong> (<em>750</em>) &#8211; minimum distance the start of a read should be
+<li><strong>min_dist_to_re</strong> (<em>750</em>) – minimum distance the start of a read should be
 from a RE site (usually 1.5 times the insert size). Applied in filter 10</li>
-<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; PATH where to write the number of reads retained by
+<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – PATH where to write the number of reads retained by
 each filter</li>
-<li><strong>fast</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; parallel version, requires 4 CPUs and more RAM memory</li>
+<li><strong>fast</strong> (<em>True</em>) – parallel version, requires 4 CPUs and more RAM memory</li>
 </ul>
 </td>
 </tr>
@@ -701,15 +628,15 @@ a set of read IDs to be removed</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fnam</strong> &#8211; input file path, where non-filtered read are stored</li>
-<li><strong>outfile</strong> &#8211; output file path, where filtered read will be stored</li>
-<li><strong>masked</strong> &#8211; dictionary given by the
-<a class="reference internal" href="#pytadbit.mapping.filter.filter_reads" title="pytadbit.mapping.filter.filter_reads"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.mapping.filter.filter_reads()</span></code></a></li>
-<li><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of numbers corresponding to the filters we want
+<li><strong>fnam</strong> – input file path, where non-filtered read are stored</li>
+<li><strong>outfile</strong> – output file path, where filtered read will be stored</li>
+<li><strong>masked</strong> – dictionary given by the
+<a class="reference internal" href="#pytadbit.mapping.filter.filter_reads" title="pytadbit.mapping.filter.filter_reads"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.mapping.filter.filter_reads()</span></code></a></li>
+<li><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – list of numbers corresponding to the filters we want
 to apply (numbers correspond to the keys in the masked dictionary)</li>
-<li><strong>reverse</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if set, the resulting outfile will only contain the
+<li><strong>reverse</strong> (<em>False</em>) – if set, the resulting outfile will only contain the
 reads filtered, not the valid pairs.</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; </li>
+<li><strong>verbose</strong> (<em>False</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -732,7 +659,7 @@ reads filtered, not the valid pairs.</li>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="../index.html">Table Of Contents</a></h3>
+<h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
@@ -744,7 +671,6 @@ reads filtered, not the valid pairs.</li>
 <li class="toctree-l3"><a class="reference internal" href="#filtering">Filtering</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -752,8 +678,8 @@ reads filtered, not the valid pairs.</li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodel.html">StructuralModel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impmodel.html">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
@@ -765,16 +691,18 @@ reads filtered, not the valid pairs.</li>
   <p class="topless"><a href="index.html"
                         title="previous chapter">Reference Guide</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="reference_hic_data.html"
-                        title="next chapter">HiC_data class</a></p>
+  <p class="topless"><a href="reference_chromosome.html"
+                        title="next chapter">Chromosome class</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -788,19 +716,19 @@ reads filtered, not the valid pairs.</li>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="reference_hic_data.html" title="HiC_data class"
+          <a href="reference_chromosome.html" title="Chromosome class"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Reference Guide"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

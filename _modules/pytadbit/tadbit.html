@@ -1,42 +1,30 @@
 <!doctype html>
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>pytadbit.tadbit &#8212; Tadbit 0.2 documentation</title>
-    
+    <title>pytadbit.tadbit &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/black-on-white.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
@@ -580,6 +568,159 @@
     <span class="n">triag</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">tmp_mat</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">triag</span><span class="p">[</span><span class="n">triag</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">insulation_score</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedeltas</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute insulation score.</span>
+
+<span class="sd">    :param hic_dada: HiC_data object already normalized</span>
+<span class="sd">    :param dists: list of pairs of distances between which to compute the</span>
+<span class="sd">       insulation score. E.g. 4,5 means that for a given bin B(i), all</span>
+<span class="sd">       interactions between B(i-4) to B(i-5) and B(i+4) to B(i+5) will be</span>
+<span class="sd">       summed and used to compute the insulation score.</span>
+<span class="sd">    :param False normalize: Normalize insulation score by the average in the</span>
+<span class="sd">       chromosome, and log2 of this ratio.</span>
+<span class="sd">    :param 1 resolution:</span>
+<span class="sd">    :param 0 delta: to compute the delta for TAD detection (e.g. at 10kb use 10)</span>
+<span class="sd">    :param False silent:</span>
+<span class="sd">    :param None savedata: path to file where to save result</span>
+<span class="sd">    :param None savedeltas: path to file where to save deltas</span>
+
+<span class="sd">    :returns: dictionary with insulation score</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bias</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">bias</span>
+    <span class="n">bads</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">expected</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">decay</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">bias</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: HiC_data should be normalized by visibility &#39;</span>
+                        <span class="s1">&#39;and by expected&#39;</span><span class="p">)</span>
+
+    <span class="n">insidx</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s1">&#39; - computing insulation in band </span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">deltas</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">decay</span><span class="p">:</span>
+                <span class="n">this_decay</span> <span class="o">=</span> <span class="n">decay</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">this_decay</span> <span class="o">=</span> <span class="n">decay</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">end</span><span class="p">,</span>
+                             <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">end</span><span class="p">):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hic_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">this_decay</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">)]</span>
+                          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">end</span><span class="p">,</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">dist</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                          <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bads</span>
+                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="n">dist</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                          <span class="k">if</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">bads</span><span class="p">)</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="n">val</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+                <span class="n">total</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">end</span><span class="p">,</span>
+                                 <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">end</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                        <span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">deltas</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">end</span><span class="p">,</span>
+                                 <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">end</span><span class="p">):</span>
+                    <span class="n">up_vals</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">dw_vals</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">spos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">delta</span><span class="p">):</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">up_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">+</span> <span class="n">spos</span><span class="p">])</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">dw_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">insidx</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">-</span> <span class="n">spos</span><span class="p">])</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                    <span class="n">deltas</span><span class="p">[(</span><span class="n">dist</span><span class="p">,</span> <span class="n">end</span><span class="p">)][</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">up_vals</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dw_vals</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# CRM</span><span class="se">\t</span><span class="s1">COORD</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+                                                <span class="k">for</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">])</span> <span class="o">+</span>
+                  <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">]):</span>
+                <span class="n">beg</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">resolution</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">crm</span><span class="p">,</span> <span class="n">beg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">beg</span> <span class="o">+</span> <span class="n">resolution</span><span class="p">,</span>
+                    <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">insidx</span><span class="p">[</span><span class="n">dist</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="s1">&#39;NaN&#39;</span><span class="p">))</span>
+                               <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">])))</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">savedeltas</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedeltas</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# CRM</span><span class="se">\t</span><span class="s1">COORD</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+                                                <span class="k">for</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">])</span> <span class="o">+</span>
+                  <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">]):</span>
+                <span class="n">beg</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">resolution</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">crm</span><span class="p">,</span> <span class="n">beg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">beg</span> <span class="o">+</span> <span class="n">resolution</span><span class="p">,</span>
+                    <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">deltas</span><span class="p">[</span><span class="n">dist</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="s1">&#39;NaN&#39;</span><span class="p">))</span>
+                               <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">])))</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">delta</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">insidx</span><span class="p">,</span> <span class="n">deltas</span>
+    <span class="k">return</span> <span class="n">insidx</span>
+
+
+<span class="k">def</span> <span class="nf">insulation_to_borders</span><span class="p">(</span><span class="n">ins_score</span><span class="p">,</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">min_strength</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Best (for human-like genome size) according to https://doi.org/10.1038/nature14450</span>
+<span class="sd">    is (at 10kb resolution) to use awindow size of 500 kb (use the function</span>
+<span class="sd">    insulation_score with dist=(1,50)) and a delta of 100 kb (10 bins).</span>
+
+
+<span class="sd">    :returns: the position in bin of each border, and the intensity of the</span>
+<span class="sd">       border (sigmoid normalized, from 0 to 1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">borders</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">ins_score</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ins_score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">ins_score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">)</span>
+            <span class="ow">or</span>
+            <span class="n">ins_score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">ins_score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">)):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
+                <span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="c1"># left</span>
+        <span class="n">lo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">prev_lv</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lv</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">lo</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lv</span> <span class="o">&lt;</span> <span class="n">prev_lv</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">prev_lv</span> <span class="o">=</span> <span class="n">lv</span>
+            <span class="n">lo</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># right</span>
+        <span class="n">ro</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">prev_rv</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">ro</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">deltas</span><span class="p">):</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">ro</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rv</span> <span class="o">&gt;</span> <span class="n">prev_rv</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">prev_rv</span> <span class="o">=</span> <span class="n">rv</span>
+            <span class="n">ro</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">strength</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">prev_lv</span> <span class="o">-</span> <span class="n">prev_rv</span><span class="p">)))</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">strength</span> <span class="o">&gt;</span> <span class="n">min_strength</span><span class="p">:</span>
+            <span class="n">borders</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pos</span><span class="p">,</span> <span class="n">strength</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">borders</span>
 </pre></div>
 
           </div>
@@ -590,7 +731,7 @@
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
-<h3><a href="../../index.html">Table Of Contents</a></h3>
+<h3><a href="../../index.html">Table of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
@@ -601,12 +742,14 @@
 
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -619,15 +762,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Apr 29, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Last updated on Jun 23, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
