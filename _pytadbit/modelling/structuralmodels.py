@@ -1755,7 +1755,8 @@ class StructuralModels(object):
         plt.close('all')
 
 
-    def correlate_with_real_data(self, models=None, cluster=None, 
+    def correlate_with_real_data(self, models=None, cluster=None,
+                                 stage=None, index=0,
                                  dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
@@ -1797,6 +1798,10 @@ class StructuralModels(object):
                 raise Exception('ERROR: savefig should ' +
                                 'be a folder with dynamics option.\n')
                 return
+        elif stage is not None and stage not in self.stages:
+            raise Exception('ERROR: stage ' +
+                            'not found in stages.\n')
+            return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         if contact_matrix:
@@ -1809,10 +1814,12 @@ class StructuralModels(object):
                 for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
                     all_original_data.append(st)
                     all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff))
+            elif stage is not None:
+                all_original_data = [index]
+                all_model_matrix = [self.get_contact_matrix(stage=stage,cutoff=cutoff)]
             else:
-                all_original_data = [0]
-                all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,
-                                                   cutoff=cutoff)]
+                all_original_data = [index]
+                all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,cutoff=cutoff)]
         correl = {}
         for model_matrix, od in zip(all_model_matrix,all_original_data):
             oridata = []
@@ -1821,6 +1828,8 @@ class StructuralModels(object):
                 correl[od] = 'Nan'
                 continue
             if dynamics:
+                original_data = self._original_data[od]
+            elif stage is not None or len(self.stages) > 0:
                 original_data = self._original_data[od]
             else:
                 original_data = self._original_data
@@ -1849,14 +1858,34 @@ class StructuralModels(object):
             return correl
         cbar = None
         for model_matrix, od in zip(all_model_matrix,all_original_data):
+            oridata = []
+            moddata = []
             if correl[od] == 'Nan':
                 continue
+            if dynamics:
+                original_data = self._original_data[od]
+                stage_label = ' for stage %d'%int(od*self.models_per_step)
+                hic_label = ' %d'%od
+            elif stage is not None or len(self.stages) > 0:
+                original_data = self._original_data[od]
+                stage_label = ' for stage %d'%stage
+                hic_label = ' %d'%od
+            else:
+                original_data = self._original_data
+                stage_label = ''
+                hic_label = ''
+            for i in xrange(len(original_data)):
+                for j in xrange(i + off_diag, len(original_data)):
+                    if not original_data[i][j] > 0:
+                        continue
+                    oridata.append(original_data[i][j])
+                    moddata.append(model_matrix[i][j])
             if not axe:
                 fig = plt.figure(figsize=(20, 4.5))
             else:
                 fig = axe.get_figure()
-            fig.suptitle('Correlation between normalized-real and modeled ' +
-                         'contact maps for stage %s (correlation=%.4f)' % (od, correl[od][0]),
+            fig.suptitle('Correlation between normalized-real%s and modeled '%stage_label +
+                         'contact maps%s (correlation=%.4f)' % (hic_label, correl[od][0]),
                          size='x-large')
             ax = fig.add_subplot(131)
             # imshow of the modeled data
@@ -1964,7 +1993,7 @@ class StructuralModels(object):
                 
             elif not axe:
                 plt.show()
-        plt.close('all')
+            plt.close('all')
         return correl
 
 
