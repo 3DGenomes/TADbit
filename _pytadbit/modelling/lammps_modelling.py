@@ -322,9 +322,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     else:
         stages = {}
         timepoints = None
-        allzeros = zeros
+        allzeros = tuple([all([zero_stg[x] for zero_stg in zeros]) for x in xrange(len(zeros[0]))])
         if len(HiCRestraints)>1:
-            allzeros = tuple([all([zero_stg[x] for zero_stg in zeros]) for x in xrange(len(zeros[0]))])
             #for timepoint in xrange(len(zeros)-1):
             #    allzeros = tuple([sum(x) for x in zip(allzeros, zeros[timepoint])])
             timepoints = time_dependent_steering_pairs['colvar_dump_freq']
