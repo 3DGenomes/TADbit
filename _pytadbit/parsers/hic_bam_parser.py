@@ -22,7 +22,7 @@ try:
 except ImportError:
     pass  # silently pass, very specific need
 
-from pysam                        import view, AlignmentFile
+from pysam                        import AlignmentFile
 
 from pytadbit.utils.file_handling import mkdir, which
 from pytadbit.utils.extraviews    import nicer

@@ -47,7 +47,7 @@ def run(opts):
         cur = con.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in cur.fetchall():
-            if table[0].lower() in ['jobs', 'paths'] and opts.tsv:
+            if table[0].lower() in ['jobs', 'paths'] and len(opts.tables) > 1 and opts.tsv:
                 continue
             if table[0].lower() in opts.tables:
                 print_db(cur, table[0],
