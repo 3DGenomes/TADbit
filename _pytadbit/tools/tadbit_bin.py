@@ -166,7 +166,7 @@ def run(opts):
                 matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
                     mreads, opts.reso,
                     load(open(biases)) if biases and norm != 'raw' else None,
-                    normalization=norm,
+                    normalization=norm, filter_exclude=opts.filter,
                     region1=region1, start1=start1, end1=end1,
                     region2=region2, start2=start2, end2=end2,
                     tmpdir=tmpdir, ncpus=opts.cpus,
@@ -529,7 +529,7 @@ def populate_args(parser):
                         help='''if provided uses this directory to manipulate the
                         database''')
 
-    glopts.add_argument('--nchunks', dest='nchunks', action='store', default=None,
+    glopts.add_argument('--nchunks', dest='nchunks', action='store', default=100,
                         type=int,
                         help='''maximum number of chunks into which to
                         cut the BAM''')
@@ -646,9 +646,9 @@ def populate_args(parser):
                         default=False,
                         help='Save only text file for matrices, not images')
 
-    rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
-                        default=False,
-                        help='input BAM file contains only valid pairs (already filtered).')
+    # rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
+    #                     default=False,
+    #                     help='input BAM file contains only valid pairs (already filtered).')
 
 
 def load_parameters_fromdb(opts):
