@@ -16,7 +16,7 @@ Reference Guide
    reference_parser
    reference_aligner
    reference_boundary_alignment
-   reference_imp_optimizer
-   reference_imp_model
-   reference_imp_structuralmodels
+   reference_modelling_impoptimizer
+   reference_modelling_impmodel
+   reference_modelling_structuralmodels
    reference_utils

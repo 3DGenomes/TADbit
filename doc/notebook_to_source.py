@@ -37,9 +37,11 @@ def main():
             if extra:
                 line = re.sub(fname[:-6] + '_files/', '../nbpictures/', line)
                 line = re.sub(os.path.join(PATH), '../nbpictures/', line)
+                line = re.sub('images/', '../nbpictures/', line)
             else:
                 line = re.sub(fname[:-6] + '_files/', 'nbpictures/', line)
                 line = re.sub(os.path.join(PATH), 'nbpictures/', line)
+                line = re.sub('images/', '../nbpictures/', line)
             lines.append(line)
         out = open(os.path.join(CURPATH, 'source', extra + fname[:-6] + '.rst'), 'w')
         out.write(''.join(lines))
