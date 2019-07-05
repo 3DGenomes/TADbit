@@ -8,7 +8,7 @@ mkdir -p $tmpdir
 mkdir -p $tmpdir/FASTQs
 mkdir -p $tmpdir/db
 
-nreads=1000000
+nreads=100000
 
 echo -e '\n' | tee -a $LOG
 echo -e `date` | tee -a $LOG
