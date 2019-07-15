@@ -45,6 +45,8 @@ From:neurodebian:jessie
   conda config --add channels hargup/label/pypi && \
   conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam pebble && \
   conda install -y -q -c r r && \
+  conda install -y -q -c bioconda ucsc-bigWigToBedGraph
+  conda install -c bioconda ucsc-wigtobigwig
   # to run jupyter the notebok has to be built and installed as writable (with sudo)
   # conda install -y -q jupyter
   conda clean -y --all  && rm -rf /opt/conda/pkgs/*
@@ -56,10 +58,10 @@ From:neurodebian:jessie
 
   #############################################################################
   # GEM
-  wget --quiet --no-check-certificate https://newcontinuum.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%202/GEM-binaries-Linux-x86_64-core_i3-20121106-022124.tbz2 \
-      -O GEM.tbz2 && \
-  tar xvf GEM.tbz2 && cd GEM-*/ && \
-  mv * /usr/local/bin/ && cd .. && rm -rf GEM*
+  wget --quiet --no-check-certificate https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2/download -O GEM.tbz2 && \
+  tar -xvjf GEM.tbz2 && \
+  rm -f GEM-binaries-*/bin/LICENCE && \
+  mv GEM-binaries-*/bin/* /usr/local/bin/ && rm -rf GEM*
 
   #############################################################################
   # TADbit

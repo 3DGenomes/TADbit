@@ -754,7 +754,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
                  half_matrix=True, nchunks=100, tmpdir='.', append_to_tar=None,
-                 ncpus=8, verbose=True):
+                 ncpus=8, row_names=False, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -790,6 +790,8 @@ def write_matrix(inbam, resolution, biases, outdir,
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
+    :param False row_names: Writes geneomic coocrdinates instead of bins.
+       WARNING: results in two extra columns
     :param 100 nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: path to output files
@@ -824,6 +826,31 @@ def write_matrix(inbam, resolution, biases, outdir,
     sections = OrderedDict(zip(bamfile.references,
                                [x for x in bamfile.lengths]))
 
+    start_bin1, end_bin1, start_bin2, end_bin2 = bin_coords
+
+    section_pos1 = {}
+    section_pos2 = {}
+    totals = OrderedDict()
+    total_num = 0
+    for c in sections:
+        totals[c] = total_num
+        total_num += sections[c] / resolution + 1
+
+    if row_names:
+        if len(regions) in [1, 2]:
+            offset = start_bin1 - totals[regions[0]]
+            section_pos1 = dict((i, (region1, resolution * (i + offset)))
+                               for i in range(end_bin1 - start_bin1))
+            if region2:
+                offset = start_bin2 - totals[regions[1]]
+                section_pos2 = dict((i, (region2, resolution * (i + offset)))
+                                    for i in range(end_bin2 - start_bin2))
+        else:
+            section_pos1 = dict((v + i, (c, i))
+                                for c, v in totals.iteritems()
+                                for i in range(sections[c] // resolution + 1))
+            section_pos2 = section_pos1
+
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
     elif normalizations != ('raw', ):
@@ -831,7 +858,6 @@ def write_matrix(inbam, resolution, biases, outdir,
     else:
         bads1 = bads2 = {}
 
-    start_bin1, start_bin2 = bin_coords[::2]
     if verbose:
         printime('  - Writing matrices')
     # define output file name
@@ -904,72 +930,80 @@ def write_matrix(inbam, resolution, biases, outdir,
     def write_raw(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_raw.write('{}\t{}\t{}\n'.format(a, b, v))
+            out_raw.write('{}\t{}\n'.format(get_name(a, b), v))
         def writer(_, a, b, v):
-            out_raw.write('{}\t{}\t{}\n'.format(a, b, v))
+            out_raw.write('{}\t{}\n'.format(get_name(a, b), v))
         return writer2 if func else writer
 
     def write_bias(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_nrm.write('{}\t{}\t{}\n'.format(a, b, v / bias1[a] / bias2[b]))
+            out_nrm.write('{}\t{}\n'.format(get_name(a, b), v / bias1[a] / bias2[b]))
         def writer(_, a, b, v):
-            out_nrm.write('{}\t{}\t{}\n'.format(a, b, v / bias1[a] / bias2[b]))
+            out_nrm.write('{}\t{}\n'.format(get_name(a, b), v / bias1[a] / bias2[b]))
         return writer2 if func else writer
 
     def write_expc(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_dec.write('{}\t{}\t{}\n'.format(
-                a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+            out_dec.write('{}\t{}\n'.format(
+                get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
         def writer(c, a, b, v):
-            out_dec.write('{}\t{}\t{}\n'.format(
-                a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+            out_dec.write('{}\t{}\n'.format(
+                get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
         return writer2 if func else writer
 
     def write_expc_2reg(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
-            out_dec.write('{}\t{}\t{}\n'.format(
-                a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
+            out_dec.write('{}\t{}\n'.format(
+                get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
         def writer(c, a, b, v):
-            out_dec.write('{}\t{}\t{}\n'.format(
-                a, b, v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
+            out_dec.write('{}\t{}\n'.format(
+                get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs((a + start_bin1) - (b + start_bin2))]))
         return writer2 if func else writer
 
     def write_expc_err(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
             try:
-                out_dec.write('{}\t{}\t{}\n'.format(
-                    a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\n'.format(get_name(a, b), 'nan'))
         def writer(c, a, b, v):
             try:
-                out_dec.write('{}\t{}\t{}\n'.format(
-                    a, b, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t{}\n'.format(a, b, 'nan'))
+                out_dec.write('{}\t{}\n'.format(get_name(a, b), 'nan'))
         return writer2 if func else writer
 
     def write_raw_and_expc(func=None):
         def writer2(c, a, b, v):
             func(c, a, b, v)
             try:
-                out_dec.write('{}\t{}\t{}\t{}\n'.format(
-                    a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t{}\t{}\n'.format(
-                    a, b, v, v / bias1[a] / bias2[b]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v, v / bias1[a] / bias2[b]))
         def writer(c, a, b, v):
             try:
-                out_dec.write('{}\t{}\t{}\t{}\n'.format(
-                    a, b, v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v, v / bias1[a] / bias2[b] / decay[c][abs(a-b)]))
             except KeyError:  # different chromosomes
-                out_dec.write('{}\t{}\t{}\t{}\n'.format(
-                    a, b, v, v / bias1[a] / bias2[b]))
+                out_dec.write('{}\t{}\n'.format(
+                    get_name(a, b), v, v / bias1[a] / bias2[b]))
         return writer2 if func else writer
+
+    def get_row_name(a, b):
+        return '{}\t{}\t{}\t{}\t'.format(*(section_pos1[a] + section_pos2[b]))
+
+    def get_bin_name(a, b):
+        return '{}\t{}\t'.format(a, b)
+
+    get_name = get_row_name if row_names else get_bin_name
 
     write = None
     if 'raw'   in normalizations:
@@ -977,7 +1011,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     if 'norm'  in normalizations:
         write = write_bias(write)
     if 'decay' in normalizations:
-        if len(regions) == 1:
+        if len(regions) in [1, 2]:
             if region2:
                 write = write_expc_2reg(write)
             else:
