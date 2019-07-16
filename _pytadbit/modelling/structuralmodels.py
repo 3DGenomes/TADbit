@@ -1816,7 +1816,7 @@ class StructuralModels(object):
                 all_original_data = []
                 for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
                     all_original_data.append(st)
-                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff, contact_bads=contact_bads))
+                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff, show_bad_columns=show_bad_columns))
             elif stage is not None:
                 all_original_data = [index]
                 all_model_matrix = [self.get_contact_matrix(stage=stage,cutoff=cutoff)]
