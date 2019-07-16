@@ -599,7 +599,7 @@ class StructuralModels(object):
 
     def get_contact_matrix(self, models=None, cluster=None, 
                            stage=None, cutoff=None,
-                           distance=False, contact_bads=True):
+                           distance=False, show_bad_columns=True):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
@@ -617,8 +617,7 @@ class StructuralModels(object):
            will be a dictionnary of matrices (keys being square cutoffs)
         :param False distance: returns the distance matrix of all_angles against
            all_angles particles instead of a contact_map matrix using the cutoff
-        :param True contact_bads: Wether to hide or not bad columns in the
-            contact map
+        :param True show_bad_columns: show bad columns in contact map
 
         :returns: matrix frequency of interaction
         """
@@ -631,19 +630,19 @@ class StructuralModels(object):
             models = [m for m in self.stages[stage]]
         else:
             models = [m for m in self.__models]
+        if not cutoff:
+            cutoff = [int(2 * self.resolution * self._config['scale'])]
+            #cutoff = [int(2)] # * self.resolution * self._config['scale'])]
         cutoff_list = True
         if not isinstance(cutoff, list):
             cutoff = [cutoff]
             cutoff_list = False
         cutoff.sort(reverse=True)
-        if not cutoff:
-            cutoff = [int(2 * self.resolution * self._config['scale'])]
-            #cutoff = [int(2)] # * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
         # remove (or not) interactions from bad columns
-        if contact_bads:
+        if show_bad_columns:
             wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
         else:
             wloci = [i for i in xrange(self.nloci)]
@@ -657,7 +656,7 @@ class StructuralModels(object):
             #print model
             squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
                 model['x'], model['y'], model['z'], self.nloci)
-                
+
             #print model, len(x), len(y), len(z)
             for c in cutoff:
                 #print "#Cutoff",c
@@ -665,7 +664,7 @@ class StructuralModels(object):
                     if squared_distance_matrix[i][j] <= c:
                         matrix[c][i][j] += frac  # * 100
                         matrix[c][j][i] += frac  # * 100
-            
+
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -909,7 +908,7 @@ class StructuralModels(object):
         else:
             plt.show()
 
-    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None,  
+    def contact_map(self, models=None, cluster=None, dynamics=False, stage=None, 
                     cutoff=None, axe=None, savefig=None, savedata=None,
                     cmap='viridis'):
         """
@@ -1598,7 +1597,7 @@ class StructuralModels(object):
         #plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False,
-                    cmap='viridis'):
+                    stage=0, cmap='viridis'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1615,18 +1614,24 @@ class StructuralModels(object):
         :param viridis cmap: The Colormap instance
         """
 
-        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + self._zscores[k].keys()
-                                                for k in self._zscores.keys()])
+        if stage > -1 and stage in self.stages:
+            stage_zscore = self._zscores[stage]
+        elif len(self.stages) == 0:
+            stage_zscore = self._zscores
+        else:
+            raise ValueError('ERROR: please specify a correct stage')
+        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + stage_zscore[k].keys()
+                                                for k in stage_zscore.keys()])
         max_bin = max([int(i) for i in zsc_mtrx])
         zsc_mtrx = [[float('nan') for _ in xrange(max_bin)]
                     for _ in xrange(max_bin)]
         for i in xrange(max_bin):
             for j in xrange(max_bin):
                 try:
-                    zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
+                    zsc_mtrx[i][j] = stage_zscore[str(i)][str(j)]
                 except KeyError:
                     try:
-                        zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
+                        zsc_mtrx[i][j] = stage_zscore[str(j)][str(i)]
                     except KeyError:
                         zsc_mtrx[i][j] = 0
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
@@ -1659,8 +1664,8 @@ class StructuralModels(object):
 
         ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
-                                [self._zscores[v].values()
-                                for v in self._zscores.keys()]))
+                                [stage_zscore[v].values()
+                                for v in stage_zscore.keys()]))
         try:
             _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
                                     facecolor='none', edgecolor='k', density=True)
@@ -1672,14 +1677,14 @@ class StructuralModels(object):
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
         try:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [stage_zscore[v].values()
+                                            for v in stage_zscore.keys()]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled', density=True)
         except AttributeError:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [stage_zscore[v].values()
+                                            for v in stage_zscore.keys()]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled')
         height1 = height2 = 0
@@ -1751,12 +1756,13 @@ class StructuralModels(object):
         plt.close('all')
 
 
-    def correlate_with_real_data(self, models=None, cluster=None, 
+    def correlate_with_real_data(self, models=None, cluster=None,
+                                 stage=None, index=0,
                                  dynamics=False, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
                                  log_corr=True, contact_matrix=None,
-                                 cmap='viridis', contact_bads=True):
+                                 cmap='viridis', show_bad_columns=True):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1779,7 +1785,7 @@ class StructuralModels(object):
         :param None contact_matrix: input a contact matrix instead of computing
            it from the models
         :param 'viridis' cmap: The Colormap instance
-        :param True contact_bads: Wether to hide or not bad columns in the 
+        :param True show_bad_columns: Wether to hide or not bad columns in the 
             contact map
 
         :returns: correlation coefficient rho, between the two
@@ -1795,6 +1801,10 @@ class StructuralModels(object):
                 raise Exception('ERROR: savefig should ' +
                                 'be a folder with dynamics option.\n')
                 return
+        elif stage is not None and stage not in self.stages:
+            raise Exception('ERROR: stage ' +
+                            'not found in stages.\n')
+            return
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         if contact_matrix:
@@ -1807,10 +1817,13 @@ class StructuralModels(object):
                 for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
                     all_original_data.append(st)
                     all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff, contact_bads=contact_bads))
+            elif stage is not None:
+                all_original_data = [index]
+                all_model_matrix = [self.get_contact_matrix(stage=stage,cutoff=cutoff)]
             else:
-                all_original_data = [0]
+                all_original_data = [index]
                 all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,
-                                                   cutoff=cutoff, contact_bads=contact_bads)]
+                                                   cutoff=cutoff, show_bad_columns=show_bad_columns)]
         correl = {}
         for model_matrix, od in zip(all_model_matrix,all_original_data):
             oridata = []
@@ -1819,6 +1832,8 @@ class StructuralModels(object):
                 correl[od] = 'Nan'
                 continue
             if dynamics:
+                original_data = self._original_data[od]
+            elif stage is not None or len(self.stages) > 0:
                 original_data = self._original_data[od]
             else:
                 original_data = self._original_data
@@ -1847,14 +1862,34 @@ class StructuralModels(object):
             return correl
         cbar = None
         for model_matrix, od in zip(all_model_matrix,all_original_data):
+            oridata = []
+            moddata = []
             if correl[od] == 'Nan':
                 continue
+            if dynamics:
+                original_data = self._original_data[od]
+                stage_label = ' for stage %d'%int(od*self.models_per_step)
+                hic_label = ' %d'%od
+            elif stage is not None or len(self.stages) > 0:
+                original_data = self._original_data[od]
+                stage_label = ' for stage %d'%stage
+                hic_label = ' %d'%od
+            else:
+                original_data = self._original_data
+                stage_label = ''
+                hic_label = ''
+            for i in xrange(len(original_data)):
+                for j in xrange(i + off_diag, len(original_data)):
+                    if not original_data[i][j] > 0:
+                        continue
+                    oridata.append(original_data[i][j])
+                    moddata.append(model_matrix[i][j])
             if not axe:
                 fig = plt.figure(figsize=(20, 4.5))
             else:
                 fig = axe.get_figure()
-            fig.suptitle('Correlation between normalized-real and modeled ' +
-                         'contact maps for stage %s (correlation=%.4f)' % (od, correl[od][0]),
+            fig.suptitle('Correlation between normalized-real%s and modeled '%stage_label +
+                         'contact maps%s (correlation=%.4f)' % (hic_label, correl[od][0]),
                          size='x-large')
             ax = fig.add_subplot(131)
             # imshow of the modeled data
@@ -1962,7 +1997,7 @@ class StructuralModels(object):
                 
             elif not axe:
                 plt.show()
-        plt.close('all')
+            plt.close('all')
         return correl
 
 
@@ -1978,7 +2013,7 @@ class StructuralModels(object):
                          **kwargs)
 
     def view_models(self, models=None, cluster=None, stage=None, dynamics=None,
-                    tool='chimera', show='all', highlight='centroid', 
+                    tool='chimera', show='all', highlight='centroid',
                     savefig=None, cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera

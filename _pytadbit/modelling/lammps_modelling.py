@@ -1,28 +1,29 @@
 """
-21 Mar 2018
+16 Mar 2019
 
 
 """
-from string                           import uppercase as uc, lowercase as lc
-from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
-from pytadbit.modelling.lammpsmodel import LAMMPSmodel
-#from pytadbit.modelling.imp_modelling import get_hicbased_restraints
-from pytadbit.modelling.structuralmodels import StructuralModels
-from pytadbit.modelling.restraints import HiCBasedRestraints
+from string import uppercase as uc, lowercase as lc
 from os.path import exists
 from random import randint, seed, random, sample, shuffle
 from cPickle import load, dump
-from pebble import ProcessPool
-from concurrent.futures import TimeoutError
-
+#from pebble import ProcessPool
+#from concurrent.futures import TimeoutError
+from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
 from math import atan2
-import numpy as np
-import sys
-import copy
-from numpy import sin, cos, arccos, sqrt, fabs, asarray, pi, zeros
 from itertools import combinations, product
 from shutil import copyfile
-from __builtin__ import isinstance
+
+import sys
+import copy
+import os
+import shutil
+import multiprocessing
+
+from numpy import sin, cos, arccos, sqrt, fabs, pi
+import numpy as np
+
 
 try:
     from pytadbit.modelling.imp_modelling import generate_3d_models
@@ -34,17 +35,36 @@ try:
 except ImportError:
     pass
 
-import os
-import shutil
+from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
+from pytadbit.modelling.lammpsmodel import LAMMPSmodel
+from pytadbit.modelling.structuralmodels import StructuralModels
+from pytadbit.modelling.restraints import HiCBasedRestraints
+
+def abortable_worker(func, *args, **kwargs):
+    timeout = kwargs.get('timeout', None)
+    p = ThreadPool(1)
+    res = p.apply_async(func, args=args)
+    try:
+        out = res.get(timeout)  # Wait timeout seconds for func to complete.
+        return out
+    except multiprocessing.TimeoutError:
+        print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+        p.terminate()
+        raise
+    except:
+        print "Unknown error with process"
+        p.terminate()
+        raise
 
 def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
-                       n_keep=1000, close_bins=1, n_cpus=1, 
+                       n_keep=1000, close_bins=1, n_cpus=1,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
-                       initial_conformation=None, timesteps_per_k=10000,
+                       initial_conformation=None, connectivity="FENE",
+                       timesteps_per_k=10000,
                        kfactor=1, adaptation_step=False, cleanup=False,
-                       remove_rstrn=[]):
+                       hide_log=True, remove_rstrn=[]):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -131,15 +151,19 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
        (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     :param None tmp_folder: path to a temporary file created during
         the clustering computation. Default will be created in /tmp/ folder
-    :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing 
+    :param 10800 timeout_job: maximum seconds a job can run in the multiprocessing
         of lammps before is killed
+    :param initial_conformation: lammps input data file with the particles initial conformation.
+    :param True hide_log: do not generate lammps log information
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+        potential for neighbours
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
-         
+
 
     :returns: a StructuralModels object
     """
-    
+
     if not tmp_folder:
         tmp_folder = '/tmp/tadbit_tmp_%s/' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
@@ -148,7 +172,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             tmp_folder += '/'
     if not os.path.exists(tmp_folder):
         os.makedirs(tmp_folder)
-    
+
     # Setup CONFIG
     if isinstance(config, dict):
         CONFIG.HiC.update(config)
@@ -156,7 +180,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         raise Exception('ERROR: "config" must be a dictionary')
 
     global RADIUS
- 
+
     #RADIUS = float(resolution * CONFIG['scale']) / 2
     RADIUS = 0.5
     CONFIG.HiC['resolution'] = resolution
@@ -164,7 +188,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     global LOCI
     # if z-scores are generated outside TADbit they may not start at zero
-    if first == None:
+    if first is None:
         first = min([int(j) for i in zscores[0] for j in zscores[0][i]] +
                     [int(i) for i in zscores[0]])
     LOCI  = range(first, nloci + first)
@@ -176,20 +200,20 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     global VERBOSE
     VERBOSE = verbose
     #VERBOSE = 3
-    
+
     HiCRestraints = [HiCBasedRestraints(nloci,RADIUS,CONFIG.HiC,resolution, zs,
                  chromosomes=coords, close_bins=close_bins,first=first,
                  remove_rstrn=remove_rstrn) for zs in zscores]
-    
+
     run_time = 1000
     ini_seed = randint(1,100000)
-    
+
     colvars = 'colvars.dat'
-    
+
     steering_pairs = None
     time_dependent_steering_pairs = None
-    if(len(HiCRestraints) > 1):
-        time_dependent_steering_pairs = { 
+    if len(HiCRestraints) > 1:
+        time_dependent_steering_pairs = {
             'colvar_input'              : HiCRestraints,
             'colvar_output'             : colvars,
             'chrlength'                 : nloci,
@@ -203,7 +227,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         if not initial_conformation:
             initial_conformation = 'tadbit'
     else:
-        steering_pairs = {       
+        steering_pairs = {
             'colvar_input': HiCRestraints[0],
             'colvar_output': colvars,
             'binsize': resolution,
@@ -214,59 +238,61 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         }
         if not initial_conformation:
             initial_conformation = 'random'
-    
+
     if not container:
         container = ['cube',1000.0] # http://lammps.sandia.gov/threads/msg48683.html
-    
-    ini_conf = None
-    ini_model = None
+
+    ini_model = ini_sm_model = None
     if initial_conformation != 'random':
         if isinstance(initial_conformation, dict):
             sm = [initial_conformation]
             sm[0]['x'] = sm[0]['x'][0:nloci]
             sm[0]['y'] = sm[0]['y'][0:nloci]
-            sm[0]['z'] = sm[0]['z'][0:nloci] 
+            sm[0]['z'] = sm[0]['z'][0:nloci]
         elif initial_conformation == 'tadbit':
             sm = generate_3d_models(zscores[0], resolution, nloci,
-                  values=values[0], n_models=n_models, n_keep=1, n_cpus=1,
-                  verbose=verbose, first=first, close_bins=close_bins, 
+                  values=values[0], n_models=n_models, n_keep=n_keep, n_cpus=n_cpus,
+                  verbose=verbose, first=first, close_bins=close_bins,
                   config=config, container=container,
-                  coords=coords, zeros=zeros)
+                  coords=coords, zeros=zeros[0])
             print "Succesfully generated tadbit initial conformation \n"
         sm_diameter = float(resolution * CONFIG.HiC['scale'])
-        for i in xrange(len(sm[0]['x'])):
-            sm[0]['x'][i] /= sm_diameter
-            sm[0]['y'][i] /= sm_diameter
-            sm[0]['z'][i] /= sm_diameter
-        cm0 = sm[0].center_of_mass()
-        for i in xrange(len(sm[0]['x'])):
-            sm[0]['x'][i] -= cm0['x']
-            sm[0]['y'][i] -= cm0['y']
-            sm[0]['z'][i] -= cm0['z']
-        ini_model = sm[0].copy()
+        for single_m in sm:
+            for i in xrange(len(single_m['x'])):
+                single_m['x'][i] /= sm_diameter
+                single_m['y'][i] /= sm_diameter
+                single_m['z'][i] /= sm_diameter
+            cm0 = single_m.center_of_mass()
+            for i in xrange(len(single_m['x'])):
+                single_m['x'][i] -= cm0['x']
+                single_m['y'][i] -= cm0['y']
+                single_m['z'][i] -= cm0['z']
+        ini_sm_model = [[single_sm.copy()] for single_sm in sm]
+        ini_model = [single_sm.copy() for single_sm in sm]
 
-        chromosome_particle_numbers = [int(x) for x in [len(LOCI)]]
-        chromosome_particle_numbers.sort(key=int,reverse=True)
-        ini_conf = '%sinitial_conformation.dat' % tmp_folder
-        write_initial_conformation_file(sm,
-                                        chromosome_particle_numbers,
-                                        container,
-                                        out_file=ini_conf)
-        
-    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time, initial_conformation=ini_conf, 
-                             steering_pairs=steering_pairs, time_dependent_steering_pairs=time_dependent_steering_pairs,
-                             initial_seed=ini_seed, 
-                             n_models=n_models, n_keep=n_keep, n_cpus=n_cpus, 
+    models = lammps_simulate(lammps_folder=tmp_folder, run_time=run_time,
+                             initial_conformation=ini_sm_model,
+                             connectivity=connectivity,
+                             steering_pairs=steering_pairs,
+                             time_dependent_steering_pairs=time_dependent_steering_pairs,
+                             initial_seed=ini_seed,
+                             n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
                              confining_environment=container, timeout_job=timeout_job,
-                             cleanup=cleanup, to_dump=int(timesteps_per_k/100.))
+                             cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
+                             hide_log=hide_log)
 
     try:
         xpr = experiment
         crm = xpr.crm
         description = {'identifier'        : xpr.identifier,
-                       'chromosome'        : coords['crm'] if isinstance(coords,dict) else [c['crm'] for c in coords],
-                       'start'             : xpr.resolution * coords['start'] if isinstance(coords,dict) else [xpr.resolution*c['start'] for c in coords],
-                       'end'               : xpr.resolution * coords['end'] if isinstance(coords,dict) else [xpr.resolution*c['end'] for c in coords],
+                       'chromosome'        : coords['crm'] if isinstance(coords,dict) \
+                                             else [c['crm'] for c in coords],
+                       'start'             : xpr.resolution * coords['start'] \
+                                             if isinstance(coords,dict) \
+                                             else [xpr.resolution*c['start'] for c in coords],
+                       'end'               : xpr.resolution * coords['end'] \
+                                             if isinstance(coords,dict) \
+                                             else [xpr.resolution*c['end'] for c in coords],
                        'species'           : crm.species,
                        'restriction enzyme': xpr.enzyme,
                        'cell type'         : xpr.cell_type,
@@ -286,9 +312,9 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
             m['index'] = i
     if outfile:
         if exists(outfile):
-            old_models, old_bad_models = load(open(outfile))
+            old_models, _ = load(open(outfile))
         else:
-            old_models, old_bad_models = {}, {}
+            old_models, _ = {}, {}
         models.update(old_models)
         out = open(outfile, 'w')
         dump((models), out)
@@ -296,30 +322,39 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     else:
         stages = {}
         timepoints = None
+        allzeros = tuple([all([zero_stg[x] for zero_stg in zeros]) for x in xrange(len(zeros[0]))])
         if len(HiCRestraints)>1:
-            for i in xrange(len(ini_model['x'])):
-                ini_model['x'][i] *= sm_diameter
-                ini_model['y'][i] *= sm_diameter
-                ini_model['z'][i] *= sm_diameter
-            lammps_model = LAMMPSmodel({'x'          : ini_model['x'],
-                              'y'          : ini_model['y'],
-                              'z'          : ini_model['z'],
-                              'cluster'    : 'Singleton',
-                              'objfun'     : ini_model['objfun'],
-                              'log_objfun' : ini_model['log_objfun'],
-                              'radius'     : float(CONFIG.HiC['resolution'] * CONFIG.HiC['scale'])/2,
-                              'rand_init'  : str(ini_seed)})
-            
+            #for timepoint in xrange(len(zeros)-1):
+            #    allzeros = tuple([sum(x) for x in zip(allzeros, zeros[timepoint])])
             timepoints = time_dependent_steering_pairs['colvar_dump_freq']
             nbr_produced_models = len(models)/(timepoints*(len(HiCRestraints)-1))
-            stages[0] = [0]*nbr_produced_models
-            models[0] = lammps_model
+            stages[0] = [i for i in xrange(nbr_produced_models)]
+
+            for sm_id, single_m in enumerate(ini_model):
+                for i in xrange(len(single_m['x'])):
+                    single_m['x'][i] *= sm_diameter
+                    single_m['y'][i] *= sm_diameter
+                    single_m['z'][i] *= sm_diameter
+
+                lammps_model = LAMMPSmodel({ 'x'          : single_m['x'],
+                                              'y'          : single_m['y'],
+                                              'z'          : single_m['z'],
+                                              'cluster'    : 'Singleton',
+                                              'objfun'     : single_m['objfun'],
+                                              'log_objfun' : single_m['log_objfun'],
+                                              'radius'     : float(CONFIG.HiC['resolution'] * \
+                                                                   CONFIG.HiC['scale'])/2,
+                                              'rand_init'  : str(ini_seed)})
+
+                models[sm_id] = lammps_model
             for timepoint in xrange((len(HiCRestraints)-1)*timepoints):
-                stages[timepoint+1] = [(t+1+timepoint*nbr_produced_models) for t in xrange(nbr_produced_models)]
-                
+                stages[timepoint+1] = [(t+nbr_produced_models+timepoint*nbr_produced_models)
+                                       for t in xrange(nbr_produced_models)]
+
         return StructuralModels(
-            len(LOCI), models, {}, resolution, original_data=values if len(HiCRestraints)>1 else values[0],
-            zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=zeros,
+            len(LOCI), models, {}, resolution, original_data=values \
+                if len(HiCRestraints)>1 else values[0],
+            zscores=zscores, config=CONFIG.HiC, experiment=experiment, zeros=allzeros,
             restraints=HiCRestraints[0]._get_restraints(),
             description=description, stages=stages, models_per_step=timepoints)
 # Initialize the lammps simulation with standard polymer physics based
@@ -327,18 +362,23 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
 # bending rigidity (KP)
 def init_lammps_run(lmp, initial_conformation,
                     neighbor=CONFIG.neighbor,
+                    hide_log=True,
                     connectivity="FENE"):
-    
+
     """
     Initialise the parameters for the computation in lammps job
-    
+
     :param lmp: lammps instance object.
     :param initial_conformation: lammps input data file with the particles initial conformation.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
+    :param True hide_log: do not generate lammps log information
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic 
+        potential for neighbours
 
     """
 
-    lmp.command("log none")
+    if hide_log:
+        lmp.command("log none")
     #os.remove("log.lammps")
 
     #######################################################
@@ -359,7 +399,7 @@ def init_lammps_run(lmp, initial_conformation,
     ##########################
     lmp.command("read_data %s" % initial_conformation)
     lmp.command("mass %s" % CONFIG.mass)
-        
+
     ##################################################################
     # Pair interactions require lists of neighbours to be calculated #
     ##################################################################
@@ -442,23 +482,25 @@ def lammps_simulate(lammps_folder, run_time,
                     initial_conformation=None,
                     connectivity="FENE",
                     initial_seed=None, n_models=500, n_keep=100,
-                    resolution=10000, description=None,
-                    neighbor=CONFIG.neighbor, tethering=True, 
+                    neighbor=CONFIG.neighbor, tethering=True,
                     minimize=True, compress_with_pbc=False,
                     compress_without_pbc=False,
-                    keep_restart_step=1000000, 
+                    keep_restart_step=1000000,
                     keep_restart_out_dir=None, outfile=None, n_cpus=1,
                     confining_environment=['cube',100.],
                     steering_pairs=None,
                     time_dependent_steering_pairs=None,
-                    loop_extrusion_dynamics=None, cleanup = True,                    
-                    to_dump=100000, pbc=False, timeout_job=3600):
+                    loop_extrusion_dynamics=None, cleanup = True,
+                    to_dump=100000, pbc=False, timeout_job=3600,
+                    hide_log=True):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
     
-    :param initial_conformation_folder: folder where to store lammps input data file with the particles initial conformation. 
+    :param initial_conformation: structural _models object with the particles initial conformation. 
             http://lammps.sandia.gov/doc/2001/data_format.html
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic potential
+        for neighbours (see init_lammps for details)
     :param run_time: # of timesteps.
     :param None steering_pairs: dictionary with all the info to perform
             steered molecular dynamics.
@@ -473,9 +515,9 @@ def lammps_simulate(lammps_folder, run_time,
                                'timesteps_relaxation'      : 100000,
                                'perc_enfor_contacts'       : 10
                              }
-            Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
+            Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column
 
-    :param None loop_extrusion_dynamics: dictionary with all the info to perform loop 
+    :param None loop_extrusion_dynamics: dictionary with all the info to perform loop
             extrusion dynamics.
             loop_extrusion_dynamics = { 'target_loops_input'          : "target_loops.txt",
                                         'loop_extrusion_steps_output' : "loop_extrusion_steps.txt",
@@ -492,8 +534,6 @@ def lammps_simulate(lammps_folder, run_time,
 
     :param None initial_seed: Initial random seed. If None then computer time is taken.
     :param 500 n_models: number of models to generate.
-    :param 10000 resolution: resolution to specify for the StructuralModels object.
-    :param None description: description to specify for the StructuralModels object.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param True minimize: whether to apply minimize command or not. 
     :param 1000000 keep_restart_step: step to recover stopped computation. To be implemented.
@@ -520,70 +560,84 @@ def lammps_simulate(lammps_folder, run_time,
     #         os.makedirs(keep_restart_out_dir)
     #     lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir, kseed))
     #===========================================================================
-        
+
     if initial_seed:
         seed(initial_seed)
 
     #pool = mu.Pool(n_cpus)
     timepoints = 1
-    if time_dependent_steering_pairs: 
-        timepoints = (len(time_dependent_steering_pairs['colvar_input'])-1)*time_dependent_steering_pairs['colvar_dump_freq']
-    
+    if time_dependent_steering_pairs:
+        timepoints = (len(time_dependent_steering_pairs['colvar_input'])-1) * \
+            time_dependent_steering_pairs['colvar_dump_freq']
+
+    chromosome_particle_numbers = [int(x) for x in [len(LOCI)]]
+    chromosome_particle_numbers.sort(key=int,reverse=True)
+
     kseeds = []
-    while len(kseeds) < n_models:
-        rnd = randint(1,100000000)
-        if all([(abs(ks - rnd) > timepoints) for ks in kseeds]):
-            kseeds.append(rnd)
-        
-    pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
-    
+    for k in xrange(n_models):
+        kseeds.append(k+1)
+    #while len(kseeds) < n_models:
+    #    rnd = randint(1,100000000)
+    #    if all([(abs(ks - rnd) > timepoints) for ks in kseeds]):
+    #        kseeds.append(rnd)
+
+    #pool = ProcessPool(max_workers=n_cpus, max_tasks=n_cpus)
+    pool = multiprocessing.Pool(processes=n_cpus, maxtasksperchild=n_cpus)
+
+    results = []
+    def collect_result(result):
+        results.append((result[0], result[1]))
+
     jobs = {}
-    for k in kseeds:
+    for k_id, k in enumerate(kseeds):
         #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+        ini_conf = '%sinitial_conformation.dat' % k_folder
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
+            write_initial_conformation_file(initial_conformation[k_id],
+                                            chromosome_particle_numbers,
+                                            confining_environment,
+                                            out_file=ini_conf)
 #         jobs[k] = run_lammps(k, k_folder, run_time,
 #                                               initial_conformation, connectivity,
 #                                               neighbor,
 #                                               tethering, minimize,
 #                                               compress_with_pbc, compress_without_pbc,
-#                                               confining_environment, 
+#                                               confining_environment,
 #                                               steering_pairs,
 #                                               time_dependent_steering_pairs,
 #                                               loop_extrusion_dynamics,
 #                                               to_dump, pbc,)
-        jobs[k] = pool.schedule(run_lammps,
-                                        args=(k, k_folder, run_time,
-                                              initial_conformation, connectivity,
-                                              neighbor,
-                                              tethering, minimize,
-                                              compress_with_pbc, compress_without_pbc,
-                                              confining_environment, 
-                                              steering_pairs,
-                                              time_dependent_steering_pairs,
-                                              loop_extrusion_dynamics,
-                                              to_dump, pbc,), timeout=timeout_job)
+#       jobs[k] = pool.schedule(run_lammps,
+        jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job)
+        pool.apply_async(jobs[k],
+                         args=(k, k_folder, run_time,
+                              ini_conf, connectivity,
+                              neighbor,
+                              tethering, minimize,
+                              compress_with_pbc, compress_without_pbc,
+                              confining_environment,
+                              steering_pairs,
+                              time_dependent_steering_pairs,
+                              loop_extrusion_dynamics,
+                              to_dump, pbc, hide_log,), callback=collect_result)
+#                         , timeout=timeout_job)
 
     pool.close()
     pool.join()
-    
-    results = []
-    
-    for k in kseeds:
-        
-        try:
-            #results.append((k, jobs[k]))
-            results.append((k, jobs[k].result()))
-        except TimeoutError:
-            print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
-            jobs[k].cancel()
-        except Exception as error:
-            print("Function raised %s" % error)
-            jobs[k].cancel()
-        
-  
-    #nloci = 0
+
+#     for k in kseeds:
+#         try:
+#             #results.append((k, jobs[k]))
+#             results.append((k, jobs[k].result()))
+#         except TimeoutError:
+#             print "Model took more than %s seconds to complete ... canceling" % str(timeout_job)
+#             jobs[k].cancel()
+#         except Exception as error:
+#             print "Function raised %s" % error
+#             jobs[k].cancel()
+
     models = {}
     if timepoints > 1:
         for t in xrange(timepoints):
@@ -592,11 +646,11 @@ def lammps_simulate(lammps_folder, run_time,
                 (k,restarr) = res
                 time_models.append(restarr[t])
             for i, m in enumerate(time_models[:n_keep]):
-                models[i+t*len(time_models[:n_keep])+1] = m
+                models[i+t*len(time_models[:n_keep])+n_keep] = m
             #for i, (_, m) in enumerate(
             #    sorted(time_models.items(), key=lambda x: x[1]['objfun'])[:n_keep]):
             #    models[i+t+1] = m
-            
+
     else:
         for i, (_, m) in enumerate(
             sorted(results, key=lambda x: x[1][0]['objfun'])[:n_keep]):
@@ -607,7 +661,7 @@ def lammps_simulate(lammps_folder, run_time,
             k_folder = lammps_folder + '/lammps_' + str(k) + '/'
             if os.path.exists(k_folder):
                 shutil.rmtree(k_folder)
-        
+
     return models
 
     
@@ -617,13 +671,14 @@ def lammps_simulate(lammps_folder, run_time,
 def run_lammps(kseed, lammps_folder, run_time,
                initial_conformation=None, connectivity="FENE",
                neighbor=CONFIG.neighbor,
-               tethering=False, minimize=True, 
+               tethering=False, minimize=True,
                compress_with_pbc=None, compress_without_pbc=None,
                confining_environment=None,
                steering_pairs=None,
                time_dependent_steering_pairs=None,
                loop_extrusion_dynamics=None,
-               to_dump=10000, pbc=False):
+               to_dump=10000, pbc=False,
+               hide_log=True):
     """
     Generates one lammps model
     
@@ -631,6 +686,8 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param initial_conformation_folder: folder where to store lammps input 
         data file with the particles initial conformation. 
         http://lammps.sandia.gov/doc/2001/data_format.html
+    :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+        potential for neighbours (see init_lammps_run) 
     :param run_time: # of timesteps.
     :param None initial_conformation: path to initial conformation file or None 
         for random walk initial start.
@@ -686,17 +743,21 @@ def run_lammps(kseed, lammps_folder, run_time,
     :returns: a LAMMPSModel object
 
     """
-    
+
     lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps','-nocite'])
-    
+
     if not initial_conformation:    
         initial_conformation = lammps_folder+'initial_conformation.dat'
-        generate_chromosome_random_walks_conformation ([len(LOCI)], outfile=initial_conformation, seed_of_the_random_number_generator=kseed, confining_environment=confining_environment)
-    
+        generate_chromosome_random_walks_conformation ([len(LOCI)],
+                                                       outfile=initial_conformation,
+                                                       seed_of_the_random_number_generator=kseed,
+                                                       confining_environment=confining_environment)
+
     init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor,
+                hide_log=hide_log,
                 connectivity=connectivity)
-    
+
     lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
@@ -846,17 +907,17 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("variable step equal step")
                 lmp.command("variable objfun equal f_4")
                 lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
-                
+
             lmp.command("run %i" % steering_pairs['timesteps_per_k'])
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
         timepoints = time_dependent_steering_pairs['colvar_dump_freq']
-    
+
         #if exists("objective_function_profile.txt"):
         #    os.remove("objective_function_profile.txt")
 
-        #print "# Getting the time dependent steering pairs!"        
+        #print "# Getting the time dependent steering pairs!"
         time_dependent_restraints = get_time_dependent_colvars_list(time_dependent_steering_pairs)
         time_points = sorted(time_dependent_restraints.keys())
         print "#Time_points",time_points        
@@ -1220,7 +1281,7 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     #os.remove("%slog.cite" % lammps_folder)
      
-    return result
+    return (kseed,result)
 
 def read_trajectory_file(fname):
 
