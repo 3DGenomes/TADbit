@@ -121,7 +121,8 @@ class IMPoptimizer(object):
                         use_excluded_volume=True, kforce=5,
                         ev_kforce=5, timeout_job=300,
                         connectivity="FENE", hide_log=True,
-                        kfactor=1, cleanup=False):
+                        kfactor=1, cleanup=False,
+                        initial_conformation=None):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -158,6 +159,11 @@ class IMPoptimizer(object):
     		of the ZScores before feeding them to LAMMPS. Used to decrease
     		maximum values bellow 1. E.j.: kfactor=0.1
     	:param True cleanup: delete lammps folder after completion
+        :param tadbit initial_conformation: initial structure for lammps dynamics.
+            'tadbit' to compute the initial conformation with montecarlo simulated annealing
+            'random' to compute the initial conformation as a 3D random walk
+             {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
+             e.g an IMPModel or LAMMPSModel object
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -342,7 +348,9 @@ class IMPoptimizer(object):
                                           close_bins=self.close_bins, config=config_tmp,
                                           container=self.container, zeros=self.zeros,
                                           tmp_folder=self.tmp_folder,timeout_job=timeout_job,
-					                      hide_log=hide_log, kfactor=kfactor, cleanup=cleanup)
+					                      hide_log=hide_log, kfactor=kfactor, cleanup=cleanup,
+                                          initial_conformation='tadbit' if not initial_conformation \
+                                            else initial_conformation)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])

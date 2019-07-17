@@ -2,21 +2,21 @@
 
 +-----------------------+-+
 |                       | |
-| Current version: v0.1 | |
+| Current version: pipeline_v0.2.685| |
 |                       | |
 +-----------------------+-+
 
 
-TADdyn is a Python library that allows to model and explore single or time-series 3C-based data. 
-These datasets are constituted by interaction matrices that describe distinct stages of naturally 
-occurring or induced cellular process such as the cell trans-differentiation, or reprogramming. 
-With TADdyn the user can load at once the raw and normalised interaction binned matrices (Hi-C like matrices) 
-at each of the experimental stages, build 4D models, and finally, extract structural properties from the models. 
-The 4D models reproduce the expected interaction patterns at the experimental time-points, 
-and also describe the structural modifications at intermediate moments (between stages) under the hypothesis 
-that the changes occurring between consecutive experimental time-points are smooth. To do this, 
-TADdyn is designed as a combination of restraint-based modelling, and steered Langevin dynamics of Physics-based 
-chromatin models. 
+TADdyn is a Python library that allows to model and explore single or time-series 3C-based data.
+These datasets are constituted by interaction matrices that describe distinct stages of naturally
+occurring or induced cellular process such as the cell trans-differentiation, or reprogramming.
+With TADdyn the user can load at once the raw and normalised interaction binned matrices (Hi-C like matrices)
+at each of the experimental stages, build 4D models, and finally, extract structural properties from the models.
+The 4D models reproduce the expected interaction patterns at the experimental time-points,
+and also describe the structural modifications at intermediate moments (between stages) under the hypothesis
+that the changes occurring between consecutive experimental time-points are smooth. To do this,
+TADdyn is designed as a combination of restraint-based modelling, and steered Langevin dynamics of Physics-based
+chromatin models.
 
 Documentation
 *************
@@ -24,7 +24,7 @@ Documentation
 **Install LAMMPS as a shared library**
    | 1 - Download lammps
    | git clone -b stable https://github.com/lammps/lammps.git mylammps
-   
+
    | 2 - Download the colvar modified version
    | git clone https://github.com/david-castillo/colvars
 
@@ -41,9 +41,9 @@ Documentation
    | make yes-molecule
    | make serial mode=shlib
    | make yes-python
-   
+
    | export LD_LIBRARY_PATH="/complete-path-to-mylammps/mylammps/src/"
-   
+
    | cd ../../
 
 **Install packages**
@@ -72,7 +72,7 @@ Documentation
 **Try TADdyn**
    | cd test/Sox2
    | python test_TADdyn_on_Sox2.py
-   
+
 Citation
 ********
 Please, cite this article if you use TADdyn.
@@ -83,7 +83,7 @@ Marco Di Stefano, Ralph Stadhouders, Irene Farabella, David Castillo, François 
 
 Methods implemented in TADdyn
 -----------------------------
-In the actual implementation, TADdyn relies on TADbit for the preparation of the 3C-based datasets from mapping to normalization, 
+In the actual implementation, TADdyn relies on TADbit for the preparation of the 3C-based datasets from mapping to normalization,
 and on LAMMPS [Plimpton]_ for the implementation of the simulations.
 
 Bibliography
