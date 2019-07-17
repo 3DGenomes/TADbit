@@ -641,6 +641,7 @@ class StructuralModels(object):
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
+        # remove (or not) interactions from bad columns
         if show_bad_columns:
             wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
         else:
@@ -1761,7 +1762,7 @@ class StructuralModels(object):
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
                                  log_corr=True, contact_matrix=None,
-                                 cmap='viridis'):
+                                 cmap='viridis', show_bad_columns=True):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1784,6 +1785,8 @@ class StructuralModels(object):
         :param None contact_matrix: input a contact matrix instead of computing
            it from the models
         :param 'viridis' cmap: The Colormap instance
+        :param True show_bad_columns: Wether to hide or not bad columns in the 
+            contact map
 
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
@@ -1813,13 +1816,14 @@ class StructuralModels(object):
                 all_original_data = []
                 for st in range(0,int((len(self.stages)-1)/self.models_per_step)+1):
                     all_original_data.append(st)
-                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff))
+                    all_model_matrix.append(self.get_contact_matrix(stage=int(st*self.models_per_step), cutoff=cutoff, show_bad_columns=show_bad_columns))
             elif stage is not None:
                 all_original_data = [index]
                 all_model_matrix = [self.get_contact_matrix(stage=stage,cutoff=cutoff)]
             else:
                 all_original_data = [index]
-                all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,cutoff=cutoff)]
+                all_model_matrix = [self.get_contact_matrix(models=models, cluster=cluster,
+                                                   cutoff=cutoff, show_bad_columns=show_bad_columns)]
         correl = {}
         for model_matrix, od in zip(all_model_matrix,all_original_data):
             oridata = []
