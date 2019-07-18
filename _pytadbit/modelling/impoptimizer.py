@@ -52,9 +52,9 @@ class IMPoptimizer(object):
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end, index=index)
         self.resolution = experiment.resolution
-        self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        self.zeros = [tuple([i not in zeros[index] for i in xrange(end - start + 1)])]
         self.nloci = end - start + 1
-        if not self.nloci == len(self.zeros):
+        if not all([self.nloci == len(zeros_stg) for zeros_stg in self.zeros]):
             raise Exception('ERROR: in optimization, bad number of particles\n')
         self.n_models   = n_models
         self.n_keep     = n_keep
