@@ -592,13 +592,15 @@ def lammps_simulate(lammps_folder, run_time,
     for k_id, k in enumerate(kseeds):
         #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
-        ini_conf = '%sinitial_conformation.dat' % k_folder
+        ini_conf = None
         if not os.path.exists(k_folder):
             os.makedirs(k_folder)
-            write_initial_conformation_file(initial_conformation[k_id],
-                                            chromosome_particle_numbers,
-                                            confining_environment,
-                                            out_file=ini_conf)
+            if initial_conformation:
+                ini_conf = '%sinitial_conformation.dat' % k_folder
+                write_initial_conformation_file(initial_conformation[k_id],
+                                                chromosome_particle_numbers,
+                                                confining_environment,
+                                                out_file=ini_conf)
 #         jobs[k] = run_lammps(k, k_folder, run_time,
 #                                               initial_conformation, connectivity,
 #                                               neighbor,
