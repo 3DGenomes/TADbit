@@ -64,7 +64,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        initial_conformation=None, connectivity="FENE",
                        timesteps_per_k=10000,
                        kfactor=1, adaptation_step=False, cleanup=False,
-                       hide_log=True, remove_rstrn=[]):
+                       hide_log=True, remove_rstrn=[], initial_seed=0):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -159,7 +159,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
         potential for neighbours
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
-
+    :param 0 initial_seed: Initial random seed for modelling.
 
     :returns: a StructuralModels object
     """
@@ -170,6 +170,11 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     else:
         if tmp_folder[-1] != '/':
             tmp_folder += '/'
+        randk = ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)])
+        tmp_folder = '%s%s/' %(tmp_folder, randk)
+    while os.path.exists(tmp_folder):
+        randk = ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)])
+        tmp_folder = '%s%s/' %(tmp_folder[:-1], randk)
     if not os.path.exists(tmp_folder):
         os.makedirs(tmp_folder)
 
@@ -275,7 +280,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              connectivity=connectivity,
                              steering_pairs=steering_pairs,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
-                             initial_seed=ini_seed,
+                             initial_seed=initial_seed,
                              n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
@@ -345,6 +350,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                                               'radius'     : float(CONFIG.HiC['resolution'] * \
                                                                    CONFIG.HiC['scale'])/2,
                                               'rand_init'  : str(ini_seed)})
+                # CHECK: ini_seed should be updated accoording to models inside each time point
 
                 models[sm_id] = lammps_model
             for timepoint in xrange((len(HiCRestraints)-1)*timepoints):
@@ -481,7 +487,7 @@ def init_lammps_run(lmp, initial_conformation,
 def lammps_simulate(lammps_folder, run_time,
                     initial_conformation=None,
                     connectivity="FENE",
-                    initial_seed=None, n_models=500, n_keep=100,
+                    initial_seed=0, n_models=500, n_keep=100,
                     neighbor=CONFIG.neighbor, tethering=True,
                     minimize=True, compress_with_pbc=False,
                     compress_without_pbc=False,
@@ -532,7 +538,7 @@ def lammps_simulate(lammps_folder, run_time,
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
 
-    :param None initial_seed: Initial random seed. If None then computer time is taken.
+    :param 0 initial_seed: Initial random seed for modelling
     :param 500 n_models: number of models to generate.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param True minimize: whether to apply minimize command or not. 
@@ -575,7 +581,7 @@ def lammps_simulate(lammps_folder, run_time,
 
     kseeds = []
     for k in xrange(n_models):
-        kseeds.append(k+1)
+        kseeds.append(k+1+initial_seed)
     #while len(kseeds) < n_models:
     #    rnd = randint(1,100000000)
     #    if all([(abs(ks - rnd) > timepoints) for ks in kseeds]):

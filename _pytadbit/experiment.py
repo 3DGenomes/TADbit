@@ -993,7 +993,7 @@ class Experiment(object):
                                       connectivity=connectivity,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor,
                                       adaptation_step=adaptation_step, cleanup=cleanup,
-                                      hide_log=hide_log)
+                                      hide_log=hide_log, initial_seed=start_seed)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
