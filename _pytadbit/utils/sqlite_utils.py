@@ -63,7 +63,7 @@ def already_run(opts, extra=None):
     else:
         dbpath = join(opts.workdir, 'trace.db')
     if not exists(dbpath):
-        raise Exception('ERROR: DB file: %s not found.' % dbpath)
+        raise IOError('ERROR: DB file: %s not found.' % dbpath)
     con = lite.connect(dbpath)
     try:
         with con:

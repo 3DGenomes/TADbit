@@ -319,7 +319,7 @@ def get_filters(infile, masked):
             if fname.startswith(basename + "_"):
                 key = fname.replace(basename + "_", "").replace(".tsv", "")
                 filter_files[key] = dirname + "/" + fname
-            stderr.write('   - %-20s %s\n' %(key, fname))
+                stderr.write('   - %-20s %s\n' %(key, fname))
     filter_handler = {}
     filter_line = {}
     for i in filter_files:

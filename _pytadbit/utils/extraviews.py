@@ -489,8 +489,9 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                 if highlight != i:
                     out.write('color black #%s\n' % (i))
     if not chimera_cmd:
+        radius = kwargs.get('radius',15)
         the_shape = '''bonddisplay never #%s
-shape tube #%s radius 15 bandLength 300 segmentSubdivisions 1 followBonds on
+shape tube #%s radius '''+str(radius)+''' bandLength 300 segmentSubdivisions 1 followBonds on
 ~show #%s'''
         out.write(('''
 focus

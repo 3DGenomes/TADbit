@@ -4,6 +4,7 @@
 
 """
 from pytadbit.modelling.imp_modelling    import generate_3d_models
+from pytadbit.modelling.lammps_modelling import generate_lammps_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
 from pytadbit.modelling.structuralmodels import StructuralModels
@@ -41,20 +42,57 @@ class IMPoptimizer(object):
        container = ['cylinder', 250, 1500, 50] should be used, and
        in a typical spherical mammalian nuclei (about 6 micrometers of diameter),
        container = ['cylinder', 3000, 0, 50]
+    :param 0 index: zscores index. A list is allowed to optimize several stages; 
+        in that case a weighted correlation is provided
     """
     def __init__(self, experiment, start, end, n_models=500,
-                 n_keep=100, close_bins=1, container=None):
+                 n_keep=100, close_bins=1, container=None, tool='imp',
+                 tmp_folder=None, index=0, single_particle_restraints=None):
 
         (self.zscores,
-         self.values, zeros) = experiment._sub_experiment_zscore(start, end)
+         self.values, zeros) = experiment._sub_experiment_zscore(start, end, index=index)
         self.resolution = experiment.resolution
-        self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        self.zeros = [tuple([i not in zeros[index] for i in xrange(end - start + 1)])]
         self.nloci = end - start + 1
-        if not self.nloci == len(self.zeros):
+        if not all([self.nloci == len(zeros_stg) for zeros_stg in self.zeros]):
             raise Exception('ERROR: in optimization, bad number of particles\n')
         self.n_models   = n_models
         self.n_keep     = n_keep
         self.close_bins = close_bins
+        self.chromosomes = None
+        if experiment.hic_data and experiment.hic_data[0].chromosomes:
+            self.chromosomes = experiment.hic_data[0].chromosomes
+            self.coords = []
+            tot = 0
+            chrs = []
+            chrom_offset_start = 1
+            chrom_offset_end = 0
+            for k, v in experiment.hic_data[0].chromosomes.iteritems():
+                tot += v
+                if start > tot:
+                    chrom_offset_start = start - tot
+                if end <= tot:
+                    chrom_offset_end = tot - end
+                    chrs.append(k)
+                    break
+                if start < tot and end >= tot:
+                    chrs.append(k)
+            
+            for k in chrs:
+                self.coords.append({'crm'  : k,
+                      'start': 1,
+                      'end'  : experiment.hic_data[0].chromosomes[k]})
+            self.coords[0]['start'] = chrom_offset_start
+            self.coords[-1]['end'] -= chrom_offset_end
+
+        else:
+            self.coords = {'crm'  : experiment.crm.name,
+                      'start': start,
+                      'end'  : end}
+
+        self.tool = tool
+        self.tmp_folder = tmp_folder
+        self.single_particle_restraints = single_particle_restraints
 
         # For clarity, the order in which the optimized parameters are managed should be
         # always the same: scale, kbending, maxdist, lowfreq, upfreq
@@ -72,15 +110,19 @@ class IMPoptimizer(object):
 
     def run_grid_search(self,
                         scale_range=0.01,
-                        kbending_range=0.0,  # TODO: Choose values of kbending that should be explored by default!!!
+                        kbending_range=0.0,
                         maxdist_range=(400, 1500, 100),
                         lowfreq_range=(-1, 0, 0.1),
                         upfreq_range=(0, 1, 0.1),
-                        dcutoff_range=2,
+                        dcutoff_range=None,
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True,
                         use_HiC=True, use_confining_environment=True,
-                        use_excluded_volume=True):
+                        use_excluded_volume=True, kforce=5,
+                        ev_kforce=5, timeout_job=300,
+                        connectivity="FENE", hide_log=True,
+                        kfactor=1, cleanup=False,
+                        initial_conformation=None):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -105,12 +147,23 @@ class IMPoptimizer(object):
            The last value of the input tuple is the incremental step for the
            upfreq values. To be precise "freq" refers to the Z-score.
         :param 2 dcutoff_range: upper and lower bounds used to search for
-           the optimal distance cutoff parameter (distance, in number of beads,
-           from which to consider 2 beads as being close). The last value of the
+           the optimal distance cutoff parameter (in nm). The last value of the
            input tuple is the incremental step for scale parameter values
         :param None savedata: concatenate all generated models into a dictionary
            and save it into a file named by this argument
         :param True verbose: print the results to the standard output
+        :param True hide_log: do not generate lammps log information
+        :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
+            potential for neighbours
+        :param 1 kfactor: Factor by which multiply the adjusted (square root) values
+    		of the ZScores before feeding them to LAMMPS. Used to decrease
+    		maximum values bellow 1. E.j.: kfactor=0.1
+    	:param True cleanup: delete lammps folder after completion
+        :param tadbit initial_conformation: initial structure for lammps dynamics.
+            'tadbit' to compute the initial conformation with montecarlo simulated annealing
+            'random' to compute the initial conformation as a 3D random walk
+             {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
+             e.g an IMPModel or LAMMPSModel object
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -216,7 +269,11 @@ class IMPoptimizer(object):
                                        self.upfreq_range)
         # dcutoff
         if not self.dcutoff_range:
-            self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
+            if dcutoff_arange is None or len(dcutoff_arange) == 0:
+                self.dcutoff_range = [int(2 * self.resolution * float(sc)) for sc in self.scale_range]
+                dcutoff_arange = self.dcutoff_range
+            else:
+                self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
         else:
             self.dcutoff_range = sorted([my_round(i) for i in dcutoff_arange
                                          if not my_round(i) in self.dcutoff_range] +
@@ -228,6 +285,7 @@ class IMPoptimizer(object):
         if verbose:
             stderr.write('  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s\t%-11s\n' % (
                 "num","scale","kbending","maxdist","lowfreq","upfreq","dcutoff","correlation"))
+        #print scale_arange, kbending_arange, maxdist_arange, lowfreq_arange, upfreq_arange, dcutoff_arange
         parameters_sets = itertools.product([my_round(i) for i in scale_arange   ],
                                             [my_round(i) for i in kbending_arange],
                                             [my_round(i) for i in maxdist_arange ],
@@ -255,59 +313,81 @@ class IMPoptimizer(object):
                         print verb + str(round(result, 4))
                 continue
 
-            config_tmp = {'kforce'   : 5,
+            config_tmp = {'kforce'   : float(kforce),
+                          'ev_kforce': float(ev_kforce),
                           'scale'    : float(scale),
                           'kbending' : float(kbending),
-                          'lowrdist' : 100, # This parameters is fixed to XXX
+                          #'lowrdist' : 1.0, # This parameters is fixed to XXX
+                          'lowrdist' : 100,
                           'maxdist'  : int(maxdist),
                           'lowfreq'  : float(lowfreq),
                           'upfreq'   : float(upfreq)}
 
             try:
                 count += 1
-                tdm = generate_3d_models(
-                    self.zscores, self.resolution,
-                    self.nloci, n_models=self.n_models,
-                    n_keep=self.n_keep, config=config_tmp,
-                    n_cpus=n_cpus, first=0,
-                    values=self.values, container=self.container,
-                    close_bins=self.close_bins, zeros=self.zeros,
-                    use_HiC=use_HiC, use_confining_environment=use_confining_environment,
-                    use_excluded_volume=use_excluded_volume)
-                result = 0
-                cutoff = my_round(dcutoff_arange[0])
-
-                matrices = tdm.get_contact_matrix(
-                    cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
-                for m in matrices:
-                    cut = int(m**0.5)
-                    sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
-                                                              off_diag=off_diag,
-                                                              contact_matrix=matrices[m])[0]
-
-                    if result < sub_result:
-                        result = sub_result
-                        cutoff = my_round(float(cut) / self.resolution / float(scale))
-
+                avg_result = dict((i,0) for i in dcutoff_arange)
+                for i in xrange(len(self.zscores)):
+                    if self.tool=='imp':
+                        tdm = generate_3d_models(
+                            self.zscores[i], self.resolution,
+                            self.nloci, n_models=self.n_models,
+                            n_keep=self.n_keep, config=config_tmp,
+                            n_cpus=n_cpus, first=0,
+                            values=self.values[i], container=self.container,
+                            coords = self.coords,
+                            close_bins=self.close_bins, zeros=self.zeros,
+                            use_HiC=use_HiC, use_confining_environment=use_confining_environment,
+                            use_excluded_volume=use_excluded_volume,
+                            single_particle_restraints=self.single_particle_restraints)
+                    elif self.tool=='lammps':
+                        tdm = generate_lammps_models(self.zscores, self.resolution, self.nloci,
+                                          values=self.values, n_models=self.n_models,
+                                          n_keep=self.n_keep,
+                                          n_cpus=n_cpus, connectivity=connectivity,
+                                          verbose=verbose, first=0,coords = self.coords,
+                                          close_bins=self.close_bins, config=config_tmp,
+                                          container=self.container, zeros=self.zeros,
+                                          tmp_folder=self.tmp_folder,timeout_job=timeout_job,
+					                      hide_log=hide_log, kfactor=kfactor, cleanup=cleanup,
+                                          initial_conformation='tadbit' if not initial_conformation \
+                                            else initial_conformation)
+                    result = 0
+                    matrices = tdm.get_contact_matrix(
+                        #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
+                        cutoff=[int(i) for i in dcutoff_arange])
+                    for m in matrices:
+                        cut = int(m**0.5)
+                        sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
+                                                                  off_diag=off_diag,
+                                                                  contact_matrix=matrices[m])[0]
+                        
+                        avg_result[cut] += sub_result
 
             except Exception, e:
                 print '  SKIPPING: %s' % e
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 
-            if verbose:
-                verb = '  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s' % (
-                    count, scale, kbending, maxdist, lowfreq, upfreq, cutoff)
-                if verbose == 2:
-                    stderr.write(verb + str(round(result, 4)) + '\n')
-                else:
-                    print verb + str(round(result, 4))
-
-            # Store the correlation for the TADbit parameters set
-            self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
-
-            if savedata and result:
-                models[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = tdm._reduce_models(minimal=True)
+            for ct,m in enumerate(avg_result):
+                    
+                result = avg_result[m]/len(self.zscores)
+                
+                cutoff = int(m)
+                
+                if verbose:
+                    verb = '  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s' % (
+                        count+ct, scale, kbending, maxdist, lowfreq, upfreq, cutoff)
+                    if verbose == 2:
+                        stderr.write(verb + str(round(result, 4)) + '\n')
+                    else:
+                        print verb + str(round(result, 4))
+                
+                count += ct
+                # Store the correlation for the TADbit parameters set
+                self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
+    
+                if savedata and result:
+                    models[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = tdm._reduce_models(minimal=True)
 
         if savedata:
             out = open(savedata, 'w')
@@ -428,9 +508,7 @@ class IMPoptimizer(object):
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
-
         self.dcutoff_range.sort(key=float)
-
 
 
     def get_best_parameters_dict(self, reference=None, with_corr=False):
@@ -502,7 +580,7 @@ class IMPoptimizer(object):
                                      results), axes=axes, dcutoff=self.dcutoff_range, show_best=show_best,
                                     skip=skip, savefig=savefig,clim=clim)
 
-    def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'),
+    def plot_2d(self, axes=('scale', 'kbending', 'maxdist', 'lowfreq', 'upfreq'), dcutoff=None,
                 show_best=0, skip=None, savefig=None,clim=None):
         """
         A grid of heatmaps representing the result of the optimization.
@@ -582,19 +660,10 @@ class IMPoptimizer(object):
         # This auxiliary method organizes the results of the grid optimization in a
         # Numerical array to be passed to the plot_2d and plot_3d functions above
 
-        results = np.empty((len(self.scale_range),  len(self.kbending_range),  len(self.maxdist_range),
+        results = np.zeros((len(self.scale_range),  len(self.kbending_range),  len(self.maxdist_range),
                             len(self.lowfreq_range), len(self.upfreq_range)))
-
-        """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
-                            print "Correlation",self.scale_range[i],self.kbending_range[j],\
-                            self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
-                            results[i][j][k][l][m]
-        """
+        #print results
+        #print self.lowfreq_range
 
         for v, scale in enumerate(self.scale_range):
             for w, kbending in enumerate(self.kbending_range):
@@ -657,22 +726,23 @@ class IMPoptimizer(object):
         for (scale, kbending, maxdist, lowfreq, upfreq) in parameters_sets:
             try:
                 cut = sorted(
-                    [c for c in self.dcutoff_range
-                     if (scale, kbending, maxdist, lowfreq, upfreq, c)
+                    [int(c) for c in self.dcutoff_range
+                     if (scale, kbending, maxdist, lowfreq, upfreq, int(c))
                      in self.results],
                     key=lambda x: self.results[
-                        (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
+                        (scale, kbending, maxdist, lowfreq, upfreq, x)])
             except IndexError:
                 print 'Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq)
                 continue
 
-            try:
-                result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, cut)]
-                out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
-                    scale, kbending, maxdist, lowfreq, upfreq, cut, result))
-            except KeyError:
-                print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
-                continue
+            for c in cut:
+                try:
+                    result = self.results[(scale, kbending, maxdist, lowfreq, upfreq, c)]
+                    out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
+                        scale, kbending, maxdist, lowfreq, upfreq, c, result))
+                except KeyError:
+                    print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, c, result)
+                    continue
         out.close()
 
 
@@ -765,8 +835,8 @@ class IMPoptimizer(object):
             scale    = my_round(scale, val=5)
             kbending = my_round(kbending)
             maxdist  = my_round(maxdist)
-            lowfreq  = my_round(upfreq)
-            upfreq   = my_round(lowfreq)
+            lowfreq  = my_round(lowfreq)
+            upfreq   = my_round(upfreq)
             dcutoff  = my_round(dcutoff)
             self.results[(scale, kbending, maxdist, lowfreq, upfreq, dcutoff)] = float(result)
             if not scale in self.scale_range:
