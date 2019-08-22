@@ -2,7 +2,7 @@
 
 +-----------------------+-+
 |                       | |
-| Current version: pipeline_v0.2.695  |
+| Current version: pipeline_v0.2.697  |
 |                       | |
 +-----------------------+-+
 
