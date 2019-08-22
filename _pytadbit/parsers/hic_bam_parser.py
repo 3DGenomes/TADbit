@@ -362,6 +362,7 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             # print '%-50s %5s %9s %5s %9s' % (r.query_name,
             #                                  crm1, r.reference_start + 1,
             #                                  crm2, r.mpos + 1)
+        bamfile.close()
         if half:
             for c, i, j in dico:
                 if i < j:
@@ -418,6 +419,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     start_bin1 = 0
     end_bin1   = len(bins) + 1
     regions = bamfile.references
+    bamfile.close()
     if region1:
         regions = [region1]
         if region2:
@@ -810,6 +812,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x for x in bamfile.lengths]))
+    bamfile.close()
 
     if biases:
         bias1, bias2, decay, bads1, bads2 = get_biases_region(biases, bin_coords)
