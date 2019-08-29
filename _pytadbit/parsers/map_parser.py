@@ -271,6 +271,7 @@ def read_read_frags(r, frags, frag_chunk):
         crm, strand, pos = ali.split(':')[:3]
     except ValueError:
         raise KeyError()
+    crm = crm.split()[0]
     positive = strand == '+'
     len_seq  = len(seq)
     if positive:
