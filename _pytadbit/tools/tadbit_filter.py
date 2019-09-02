@@ -160,13 +160,16 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
         add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
         try:
+            real_count = count
+            for mult in multiples:
+                real_count = real_count - multiples[mult] + multiples[mult]*((mult*(mult+1)) // 2)
             cur.execute("""
             insert into INTERSECTION_OUTPUTs
             (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
             values
             (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
-                   count, ' '.join(['%s:%d' % (k, multiples[k])
+                   real_count, ' '.join(['%s:%d' % (k, multiples[k])
                                     for k in sorted(multiples)]),
                    median, mad, max_f))
         except lite.IntegrityError:
