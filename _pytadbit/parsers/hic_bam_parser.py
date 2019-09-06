@@ -28,8 +28,11 @@ from pysam                        import AlignmentFile
 from pytadbit.utils.file_handling   import mkdir, which
 from pytadbit.utils.extraviews      import nicer
 from pytadbit.mapping.filter        import MASKED
-from pytadbit.parsers.cooler_parser import cooler_file
-
+try:
+    from pytadbit.parsers.cooler_parser import cooler_file
+except ImportError:
+    stderr.write('WARNING: cooler output is not available. Probably ' +
+                 'you need to install h5py\n')
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
