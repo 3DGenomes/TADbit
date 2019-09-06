@@ -268,7 +268,7 @@ def run(opts):
             region2=region2, start2=start2, end2=end2,
             tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
             nchunks=opts.nchunks, verbose=not opts.quiet,
-            extra=param_hash, clean=clean))
+            extra=param_hash, cooler=opts.cooler, clean=clean))
 
     if clean:
         printime('Cleaning')
@@ -543,10 +543,15 @@ def populate_args(parser):
 
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
-                        help='''Write text matrix in multiple columns. By
-                        defaults matrices are written in BED-like format (also
+                        help='''Write text matrix in multiple columns (square). 
+                        By defaults matrices are written in BED-like format (also
                         only way to get a raw matrix with all values including
                         the ones in masked columns).''')
+
+    outopt.add_argument('--cooler', dest='cooler', action='store_true',
+                        default=False,
+                        help='''Write i,j,v matrix in cooler format instead of text.
+                        ''')
 
     outopt.add_argument('--rownames', dest='row_names', action='store_true',
                         default=False,
