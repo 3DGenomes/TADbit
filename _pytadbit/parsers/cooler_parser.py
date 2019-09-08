@@ -43,7 +43,7 @@ class cooler_file(object):
             if verbose:
                 printime('Opening cooler %s'%outcool)
         else:
-            with h5py.File(outcool, "r") as f:
+            with h5py.File(outcool, "r+") as f:
                 try:
                     f[self.root_grp].create_group(str(self.resolution))
                 except ValueError:
