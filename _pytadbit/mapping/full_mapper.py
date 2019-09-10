@@ -40,7 +40,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         _   = fhandler.next()  # lose qualities header but not needed
         qal = fhandler.next()  # lose qualities but not needed
         # header now also contains original read
-        return (rlines + ' ' + seq.strip() + ' ' + qal.strip(),
+        return (rlines.split('/',1)[0].split('~',1)[0] + ' ' + seq.strip() + ' ' + qal.strip(),
                 seq.strip(), qal.strip())
 
     def _get_fastq_read_light(rlines):
@@ -52,7 +52,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         seq = fhandler.next()
         _   = fhandler.next()  # lose qualities header but not needed
         qal = fhandler.next()  # lose qualities but not needed
-        return (rlines, seq.strip(), qal.strip())
+        return (rlines.split('/',1)[0].split('~',1)[0], seq.strip(), qal.strip())
 
     def _get_map_read_heavy(line):
         header = line.split('\t', 1)[0]
