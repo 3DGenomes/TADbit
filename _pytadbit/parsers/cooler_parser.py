@@ -9,7 +9,9 @@ import datetime
 import json
 import h5py
 import numpy as np
-from time import time
+from math           import ceil
+from collections    import OrderedDict
+from time           import time
 
 def printime(msg):
     print (msg +
@@ -28,7 +30,7 @@ class cooler_file(object):
         :param outcool: path to cool file to be created
         :param resolution: resolution of the matrix
         :param sections: dictionary with chromosomes and lengths
-        :param regions: chromosomes present in the matrix
+        :param regions: list of chromosomes present in the matrix, order matters
         :param None h5opts: options for the h5py outcool file
         :param True verbose: speak
 
@@ -56,8 +58,8 @@ class cooler_file(object):
         self.name = outcool
         self.sections = sections
         self.regions = regions
-        self.nbins = sum([int(self.sections[reg]/self.resolution)+1
-                          for reg in list(set(self.regions))])
+        self.nbins = sum([int(ceil(self.sections[reg]/self.resolution))
+                          for reg in list(OrderedDict.fromkeys(self.regions))])
         self.nnz = 0
         self.ncontacts = 0
         self.ichunk = 0
@@ -74,8 +76,8 @@ class cooler_file(object):
         :param sections: dictionary with chromosomes and lengths
 
         """
-        regions = list(set(self.regions))
-        bins = ((reg, p + 1 , p + self.resolution) for r, reg in enumerate(regions)
+        regions = list(OrderedDict.fromkeys(self.regions))
+        bins = ((reg, p, p + self.resolution) for r, reg in enumerate(regions)
                 for p in range(0,self.sections[reg],self.resolution))
 
         if self.verbose:
@@ -91,7 +93,7 @@ class cooler_file(object):
         Write the regions table.
 
         """
-        regions = list(set(self.regions))
+        regions = list(OrderedDict.fromkeys(self.regions))
         with h5py.File(self.outcool, "r+") as f:
             root_grp = f[self.root_grp][str(self.resolution)]
             chr_names = np.array([reg for reg in regions], dtype=np.dtype("S"))
@@ -109,7 +111,7 @@ class cooler_file(object):
             with the bins of the matrix
 
         """
-        regions = list(set(self.regions))
+        regions = list(OrderedDict.fromkeys(self.regions))
         bins = [bin_i for bin_i in bins_it]
         with h5py.File(self.outcool, "r+") as f:
             root_grp = f[self.root_grp][str(self.resolution)]
@@ -140,7 +142,7 @@ class cooler_file(object):
                     raise
             if not chrom_as_enum:
                 chrom_dset.attrs["enum_path"] = u"/chroms/name"
-            bin_data = [bin_i[1]-1 for bin_i in bins]
+            bin_data = [bin_i[1] for bin_i in bins]
             grp.create_dataset("start", shape=(self.nbins,), dtype=np.int32,
                                data=bin_data, **self.h5opts)
             bin_data = [bin_i[2] for bin_i in bins]
