@@ -29,7 +29,11 @@ from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.hmm             import gaussian_prob, best_path, train
 from pytadbit.utils.tadmaths        import calinski_harabasz
-
+try:
+    from pytadbit.parsers.cooler_parser import cooler_file
+except ImportError:
+    stderr.write('WARNING: cooler output is not available. Probably ' +
+                 'you need to install h5py\n')
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
@@ -528,6 +532,37 @@ class HiC_data(dict):
         else:
             raise Exception('ERROR: format "%s" not found\n' % format)
         out.close()
+
+    def write_cooler(self, fname, normalized=False):
+        """
+        writes the hic_data to a cooler file.
+
+        :param False normalized: get normalized data
+        """
+
+        if normalized and not self.bias:
+            raise Exception('ERROR: data not normalized yet')
+        if not all(isinstance(val, int) for _, val in self.iteritems()):
+            raise Exception('ERROR: raw hic data (integer values) is needed for cooler format')
+        if self.chromosomes:
+            if len(self.chromosomes) > 1:
+                sections = OrderedDict((key,val*self.resolution)
+                                       for key, val in self.chromosomes.iteritems())
+            else: # maybe part of a matrix
+                sections = {next(iter(self.chromosomes)): self.__size*self.resolution}
+        else: # maybe part of a matrix
+            sections = {"Unknown": self.__size*self.resolution}
+
+        out = cooler_file(fname, self.resolution, sections, sections.keys())
+        out.create_bins()
+        out.prepare_matrix()
+        for key, value in self.iteritems():
+            row, col = round(key / self.__size), key % self.__size
+            out.write_iter(0, row, col, value)
+        out.close()
+        if normalized:
+            weights = [self.bias[i] if not i in self.bads else 0. for i in xrange(self.__size)]
+            out.write_weights(weights, weights)
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
