@@ -13,7 +13,11 @@ from pysam                           import AlignmentFile
 from pytadbit.parsers.gzopen         import gzopen
 from pytadbit                        import HiC_data
 from pytadbit.parsers.hic_bam_parser import get_matrix
-
+try:
+    from pytadbit.parsers.cooler_parser import parse_cooler, is_cooler
+except ImportError:
+    stderr.write('WARNING: cooler output is not available. Probably ' +
+                 'you need to install h5py\n')
 
 HIC_DATA = True
 
@@ -239,7 +243,6 @@ def __is_abc(f):
     f.seek(fpos)
     return False
 
-
 def autoreader(f):
     """
     Auto-detect matrix format of HiC data file.
@@ -426,15 +429,19 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                      resolution=resolution,
                                      symmetricized=sym, masked=masked))
         elif isinstance(thing, str):
-            try:
-                parser = parser or (abc_reader if __is_abc(gzopen(thing)) else autoreader)
-                matrix, size, header, masked, sym = parser(gzopen(thing))
-            except IOError:
-                if len(thing.split('\n')) > 1:
-                    parser = parser or (abc_reader if __is_abc(thing.split('\n')) else autoreader)
-                    matrix, size, header, masked, sym = parser(thing.split('\n'))
-                else:
-                    raise IOError('\n   ERROR: file %s not found\n' % thing)
+            if is_cooler(thing, resolution if resolution > 1 else None):
+                matrix, size, header, masked, sym = parse_cooler(thing,
+                                                                 resolution if resolution > 1 else None)
+            else:
+                try:
+                    parser = parser or (abc_reader if __is_abc(gzopen(thing)) else autoreader)
+                    matrix, size, header, masked, sym = parser(gzopen(thing))
+                except IOError:
+                    if len(thing.split('\n')) > 1:
+                        parser = parser or (abc_reader if __is_abc(thing.split('\n')) else autoreader)
+                        matrix, size, header, masked, sym = parser(thing.split('\n'))
+                    else:
+                        raise IOError('\n   ERROR: file %s not found\n' % thing)
             sections = dict([(h, i) for i, h in enumerate(header)])
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
@@ -445,7 +452,8 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
                 size = len(thing)
-                matrix  = [(i + j * size, v) for i, l in enumerate(thing) for j, v in enumerate(l) if v]
+                matrix  = [(i + j * size, v) for i, l in enumerate(thing)
+                           for j, v in enumerate(l) if v]
             else:
                 raise Exception('must be list of lists, all with same length.')
             matrices.append(HiC_data(matrix, size))

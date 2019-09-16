@@ -9,6 +9,7 @@ import datetime
 import json
 import h5py
 import numpy as np
+from warnings       import warn
 from math           import ceil
 from collections    import OrderedDict
 from time           import time
@@ -19,6 +20,48 @@ def printime(msg):
            '[' +
            str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
            ']')
+
+def is_cooler(fname, resolution=None):
+    """
+    Check if file is a cooler and contains the wanted resolution
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+    """
+    with h5py.File(fname, "r") as f:
+        try:
+            resolution = resolution or f['resolutions'].keys()[0]
+            if str(resolution) in f['resolutions']:
+                return True
+        except ValueError:
+            warn('WARNING: cooler file exists but does not contain wanted resolution')
+        except:
+            pass
+    return False
+
+def parse_cooler(fname, resolution=None):
+    """
+    Read matrix stored in cooler
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
+    """
+
+    with h5py.File(fname, "r") as f:
+
+        resolution = resolution or f['resolutions'].keys()[0]
+        root_grp = f['resolutions'][str(resolution)]
+        chrom, starts, ends = root_grp["bins"]["chrom"], root_grp["bins"]["start"], root_grp["bins"]["end"]
+        header = dict(zip(chrom, starts, ends))
+        size = len(header)
+        masked = {}
+        items = {}
+
+    return items, size, header, masked, False
 
 class cooler_file(object):
     """
