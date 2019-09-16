@@ -391,11 +391,11 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
        with this file example.tsv:
        ::
 
-         chrT_001	chrT_002	chrT_003	chrT_004
-         chrT_001	629	164	88	105
-         chrT_002	86	612	175	110
-         chrT_003	159	216	437	105
-         chrT_004	100	111	146	278
+         chrT_001    chrT_002    chrT_003    chrT_004
+         chrT_001    629    164    88    105
+         chrT_002    86    612    175    110
+         chrT_003    159    216    437    105
+         chrT_004    100    111    146    278
 
        the output of parser('example.tsv') might be:
        ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105, 110,
@@ -431,7 +431,8 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         elif isinstance(thing, str):
             if is_cooler(thing, resolution if resolution > 1 else None):
                 matrix, size, header, masked, sym = parse_cooler(thing,
-                                                                 resolution if resolution > 1 else None)
+                                                                 resolution if resolution > 1 else None,
+                                                                 not hic)
             else:
                 try:
                     parser = parser or (abc_reader if __is_abc(gzopen(thing)) else autoreader)
