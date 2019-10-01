@@ -4,6 +4,7 @@ December 12, 2014.
 """
 
 import os
+from sys                            import stderr
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
