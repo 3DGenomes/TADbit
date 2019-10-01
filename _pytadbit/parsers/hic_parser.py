@@ -3,6 +3,7 @@ November 7, 2013.
 
 """
 
+from sys                             import stderr
 from collections                     import OrderedDict
 from warnings                        import warn
 from math                            import sqrt, isnan
