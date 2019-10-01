@@ -9,6 +9,7 @@ import datetime
 import json
 import h5py
 import numpy as np
+from warnings       import warn
 from math           import ceil
 from collections    import OrderedDict
 from time           import time
@@ -19,6 +20,64 @@ def printime(msg):
            '[' +
            str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
            ']')
+
+def is_cooler(fname, resolution=None):
+    """
+    Check if file is a cooler and contains the wanted resolution
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+    """
+
+    try:
+        with h5py.File(fname, "r") as f:
+            resolution = resolution or f['resolutions'].keys()[0]
+            if str(resolution) in f['resolutions']:
+                return True
+    except ValueError:
+        warn('WARNING: cooler file exists but does not contain wanted resolution')
+    except:
+        pass
+    return False
+
+def parse_cooler(fname, resolution=None, normalized=False):
+    """
+    Read matrix stored in cooler
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+    :param False normalized: whether to apply weights
+
+    :returns: An iterator to be converted in dictionary, matrix size, raw_names
+       as list of tuples (chr, pos), dictionary of masked bins, and boolean
+       reporter of symetric transformation
+    """
+
+    with h5py.File(fname, "r") as f:
+
+        resolution = resolution or f['resolutions'].keys()[0]
+        root_grp = f['resolutions'][str(resolution)]
+
+        chrom = root_grp["chroms"]["name"].value
+        idregion = dict(zip(range(len(chrom)), [reg for reg in chrom]))
+
+        chrom = [str(idregion[c]) for c in root_grp["bins"]["chrom"]]
+        starts = ['%d-%d'%(c+1,c+int(resolution)) for c in root_grp["bins"]["start"]]
+        header = [(chromi, starti) for chromi, starti in zip(chrom, starts)]
+        size = len(header)
+        masked = {}
+        if normalized and "weight" in root_grp["bins"]:
+            weights = root_grp["bins"]["weight"].value
+        else:
+            weights = [1 for _ in xrange(size)]
+        bin1_id = root_grp["pixels"]["bin1_id"].value
+        bin2_id = root_grp["pixels"]["bin2_id"].value
+        counti = root_grp["pixels"]["count"].value
+        num = int if not normalized else float
+        items = [(int(row) + int(col) * size, num(val)*weights[row]*weights[col])
+                 for row, col, val in zip(bin1_id, bin2_id, counti)]
+
+    return items, size, header, masked, False
 
 class cooler_file(object):
     """
