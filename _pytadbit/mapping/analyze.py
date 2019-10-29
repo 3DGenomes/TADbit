@@ -895,28 +895,35 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
         out.close()
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
-                       savefig=None, show=False, savedata=None,
+                       savefig=None, show=False, savedata=None, min_dist=1,
                        normalized=False, remove_bad_columns=True, **kwargs):
     """
     Compare the interactions of two Hi-C matrices at a given distance,
-    with Spearman rank correlation
-
+       with Spearman rank correlation.
+    Also computes the SCC reproducibility score as in HiCrep (see
+       https://doi.org/10.1101/gr.220640.117). It's implementation is inspired
+       by the version implemented in dryhic by Enrique Vidal
+       (https://github.com/qenvio/dryhic).
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
     :param 1 resolution: to be used for scaling the plot
     :param 10 max_dist: maximum distance from diagonal (e.g. 10 mean we will
        not look further than 10 times the resolution)
+    :param 1 min_dist: minimum distance from diagonal (set to 0 to reproduce
+       result from HicRep)
     :param None savefig: path to save the plot
     :param False intra: only takes into account intra-chromosomal contacts
     :param False show: displays the plot
     :param False normalized: use normalized data
     :param True remove_bads: computes the union of bad columns between samples
        and exclude them from the comparison
-
-    :returns: list of correlations and list of genomic distances
+    :returns: list of correlations, list of genomic distances, SCC and standard
+       deviation of SCC
     """
-    corrs = []
+    spearmans = []
+    pearsons = []
     dists = []
+    weigs = []
 
     if normalized:
         get_the_guy1 = lambda i, j: (hic_data1[j, i] / hic_data1.bias[i] /
@@ -945,13 +952,18 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                         continue
                     diag1.append(get_the_guy1(i, j))
                     diag2.append(get_the_guy2(i, j))
-            corrs.append(spearmanr(diag1, diag2)[0])
+            spearmans.append(spearmanr(diag1, diag2)[0])
+            pearsons.append(spearmanr(diag1, diag2)[0])
+            r1 = _unitize(diag1)
+            r2 = _unitize(diag2)
+            weigs.append((np.var(r1, ddof=1) *
+                          np.var(r2, ddof=1))**0.5 * len(diag1))
             dists.append(dist)
     else:
         if intra:
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
-        for dist in xrange(1, max_dist + 1):
+        for dist in xrange(min_dist, max_dist + min_dist):
             diag1 = []
             diag2 = []
             for j in xrange(len(hic_data1) - dist):
@@ -960,8 +972,23 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                     continue
                 diag1.append(get_the_guy1(i, j))
                 diag2.append(get_the_guy2(i, j))
-            corrs.append(spearmanr(diag1, diag2)[0])
+            spearmans.append(spearmanr(diag1, diag2)[0])
+            pearsons.append(pearsonr(diag1, diag2)[0])
+            r1 = _unitize(diag1)
+            r2 = _unitize(diag2)
+            weigs.append((np.var(r1, ddof=1) *
+                          np.var(r2, ddof=1))**0.5 * len(diag1))
             dists.append(dist)
+    # compute scc
+    # print pearsons
+    # print weigs
+    tot_weigth = sum(weigs)
+    scc = sum(pearsons[i] * weigs[i] / tot_weigth
+              for i in xrange(len(pearsons)))
+    var_corr = np.var(pearsons, ddof=1)
+    std = (sum(weigs[i]**2 for i in xrange(len(pearsons))) * var_corr /
+           sum(weigs)**2)**0.5
+    # plot
     if show or savefig or axe:
         if not axe:
             fig = plt.figure()
@@ -969,7 +996,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
             given_axe = False
         else:
             given_axe = True
-        axe.plot(dists, corrs, color='orange', linewidth=3, alpha=.8)
+        axe.plot(dists, spearmans, color='orange', linewidth=3, alpha=.8)
         axe.set_xlabel('Genomic distance in bins')
         axe.set_ylabel('Spearman rank correlation')
         axe.set_xlim((0, dists[-1]))
@@ -982,13 +1009,17 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
-        for i in xrange(len(corrs)):
-            out.write('%s\t%s\n' % (dists[i], corrs[i]))
+        for i in xrange(len(spearmans)):
+            out.write('%s\t%s\n' % (dists[i], spearmans[i]))
         out.close()
     if kwargs.get('get_bads', False):
-        return corrs, dists, bads
-    else:
-        return corrs, dists
+        return spearmans, dists, scc, std, bads
+    return spearmans, dists, scc, std
+
+
+def _unitize(vals):
+    return np.argsort(vals) / float(len(vals))
+
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
                            savefig=None, show=False, savedata=None,
