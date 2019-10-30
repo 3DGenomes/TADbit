@@ -63,6 +63,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
                        initial_conformation=None, connectivity="FENE",
                        timesteps_per_k=10000,
+                       keep_restart_step=1000000, keep_restart_out_dir=None,
                        kfactor=1, adaptation_step=False, cleanup=False,
                        hide_log=True, remove_rstrn=[], initial_seed=0):
     """
@@ -157,6 +158,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param True hide_log: do not generate lammps log information
     :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
         potential for neighbours
+    :param 1000000 keep_restart_step: step to recover stopped computation
+    :param None keep_restart_out_dir: recover stopped computation
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
     :param 0 initial_seed: Initial random seed for modelling.
@@ -282,6 +285,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=initial_seed,
                              n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
+                             keep_restart_step=keep_restart_step, 
+                             keep_restart_out_dir=keep_restart_out_dir,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
                              hide_log=hide_log)
@@ -629,7 +634,9 @@ def lammps_simulate(lammps_folder, run_time,
                               steering_pairs,
                               time_dependent_steering_pairs,
                               loop_extrusion_dynamics,
-                              to_dump, pbc, hide_log,), callback=collect_result)
+                              to_dump, pbc, hide_log,
+                              keep_restart_step,
+                              keep_restart_out_dir,), callback=collect_result)
 #                         , timeout=timeout_job)
 
     pool.close()
@@ -686,7 +693,9 @@ def run_lammps(kseed, lammps_folder, run_time,
                time_dependent_steering_pairs=None,
                loop_extrusion_dynamics=None,
                to_dump=10000, pbc=False,
-               hide_log=True):
+               hide_log=True,
+               keep_restart_step=1000000,
+               keep_restart_out_dir=None):
     """
     Generates one lammps model
     
@@ -747,6 +756,8 @@ def run_lammps(kseed, lammps_folder, run_time,
                              }
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
+    :param 1000000 keep_restart_step: step to recover stopped computation
+    :param None keep_restart_out_dir: recover stopped computation
 
     :returns: a LAMMPSModel object
 
@@ -768,6 +779,21 @@ def run_lammps(kseed, lammps_folder, run_time,
 
     lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+
+    # create lammps restart files every x steps. 1000 is ok
+    # There was the doubt of using text format session info (which allows use in other computers)
+    # but since the binary can be converted later and this: "Because a data file is in text format, 
+    # if you use a data file written out by this command to restart a simulation, the initial state 
+    # of the new run will be slightly different than the final state of the old run (when the file 
+    # was written) which was represented internally by LAMMPS in binary format. A new simulation 
+    # which reads the data file will thus typically diverge from a simulation that continued 
+    # in the original input script." will continue with binary. To convert use restart2data
+    if keep_restart_out_dir:
+        if not os.path.exists(keep_restart_out_dir):
+            os.makedirs(keep_restart_out_dir)
+        lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir, kseed))
+        lmp.command("write_data %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir, kseed))
+
 
     #######################################################
     # Set up fixes                                        #
