@@ -13,7 +13,7 @@ from pysam                           import AlignmentFile
 from pytadbit.parsers.gzopen         import gzopen
 from pytadbit                        import HiC_data
 from pytadbit.parsers.hic_bam_parser import get_matrix
-
+import itertools
 
 HIC_DATA = True
 
@@ -475,7 +475,69 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         return matrices
 
 
-def load_hic_data_from_reads(fnam, resolution, **kwargs):
+def checkOverlapCount(cr1, p1, p2, split_by_bin, resolution, dict_sec):
+    '''
+    Function to get fragment bin location of all the bins included in a fragment
+     and having more than split_by_bin nucleotides inside a bin. Function is called
+     in load_hic_data_from_reads when split_by_bin > 1 and != False
+    '''
+    interacting = []
+    # if first fragments passes thresshold of minimum allowed bp till bin change
+    if (((p1/resolution) + 1) * resolution) - p1 >= split_by_bin:
+        try:
+            interacting.append(dict_sec[(cr1, p1 / resolution)])
+        except:
+            interacting.append(p1 / resolution)
+            
+    # same for second and fragment (we add all posible bins between extremes)
+    if p2 - ((p2/resolution) * resolution) >= split_by_bin:
+        try:
+            interacting += range(dict_sec[(cr1, p1 / resolution)] + 1, dict_sec[(cr1, p2 / resolution)] + 1)
+        except:
+            interacting += range((p1 / resolution) + 1, (p2 / resolution) + 1)
+            
+    # Just in case there is a middle fragment and the last one didnt pass the thresshold
+    else:
+        try:
+            interacting += range(dict_sec[(cr1, p1 / resolution)] + 1, dict_sec[(cr1, p2 / resolution)])
+        except:
+            interacting += range((p1 / resolution) + 1, (p2 / resolution))
+            
+    return interacting
+
+
+def checkOverlapPerc(cr1, p1, p2, split_by_bin, resolution, dict_sec):
+    '''
+    Function to get fragment bin location of all the bins included in a fragment
+     and having a proportion greater or equal to split_by_bin inside a bin. 
+     Function is called in load_hic_data_from_reads when split_by_bin <= 1 and
+     != False
+    '''
+    interacting = []
+    # if first fragments passes thresshold of minimum allowed bp till bin change
+    if ((((p1/resolution) + 1) * resolution) - p1) / float(resolution) >= split_by_bin:
+        try:
+            interacting.append(dict_sec[(cr1, p1 / resolution)])
+        except:
+            interacting.append(p1 / resolution)
+    # same for second fragment
+    if (p2 - ((p2/resolution) * resolution)) / float(resolution) >= split_by_bin:
+        try:
+            interacting += range(dict_sec[(cr1, p1 / resolution)] + 1, dict_sec[(cr1, p2 / resolution)] + 1)
+        except:
+            interacting += range((p1 / resolution) + 1, (p2 / resolution) + 1)
+            
+    # Just in case there is a middle fragment and the last one didnt pass the thresshold
+    else:
+        try:
+            interacting += range(dict_sec[(cr1, p1 / resolution)] + 1, dict_sec[(cr1, p2 / resolution)])
+        except:
+            interacting += range((p1 / resolution) + 1, (p2 / resolution))
+    
+    return interacting
+    
+
+def load_hic_data_from_reads(fnam, resolution, split_by_bin=False, **kwargs):
     """
     :param fnam: tsv file with reads1 and reads2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -484,6 +546,11 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
        chromosome
     :param False get_sections: for very very high resolution, when the column
        index does not fit in memory
+    :param False split_by_bin: Set to i) float between 0 to 1 or to ii) integer from 2
+        to above to extend to multiple bins the mapped reads cover more than one bin. 
+        If i) will include interaction in bin if x% of bin is covered (dangerous since 
+        interactions might be lost), if ii) will include interaction in bin if x 
+        nucleotides are inside bin.
     """
     sections = []
     genome_seq = OrderedDict()
@@ -502,20 +569,65 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
-    try:
-        while True:
-            _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
-            try:
-                ps1 = dict_sec[(cr1, int(ps1) / resolution)]
-                ps2 = dict_sec[(cr2, int(ps2) / resolution)]
-            except KeyError:
-                ps1 = int(ps1) / resolution
-                ps2 = int(ps2) / resolution
-            imx[ps1, ps2] += 1
-            imx[ps2, ps1] += 1
-            line = fhandler.next()
-    except StopIteration:
-        pass
+    
+    if split_by_bin != False:
+        if split_by_bin <= 1:
+            checkOverlap = checkOverlapPerc
+        else:
+            checkOverlap = checkOverlapCount
+        try:
+            while True:
+                _, cr1, ps1, _, pe1, _, _, cr2, ps2, _, pe2, _ = line.split('\t', 11)
+                # First fragment
+                ps1_1 = int(ps1) / resolution
+                ps12 = int(ps1) + int(pe1)
+                ps1_2 = ps12 / resolution
+
+                interacting = []
+                if ps1_1 != ps1_2:
+                    interacting += checkOverlap(cr1, int(ps1), ps12, split_by_bin, 
+                                                     resolution, dict_sec)
+                else:
+                    try:
+                        interacting += [dict_sec[(cr1, int(ps1) / resolution)]]
+                    except:
+                        interacting += [int(ps1) / resolution]
+                # second fragment 
+                ps2_1 = int(ps2) / resolution
+                ps22 = int(ps2) + int(pe2)
+                ps2_2 = ps22 / resolution
+                if ps2_1 != ps2_2:
+                    interacting += checkOverlap(cr2, int(ps2), ps22, split_by_bin, 
+                                                     resolution, dict_sec)
+                else:
+                    try:
+                        interacting += [dict_sec[(cr2, int(ps2) / resolution)]]
+                    except:
+                        interacting += [int(ps2) / resolution]
+
+                # Add interactions
+                for inte in itertools.combinations(interacting, 2):
+                    imx[inte[0], inte[1]] += 1
+                    imx[inte[1], inte[0]] += 1
+                line = fhandler.next()
+        except StopIteration:
+            pass
+        
+    else:
+        try:
+            while True:
+                _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
+                try:
+                    ps1 = dict_sec[(cr1, int(ps1) / resolution)]
+                    ps2 = dict_sec[(cr2, int(ps2) / resolution)]
+                except KeyError:
+                    ps1 = int(ps1) / resolution
+                    ps2 = int(ps2) / resolution
+                imx[ps1, ps2] += 1
+                imx[ps2, ps1] += 1
+                line = fhandler.next()
+        except StopIteration:
+            pass
     imx.symmetricized = True
     return imx
 

@@ -689,7 +689,7 @@ class StructuralModels(object):
 
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                   mclargs=None, what='dRMSD', n_best_clusters=10,
+                   mclargs=None, what='score', n_best_clusters=10,
                    savefig=None, represent_models=False, figsize=(11, 11),
                    clusters=None, **kwargs):
         """
@@ -734,7 +734,7 @@ class StructuralModels(object):
            of the file name will determine the desired format).
         :param (11,11) figsize: dimension of the plot
         """
-        fact /= self.nloci
+        #fact /= self.nloci
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
         if not clusters:
