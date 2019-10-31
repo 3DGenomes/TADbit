@@ -600,9 +600,10 @@ def lammps_simulate(lammps_folder, run_time,
     for k_id, k in enumerate(kseeds):
         #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+        keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
         if restart_path != False:
             # check presence of previously finished jobs
-            model_path = restar_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
+            model_path = restart_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
             # define restart file by checking for finished jobs or last step
             if os.path.exists(model_path):
                 with open(model_path, "rb") as input_file:
@@ -610,7 +611,7 @@ def lammps_simulate(lammps_folder, run_time,
                 results.append((m[0], m[1]))
             else:
                 if restart_path != False:
-                    restart_file = restar_path + 'lammps_' + str(k) + '/'
+                    restart_file = restart_path + 'lammps_' + str(k) + '/'
                     dirfiles = os.listdir(restart_file)
                     # check for last step
                     maxi = (0, '')
@@ -659,8 +660,9 @@ def lammps_simulate(lammps_folder, run_time,
                                     loop_extrusion_dynamics,
                                     to_dump, pbc, hide_log,
                                     keep_restart_step,
-                                    keep_restart_out_dir,
-                                    restart_file,), callback=collect_result)
+                                    keep_restart_out_dir2,
+                                    restart_file,
+                                    model_path,), callback=collect_result)
         #                         , timeout=timeout_job)
 
     pool.close()
@@ -719,8 +721,9 @@ def run_lammps(kseed, lammps_folder, run_time,
                to_dump=10000, pbc=False,
                hide_log=True,
                keep_restart_step=1000000,
-               keep_restart_out_dir=None,
-               restart_file=False):
+               keep_restart_out_dir2=None,
+               restart_file=False,
+               model_path=False):
     """
     Generates one lammps model
     
@@ -782,8 +785,9 @@ def run_lammps(kseed, lammps_folder, run_time,
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
     :param 1000000 keep_restart_step: step to recover stopped computation
-    :param None keep_restart_out_dir: recover stopped computation
+    :param None keep_restart_out_dir2: recover stopped computation
     :param False restart_file: path to file to restore LAMMPs session (binary)
+    :param False model_path: path to/for pickle with finished model (name included)
 
     :returns: a LAMMPSModel object
 
@@ -822,7 +826,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     if keep_restart_out_dir:
         if not os.path.exists(keep_restart_out_dir):
             os.makedirs(keep_restart_out_dir)
-        lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir, kseed))
+        lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir2, kseed))
 
 
     #######################################################
@@ -1344,8 +1348,7 @@ def run_lammps(kseed, lammps_folder, run_time,
             result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
-    if restart_file != False:
-        model_path = restart_file.split('lammps_')[0] + 'lammps_' + str(kseed) + '/finishedModel_%s.pickle' %k
+    if model_path != False:
         with open(model_path, "wb") as output_file:
             dump((kseed,result), output_file)
 
