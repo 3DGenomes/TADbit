@@ -123,8 +123,7 @@ class IMPoptimizer(object):
                         connectivity="FENE", hide_log=True,
                         kfactor=1, cleanup=False,
                         initial_conformation=None,
-                        remove_rstrn=[],
-                        keep_restart_step=1000000, keep_restart_out_dir=None,
+                        remove_rstrn=[],keep_restart_out_dir=None,
                         restart_path=False):
         """
         This function calculates the correlation between the models generated
@@ -168,7 +167,6 @@ class IMPoptimizer(object):
              {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
              e.g an IMPModel or LAMMPSModel object
         :param [] remove_rstrn: list of particles which must not have restrains
-        :param 1000000 keep_restart_step: step to recover stopped computation
         :param None keep_restart_out_dir: recover stopped computation
         :param False restart_path: path to files to restore LAMMPs session (binary)
 
@@ -356,7 +354,7 @@ class IMPoptimizer(object):
                                           close_bins=self.close_bins, config=config_tmp,
                                           container=self.container, zeros=self.zeros,
                                           tmp_folder=self.tmp_folder,timeout_job=timeout_job,
-					                      hide_log=hide_log, keep_restart_step=keep_restart_step, 
+					                      hide_log=hide_log, 
                                           keep_restart_out_dir=keep_restart_out_dir, kfactor=kfactor, 
                                           cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
                                             else initial_conformation,

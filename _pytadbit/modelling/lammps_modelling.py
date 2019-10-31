@@ -62,8 +62,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
                        initial_conformation=None, connectivity="FENE",
-                       timesteps_per_k=10000,
-                       keep_restart_step=1000000, keep_restart_out_dir=None,
+                       timesteps_per_k=10000,keep_restart_out_dir=None,
                        kfactor=1, adaptation_step=False, cleanup=False,
                        hide_log=True, remove_rstrn=[], initial_seed=0,
                        restart_path=False):
@@ -159,7 +158,6 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param True hide_log: do not generate lammps log information
     :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
         potential for neighbours
-    :param 1000000 keep_restart_step: step to recover stopped computation
     :param None keep_restart_out_dir: recover stopped computation
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
@@ -287,7 +285,6 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=initial_seed,
                              n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
-                             keep_restart_step=keep_restart_step, 
                              keep_restart_out_dir=keep_restart_out_dir,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
@@ -505,7 +502,6 @@ def lammps_simulate(lammps_folder, run_time,
                     neighbor=CONFIG.neighbor, tethering=True,
                     minimize=True, compress_with_pbc=False,
                     compress_without_pbc=False,
-                    keep_restart_step=1000000,
                     keep_restart_out_dir=None, outfile=None, n_cpus=1,
                     confining_environment=['cube',100.],
                     steering_pairs=None,
@@ -557,7 +553,6 @@ def lammps_simulate(lammps_folder, run_time,
     :param 500 n_models: number of models to generate.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param True minimize: whether to apply minimize command or not. 
-    :param 1000000 keep_restart_step: step to recover stopped computation
     :param None keep_restart_out_dir: recover stopped computation
     :param None outfile: store result in outfile
     :param 1 n_cpus: number of CPUs to use.
@@ -663,7 +658,6 @@ def lammps_simulate(lammps_folder, run_time,
                                     time_dependent_steering_pairs,
                                     loop_extrusion_dynamics,
                                     to_dump, pbc, hide_log,
-                                    keep_restart_step,
                                     keep_restart_out_dir2,
                                     restart_file,
                                     model_path,), callback=collect_result)
@@ -724,7 +718,6 @@ def run_lammps(kseed, lammps_folder, run_time,
                loop_extrusion_dynamics=None,
                to_dump=10000, pbc=False,
                hide_log=True,
-               keep_restart_step=1000000,
                keep_restart_out_dir2=None,
                restart_file=False,
                model_path=False):
@@ -788,7 +781,6 @@ def run_lammps(kseed, lammps_folder, run_time,
                              }
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
-    :param 1000000 keep_restart_step: step to recover stopped computation
     :param None keep_restart_out_dir2: recover stopped computation
     :param False restart_file: path to file to restore LAMMPs session (binary)
     :param False model_path: path to/for pickle with finished model (name included)
@@ -805,19 +797,27 @@ def run_lammps(kseed, lammps_folder, run_time,
                                                        outfile=initial_conformation,
                                                        seed_of_the_random_number_generator=kseed,
                                                        confining_environment=confining_environment)
-
-    init_lammps_run(lmp, initial_conformation,
+    
+    # Just prepared the steps recovery for steering pairs
+    if steering_pairs:
+        init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor,
                 hide_log=hide_log,
                 connectivity=connectivity,
                 restart_file=restart_file)
+    else:
+        init_lammps_run(lmp, initial_conformation,
+                    neighbor=neighbor,
+                    hide_log=hide_log,
+                    connectivity=connectivity)
 
     lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
 
     # ##########################################################
     # # Generate RESTART file, SPECIAL format, not a .txt file #
-    # # Useful if simulation crashes                           #
+    # # Useful if simulation crashes             
+    # Prepared an optimisation for steering pairs, but not for the rest#
     # ##########################################################
     # create lammps restart files every x steps. 1000 is ok
     # There was the doubt of using text format session info (which allows use in other computers)
@@ -827,8 +827,8 @@ def run_lammps(kseed, lammps_folder, run_time,
     # was written) which was represented internally by LAMMPS in binary format. A new simulation 
     # which reads the data file will thus typically diverge from a simulation that continued 
     # in the original input script." will continue with binary. To convert use restart2data
-    if keep_restart_out_dir2:
-        lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir2, kseed))
+    #if keep_restart_out_dir2:
+    #    lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir2, kseed))
 
 
     #######################################################
@@ -944,27 +944,35 @@ def run_lammps(kseed, lammps_folder, run_time,
     # Setup the pairs to co-localize using the COLVARS plug-in
     if steering_pairs:
 
-        # Start relaxation step
-        lmp.command("reset_timestep 0")
-        lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
-        lmp.command("reset_timestep %i" % 0)
+        if restart_file == False:
+            # Start relaxation step
+            lmp.command("reset_timestep 0")   # cambiar para punto ionicial
+            lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
+            lmp.command("reset_timestep %i" % 0)
         
-        # Start Steered Langevin dynamics
-        if to_dump:
-            lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
-            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
+            # Start Steered Langevin dynamics
+            if to_dump:
+                lmp.command("undump 1")
+                lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
+                #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
         if 'number_of_kincrease' in steering_pairs:
             nbr_kincr = steering_pairs['number_of_kincrease']
         else:
             nbr_kincr = 1
         
+        if restart_file != False:
+            restart_k_increase = int(restart_file.split('/')[-1].split('_')[2])
+            restart_time       = int(restart_file.split('/')[-1].split('_')[4])
+
         #steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
         steering_pairs['colvar_output'] = lammps_folder+os.path.basename(steering_pairs['colvar_output'])
         for kincrease in xrange(nbr_kincr):
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:
+            # Avoid to repeat calculations in case of restart
+            if (restart_file != True) and (kincrease < restart_k_increase):
+                continue
             generate_colvars_list(steering_pairs, kincrease+1)
 
             # Adding the colvar option
@@ -978,7 +986,20 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("variable objfun equal f_4")
                 lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
 
-            lmp.command("run %i" % steering_pairs['timesteps_per_k'])
+            
+            lmp.command("reset_timestep %i" % 0)
+            resettime = 0
+            runtime   = steering_pairs['timesteps_per_k']
+            if (restart_file != False) and (kincrease == restart_k_increase):
+                resettime = restart_time 
+                runtime   = steering_pairs['timesteps_per_k'] - restart_time
+
+            # Create 10 restarts with name restart_kincrease_%s_time_%s.restart every
+            restart_file_new = '/'.join(restart_file.split('/')[:-1]) + '/restart_kincrease_%s_time_*.restart' %(kincrease)
+            lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/10), restart_file_new))
+
+            lmp.command("reset_timestep %i" % resettime)
+            lmp.command("run %i" % runtime)
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
