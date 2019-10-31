@@ -414,8 +414,10 @@ def init_lammps_run(lmp, initial_conformation,
     ##########################
     if restart_file == False :
         lmp.command("read_data %s" % initial_conformation)
-    else restart_file:
+    else:
         lmp.command("read_restart %s" % restart_file)
+        print 'Previous unfinished LAMMPS steps found'
+        print 'Loaded %s file' %restart_file
     lmp.command("mass %s" % CONFIG.mass)
 
     ##################################################################
@@ -601,6 +603,8 @@ def lammps_simulate(lammps_folder, run_time,
         #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
         keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
+        if not os.path.exists(keep_restart_out_dir2):
+            os.makedirs(keep_restart_out_dir2)
         if restart_path != False:
             # check presence of previously finished jobs
             model_path = restart_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
@@ -621,7 +625,7 @@ def lammps_simulate(lammps_folder, run_time,
                             if step > maxi[0]:
                                 maxi = (step, f)
                     # In case there is no restart file at all
-                    if maxi[1] = '':
+                    if maxi[1] == '':
                         print 'Could not find a LAMMPS restart file'
                         restart_file = False
                     else:
@@ -823,9 +827,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     # was written) which was represented internally by LAMMPS in binary format. A new simulation 
     # which reads the data file will thus typically diverge from a simulation that continued 
     # in the original input script." will continue with binary. To convert use restart2data
-    if keep_restart_out_dir:
-        if not os.path.exists(keep_restart_out_dir):
-            os.makedirs(keep_restart_out_dir)
+    if keep_restart_out_dir2:
         lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir2, kseed))
 
 
