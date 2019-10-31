@@ -125,7 +125,7 @@ class IMPoptimizer(object):
                         initial_conformation=None,
                         remove_rstrn=[],
                         keep_restart_step=1000000, keep_restart_out_dir=None,
-                        restart_file=False):
+                        restart_path=False):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,

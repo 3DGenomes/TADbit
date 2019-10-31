@@ -1344,7 +1344,7 @@ def run_lammps(kseed, lammps_folder, run_time,
             result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
-    if restar_path != False:
+    if restart_file != False:
         model_path = restart_file.split('lammps_')[0] + 'lammps_' + str(kseed) + '/finishedModel_%s.pickle' %k
         with open(model_path, "wb") as output_file:
             dump((kseed,result), output_file)
