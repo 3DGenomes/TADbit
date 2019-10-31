@@ -123,7 +123,9 @@ class IMPoptimizer(object):
                         connectivity="FENE", hide_log=True,
                         kfactor=1, cleanup=False,
                         initial_conformation=None,
-                        keep_restart_step=1000000, keep_restart_out_dir=None):
+                        remove_rstrn=[],
+                        keep_restart_step=1000000, keep_restart_out_dir=None,
+                        restart_file=False):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -165,8 +167,11 @@ class IMPoptimizer(object):
             'random' to compute the initial conformation as a 3D random walk
              {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
              e.g an IMPModel or LAMMPSModel object
+        :param [] remove_rstrn: list of particles which must not have restrains
         :param 1000000 keep_restart_step: step to recover stopped computation
         :param None keep_restart_out_dir: recover stopped computation
+        :param False restart_path: path to files to restore LAMMPs session (binary)
+
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -354,7 +359,8 @@ class IMPoptimizer(object):
 					                      hide_log=hide_log, keep_restart_step=keep_restart_step, 
                                           keep_restart_out_dir=keep_restart_out_dir, kfactor=kfactor, 
                                           cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
-                                            else initial_conformation)
+                                            else initial_conformation,
+                                          restart_path=restart_path, remove_rstrn=remove_rstrn)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
