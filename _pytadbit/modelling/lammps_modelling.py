@@ -412,9 +412,12 @@ def init_lammps_run(lmp, initial_conformation,
     if restart_file == False :
         lmp.command("read_data %s" % initial_conformation)
     else:
-        lmp.command("read_restart %s" % restart_file)
+        restart_time = int(restart_file.split('/')[-1].split('_')[4][:-8])
         print 'Previous unfinished LAMMPS steps found'
         print 'Loaded %s file' %restart_file
+        lmp.command("read_restart %s" % restart_file)
+        lmp.command("reset_timestep %i" % restart_time)
+        
     lmp.command("mass %s" % CONFIG.mass)
 
     ##################################################################
@@ -615,16 +618,19 @@ def lammps_simulate(lammps_folder, run_time,
                     # check for last step
                     maxi = (0, '')
                     for f in dirfiles:
-                        if f.startswith('relaxation_%s_' %str(k)):
+                        if f.startswith('restart_kincrease_'):
                             step = int(f.split('_')[-1][:-8])
                             if step > maxi[0]:
                                 maxi = (step, f)
                     # In case there is no restart file at all
                     if maxi[1] == '':
                         print 'Could not find a LAMMPS restart file'
-                        restart_file = False
+                        # will check later if we have a path or a file
+                        #restart_file = False
                     else:
                         restart_file = restart_file + maxi[1]
+                else:
+                    restart_file = False
 
                 ini_conf = None
                 if not os.path.exists(k_folder):
@@ -790,8 +796,17 @@ def run_lammps(kseed, lammps_folder, run_time,
     """
 
     lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps','-nocite'])
-
-    if not initial_conformation and restart_file == False:    
+    # check if we have a restart file or a path to which restart
+    if restart_file == False:
+        doRestart = False
+        saveRestart = False
+    elif os.path.isdir(restart_file):
+        doRestart = False
+        saveRestart = True
+    else:
+        doRestart = True
+        saveRestart = True
+    if not initial_conformation and doRestart == False:    
         initial_conformation = lammps_folder+'initial_conformation.dat'
         generate_chromosome_random_walks_conformation ([len(LOCI)],
                                                        outfile=initial_conformation,
@@ -799,7 +814,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                                                        confining_environment=confining_environment)
     
     # Just prepared the steps recovery for steering pairs
-    if steering_pairs:
+    if steering_pairs and doRestart == True:
         init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor,
                 hide_log=hide_log,
@@ -943,8 +958,8 @@ def run_lammps(kseed, lammps_folder, run_time,
     xc = []
     # Setup the pairs to co-localize using the COLVARS plug-in
     if steering_pairs:
-
-        if restart_file == False:
+        
+        if doRestart == False:
             # Start relaxation step
             lmp.command("reset_timestep 0")   # cambiar para punto ionicial
             lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
@@ -961,9 +976,9 @@ def run_lammps(kseed, lammps_folder, run_time,
         else:
             nbr_kincr = 1
         
-        if restart_file != False:
+        if doRestart == True:
             restart_k_increase = int(restart_file.split('/')[-1].split('_')[2])
-            restart_time       = int(restart_file.split('/')[-1].split('_')[4])
+            restart_time       = int(restart_file.split('/')[-1].split('_')[4][:-8])
 
         #steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
         steering_pairs['colvar_output'] = lammps_folder+os.path.basename(steering_pairs['colvar_output'])
@@ -971,7 +986,7 @@ def run_lammps(kseed, lammps_folder, run_time,
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:
             # Avoid to repeat calculations in case of restart
-            if (restart_file != True) and (kincrease < restart_k_increase):
+            if (doRestart == True) and (kincrease < restart_k_increase):
                 continue
             generate_colvars_list(steering_pairs, kincrease+1)
 
@@ -987,18 +1002,23 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
 
             
-            lmp.command("reset_timestep %i" % 0)
+            #lmp.command("reset_timestep %i" % 0)
             resettime = 0
             runtime   = steering_pairs['timesteps_per_k']
-            if (restart_file != False) and (kincrease == restart_k_increase):
+            if (doRestart == True) and (kincrease == restart_k_increase):
                 resettime = restart_time 
                 runtime   = steering_pairs['timesteps_per_k'] - restart_time
 
             # Create 10 restarts with name restart_kincrease_%s_time_%s.restart every
-            restart_file_new = '/'.join(restart_file.split('/')[:-1]) + '/restart_kincrease_%s_time_*.restart' %(kincrease)
-            lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/10), restart_file_new))
+            if saveRestart == True:
+                if os.path.isdir(restart_file):
+                    restart_file_new = restart_file + 'restart_kincrease_%s_time_*.restart' %(kincrease)
+                else:
+                    restart_file_new = '/'.join(restart_file.split('/')[:-1]) + '/restart_kincrease_%s_time_*.restart' %(kincrease)
+                print restart_file_new
+                lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/10), restart_file_new))
 
-            lmp.command("reset_timestep %i" % resettime)
+            #lmp.command("reset_timestep %i" % resettime)
             lmp.command("run %i" % runtime)
 
     # Setup the pairs to co-localize using the COLVARS plug-in
