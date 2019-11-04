@@ -124,7 +124,7 @@ class IMPoptimizer(object):
                         kfactor=1, cleanup=False,
                         initial_conformation=None,
                         remove_rstrn=[],keep_restart_out_dir=None,
-                        restart_path=False):
+                        restart_path=False, store_n_steps=10):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -169,6 +169,8 @@ class IMPoptimizer(object):
         :param [] remove_rstrn: list of particles which must not have restrains
         :param None keep_restart_out_dir: recover stopped computation
         :param False restart_path: path to files to restore LAMMPs session (binary)
+        :param 10 store_n_steps: Integer with number of steps to be saved if 
+            restart_file != False
 
         """
         if verbose:

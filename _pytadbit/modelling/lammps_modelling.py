@@ -65,7 +65,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        timesteps_per_k=10000,keep_restart_out_dir=None,
                        kfactor=1, adaptation_step=False, cleanup=False,
                        hide_log=True, remove_rstrn=[], initial_seed=0,
-                       restart_path=False):
+                       restart_path=False, store_n_steps=10):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -163,6 +163,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param [] remove_rstrn: list of particles which must not have restrains
     :param 0 initial_seed: Initial random seed for modelling.
     :param False restart_path: path to files to restore LAMMPs session (binary)
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
 
     :returns: a StructuralModels object
     """
@@ -288,7 +290,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              keep_restart_out_dir=keep_restart_out_dir,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
-                             hide_log=hide_log, restart_path=restart_path)
+                             hide_log=hide_log, restart_path=restart_path,
+                             store_n_steps=store_n_steps)
 
     try:
         xpr = experiment
@@ -512,7 +515,8 @@ def lammps_simulate(lammps_folder, run_time,
                     loop_extrusion_dynamics=None, cleanup = True,
                     to_dump=100000, pbc=False, timeout_job=3600,
                     hide_log=True,
-                    restart_path=False):
+                    restart_path=False,
+                    store_n_steps=10):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
@@ -560,7 +564,9 @@ def lammps_simulate(lammps_folder, run_time,
     :param None outfile: store result in outfile
     :param 1 n_cpus: number of CPUs to use.
     :param False restart_path: path to files to restore LAMMPs session (binary)
-    
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
+
     :returns: a StructuralModels object
 
     """
@@ -666,7 +672,8 @@ def lammps_simulate(lammps_folder, run_time,
                                     to_dump, pbc, hide_log,
                                     keep_restart_out_dir2,
                                     restart_file,
-                                    model_path,), callback=collect_result)
+                                    model_path,
+                                    store_n_steps,), callback=collect_result)
         #                         , timeout=timeout_job)
 
     pool.close()
@@ -726,7 +733,8 @@ def run_lammps(kseed, lammps_folder, run_time,
                hide_log=True,
                keep_restart_out_dir2=None,
                restart_file=False,
-               model_path=False):
+               model_path=False, 
+               store_n_steps=10):
     """
     Generates one lammps model
     
@@ -790,7 +798,8 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param None keep_restart_out_dir2: recover stopped computation
     :param False restart_file: path to file to restore LAMMPs session (binary)
     :param False model_path: path to/for pickle with finished model (name included)
-
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
     :returns: a LAMMPSModel object
 
     """
@@ -1016,7 +1025,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                 else:
                     restart_file_new = '/'.join(restart_file.split('/')[:-1]) + '/restart_kincrease_%s_time_*.restart' %(kincrease)
                 print restart_file_new
-                lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/10), restart_file_new))
+                lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/store_n_steps), restart_file_new))
 
             #lmp.command("reset_timestep %i" % resettime)
             lmp.command("run %i" % runtime)
