@@ -167,7 +167,8 @@ class IMPoptimizer(object):
              {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
              e.g an IMPModel or LAMMPSModel object
         :param [] remove_rstrn: list of particles which must not have restrains
-        :param None keep_restart_out_dir: recover stopped computation
+        :param None keep_restart_out_dir: path to write files to restore LAMMPs
+                    session (binary)
         :param False restart_path: path to files to restore LAMMPs session (binary)
         :param 10 store_n_steps: Integer with number of steps to be saved if 
             restart_file != False

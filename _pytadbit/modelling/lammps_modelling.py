@@ -158,7 +158,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param True hide_log: do not generate lammps log information
     :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
         potential for neighbours
-    :param None keep_restart_out_dir: recover stopped computation
+    :param None keep_restart_out_dir: path to write files to restore LAMMPs
+                session (binary)
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
     :param 0 initial_seed: Initial random seed for modelling.
@@ -560,7 +561,8 @@ def lammps_simulate(lammps_folder, run_time,
     :param 500 n_models: number of models to generate.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param True minimize: whether to apply minimize command or not. 
-    :param None keep_restart_out_dir: recover stopped computation
+    :param None keep_restart_out_dir: path to write files to restore LAMMPs
+                session (binary)
     :param None outfile: store result in outfile
     :param 1 n_cpus: number of CPUs to use.
     :param False restart_path: path to files to restore LAMMPs session (binary)
@@ -795,7 +797,8 @@ def run_lammps(kseed, lammps_folder, run_time,
                              }
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
-    :param None keep_restart_out_dir2: recover stopped computation
+    :param None keep_restart_out_dir2: path to write files to restore LAMMPs
+                session (binary)
     :param False restart_file: path to file to restore LAMMPs session (binary)
     :param False model_path: path to/for pickle with finished model (name included)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
