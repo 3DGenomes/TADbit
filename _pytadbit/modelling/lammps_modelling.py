@@ -1403,9 +1403,21 @@ def run_lammps(kseed, lammps_folder, run_time,
             result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
+    # safe finished model
     if model_path != False:
         with open(model_path, "wb") as output_file:
             dump((kseed,result), output_file)
+    ################### Special case for clusters with disk quota
+    # Remove the saved steps
+    if saveRestart == True:
+        if os.path.isdir(restart_file):
+            restart_path = restart_file
+        else:
+            restart_path = '/'.join(restart_file.split('/')[:-1]) + '/'
+        for pathfile in os.listdir(restart_path):
+	    if pathfile.startswith('restart'):
+                os.remove(restart_path + pathfile)    
+    ##################################################################
 
     return (kseed,result)
 
