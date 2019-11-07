@@ -361,7 +361,8 @@ class IMPoptimizer(object):
                                           keep_restart_out_dir=keep_restart_out_dir, kfactor=kfactor, 
                                           cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
                                             else initial_conformation,
-                                          restart_path=restart_path, remove_rstrn=remove_rstrn)
+                                          restart_path=restart_path, remove_rstrn=remove_rstrn,
+					  store_n_steps=store_n_steps)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
