@@ -614,69 +614,69 @@ def lammps_simulate(lammps_folder, run_time,
         if restart_path != False:
             # check presence of previously finished jobs
             model_path = restart_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
-            # define restart file by checking for finished jobs or last step
-            if os.path.exists(model_path):
-                with open(model_path, "rb") as input_file:
-                    m = load(input_file)
-                results.append((m[0], m[1]))
-            else:
-                if restart_path != False:
-                    restart_file = restart_path + 'lammps_' + str(k) + '/'
-                    dirfiles = os.listdir(restart_file)
-                    # check for last step
-                    maxi = (0, '')
-                    for f in dirfiles:
-                        if f.startswith('restart_kincrease_'):
-                            step = int(f.split('_')[-1][:-8])
-                            if step > maxi[0]:
-                                maxi = (step, f)
-                    # In case there is no restart file at all
-                    if maxi[1] == '':
-                        print 'Could not find a LAMMPS restart file'
-                        # will check later if we have a path or a file
-                        #restart_file = False
-                    else:
-                        restart_file = restart_file + maxi[1]
+        # define restart file by checking for finished jobs or last step
+        if model_path != False and os.path.exists(model_path):
+            with open(model_path, "rb") as input_file:
+                m = load(input_file)
+            results.append((m[0], m[1]))
+        else:
+            if restart_path != False:
+                restart_file = restart_path + 'lammps_' + str(k) + '/'
+                dirfiles = os.listdir(restart_file)
+                # check for last step
+                maxi = (0, '')
+                for f in dirfiles:
+                    if f.startswith('restart_kincrease_'):
+                        step = int(f.split('_')[-1][:-8])
+                        if step > maxi[0]:
+                            maxi = (step, f)
+                # In case there is no restart file at all
+                if maxi[1] == '':
+                    print 'Could not find a LAMMPS restart file'
+                    # will check later if we have a path or a file
+                    #restart_file = False
                 else:
-                    restart_file = False
+                    restart_file = restart_file + maxi[1]
+            else:
+                restart_file = False
 
-                ini_conf = None
-                if not os.path.exists(k_folder):
-                    os.makedirs(k_folder)
-                    if initial_conformation and restart_file == False:
-                        ini_conf = '%sinitial_conformation.dat' % k_folder
-                        write_initial_conformation_file(initial_conformation[k_id],
-                                                        chromosome_particle_numbers,
-                                                        confining_environment,
-                                                        out_file=ini_conf)
-        #         jobs[k] = run_lammps(k, k_folder, run_time,
-        #                                               initial_conformation, connectivity,
-        #                                               neighbor,
-        #                                               tethering, minimize,
-        #                                               compress_with_pbc, compress_without_pbc,
-        #                                               confining_environment,
-        #                                               steering_pairs,
-        #                                               time_dependent_steering_pairs,
-        #                                               loop_extrusion_dynamics,
-        #                                               to_dump, pbc,)
-        #       jobs[k] = pool.schedule(run_lammps,
-                jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job)
-                pool.apply_async(jobs[k],
-                                args=(k, k_folder, run_time,
-                                    ini_conf, connectivity,
-                                    neighbor,
-                                    tethering, minimize,
-                                    compress_with_pbc, compress_without_pbc,
-                                    confining_environment,
-                                    steering_pairs,
-                                    time_dependent_steering_pairs,
-                                    loop_extrusion_dynamics,
-                                    to_dump, pbc, hide_log,
-                                    keep_restart_out_dir2,
-                                    restart_file,
-                                    model_path,
-                                    store_n_steps,), callback=collect_result)
-        #                         , timeout=timeout_job)
+            ini_conf = None
+            if not os.path.exists(k_folder):
+                os.makedirs(k_folder)
+                if initial_conformation and restart_file == False:
+                    ini_conf = '%sinitial_conformation.dat' % k_folder
+                    write_initial_conformation_file(initial_conformation[k_id],
+                                                    chromosome_particle_numbers,
+                                                    confining_environment,
+                                                    out_file=ini_conf)
+    #         jobs[k] = run_lammps(k, k_folder, run_time,
+    #                                               initial_conformation, connectivity,
+    #                                               neighbor,
+    #                                               tethering, minimize,
+    #                                               compress_with_pbc, compress_without_pbc,
+    #                                               confining_environment,
+    #                                               steering_pairs,
+    #                                               time_dependent_steering_pairs,
+    #                                               loop_extrusion_dynamics,
+    #                                               to_dump, pbc,)
+    #       jobs[k] = pool.schedule(run_lammps,
+            jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job)
+            pool.apply_async(jobs[k],
+                            args=(k, k_folder, run_time,
+                                ini_conf, connectivity,
+                                neighbor,
+                                tethering, minimize,
+                                compress_with_pbc, compress_without_pbc,
+                                confining_environment,
+                                steering_pairs,
+                                time_dependent_steering_pairs,
+                                loop_extrusion_dynamics,
+                                to_dump, pbc, hide_log,
+                                keep_restart_out_dir2,
+                                restart_file,
+                                model_path,
+                                store_n_steps,), callback=collect_result)
+    #                         , timeout=timeout_job)
 
     pool.close()
     pool.join()
