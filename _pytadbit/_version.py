@@ -1,1 +1,1 @@
-__version__ = "pipeline_v0.2.710"
+__version__ = "pipeline_v0.2.711"
