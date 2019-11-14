@@ -1968,7 +1968,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
                                                     number_of_conformations=1,
                                                     outfile="Initial_random_walk_conformation.dat",
                                                     pbc=False,
-                                                    center=None):
+                                                    center=True):
     """
     Generates lammps initial conformation file by random walks
     
