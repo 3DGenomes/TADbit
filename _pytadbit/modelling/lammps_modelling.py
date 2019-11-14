@@ -634,16 +634,19 @@ def lammps_simulate(lammps_folder, run_time,
                 if maxi[1] == '':
                     print 'Could not find a LAMMPS restart file'
                     # will check later if we have a path or a file
+                    getIniConf = True
                     #restart_file = False
                 else:
                     restart_file = restart_file + maxi[1]
+                    getIniConf = False
             else:
                 restart_file = False
+                getIniConf = True
 
             ini_conf = None
             if not os.path.exists(k_folder):
                 os.makedirs(k_folder)
-                if initial_conformation and restart_file == False:
+                if initial_conformation and getIniConf == True:
                     ini_conf = '%sinitial_conformation.dat' % k_folder
                     write_initial_conformation_file(initial_conformation[k_id],
                                                     chromosome_particle_numbers,
