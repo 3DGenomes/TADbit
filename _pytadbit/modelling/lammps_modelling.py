@@ -1418,7 +1418,7 @@ def run_lammps(kseed, lammps_folder, run_time,
         else:
             restart_path = '/'.join(restart_file.split('/')[:-1]) + '/'
         for pathfile in os.listdir(restart_path):
-	    if pathfile.startswith('restart'):
+            if pathfile.startswith('restart'):
                 os.remove(restart_path + pathfile)    
     ##################################################################
 
