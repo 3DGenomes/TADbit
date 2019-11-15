@@ -123,7 +123,8 @@ class IMPoptimizer(object):
                         connectivity="FENE", hide_log=True,
                         kfactor=1, cleanup=False,
                         initial_conformation=None,
-                        remove_rstrn=[],keep_restart_out_dir=None,
+                        remove_rstrn=[], initial_seed=0,
+                        keep_restart_out_dir=None,
                         restart_path=False, store_n_steps=10):
         """
         This function calculates the correlation between the models generated
@@ -167,6 +168,7 @@ class IMPoptimizer(object):
              {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
              e.g an IMPModel or LAMMPSModel object
         :param [] remove_rstrn: list of particles which must not have restrains
+        :param 0 initial_seed: Initial random seed for modelling.
         :param None keep_restart_out_dir: recover stopped computation
         :param False restart_path: path to files to restore LAMMPs session (binary)
         :param 10 store_n_steps: Integer with number of steps to be saved if 
@@ -361,7 +363,7 @@ class IMPoptimizer(object):
                                           cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
                                             else initial_conformation,
                                           restart_path=restart_path, remove_rstrn=remove_rstrn,
-					  store_n_steps=store_n_steps)
+                                          initial_seed=initial_seed, store_n_steps=store_n_steps)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
