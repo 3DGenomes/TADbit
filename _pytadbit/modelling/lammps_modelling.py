@@ -42,6 +42,7 @@ from pytadbit.modelling.restraints import HiCBasedRestraints
 
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', None)
+    failedSeedLog = kwargs.get('failedSeedLog', None)
     p = ThreadPool(1)
     res = p.apply_async(func, args=args)
     try:
@@ -53,6 +54,10 @@ def abortable_worker(func, *args, **kwargs):
         raise
     except:
         print "Unknown error with process"
+        if failedSeedLog != None:
+            failedSeedLog, k = failedSeedLog
+            with open(failedSeedLog, 'a') as f:
+                f.write('%s\t%s\n' %(k, 'Failed'))
         p.terminate()
         raise
 
@@ -606,8 +611,21 @@ def lammps_simulate(lammps_folder, run_time,
 
     jobs = {}
     for k_id, k in enumerate(kseeds):
-        #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+        # First we check if the modelling fails with this seed
+        if restart_path != False:
+            restart_file = restart_path + 'lammps_' + str(k) + '/'
+            failedSeedLog = restart_file + 'runLog.txt'
+            if os.path.exists(failedSeedLog):
+                with open(failedSeedLog, 'r') as f:
+                    for line in f:
+                        prevRun = line.split()
+                # add number of models done so dont repeat same seed
+                if prevRun[1] == 'Failed':
+                    k = int(prevRun[0]) + n_models
+                    k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+
+        #print "#RandomSeed: %s" % k
         keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
         if not os.path.exists(keep_restart_out_dir2):
             os.makedirs(keep_restart_out_dir2)
@@ -663,7 +681,8 @@ def lammps_simulate(lammps_folder, run_time,
     #                                               loop_extrusion_dynamics,
     #                                               to_dump, pbc,)
     #       jobs[k] = pool.schedule(run_lammps,
-            jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job)
+            jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job,
+                                failedSeedLog=[failedSeedLog, k])
             pool.apply_async(jobs[k],
                             args=(k, k_folder, run_time,
                                 ini_conf, connectivity,
