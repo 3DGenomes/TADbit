@@ -626,9 +626,12 @@ def lammps_simulate(lammps_folder, run_time,
                     k_folder = lammps_folder + 'lammps_' + str(k) + '/'
 
         #print "#RandomSeed: %s" % k
-        keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
-        if not os.path.exists(keep_restart_out_dir2):
-            os.makedirs(keep_restart_out_dir2)
+        keep_restart_out_dir2 = None
+        if keep_restart_out_dir != None:
+            keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
+            if not os.path.exists(keep_restart_out_dir2):
+                os.makedirs(keep_restart_out_dir2)
+        model_path = False
         if restart_path != False:
             # check presence of previously finished jobs
             model_path = restart_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
