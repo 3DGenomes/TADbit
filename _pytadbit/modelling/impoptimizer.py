@@ -376,6 +376,11 @@ class IMPoptimizer(object):
                         
                         avg_result[cut] += sub_result
 
+                 # Update nmodels with the ones that really finished
+                if self.n_models != len(tdm):
+                    print 'WARNING: not all models produced: step %s, nmodels=%s' %(i+1, len(tdm))
+                    self.n_models = len(tdm)
+
             except Exception, e:
                 print '  SKIPPING: %s' % e
                 result = 0
