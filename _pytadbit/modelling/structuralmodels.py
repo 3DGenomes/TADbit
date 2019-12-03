@@ -28,6 +28,7 @@ from scipy.stats                      import kendalltau
 from scipy.stats                      import linregress
 from scipy.stats                      import normaltest, norm as sc_norm
 from scipy.cluster.hierarchy          import linkage, fcluster
+from scipy.spatial.distance           import squareform
 
 from pytadbit                         import get_dependencies_version
 from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
@@ -486,7 +487,7 @@ class StructuralModels(object):
                       for _ in xrange(len(self))]
             for (i, j), score in scores.iteritems():
                 matrix[i][j] = score if score > fact * nloci else 0.0
-            clust = linkage(matrix, method='ward')
+            clust = linkage(squareform(matrix), method='ward')
             # score each possible cut in hierarchical clustering
             solutions = {}
             for k in clust[:, 2]:
