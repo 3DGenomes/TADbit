@@ -612,6 +612,7 @@ def lammps_simulate(lammps_folder, run_time,
     jobs = {}
     for k_id, k in enumerate(kseeds):
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+        failedSeedLog = None
         # First we check if the modelling fails with this seed
         if restart_path != False:
             restart_file = restart_path + 'lammps_' + str(k) + '/'
