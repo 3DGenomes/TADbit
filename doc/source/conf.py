@@ -29,7 +29,8 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
               'sphinx.ext.intersphinx', 'sphinx.ext.todo',
               'sphinx.ext.coverage', 'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig', 'sphinx.ext.viewcode',
-              'sphinxcontrib.ansi']
+              'sphinxcontrib.ansi'
+              ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

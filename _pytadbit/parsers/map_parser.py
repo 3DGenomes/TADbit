@@ -55,9 +55,14 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
     frag_chunk = kwargs.get('frag_chunk', 100000)
     if verbose:
-        print 'Searching and mapping RE sites to the reference genome'
-    frags = map_re_sites(re_name, genome_seq, frag_chunk=frag_chunk,
-                         verbose=verbose)
+        print('Searching and mapping RE sites to the reference genome')
+    if len(re_name) == 1 and re_name[0] in (None, 'None'):
+        frags = {}
+        read_read = read_read_nofrags
+    else:
+        frags = map_re_sites(re_name, genome_seq, frag_chunk=frag_chunk,
+                             verbose=verbose)
+        read_read = read_read_frags
 
     if isinstance(f_names1, str):
         f_names1 = [f_names1]
@@ -78,7 +83,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     procs   = []
     for read in range(len(fnames)):
         if verbose:
-            print 'Loading read' + str(read + 1)
+            print('Loading read' + str(read + 1))
         windows[read] = {}
         num = 0
         # iteration over reads
@@ -98,12 +103,12 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 num += 1
             # set read counter
             if verbose:
-                print 'loading file: %s' % (fnam)
+                print('loading file: %s' % (fnam))
             # start parsing
             read_count = 0
             try:
                 while not False:
-                    for _ in xrange(max_size):
+                    for _ in range(max_size):
                         try:
                             reads.append(read_read(fhandler.next(), frags,
                                                    frag_chunk))
@@ -119,7 +124,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
             windows[read][num] = read_count
             if kwargs.get('compress', False) and fnam.endswith('.map'):
-                print 'compressing input MAP file'
+                print('compressing input MAP file')
                 procs.append(Popen(['gzip', fnam]))
         nfile += 1
         write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
@@ -145,7 +150,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         tmp_name = tmp_files[0]
 
         if verbose:
-            print 'Getting Multiple contacts'
+            print('Getting Multiple contacts')
         reads_fh = open(outfiles[read], 'w')
         ## Also pipe file header
         # chromosome sizes (in order)
@@ -244,7 +249,7 @@ def merge_sort(file1, file2, outfiles, nfile):
     return tmp_name
 
 
-def read_read(r, frags, frag_chunk):
+def read_read_nofrags(r, _, __):
     name, seq, _, _, ali = r.split('\t')[:5]
     try:
         crm, strand, pos = ali.split(':')[:3]
@@ -256,7 +261,24 @@ def read_read(r, frags, frag_chunk):
         pos = int(pos)
     else:
         pos = int(pos) + len_seq - 1 # remove 1 because all inclusive
-    frag_piece = frags[crm][pos / frag_chunk]
+    return ('%s\t%s\t%d\t%d\t%d\t0\t0\n' % (
+        name, crm, pos, positive, len_seq))
+
+
+def read_read_frags(r, frags, frag_chunk):
+    name, seq, _, _, ali = r.split('\t')[:5]
+    try:
+        crm, strand, pos = ali.split(':')[:3]
+    except ValueError:
+        raise KeyError()
+    crm = crm.split()[0]
+    positive = strand == '+'
+    len_seq  = len(seq)
+    if positive:
+        pos = int(pos)
+    else:
+        pos = int(pos) + len_seq - 1 # remove 1 because all inclusive
+    frag_piece = frags[crm][pos // frag_chunk]
     idx = bisect(frag_piece, pos)
     try:
         next_re = frag_piece[idx]
@@ -266,7 +288,7 @@ def read_read(r, frags, frag_chunk):
         while idx >= len(frag_piece) and count < len_seq:
             pos -= 1
             count += 1
-            frag_piece = frags[crm][pos / frag_chunk]
+            frag_piece = frags[crm][pos // frag_chunk]
             idx = bisect(frag_piece, pos)
         if count >= len_seq:
             raise Exception('Read mapped mostly outside ' +

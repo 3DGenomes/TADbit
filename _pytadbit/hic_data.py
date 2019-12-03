@@ -4,6 +4,7 @@ December 12, 2014.
 """
 
 import os
+from sys                            import stderr, modules
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
@@ -29,7 +30,10 @@ from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.hmm             import gaussian_prob, best_path, train
 from pytadbit.utils.tadmaths        import calinski_harabasz
-
+try:
+    from pytadbit.parsers.cooler_parser import cooler_file
+except ImportError:
+    pass
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
@@ -302,14 +306,12 @@ class HiC_data(dict):
         except ZeroDivisionError:
             return 0.
 
-    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
+    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=99,
                        by_mean=True, min_count=None, silent=False):
         """
         Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
-        counts; columns passing through a cell with no interaction in the
-        diagonal; and columns with NaN values (in this case NaN will be replaced
-        by zero in the original Hi-C data matrix). Filtered out columns will be
+        counts. Filtered out columns will be
         stored in the dictionary Experiment._zeros.
 
         :param False draw_hist: shows the distribution of mean values by column
@@ -528,6 +530,39 @@ class HiC_data(dict):
         else:
             raise Exception('ERROR: format "%s" not found\n' % format)
         out.close()
+
+    def write_cooler(self, fname, normalized=False):
+        """
+        writes the hic_data to a cooler file.
+
+        :param False normalized: get normalized data
+        """
+        if 'h5py' not in modules:
+            raise Exception('ERROR: cooler output is not available. Probably ' +
+                            'you need to install h5py\n')
+        if normalized and not self.bias:
+            raise Exception('ERROR: data not normalized yet')
+        if not all(isinstance(val, int) for _, val in self.iteritems()):
+            raise Exception('ERROR: raw hic data (integer values) is needed for cooler format')
+        if self.chromosomes:
+            if len(self.chromosomes) > 1:
+                sections = OrderedDict((key,val*self.resolution)
+                                       for key, val in self.chromosomes.iteritems())
+            else: # maybe part of a matrix
+                sections = {next(iter(self.chromosomes)): self.__size*self.resolution}
+        else: # maybe part of a matrix
+            sections = {"Unknown": self.__size*self.resolution}
+
+        out = cooler_file(fname, self.resolution, sections, sections.keys())
+        out.create_bins()
+        out.prepare_matrix()
+        for key, value in self.iteritems():
+            row, col = round(key / self.__size), key % self.__size
+            out.write_iter(0, row, col, value)
+        out.close()
+        if normalized:
+            weights = [self.bias[i] if not i in self.bads else 0. for i in xrange(self.__size)]
+            out.write_weights(weights, weights)
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """

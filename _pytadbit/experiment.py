@@ -503,14 +503,11 @@ class Experiment(object):
 
 
     def filter_columns(self, silent=False, draw_hist=False, savefig=None,
-                       diagonal=True, perc_zero=90, auto=True, min_count=None):
+                       perc_zero=99, by_mean=True, min_count=None):
         """
         Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
-        counts; columns passing through a cell with no interaction in the
-        diagonal; and columns with NaN values (in this case NaN will be replaced
-        by zero in the original Hi-C data matrix). Filtered out columns will be
-        stored in the dictionary Experiment._zeros.
+        counts. Filtered out columns will be stored in the dictionary Experiment._zeros.
 
         :param False silent: does not warn for removed columns
         :param False draw_hist: shows the distribution of mean values by column
@@ -518,34 +515,22 @@ class Experiment(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
-        :param True diagonal: remove row/columns with zero in the diagonal
-        :param 90 perc_zero: maximum percentage of cells with no interactions
+        :param 99 perc_zero: maximum percentage of cells with no interactions
            allowed.
         :param None min_count: minimum number of reads mapped to a bin (recommended
            value could be 2500). If set this option overrides the perc_zero
            filtering... This option is slightly slower.
-        :param True auto: if False, only filters based on the given percentage
-           zeros
+        :param True by_mean: filter columns by mean column value using
+           :func:`pytadbit.utils.hic_filtering.filter_by_mean` function
 
         """
         try:
             data = self.hic_data[0]
         except:
             data = self.norm[0]
-            diagonal = True
-        self._zeros, has_nans = hic_filtering_for_modelling(
-            data, silent=silent, draw_hist=draw_hist, savefig=savefig,
-            diagonal=diagonal, perc_zero=perc_zero, auto=auto,
-            min_count=min_count)
-        if has_nans: # to make it simple
-            for i in xrange(self.hic_data[0]._size2):
-                if repr(self.hic_data[0][i]) == 'nan':
-                    del(self.hic_data[0][i])
-        # Also remove columns where there is no data in the diagonal
-        size = self.size
-        # else:
-        #     self._zeros.update(dict([(i, None) for i in xrange(size)
-        #                              if not self.norm[0][i * size + i]]))
+        data.filter_columns(draw_hist=draw_hist, savefig=savefig, perc_zero=perc_zero,
+                            by_mean=by_mean, min_count=min_count, silent=silent)
+        self._zeros = data.bads        
         self._filtered_cols = True
 
 

@@ -11,8 +11,9 @@ from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
 from StringIO                     import StringIO
+from shutil                       import copyfile
 import datetime
-from sys                          import stdout, stderr, exc_info
+from sys                          import stdout, stderr, exc_info, modules
 from distutils.version            import LooseVersion
 import os
 import multiprocessing as mu
@@ -22,13 +23,15 @@ try:
 except ImportError:
     pass  # silently pass, very specific need
 
-from pysam                        import view, AlignmentFile
+from pysam                        import AlignmentFile
 
-from pytadbit.utils.file_handling import mkdir, which
-from pytadbit.utils.extraviews    import nicer
-from pytadbit.mapping.filter      import MASKED
-
-
+from pytadbit.utils.file_handling   import mkdir, which
+from pytadbit.utils.extraviews      import nicer
+from pytadbit.mapping.filter        import MASKED
+try:
+    from pytadbit.parsers.cooler_parser import cooler_file
+except ImportError:
+    pass
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
@@ -392,7 +395,7 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
 
 def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
-             region2=None, start2=None, end2=None, nchunks=None,
+             region2=None, start2=None, end2=None, nchunks=100,
              tmpdir='.', verbose=True, normalize=False, max_size=None):
 
     bamfile = AlignmentFile(inbam, 'rb')
@@ -449,10 +452,9 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     regs  = []
     begs  = []
     ends  = []
-    if nchunks is None:
-        njobs = min(total, 100) + 1
-    else:
-        njobs = min(nchunks, 1)
+
+    njobs = min(total, nchunks) + 1
+
     nbins = total / njobs + 1
     for i in xrange(start_bin1, end_bin1, nbins):
         if i + nbins > end_bin1:  # make sure that we stop at the right place
@@ -555,7 +557,8 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     return regions, rand_hash, bin_coords, chunks
 
 
-def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
+def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
+                       include_chunk_count=False):
     if verbose:
         stdout.write('     ')
     countbin = 0
@@ -572,7 +575,10 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
                              '%s:%d-%d.tsv' % (region, start, end))
         for l in open(fname):
             c, a, b, v = l.split('\t')
-            yield c, int(a), int(b), int(v)
+            if include_chunk_count:
+                yield countbin, c, int(a), int(b), int(v)
+            else:
+                yield c, int(a), int(b), int(v)
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
@@ -580,7 +586,7 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
                             '%s/%s' % (len(chunks[0]),len(chunks[0])))
 
 
-def get_biases_region(biases, bin_coords):
+def get_biases_region(biases, bin_coords, check_resolution=None):
     """
     Retrieve biases, decay, and bad bins from a dictionary, and re-index it
     according to a region of interest.
@@ -589,6 +595,12 @@ def get_biases_region(biases, bin_coords):
     # load decay
     if isinstance(biases, str):
         biases = load(open(biases))
+    resolution = biases.get('resolution', float('NaN'))
+    if check_resolution is not None:
+        if check_resolution != resolution:
+            raise ValueError('ERROR: resolution not matching with wanted '
+                             'resolution (wanted: {} vs found: {})'.format(
+                                 check_resolution, resolution))
     decay = biases.get('decay' , {})
     # load biases and bad columns
     bias1  = dict((k - start_bin1, v)
@@ -615,7 +627,7 @@ def get_matrix(inbam, resolution, biases=None,
                region1=None, start1=None, end1=None,
                region2=None, start2=None, end2=None, dico=None, clean=False,
                return_headers=False, tmpdir='.', normalization='raw', ncpus=8,
-               nchunks=None, verbose=False, max_size=None):
+               nchunks=100, verbose=False, max_size=None):
     """
     Get matrix from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -647,7 +659,7 @@ def get_matrix(inbam, resolution, biases=None,
     :param '.' tmpdir: where to write temporary files
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
-    :param None nchunks: maximum number of chunks into which to cut the BAM
+    :param 100 nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: dictionary with keys being tuples of the indexes of interacting
        bins: dico[(bin1, bin2)] = interactions
@@ -733,7 +745,7 @@ def _generate_name(regions, starts, ends, resolution):
     if len(regions) in [1, 2]:
         for i, region in enumerate(regions):
             try:
-                name.append('%s:%d-%d' % (region, starts[i] / resolution, 
+                name.append('%s:%d-%d' % (region, starts[i] / resolution,
                                         ends[i] / resolution))
             except TypeError: # all chromosomes
                 name.append('%s' % (region))
@@ -748,8 +760,8 @@ def write_matrix(inbam, resolution, biases, outdir,
                  normalizations=('decay',),
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
-                 half_matrix=True, nchunks=None, tmpdir='.', append_to_tar=None,
-                 ncpus=8, verbose=True):
+                 half_matrix=True, nchunks=100, tmpdir='.', append_to_tar=None,
+                 ncpus=8, cooler=False, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -785,7 +797,7 @@ def write_matrix(inbam, resolution, biases, outdir,
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
-    :param None nchunks: maximum number of chunks into which to cut the BAM
+    :param 100 nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: path to output files
     """
@@ -834,66 +846,83 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     # prepare file header
     outfiles = []
-    if 'raw' in normalizations:
-        fnam = 'raw_%s_%s%s.abc' % (name,
+    if cooler:
+        if 'h5py' not in modules:
+            raise Exception('ERROR: cooler output is not available. Probably ' +
+                            'you need to install h5py\n')
+        if 'decay' in normalizations or 'raw&decay' in normalizations:
+            raise Exception('ERROR: decay and raw&decay matrices cannot be exported '
+                'to cooler format. Cooler only accepts weights per column/row')
+        fnam = 'raw_%s_%s%s.mcool' % (name,
                                     nicer(resolution).replace(' ', ''),
                                     ('_' + extra) if extra else '')
-        if append_to_tar:
-            out_raw = StringIO()
-            outfiles.append((out_raw, fnam))
-        else:
-            out_raw = open(os.path.join(outdir, fnam), 'w')
-            outfiles.append((os.path.join(outdir, fnam), fnam))
-        for reg in regions:
-            out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+        if os.path.exists(os.path.join(outdir, fnam)):
+            os.remove(os.path.join(outdir, fnam))
+        out_raw = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+        out_raw.create_bins()
+        out_raw.prepare_matrix(start_bin1, start_bin2)
+        outfiles.append((os.path.join(outdir, fnam), fnam))
+    else:
+        if 'raw' in normalizations:
+            fnam = 'raw_%s_%s%s.abc' % (name,
+                                        nicer(resolution).replace(' ', ''),
+                                        ('_' + extra) if extra else '')
+            if append_to_tar:
+                out_raw = StringIO()
+                outfiles.append((out_raw, fnam))
+            else:
+                out_raw = open(os.path.join(outdir, fnam), 'w')
+                outfiles.append((os.path.join(outdir, fnam), fnam))
+            for reg in regions:
+                out_raw.write('# CRM %s\t%d\n' % (reg, sections[reg]))
 
-        out_raw.write('# %s resolution:%d\n' % (name, resolution))
-        if region2:
-            out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
-            out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
-        else:
-            out_raw.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
+            out_raw.write('# %s resolution:%d\n' % (name, resolution))
+            if region2:
+                out_raw.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+                out_raw.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+            else:
+                out_raw.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
-    # write file header
-    if 'norm' in normalizations:
-        fnam = 'nrm_%s_%s%s.abc' % (name,
-                                    nicer(resolution).replace(' ', ''),
-                                    ('_' + extra) if extra else '')
-        if append_to_tar:
-            out_nrm = StringIO()
-            outfiles.append((out_nrm, fnam))
-        else:
-            out_nrm = open(os.path.join(outdir, fnam), 'w')
-            outfiles.append((os.path.join(outdir, fnam), fnam))
-        for reg in regions:
-            out_nrm.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+        # write file header
+        if 'norm' in normalizations:
+            fnam = 'nrm_%s_%s%s.abc' % (name,
+                                        nicer(resolution).replace(' ', ''),
+                                        ('_' + extra) if extra else '')
+            if append_to_tar:
+                out_nrm = StringIO()
+                outfiles.append((out_nrm, fnam))
+            else:
+                out_nrm = open(os.path.join(outdir, fnam), 'w')
+                outfiles.append((os.path.join(outdir, fnam), fnam))
+            for reg in regions:
+                out_nrm.write('# CRM %s\t%d\n' % (reg, sections[reg]))
 
-        out_nrm.write('# %s resolution:%d\n' % (name, resolution))
-        if region2:
-            out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
-            out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
-        else:
-            out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
-    if 'decay' in normalizations or 'raw&decay' in normalizations:
-        fnam = 'dec_%s_%s%s.abc' % (name,
-                                    nicer(resolution).replace(' ', ''),
-                                    ('_' + extra) if extra else '')
-        if append_to_tar:
-            out_dec = StringIO()
-            outfiles.append((out_dec, fnam))
-        else:
-            out_dec = open(os.path.join(outdir, fnam), 'w')
-            outfiles.append((os.path.join(outdir, fnam), fnam))
-        for reg in regions:
-            out_dec.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            out_nrm.write('# %s resolution:%d\n' % (name, resolution))
+            if region2:
+                out_nrm.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+                out_nrm.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+            else:
+                out_nrm.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
+        if 'decay' in normalizations or 'raw&decay' in normalizations:
+            fnam = 'dec_%s_%s%s.abc' % (name,
+                                        nicer(resolution).replace(' ', ''),
+                                        ('_' + extra) if extra else '')
+            if append_to_tar:
+                out_dec = StringIO()
+                outfiles.append((out_dec, fnam))
+            else:
+                out_dec = open(os.path.join(outdir, fnam), 'w')
+                outfiles.append((os.path.join(outdir, fnam), fnam))
+            for reg in regions:
+                out_dec.write('# CRM %s\t%d\n' % (reg, sections[reg]))
 
-        out_dec.write('# %s resolution:%d\n' % (
-            name, resolution))
-        if region2:
-            out_dec.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
-            out_dec.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
-        else:
-            out_dec.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
+            out_dec.write('# %s resolution:%d\n' % (
+                name, resolution))
+            if region2:
+                out_dec.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+                out_dec.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+            else:
+                out_dec.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
 
     # functions to write lines of pairwise interactions
     def write_raw(func=None):
@@ -969,9 +998,9 @@ def write_matrix(inbam, resolution, biases, outdir,
     write = None
     if 'raw'   in normalizations:
         write = write_raw(write)
-    if 'norm'  in normalizations:
+    if 'norm'  in normalizations and not cooler:
         write = write_bias(write)
-    if 'decay' in normalizations:
+    if 'decay' in normalizations and not cooler:
         if len(regions) == 1:
             if region2:
                 write = write_expc_2reg(write)
@@ -979,25 +1008,35 @@ def write_matrix(inbam, resolution, biases, outdir,
                 write = write_expc(write)
         else:
             write = write_expc_err(write)
-    if 'raw&decay' in normalizations:
+    if 'raw&decay' in normalizations and not cooler:
         write = write_raw_and_expc(write)
 
     # pull all sub-matrices and write full matrix
     if region2 is not None:  # already half-matrix in this case
         half_matrix = False
 
-    if half_matrix:
-        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                             verbose=verbose, clean=clean):
-            if k > j:
+    if cooler:
+        for ichunk, c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                                     verbose=verbose, clean=clean,
+                                                     include_chunk_count=True):
+            if j > k:
                 continue
             if j not in bads1 and k not in bads2:
-                write(c, j, k, v)
+                out_raw.write_iter(ichunk, j, k, v)
+        out_raw.close()
     else:
-        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                             verbose=verbose, clean=clean):
-            if j not in bads1 and k not in bads2:
-                write(c, j, k, v)
+        if half_matrix:
+            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                                 verbose=verbose, clean=clean):
+                if k > j:
+                    continue
+                if j not in bads1 and k not in bads2:
+                    write(c, j, k, v)
+        else:
+            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                                 verbose=verbose, clean=clean):
+                if j not in bads1 and k not in bads2:
+                    write(c, j, k, v)
 
     fnames = {}
     if append_to_tar:
@@ -1011,18 +1050,32 @@ def write_matrix(inbam, resolution, biases, outdir,
                 archive.addfile(tarinfo=info, fileobj=fobj)
             archive.close()
     else:
-        if 'raw' in normalizations:
-            out_raw.close()
+        if cooler:
             fnames['RAW'] = out_raw.name
-        if 'norm' in normalizations:
-            out_nrm.close()
-            fnames['NRM'] = out_nrm.name
-        if 'decay' in normalizations:
-            out_dec.close()
-            fnames['DEC'] = out_dec.name
-        if 'raw&decay' in normalizations:
-            out_dec.close()
-            fnames['RAW&DEC'] = out_dec.name
+            if 'norm' in normalizations:
+                fnam = 'nrm_%s_%s%s.mcool' % (name,
+                                            nicer(resolution).replace(' ', ''),
+                                            ('_' + extra) if extra else '')
+                copyfile(outfiles[0][0], os.path.join(outdir, fnam))
+                out_nrm = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+                bias_data_row = [1./b if b > 0 else 0 for b in bias1]
+                bias_data_col = [1./b if b > 0 else 0 for b in bias2]
+                out_nrm.write_weights(bias_data_row, bias_data_col, *bin_coords)
+                outfiles.append((os.path.join(outdir, fnam), fnam))
+                fnames['NRM'] = os.path.join(outdir, fnam)
+        else:
+            if 'raw' in normalizations:
+                out_raw.close()
+                fnames['RAW'] = out_raw.name
+            if 'norm' in normalizations:
+                out_nrm.close()
+                fnames['NRM'] = out_nrm.name
+            if 'decay' in normalizations:
+                out_dec.close()
+                fnames['DEC'] = out_dec.name
+            if 'raw&decay' in normalizations:
+                out_dec.close()
+                fnames['RAW&DEC'] = out_dec.name
 
     # this is the last thing we do in case something goes wrong
     if clean:

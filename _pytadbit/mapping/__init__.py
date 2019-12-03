@@ -100,6 +100,7 @@ def merge_2d_beds(path1, path2, outpath):
     out.close()
     return nreads
 
+
 def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', verbose = True):
     """
     Merge two bam files with samtools into one.
@@ -110,10 +111,10 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
 
     samtools = which(samtools)
     if verbose:
-        print '  - Mergeing experiments'
+        print('  - Mergeing experiments')
     system(samtools  + ' merge -@ %d %s %s %s' % (cpus, outbam, bam1, bam2))
     if verbose:
-        print '  - Indexing new BAM file'
+        print('  - Indexing new BAM file')
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
                             for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
@@ -123,7 +124,8 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
     else:
         system(samtools  + ' index %s' % (outbam))
 
-def get_intersection(fname1, fname2, out_path, verbose=False):
+
+def get_intersection(fname1, fname2, out_path, verbose=False, compress=False):
     """
     Merges the two files corresponding to each reads sides. Reads found in both
        files are merged and written in an output file.
@@ -144,6 +146,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
        :func:`pytadbit.parsers.sam_parser.parse_sam`
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
+    :param False compress: compress (gzip) input files. This is done in the
+       background while next input files are parsed.
 
     :returns: final number of pair of interacting fragments, and a dictionary with
        the number of multiple contacts (keys of the dictionary being the number of
@@ -182,12 +186,12 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
             _, _, crm, pos = line.split()
             CHROM_START[crm] = cum_pos
             cum_pos += int(pos)
-    lchunk = cum_pos / nchunks
-    buf = dict([(i, []) for i in xrange(nchunks + 1)])
+    lchunk = cum_pos // nchunks
+    buf = dict([(i, []) for i in range(nchunks + 1)])
     # prepare temporary directories
     tmp_dir = out_path + '_tmp_files'
     mkdir(tmp_dir)
-    for i in xrange(nchunks / int(nchunks**0.5) + 1):
+    for i in range(nchunks // int(nchunks**0.5) + 1):
         mkdir(path.join(tmp_dir, 'rep_%03d' % i))
 
     # iterate over reads in each of the two input files
@@ -211,7 +215,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                     stdout.write('.')
                     stdout.flush()
                 count_dots += 1
-            for _ in xrange(1000000): # iterate 1 million times, write to files
+            for _ in range(1000000): # iterate 1 million times, write to files
                 # same read id in both lianes, we store put the more upstream
                 # before and store them
                 if eq_reads(read1, read2):
@@ -234,14 +238,19 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
         reads2.close()
     write_to_files(buf, tmp_dir, nchunks)
     if verbose:
-        print '\nFound %d pair of reads mapping uniquely' % count
+        print('\nFound %d pair of reads mapping uniquely' % count)
 
+    # compression
+    if compress:
+        if verbose:
+            print('compressing input files')
+        procs = [Popen(['gzip', f]) for f in (fname1, fname2)]
     # sort each tmp file according to first element (idx) and write them
     # to output file (without the idx)
     # sort also according to read 2 (to filter duplicates)
     #      and also according to strand
     if verbose:
-        print 'Sorting each temporary file by genomic coordinate'
+        print('Sorting each temporary file by genomic coordinate')
 
     out = open(out_path, 'w')
     out.write(header1)
@@ -251,13 +260,18 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
             stdout.flush()
         out.write(''.join(['\t'.join(l[1:]) for l in sorted(
             [l.split('\t') for l in open(
-                path.join(tmp_dir, 'rep_%03d' % (b / int(nchunks**0.5)),
+                path.join(tmp_dir, 'rep_%03d' % (b // int(nchunks**0.5)),
                           'tmp_%05d.tsv' % b))],
             key=lambda x: (x[0], x[8], x[9], x[6]))]))
     out.close()
 
+    if compress:
+        for proc in procs:
+            proc.communicate()
+        system('rm -rf ' + fname1)
+        system('rm -rf ' + fname2)
     if verbose:
-        print '\nRemoving temporary files...'
+        print('\nRemoving temporary files...')
     system('rm -rf ' + tmp_dir)
     return count, multiples
 
@@ -276,7 +290,7 @@ def _loc_reads(r1, r2):
 
 def write_to_files(buf, tmp_dir, nchunks):
     for b in buf:
-        out = open(path.join(tmp_dir, 'rep_%03d' % (b / int(nchunks**0.5)),
+        out = open(path.join(tmp_dir, 'rep_%03d' % (b // int(nchunks**0.5)),
                              'tmp_%05d.tsv' % b), 'a')
         out.write('\n'.join(buf[b]))
         if buf[b]: # case the file was empty
@@ -337,18 +351,18 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
         if contacts > 1:
             multiples.setdefault(contacts, 0)
             multiples[contacts] += 1
-            prod_cont = contacts * (contacts + 1) / 2
+            prod_cont = contacts * (contacts + 1) // 2
             for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
                 r1, r2, idx = _loc_reads(r1, r2)
-                buf[idx / lchunk].append('%d\t%s#%d/%d\t%s\t%s' % (
+                buf[idx // lchunk].append('%d\t%s#%d/%d\t%s\t%s' % (
                     idx, r1[0], i + 1, prod_cont, '\t'.join(r1[1:]),
                     '\t'.join(r2[1:])))
         elif contacts == 1:
             r1, r2, idx = _loc_reads(elts.values()[0], elts.values()[1])
-            buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
+            buf[idx // lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
         else:
             r1, r2, idx = _loc_reads(elts1.values()[0], elts2.values()[0])
-            buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
+            buf[idx // lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
     else:
         r1, r2, idx = _loc_reads(line1.strip().split('\t'), line2.strip().split('\t'))
-        buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
+        buf[idx // lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))

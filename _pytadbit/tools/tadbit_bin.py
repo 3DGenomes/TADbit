@@ -20,7 +20,7 @@ import time
 import sqlite3 as lite
 from numpy                           import zeros_like
 from numpy                           import array
-from numpy                           import ma
+from numpy                           import ma, log, log2
 from matplotlib                      import pyplot as plt
 from matplotlib.ticker               import FuncFormatter
 from pysam                           import AlignmentFile
@@ -50,8 +50,6 @@ def run(opts):
 
     if opts.figsize:
         opts.figsize = map(float, opts.figsize.split(','))
-    else:
-        vmin = vmax = None
 
     clean = True  # change for debug
 
@@ -168,7 +166,7 @@ def run(opts):
                 matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
                     mreads, opts.reso,
                     load(open(biases)) if biases and norm != 'raw' else None,
-                    normalization=norm,
+                    normalization=norm, filter_exclude=opts.filter,
                     region1=region1, start1=start1, end1=end1,
                     region2=region2, start2=start2, end2=end2,
                     tmpdir=tmpdir, ncpus=opts.cpus,
@@ -242,10 +240,12 @@ def run(opts):
                     regions[-1], pltbeg2 if pltbeg2 else 1, pltend2)
                 section_pos = OrderedDict((k, section_pos[k]) for k in section_pos
                                    if k in regions)
+                transform = (log2 if opts.transform == 'log2' else
+                             log if opts.transform == 'log' else lambda x: x)
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,
                     vmin=vmin, vmax=vmax, cmap=opts.cmap,
-                    figsize=opts.figsize,
+                    figsize=opts.figsize, transform=transform,
                     bad_color=opts.bad_color if norm != 'raw' else None)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
@@ -268,7 +268,7 @@ def run(opts):
             region2=region2, start2=start2, end2=end2,
             tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
             nchunks=opts.nchunks, verbose=not opts.quiet,
-            extra=param_hash, clean=clean))
+            extra=param_hash, cooler=opts.cooler, clean=clean))
 
     if clean:
         printime('Cleaning')
@@ -529,7 +529,7 @@ def populate_args(parser):
                         help='''if provided uses this directory to manipulate the
                         database''')
 
-    glopts.add_argument('--nchunks', dest='nchunks', action='store', default=None,
+    glopts.add_argument('--nchunks', dest='nchunks', action='store', default=100,
                         type=int,
                         help='''maximum number of chunks into which to
                         cut the BAM''')
@@ -543,10 +543,15 @@ def populate_args(parser):
 
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
-                        help='''Write text matrix in multiple columns. By
-                        defaults matrices are written in BED-like format (also
+                        help='''Write text matrix in multiple columns (square). 
+                        By defaults matrices are written in BED-like format (also
                         only way to get a raw matrix with all values including
                         the ones in masked columns).''')
+
+    outopt.add_argument('--cooler', dest='cooler', action='store_true',
+                        default=False,
+                        help='''Write i,j,v matrix in cooler format instead of text.
+                        ''')
 
     outopt.add_argument('--rownames', dest='row_names', action='store_true',
                         default=False,
@@ -600,6 +605,10 @@ def populate_args(parser):
                         help='''Range, in log2 scale of the color scale.
                         i.e.: --zrange=-2,2''')
 
+    pltopt.add_argument('--transform', dest='transform', action='store',
+                        default='log2', choices=['log2', 'log', 'none'],
+                        help='''[%(default)s] can be any of [%(choices)s]''')
+
     pltopt.add_argument('--figsize', dest='figsize', action='store',
                         default=None,
                         help='''Range, in log2 scale of the color scale.
@@ -642,9 +651,9 @@ def populate_args(parser):
                         default=False,
                         help='Save only text file for matrices, not images')
 
-    rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
-                        default=False,
-                        help='input BAM file contains only valid pairs (already filtered).')
+    # rfiltr.add_argument('--valid', dest='only_valid', action='store_true',
+    #                     default=False,
+    #                     help='input BAM file contains only valid pairs (already filtered).')
 
 
 def load_parameters_fromdb(opts):
