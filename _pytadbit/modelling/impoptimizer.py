@@ -366,8 +366,8 @@ class IMPoptimizer(object):
                                           initial_seed=initial_seed, store_n_steps=store_n_steps)
                     result = 0
                     matrices = tdm.get_contact_matrix(
-                        #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
-                        cutoff=[int(i) for i in dcutoff_arange])
+                        #cutoff=[int(dc * self.resolution * float(scale)) for dc in dcutoff_arange])
+                        cutoff=[int(dc) for dc in dcutoff_arange])
                     for m in matrices:
                         cut = int(m**0.5)
                         sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
