@@ -367,13 +367,13 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
     # check that we have the GEM binary:
     bowtie2_binary = which(bowtie2_binary)
     if not bowtie2_binary:
-        raise Exception('\n\nERROR: bowtie2 binary not found')
+        raise Exception('\n\nERROR: %s binary not found'%bowtie2_binary)
 
     # mapping
-    print 'TO BOWTIE2', fastq_path1, fastq_path2
+    print 'TO %s'%bowtie2_binary, fastq_path1, fastq_path2
     bowtie2_cmd = [
         bowtie2_binary, '-x', bowtie2_index_path,
-        '-p', str(nthreads), '--reorder', '-S',
+        '-p', str(nthreads), '--reorder','-k','1','-S',
         out_map_path]
 
     if paired_map:
@@ -386,7 +386,7 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
             bowtie2_cmd.append('-'+bow_param)
             if bowtie2_params[bow_param]:
                 bowtie2_cmd.append(bowtie2_params[bow_param])
-    else:
+    elif bowtie2_binary == 'bowtie2':
         bowtie2_cmd.append('--very-sensitive')
     print ' '.join(bowtie2_cmd)
     try:
@@ -641,9 +641,9 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                                 os.path.join(out_map_dir,
                                              base_name + '_full_%s-%s%s.map' % (
                                                  beg, end, suffix)))
-            elif mapper == 'bowtie2':
+            elif mapper == 'bowtie2' or mapper == 'hisat2':
                 _bowtie2_mapping(mapper_index_path, curr_map, out_map_path,
-                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_binary=(mapper_binary if mapper_binary else mapper),
                                  bowtie2_params=mapper_params, **kwargs)
                 # parse map file to extract not uniquely mapped reads
                 print 'Parsing result...'
@@ -694,18 +694,18 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                 print 'Parsing result...'
                 # check if output is sam format for gem3
                 if gem_version >= 3:
-                    _sam_filter(out_map_path, curr_map,
-                                curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+                    _sam_filter(out_map_path, frag_map,
+                                curr_map + '_fail%s.map' % (suffix),
                                 os.path.join(out_map_dir,
-                                             base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                                         base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
                 else:
                     _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                                 os.path.join(out_map_dir,
                                              base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
-            elif mapper == 'bowtie2':
+            elif mapper == 'bowtie2' or mapper == 'hisat2':
                 print 'Mapping fragments of remaining reads...'
                 _bowtie2_mapping(mapper_index_path, frag_map, out_map_path,
-                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_binary=(mapper_binary if mapper_binary else mapper),
                                  bowtie2_params=mapper_params, **kwargs)
                 print 'Parsing result...'
                 _sam_filter(out_map_path, frag_map,
@@ -738,7 +738,7 @@ def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
     the restriction enzyme used (fragment-based mapping).
 
     :param mapper_index_path: path to index file created from a reference genome
-       using gem-index tool or bowtie2-build
+       using gem-index tool, bowtie2-build or hisat2-build
     :param fastq_path1: PATH to FASTQ file of read 1, either compressed or not.
     :param fastq_path2: PATH to FASTQ file of read 2, either compressed or not.
     :param out_map_dir: path to outfile tab separated format containing mapped

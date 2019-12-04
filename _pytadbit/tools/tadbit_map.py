@@ -149,6 +149,11 @@ def run(opts):
 
 def check_options(opts):
 
+    if not opts.mapper_binary:
+        if opts.mapper == 'gem':
+            opts.mapper_binary = 'gem-mapper'
+        else:
+            opts.mapper_binary = opts.mapper
     opts.mapper_binary = which(opts.mapper_binary)
     if not opts.mapper_binary:
         raise Exception('\n\nERROR: Mapper binary not found, for GEM install it from:'
@@ -218,7 +223,7 @@ def check_options(opts):
         opts.cpus = min(opts.cpus, cpu_count())
 
     # check paths
-    if not path.exists(opts.index):
+    if opts.mapper == 'gem' and not path.exists(opts.index):
         raise IOError('ERROR: index file not found at ' + opts.index)
 
     if not path.exists(opts.fastq):
@@ -460,7 +465,7 @@ def populate_args(parser):
 
     glopts.add_argument('--fastq2', dest='fastq2', metavar="PATH", action='store',
                         default=None, type=str, required=False,
-                        help='''path to a FASTQ file of read 2 (can be compressed
+                        help='''(beta) path to a FASTQ file of read 2 (can be compressed
                         files). Needed for fast_fragment''')
 
     glopts.add_argument('--index', dest='index', metavar="PATH",
@@ -512,7 +517,7 @@ def populate_args(parser):
 
     mapper.add_argument('--fast_fragment', dest='fast_fragment', default=False,
                         action='store_true',
-                        help='''use fast fragment mapping. Both fastq files are mapped using
+                        help='''(beta) use fast fragment mapping. Both fastq files are mapped using
                         fragment based mapping in GEM v3. The output file is an intersected
                         read file than can be used directly in tadbit filter 
                         (no tadbit parse needed). Access to samtools is needed for
@@ -557,15 +562,15 @@ def populate_args(parser):
 
     mapper.add_argument('--mapper', dest='mapper', metavar="STR",
                         type=str, default='gem',
-                        help='[%(default)s] mapper used, options are gem or bowtie2')
+                        help='[%(default)s] mapper used, options are gem, bowtie2 or hisat2')
 
     mapper.add_argument('--mapper_binary', dest='mapper_binary', metavar="STR",
-                        type=str, default='gem-mapper',
+                        type=str, default=None,
                         help='[%(default)s] path to mapper binary')
 
     mapper.add_argument('--mapper_param', dest="mapper_param", type=str, default=0,
                         nargs='+',
-                        help='''any parameter that could be passed to the GEM or BOWTIE2
+                        help='''any parameter that could be passed to the GEM, BOWTIE2 or HISAT2
                         mapper. e.g. if we want to set the proportion of
                         mismatches to 0.05 and the maximum indel length to 10,
                         (in GEM it would be: -e 0.05 --max-big-indel-length 10),
