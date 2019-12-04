@@ -4,7 +4,7 @@ December 12, 2014.
 """
 
 import os
-from sys                            import stderr
+from sys                            import stderr, modules
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
@@ -33,8 +33,7 @@ from pytadbit.utils.tadmaths        import calinski_harabasz
 try:
     from pytadbit.parsers.cooler_parser import cooler_file
 except ImportError:
-    stderr.write('WARNING: cooler output is not available. Probably ' +
-                 'you need to install h5py\n')
+    pass
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
@@ -307,14 +306,12 @@ class HiC_data(dict):
         except ZeroDivisionError:
             return 0.
 
-    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
+    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=99,
                        by_mean=True, min_count=None, silent=False):
         """
         Call filtering function, to remove artifactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
-        counts; columns passing through a cell with no interaction in the
-        diagonal; and columns with NaN values (in this case NaN will be replaced
-        by zero in the original Hi-C data matrix). Filtered out columns will be
+        counts. Filtered out columns will be
         stored in the dictionary Experiment._zeros.
 
         :param False draw_hist: shows the distribution of mean values by column
@@ -540,7 +537,9 @@ class HiC_data(dict):
 
         :param False normalized: get normalized data
         """
-
+        if 'h5py' not in modules:
+            raise Exception('ERROR: cooler output is not available. Probably ' +
+                            'you need to install h5py\n')
         if normalized and not self.bias:
             raise Exception('ERROR: data not normalized yet')
         if not all(isinstance(val, int) for _, val in self.iteritems()):

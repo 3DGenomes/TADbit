@@ -3,7 +3,7 @@ November 7, 2013.
 
 """
 
-from sys                             import stderr
+from sys                             import stderr, modules
 from collections                     import OrderedDict
 from warnings                        import warn
 from math                            import sqrt, isnan
@@ -17,8 +17,11 @@ from pytadbit.parsers.hic_bam_parser import get_matrix
 try:
     from pytadbit.parsers.cooler_parser import parse_cooler, is_cooler
 except ImportError:
-    stderr.write('WARNING: cooler output is not available. Probably ' +
-                 'you need to install h5py\n')
+    def is_cooler(*unused):
+        stderr.write('WARNING: cannot detect if input is a cooler file. Probably ' +
+                     'you need to install h5py\n')
+        return False
+    pass
 
 HIC_DATA = True
 

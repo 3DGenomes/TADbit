@@ -13,7 +13,7 @@ from tarfile                      import open as taropen
 from StringIO                     import StringIO
 from shutil                       import copyfile
 import datetime
-from sys                          import stdout, stderr, exc_info
+from sys                          import stdout, stderr, exc_info, modules
 from distutils.version            import LooseVersion
 import os
 import multiprocessing as mu
@@ -31,8 +31,7 @@ from pytadbit.mapping.filter        import MASKED
 try:
     from pytadbit.parsers.cooler_parser import cooler_file
 except ImportError:
-    stderr.write('WARNING: cooler output is not available. Probably ' +
-                 'you need to install h5py\n')
+    pass
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
@@ -848,6 +847,9 @@ def write_matrix(inbam, resolution, biases, outdir,
     # prepare file header
     outfiles = []
     if cooler:
+        if 'h5py' not in modules:
+            raise Exception('ERROR: cooler output is not available. Probably ' +
+                            'you need to install h5py\n')
         if 'decay' in normalizations or 'raw&decay' in normalizations:
             raise Exception('ERROR: decay and raw&decay matrices cannot be exported '
                 'to cooler format. Cooler only accepts weights per column/row')
