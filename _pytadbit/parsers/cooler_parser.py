@@ -119,6 +119,11 @@ class cooler_file(object):
         self.regions = regions
         self.nbins = sum([int(ceil(self.sections[reg]/self.resolution))
                           for reg in list(OrderedDict.fromkeys(self.regions))])
+        self.sec_offset = 0
+        for crm in self.sections:
+            if crm == self.regions[0]:
+                break
+            self.sec_offset += int(ceil(self.sections[crm]/self.resolution))
         self.nnz = 0
         self.ncontacts = 0
         self.ichunk = 0
@@ -227,8 +232,8 @@ class cooler_file(object):
         endk = self.sections[self.regions[-1]] if end2 is None else end2
 
         full_weights = np.zeros(shape=(self.nbins,), dtype=np.float64)
-        full_weights[startj:endj] = weights_row
-        full_weights[startk:endk] = weights_col
+        full_weights[startj-self.sec_offset:endj-self.sec_offset] = weights_row
+        full_weights[startk-self.sec_offset:endk-self.sec_offset] = weights_col
         with h5py.File(self.outcool, "r+") as f:
             root_grp = f[self.root_grp][str(self.resolution)]
             grp = root_grp["bins"]
@@ -284,7 +289,7 @@ class cooler_file(object):
 
             del self.buff[:]
             self.nbuff = 0
-        vals = (j+self.startj,k+self.startk,v)
+        vals = (j+(self.startj-self.sec_offset),k+(self.startk-self.sec_offset),v)
         self.buff.append(vals)
         self.nbuff += 1
         self.ichunk = ichunk
