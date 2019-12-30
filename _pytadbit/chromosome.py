@@ -2,6 +2,7 @@
 26 Nov 2012
 
 """
+from __future__ import print_function
 
 from string                            import ascii_lowercase as letters
 from copy                              import deepcopy as copy
@@ -16,6 +17,7 @@ from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
 from pytadbit.alignment                import Alignment, randomization_test
+from functools import reduce
 
 try:
     import matplotlib.pyplot as plt
@@ -417,7 +419,7 @@ class Chromosome(object):
         ali = Alignment(name, aligneds, xpers, consensus, score=score)
         self.alignment[name] = ali
         if verbose:
-            print self.alignment[name]
+            print(self.alignment[name])
         if not randomize:
             if get_score:
                 return ali, score, perc1, perc2

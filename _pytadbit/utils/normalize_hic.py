@@ -50,6 +50,7 @@ matrix W of size N:
                            /__ Wi
 
 """
+from __future__ import print_function
 #===============================================================================
 # try:
 #     import rpy2.robjects as robjects
@@ -125,7 +126,7 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None,
 
     proc = Popen(proc_par, stderr=PIPE)
     err = proc.stderr.readlines()
-    print '\n'.join(err)
+    print('\n'.join(err))
 
     biases_oneD = genfromtxt(out_csv, delimiter=',', dtype=float)
 
@@ -191,7 +192,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     :returns: a vector of biases (length equal to the size of the matrix)
     """
     if verbose:
-        print 'iterative correction'
+        print('iterative correction')
     size = len(hic_data)
     if not bads:
         bads = {}
@@ -199,14 +200,14 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
 
     if verbose:
-        print "  - copying matrix"
+        print("  - copying matrix")
 
     W = copy_matrix(hic_data, bads)
     B = dict([(b, 1.) for b in W])
     if len(B) == 0:
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     if verbose:
-        print "  - computing biases"
+        print("  - computing biases")
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
@@ -216,7 +217,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
         S = sorted(S.values())
         dev = max(abs(S[0]  / meanS - 1), abs(S[-1] / meanS - 1))
         if verbose:
-            print '   %15.3f %15.3f %15.3f %4s %9.5f' % (S[0], meanS, S[-1], it, dev)
+            print('   %15.3f %15.3f %15.3f %4s %9.5f' % (S[0], meanS, S[-1], it, dev))
         if dev < max_dev:
             break
     for i in xrange(size):

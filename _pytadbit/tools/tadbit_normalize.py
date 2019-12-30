@@ -5,6 +5,7 @@ information needed
  - path working directory with parsed reads
 
 """
+from __future__ import print_function
 from argparse                             import HelpFormatter
 from os                                   import path, remove, system
 from sys                                  import exc_info, stdout
@@ -36,6 +37,7 @@ from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
+from functools import reduce
 
 # removes annoying message when normalizing...
 seterr(invalid='ignore')
@@ -77,9 +79,9 @@ def run(opts):
         fas = set(genome.keys())
         bam = set(refs)
         if fas - bam:
-            print 'WARNING: %d extra chromosomes in FASTA (removing them)' % (len(fas - bam))
+            print('WARNING: %d extra chromosomes in FASTA (removing them)' % (len(fas - bam)))
             if len(fas - bam) <= 50:
-                print '\n'.join([('  - ' + c) for c in (fas - bam)])
+                print('\n'.join([('  - ' + c) for c in (fas - bam)]))
         if bam - fas:
             txt = ('\n'.join([('  - ' + c) for c in (bam - fas)])
                    if len(bam - fas) <= 50 else '')
@@ -286,7 +288,7 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
                 (NULL,    %d,        %d,        %d,           %d,         %d,                      %f,                  %f,               %f,           %d,               '%s',          %f)
                 """ % (jobid, input_bed,  ncolumns, nbad_columns, bam_filter,        100 * raw_cisprc,   100 * norm_cisprc,               a2,    opts.reso, opts.normalization, opts.factor))
             except lite.OperationalError:
-                print 'WANRING: Normalized table not written!!!'
+                print('WANRING: Normalized table not written!!!')
 
         print_db(cur, 'PATHs')
         print_db(cur, 'JOBs')
@@ -611,10 +613,10 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                              'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
         dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
-    except Exception, e:
+    except Exception as e:
         exc_type, exc_obj, exc_tb = exc_info()
         fname = path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print e
+        print(e)
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
@@ -663,10 +665,10 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
             region, start, end, extra_out)), 'w')
         dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
-    except Exception, e:
+    except Exception as e:
         exc_type, exc_obj, exc_tb = exc_info()
         fname = path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print e
+        print(e)
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
@@ -764,8 +766,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
             cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
             size=total, savefig=None)
     else:
-        print ('      -> too few interactions defined as less than %9d '
-               'interactions') % (min_count)
+        print('      -> too few interactions defined as less than %9d '
+               'interactions' % (min_count))
         badcol = {}
         countL = 0
         countZ = 0
@@ -775,8 +777,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
                 countL += 1
                 if not c in cisprc:
                     countZ += 1
-        print '      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
-            len(badcol), countZ, countL, total, float(len(badcol)) / total * 100)
+        print('      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
+            len(badcol), countZ, countL, total, float(len(badcol)) / total * 100))
 
     # no mappability will result in NaNs, better to filter out these columns
     if mappability:
@@ -824,8 +826,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     elif normalization == 'oneD':
         printime('  - oneD normalization')
         if len(set([len(biases), len(mappability), len(n_rsites), len(cg_content)])) > 1:
-            print "biases", "mappability", "n_rsites", "cg_content"
-            print len(biases), len(mappability), len(n_rsites), len(cg_content)
+            print("biases", "mappability", "n_rsites", "cg_content")
+            print(len(biases), len(mappability), len(n_rsites), len(cg_content))
             raise Exception('Error: not all arrays have the same size')
         tmp_oneD = path.join(outdir,'tmp_oneD_%s' % (extra_out))
         mkdir(tmp_oneD)
@@ -836,7 +838,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     elif normalization == 'custom':
         n_pos = 0
         biases = {}
-        print 'Using provided biases...'
+        print('Using provided biases...')
         with open(biases_path, 'r') as r:
             r.next()
             for line in r:
@@ -901,7 +903,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
             cis += c
             total += t
         norm_cisprc = float(cis) / total
-        print '    * Cis-percentage: %.1f%%' % (norm_cisprc * 100)
+        print('    * Cis-percentage: %.1f%%' % (norm_cisprc * 100))
     else:
         norm_cisprc = 0.
 

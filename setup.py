@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from distutils.core import setup, Extension
 from os import path, system
 from re import sub
@@ -156,6 +157,8 @@ def main():
                                   stderr=PIPE).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
                                 stderr=PIPE).communicate()
+        git_revision = str(git_revision)
+        git_status = str(git_status)
         if err or err2:
             raise OSError('git not found')
         plus = git_status != ''

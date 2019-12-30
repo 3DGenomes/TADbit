@@ -5,6 +5,7 @@ information needed
  - path working directory with parsed reads
 
 """
+from __future__ import print_function
 from argparse                        import HelpFormatter
 from os                              import path, remove, system
 from string                          import ascii_letters
@@ -95,7 +96,7 @@ def run(opts):
             hic_data1, hic_data2, normalized=opts.norm,
             remove_bad_columns=True, savefig=decay_corr_fig,
             savedata=decay_corr_dat, get_bads=True)
-        print '         - correlation score (SCC): %.4f (+- %.7f)' % (scc, std)
+        print('         - correlation score (SCC): %.4f (+- %.7f)' % (scc, std))
         printime('    => correlation between eigenvectors')
         eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                           remove_bad_columns=True, nvect=6,
@@ -105,7 +106,7 @@ def run(opts):
         printime('    => reproducibility score')
         reprod = get_reproducibility(hic_data1, hic_data2, num_evec=20, normalized=opts.norm,
                                      verbose=False, remove_bad_columns=True)
-        print '         - reproducibility score: %.4f' % (reprod)
+        print('         - reproducibility score: %.4f' % (reprod))
         ncols = len(hic_data1)
     else:
         ncols = 0
@@ -381,7 +382,7 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
         dbfile = tmpdb
     else:
         dbfile = path.join(workdir, 'trace.db')
-    print dbfile
+    print(dbfile)
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()

@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 
 from copy                                import deepcopy as copy
 from sys                                 import stderr
@@ -1243,7 +1244,7 @@ class Experiment(object):
                                         for i in xrange(siz)])
                              for j in xrange(siz)])
         if print_it:
-            print out
+            print(out)
         else:
             return out + '\n'
 
@@ -1523,7 +1524,7 @@ class Experiment(object):
                 abs(tads[tad]['score']), '' if not density else
                 '\t%s' % (round(float(tads[tad]['height']), 3)))
         if not savedata:
-            print table
+            print(table)
             return
         if isinstance(savedata, file):
             out = savedata

@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 
 from math            import fabs
 from cPickle         import load, dump
@@ -350,15 +351,15 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
 
     if verbose == 1:
         try:
-            print "Total number of restraints: %i" % (
-                model['model'].get_number_of_restraints())
+            print("Total number of restraints: %i" % (
+                model['model'].get_number_of_restraints()))
             if use_HiC:
-                print len(HiCbasedRestraints)
+                print(len(HiCbasedRestraints))
         except:
-            print "Total number of restraints: %i" % (
-                model['restraints'].get_number_of_restraints()) # 2.6.1 compat
+            print("Total number of restraints: %i" % (
+                model['restraints'].get_number_of_restraints())) # 2.6.1 compat
             if use_HiC:
-                print len(HiCbasedRestraints)
+                print(len(HiCbasedRestraints))
 
     # Separated function for the Conjugate gradient optimization
     if verbose == 1:
@@ -373,8 +374,8 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
     #    log_energies.append(model['restraints'].evaluate(False)) # 2.6.1 compat
     if verbose >=1:
         if verbose >= 2 or not rand_init % 100:
-            print 'Model %s IMP Objective Function: %s' % (
-                rand_init, log_energies[-1])
+            print('Model %s IMP Objective Function: %s' % (
+                rand_init, log_energies[-1]))
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                        FloatKey("z"), FloatKey("radius"))
     result = IMPmodel({'log_objfun' : log_energies,
@@ -390,8 +391,8 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
         result['y'].append(part.get_value(y) * SCALE)
         result['z'].append(part.get_value(z) * SCALE)
         if verbose == 3:
-            print (part.get_name(), part.get_value(x), part.get_value(y),
-                   part.get_value(z), part.get_value(radius))
+            print((part.get_name(), part.get_value(x), part.get_value(y),
+                   part.get_value(z), part.get_value(radius)))
     # gets radius from last particle, assuming that all are the same
     # include in the loop when radius changes... should be a list then
     result['radius'] = part.get_value(radius)
@@ -484,7 +485,7 @@ def add_single_particle_restraints(model, single_particle_restraints):
         elif restraint[2] == 'HarmonicLowerBound':
             rb = IMP.core.HarmonicLowerBound(dist, kforce)
         else:
-            print "ERROR: RestraintType",restraint[2],"does not exist!"
+            print("ERROR: RestraintType",restraint[2],"does not exist!")
             return
 
         ss = IMP.core.DistanceToSingletonScore(rb, pos)
@@ -517,7 +518,7 @@ def add_hicbased_restraints(model, HiCbasedRestraints): #, restraints):
             # print "Adding an HarmonicUpperBoundRestraint between particles %s and %s using parameters R0 %f and k %f" % (p1,p2,dist,kforce)
             add_harmonic_lowerbound_restraint(model, p1, p2, dist, kforce) #, restraints)
         else:
-            print "ERROR: RestraintType",restraint[2],"does not exist!"
+            print("ERROR: RestraintType",restraint[2],"does not exist!")
 
 def add_harmonic_restraint(model, p1, p2, dist, kforce, verbose=None): #, restraints, verbose=None):
     try:
@@ -542,11 +543,11 @@ def add_harmonic_restraint(model, p1, p2, dist, kforce, verbose=None): #, restra
 
     if verbose == 3:
         try:
-            print "Total number of restraints: %i" % (
-                model['model'].get_number_of_restraints())
+            print("Total number of restraints: %i" % (
+                model['model'].get_number_of_restraints()))
         except:
-            print "Total number of restraints: %i" % (
-                model['restraints'].get_number_of_restraints()) # 2.6.1 compat
+            print("Total number of restraints: %i" % (
+                model['restraints'].get_number_of_restraints())) # 2.6.1 compat
 
 
 def add_harmonic_upperbound_restraint(model, p1, p2, dist, kforce): #, restraints):
@@ -667,7 +668,7 @@ def conjugate_gradient_optimization(model, log_energies):
         #    for p in ptmp:
         #        print p,p.get_value(x),p.get_value(y),p.get_value(z)
         if VERBOSE == 3:
-            print i, log_energies[-1], o.get_kt()
+            print(i, log_energies[-1], o.get_kt())
     # After the firsts hightemp iterations, stop the optimization if the score
     # does not change by more than a value defined by endLoopValue and
     # for stopCount iterations
@@ -677,7 +678,7 @@ def conjugate_gradient_optimization(model, log_energies):
         o.set_kt(temperature)
         log_energies.append(o.optimize(STEPS))
         if VERBOSE == 3:
-            print i, log_energies[-1], o.get_kt()
+            print(i, log_energies[-1], o.get_kt())
         # Calculate the score variation and check if the optimization
         # can be stopped or not
         if lownrj > 0:

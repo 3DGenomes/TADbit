@@ -1,6 +1,7 @@
 """
 22 may 2015
 """
+from __future__ import print_function
 
 from bisect                               import bisect_right as bisect
 from warnings                             import warn

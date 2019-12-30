@@ -5,6 +5,7 @@ information needed
  - path working directory with parsed reads
 
 """
+from __future__ import print_function
 from argparse                       import HelpFormatter
 from os                             import path, remove
 from shutil                         import copyfile
@@ -59,7 +60,7 @@ def run(opts):
 
     mkdir(path.join(opts.workdir, '06_segmentation'))
 
-    print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
+    print('loading %s \n    at resolution %s' % (mreads, nice(reso)))
     region = None
     if opts.crms and len(opts.crms) == 1:
         region = opts.crms[0]
@@ -73,12 +74,12 @@ def run(opts):
     richA_stats = {}
     firsts = {}
     if not opts.only_tads:
-        print 'Searching compartments'
+        print('Searching compartments')
         cmprt_dir = path.join(opts.workdir, '06_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
         if opts.fasta:
-            print '  - Computing GC content to label compartments'
+            print('  - Computing GC content to label compartments')
             rich_in_A = get_gc_content(parse_fasta(opts.fasta, chr_filter=opts.crms), reso,
                                        chromosomes=opts.crms,
                                        by_chrom=True, n_cpus=opts.cpus)
@@ -132,19 +133,19 @@ def run(opts):
     # TADs
     tad_result = {}
     if not opts.only_compartments:
-        print 'Searching TADs'
+        print('Searching TADs')
         tad_dir = path.join(opts.workdir, '06_segmentation',
                              'tads_%s' % (nice(reso)))
         mkdir(tad_dir)
         for crm in hic_data.chromosomes:
             if opts.crms and not crm in opts.crms:
                 continue
-            print '  - %s' % crm
+            print('  - %s' % crm)
             matrix = hic_data.get_matrix(focus=crm)
             beg, end = hic_data.section_pos[crm]
             size = len(matrix)
             if size < 10:
-                print "     Chromosome too short (%d bins), skipping..." % size
+                print("     Chromosome too short (%d bins), skipping..." % size)
                 continue
             # transform bad column in chromosome referential
             if hic_data.bads:

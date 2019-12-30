@@ -26,6 +26,7 @@ INSTALL:
     Nucleic Acids Research, 39(Database issue), D876-82. doi:10.1093/nar/gkq963
     
 """
+from __future__ import print_function
 
 
 
@@ -86,7 +87,7 @@ def remap_chr(crm_obj, crm, tmp, lft_path, chain_path,
         if wnt_exp:
             if not exp.name in wnt_exp:
                 continue
-        print exp
+        print(exp)
         coords = []
         res = exp.resolution
         for t in exp.tads:
@@ -100,15 +101,15 @@ def remap_chr(crm_obj, crm, tmp, lft_path, chain_path,
                 if crm2 not in genome[exp.name]:
                     genome[exp.name][crm2] = {'end': [],
                                              'score': []}
-                print ' -> crm{:<2}:{:>10} | crm{:<2}:{:>10}'.format(
+                print(' -> crm{:<2}:{:>10} | crm{:<2}:{:>10}'.format(
                     crm, int(exp.tads[t]['end']) * 100000,
-                    crm2, int(end / res + 0.5) * 100000)
+                    crm2, int(end / res + 0.5) * 100000))
                 genome[exp.name][crm2]['end'  ].append(float(int(end / res + 0.5)))
                 genome[exp.name][crm2]['score'].append(exp.tads[t]['score'])
                 found += 1
             except TypeError:
                 missed += 1
-    print 'missed: {}, found: {}'.format(missed, found)
+    print('missed: {}, found: {}'.format(missed, found))
     return genome
 
 

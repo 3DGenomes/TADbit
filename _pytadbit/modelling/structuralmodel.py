@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.extraviews      import plot_3d_model
@@ -416,15 +417,15 @@ class StructuralModel(dict):
         total = (self.contour() / 1000 * 2 * pi * float(radius) / 1000 + 4 * pi
                  * (float(radius) / 1000)**2)
         if verbose:
-            print (' Accessible surface: %s micrometers^2' +
+            print((' Accessible surface: %s micrometers^2' +
                    '(%s accessible times %s micrometers)') % (
-                round(area, 2), possibles, dot_area)
-            print '    (%s accessible dots of %s total times %s micrometers)' % (
-                possibles, outdot.count(False), round(dot_area, 5))
-            print '  - %s%% of the contour mesh' % (
-                round((float(possibles)/outdot.count(False))*100, 2))
-            print '  - %s%% of a virtual straight chromatin (%s microm^2)' % (
-                round((area/total)*100, 2), round(total, 2))
+                round(area, 2), possibles, dot_area))
+            print('    (%s accessible dots of %s total times %s micrometers)' % (
+                possibles, outdot.count(False), round(dot_area, 5)))
+            print('  - %s%% of the contour mesh' % (
+                round((float(possibles)/outdot.count(False))*100, 2)))
+            print('  - %s%% of a virtual straight chromatin (%s microm^2)' % (
+                round((area/total)*100, 2), round(total, 2)))
 
         # write cmm file
         if savefig:

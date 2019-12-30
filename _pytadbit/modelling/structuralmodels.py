@@ -1,6 +1,7 @@
 """
 19 Jul 2013
 """
+from __future__ import print_function
 from cPickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
@@ -46,6 +47,7 @@ from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
 from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
+from functools import reduce
 
 try:
     from matplotlib import pyplot as plt
@@ -551,9 +553,9 @@ class StructuralModels(object):
         if verbose:
             singletons = len([1 for m in self
                               if m['cluster'] == 'Singleton'])
-            print ('Number of singletons excluded from clustering: %s (total' +
-                   ' singletons: %s)') % (singletons - new_singles, singletons)
-            print self.clusters
+            print(('Number of singletons excluded from clustering: %s (total' +
+                   ' singletons: %s)') % (singletons - new_singles, singletons))
+            print(self.clusters)
 
     def _build_distance_matrix(self, n_best_clusters):
         """
@@ -769,7 +771,7 @@ class StructuralModels(object):
             raise Exception('ERROR: did not found clusters to be compared ' +
                             '(try different clustering parameters).\n')
         if verbose:
-            print clusters
+            print(clusters)
         n_best_clusters = min(len(clusters), n_best_clusters)
         add = 1 if represent_models else 0
         fig, axes = plt.subplots(n_best_clusters - 1 + add,

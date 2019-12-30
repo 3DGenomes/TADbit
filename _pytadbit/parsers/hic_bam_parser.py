@@ -3,6 +3,7 @@ parser provided by Enrique Vidal <enrique.vidal@crg.eu> to read write 2D beds
 into compressed BAM format.
 
 """
+from __future__ import print_function
 
 from cPickle                      import load, dump
 from time                         import sleep, time
@@ -59,8 +60,8 @@ def print_progress(procs):
             stdout.write('.')
             stdout.flush()
         prev_done = done
-    print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
-                        '%s/%s' % (len(procs),len(procs)))
+    print('%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
+                        '%s/%s' % (len(procs),len(procs))))
 
 
 def _map2sam_short(line, flag):
@@ -386,10 +387,10 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                     cisprc[i]  = [0, 0]
                     cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
             return sumcol, cisprc
-    except Exception, e:
+    except Exception as e:
         exc_type, exc_obj, exc_tb = exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print e
+        print(e)
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
@@ -582,8 +583,8 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
-        print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
-                            '%s/%s' % (len(chunks[0]),len(chunks[0])))
+        print('%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
+                            '%s/%s' % (len(chunks[0]),len(chunks[0]))))
 
 
 def get_biases_region(biases, bin_coords, check_resolution=None):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from numpy import log, pi as pi_num, exp
 import sys
 
@@ -114,12 +115,12 @@ def train(pi, T, E, observations, verbose=False, threshold=1e-6, n_iter=1000):
                                     new_E, etas, gammas)
         delta = update_parameters(corrector, pi, new_pi, T, new_T, E, new_E)
         if verbose:
-            print ("\rTraining: %03i/%04i (diff: %.8f)") % (it, n_iter, delta),
+            print("\rTraining: %03i/%04i (diff: %.8f)" % (it, n_iter, delta), end=' ')
             sys.stdout.flush()
         if delta <= threshold:
             break
     if verbose:
-        print "\n"
+        print("\n")
 
 def get_eta(probs, T, alphas, betas):
     """

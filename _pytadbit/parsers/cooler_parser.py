@@ -4,6 +4,7 @@ September 2, 2019.
 """
 
 from __future__ import division
+from __future__ import print_function
 import os
 import datetime
 import json
@@ -275,7 +276,7 @@ class cooler_file(object):
         :param v: interaction value
 
         """
-        if self.ichunk <> ichunk:
+        if self.ichunk != ichunk:
             self.buff.sort()
             with h5py.File(self.outcool, "r+") as f:
                 root_grp = f[self.root_grp][str(self.resolution)]

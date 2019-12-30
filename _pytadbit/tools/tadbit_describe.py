@@ -5,6 +5,7 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
 from argparse                    import HelpFormatter
 import sqlite3 as lite
@@ -14,6 +15,7 @@ from random                      import random
 from shutil                      import copyfile
 
 from pytadbit.utils.sqlite_utils import print_db
+from functools import reduce
 
 DESC = "Describe jobs and results in a given working directory"
 

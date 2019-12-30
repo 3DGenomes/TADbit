@@ -1,6 +1,7 @@
 """
 simple BED and BEDgraph parser
 """
+from __future__ import print_function
 
 from pytadbit.utils.file_handling import magic_open
 from pytadbit.utils.extraviews import nicer
@@ -130,14 +131,14 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
         return dict(read_line(l) for l in open(tadbit_fname))
 
     fh = open(fname)
-    line = fh.next()
+    line = next(fh)
     crmM, begM, endM, val = line.split()
     crm = crmM
     if wanted_chrom:
         if crmM != wanted_chrom:
             print('     skipping %s' % crmM)
             while crmM != wanted_chrom:
-                line = fh.next()
+                line = next(fh)
                 crmM, begM, endM, val = line.split()
                 crm = crmM
     mappability = {}
@@ -166,14 +167,14 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
                 if weight < 0:
                     break
                 tmp += weight * float(val)
-                line = fh.next()
+                line = next(fh)
         except StopIteration:
             mappability[crm].append(tmp / resolution)
             break
         mappability[crm].append(tmp / resolution)
         crm = crmM
         begB +=  resolution
-    print "     saving mappabilty to cache..."
+    print("     saving mappabilty to cache...")
     if save_cache:
         out = open(tadbit_fname, 'w')
         for crm in mappability:

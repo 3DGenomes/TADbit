@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 from pytadbit.modelling.imp_modelling    import generate_3d_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
@@ -282,7 +283,7 @@ class IMPoptimizer(object):
                     if verbose == 2:
                         stderr.write(verb + str(round(result, 4)) + '\n')
                     else:
-                        print verb + str(round(result, 4))
+                        print(verb + str(round(result, 4)))
                 continue
 
             config_tmp = {'kforce'   : 5,
@@ -324,12 +325,12 @@ class IMPoptimizer(object):
                         if verbose == 2:
                             stderr.write(verb + str(round(result, 4)) + '\n')
                         else:
-                            print verb + str(round(result, 4))
+                            print(verb + str(round(result, 4)))
 
                     # Store the correlation for the TADbit parameters set
                     self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
-            except Exception, e:
-                print '  SKIPPING: %s' % e
+            except Exception as e:
+                print('  SKIPPING: %s' % e)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 
@@ -481,7 +482,7 @@ class IMPoptimizer(object):
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
 
         if with_corr:
-            print best
+            print(best)
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),
                           ('maxdist'  , float(best[0][2])),
@@ -611,7 +612,7 @@ class IMPoptimizer(object):
                     key=lambda x: self.results[
                         (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
             except IndexError:
-                print 'Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq)
+                print('Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq))
                 continue
 
             try:
@@ -619,7 +620,7 @@ class IMPoptimizer(object):
                 out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
                     scale, kbending, maxdist, lowfreq, upfreq, cut, result))
             except KeyError:
-                print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
+                print('KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result))
                 continue
         out.close()
 
@@ -758,7 +759,7 @@ def _mu_correlate(svd, corr, off_diag, scale, kbending, maxdist, lowfreq, upfreq
             if verbose == 2:
                 stderr.write(verb + str(result) + '\n')
             else:
-                print verb + str(result)
-    except Exception, e:
-        print 'ERROR %s' % e
+                print(verb + str(result))
+    except Exception as e:
+        print('ERROR %s' % e)
     return result

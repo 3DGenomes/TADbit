@@ -1,6 +1,7 @@
 """
 18 Nov 2014
 """
+from __future__ import print_function
 
 from warnings                     import warn
 from collections                  import OrderedDict
@@ -150,12 +151,12 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                  show, one=True, clim=clim, perc_clim=perc_clim,
                                  cmap=cmap, decay_resolution=decay_resolution,
                                  perc=perc, name=name, cistrans=float('NaN'))
-                except ValueError, e:
-                    print 'Value ERROR: problem with chromosome %s' % crm1
-                    print str(e)
-                except IndexError, e:
-                    print 'Index ERROR: problem with chromosome %s' % crm1
-                    print str(e)
+                except ValueError as e:
+                    print('Value ERROR: problem with chromosome %s' % crm1)
+                    print(str(e))
+                except IndexError as e:
+                    print('Index ERROR: problem with chromosome %s' % crm1)
+                    print(str(e))
     else:
         if savedata:
             hic_data.write_matrix(savedata, focus=focus,
@@ -1259,7 +1260,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         maxdist=1000):
     de_right={}
     de_left={}
-    print "process reads"
+    print("process reads")
     fl=open(reads_file)
     while True:
         line=fl.next()
@@ -1270,7 +1271,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         while True:
             nreads += 1
             if nreads % 1000000 == 0:
-                print nreads
+                print(nreads)
             try:
                 _, n1, sb1, sd1, l1, ru1, rd1, n2, sb2, sd2, l2, ru2, rd2\
                         = line.split()
@@ -1278,7 +1279,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
                         map(int, [sb1, sd1, l1, ru1, rd1, sb2, sd2, l2,
                             ru2, rd2])
             except ValueError:
-                print line
+                print(line)
                 raise ValueError("line is not the right format!")
             if n1 != n2:
                 line=fl.next()
@@ -1318,7 +1319,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
             line=fl.next()
     except StopIteration:
         pass
-    print "   finished processing {} reads".format(nreads)
+    print("   finished processing {} reads".format(nreads))
 
     #transform to arrays
     ind = range(-window,window+1)
@@ -1326,7 +1327,7 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
     de_l = map(lambda x:de_left.get(x,0), ind)
 
     #write to files
-    print "write to files"
+    print("write to files")
     fl=open(outprefix+'_count.dat','w')
     fl.write('#dist\tX~~\t~~X\n')
     for i,j,k in zip(ind,de_r, de_l):
@@ -1359,7 +1360,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     rbreaks={}
     rejoined={}
     des={}
-    print "process reads"
+    print("process reads")
     fl=open(reads_file)
     while True:
         line=fl.next()
@@ -1370,14 +1371,14 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
         while True:
             nreads += 1
             if nreads % 1000000 == 0:
-                print nreads
+                print(nreads)
             try:
                 _, n1, sb1, sd1, _, ru1, rd1, n2, sb2, sd2, _, ru2, rd2\
                         = line.split()
                 sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2 = \
                         map(int, [sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2])
             except ValueError:
-                print line
+                print(line)
                 raise ValueError("line is not the right format!")
             if n1 != n2:
                 line=fl.next()
@@ -1432,7 +1433,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
             line=fl.next()
     except StopIteration:
         pass
-    print "   finished processing {} reads".format(nreads)
+    print("   finished processing {} reads".format(nreads))
 
     #transform to arrays
     maxlen = max(max(rejoined),max(des),max(rbreaks))
@@ -1444,7 +1445,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     rejoined = map(lambda x: x**.5 * rejoined[x-1]/x, ind)
 
     #write to files
-    print "write to files"
+    print("write to files")
     fl=open(outprefix+'_count.dat','w')
     fl.write('#dist\trbreaks\tdes\trejoined\n')
     for i,j,k,l in zip(ind,rbreaks,des,rejoined):

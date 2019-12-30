@@ -2,6 +2,7 @@
 November 7, 2013.
 
 """
+from __future__ import print_function
 
 from sys                             import stderr, modules
 from collections                     import OrderedDict
@@ -478,7 +479,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                 matrix  = thing.reshape(-1).tolist()[0]
                 size = row
             except Exception as exc:
-                print 'Error found:', exc
+                print('Error found:', exc)
             matrices.append(HiC_data(matrix, size))
         else:
             raise Exception('Unable to read this file or whatever it is :)')

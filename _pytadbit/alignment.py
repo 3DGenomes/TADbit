@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 
 from pytadbit.utils.extraviews         import colorize, tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
@@ -173,7 +174,7 @@ class Alignment(object):
             out += '</pre></body></html>'
         if string:
             return out
-        print out
+        print(out)
 
 
 
@@ -514,14 +515,14 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
     if verbose:
         stdout.write('\n %s randomizations finished.' % (num))
         stdout.flush()
-        print '  Observed alignment score: %s' % (score)
+        print('  Observed alignment score: %s' % (score))
         # print '  Mean number of boundaries: {}; observed: {}'.format (
         #     sum(rnd_len)/len(rnd_len),
         #     str([len(self.experiments[e].brks)
         #          for e in self.experiments]))
-        print 'Randomized scores between %s and %s; observed: %s' % (
-            min(rnd_distr), max(rnd_distr), score)
-        print 'p-value: %s' % (pval if pval else '<%s' % (1./num))
+        print('Randomized scores between %s and %s; observed: %s' % (
+            min(rnd_distr), max(rnd_distr), score))
+        print('p-value: %s' % (pval if pval else '<%s' % (1./num)))
     return pval
 
 

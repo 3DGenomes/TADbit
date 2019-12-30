@@ -8,6 +8,7 @@ Fast overlapping of protein contact maps by alignment of eigenvectors.
 Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq402
 
 """
+from __future__ import print_function
 
 from numpy        import array, sqrt
 from numpy        import min as npmin
@@ -124,13 +125,13 @@ def core_nw_long(p_scores, penalty, l_p1, l_p2):
             align1.insert(0, '-')
             align2.insert(0, j)
             continue
-        print score
-        print value
-        print scores[i-1][j]
-        print scores[i][j-1]
-        print penalty, ins, rmv
+        print(score)
+        print(value)
+        print(scores[i-1][j])
+        print(scores[i][j-1])
+        print(penalty, ins, rmv)
         for scr in scores:
-            print ' '.join(['%7s' % (round(y, 4)) for y in scr])
+            print(' '.join(['%7s' % (round(y, 4)) for y in scr]))
         raise Exception('Something  is failing and it is my fault...')
     return align1, align2, scores[i][j]
 
@@ -168,7 +169,7 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
             align2.insert(0, j)
         else:
             for scr in scores:
-                print ' '.join(['%7s' % (round(y, 4)) for y in scr])
+                print(' '.join(['%7s' % (round(y, 4)) for y in scr]))
             raise Exception('Something  is failing and it is my fault...')
     return align1, align2, scores[i][j]
 
@@ -253,26 +254,26 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 if dist < nearest:
                     if not penalty:
                         for scr in p_scores:
-                            print ' '.join(['%7s' % (round(y, 2)) for y in scr])
+                            print(' '.join(['%7s' % (round(y, 2)) for y in scr]))
                     nearest = dist
                     best_alis = [align1, align2]
                     best_pen = penalty
             except IndexError as e:
-                print e
+                print(e)
     try:
         align1, align2 = best_alis
     except ValueError:
         pass
     if verbose:
-        print '\n Alignment (score = %s):' % (nearest)
-        print 'TADS 1: '+'|'.join(['%4s' % (str(int(x)) \
-                                            if x!='-' else '-'*3) for x in align1])
-        print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
-                                            if x!='-' else '-'*3) for x in align2])
+        print('\n Alignment (score = %s):' % (nearest))
+        print('TADS 1: '+'|'.join(['%4s' % (str(int(x)) \
+                                            if x!='-' else '-'*3) for x in align1]))
+        print('TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
+                                            if x!='-' else '-'*3) for x in align2]))
     rho, pval = _get_score(align1, align2, hic1, hic2)
     # print best_pen
     if not best_pen:
-        print 'WARNING: penalty NULL!!!\n\n'
+        print('WARNING: penalty NULL!!!\n\n')
     return align1, align2, {'dist': nearest, 'rho': rho, 'pval': pval}
     
 
@@ -417,7 +418,7 @@ def _run_aleigen(contacts1, contacts2, num_v):
     out = Popen('aleigen %s %s %s' % (f_name1, f_name2, num_v),
                 shell=True, stdout=PIPE).communicate()[0]
     score = [float(c) for c in re.findall(sc_str, out)]
-    print out
+    print(out)
     align1 = []
     align2 = []
     for line in out.split('\n')[2:]:

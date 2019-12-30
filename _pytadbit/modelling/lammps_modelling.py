@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
 from pytadbit.modelling.lammpsmodel import LAMMPSmodel
 from pytadbit.modelling.structuralmodels import StructuralModels
@@ -341,7 +342,7 @@ harmonic {
     totcolvars = linecount(target_pairs_file)
     ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
     
-    print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+    print("Number of enforced contacts = %i over %i" % (ncolvars,totcolvars))
     rand_positions = random.sample(list(range(totcolvars)), ncolvars)
     rand_positions = sorted(rand_positions)
     rand_lines = []
@@ -459,7 +460,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
                                                    confining_environment)
 
         # Writing the final_random_walks conformation
-        print "Succesfully generated conformation number %d\n" % (cnt+1)
+        print("Succesfully generated conformation number %d\n" % (cnt+1))
         write_initial_conformation_file(final_random_walks,
                                         chromosome_particle_numbers,
                                         confining_environment,
@@ -501,7 +502,7 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
     initial_rosettes , rosettes_lengths = generate_rosettes(chromosome_particle_numbers,
                                                             rosette_radius,
                                                             particle_radius)
-    print rosettes_lengths
+    print(rosettes_lengths)
 
     
     # Constructing the rosettes conformations
@@ -523,7 +524,7 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
             # 2 - possible clashes between generated rods are checked
             if fractional_radial_positions:
                 if len(fractional_radial_positions) != len(chromosome_particle_numbers):
-                    print "Please provide the desired fractional radial positions for all the chromosomes"
+                    print("Please provide the desired fractional radial positions for all the chromosomes")
                     sys.exit()
                 segments_P1 , segments_P0 = generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
                                                                               confining_environment,
@@ -546,14 +547,14 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
                                                                                    confining_environment)
                     
                     if particle_inside == 0: # 0 means that the particle is outside -> PROBLEM!!!
-                        print "Particle",x0,y0,z0,"is out of the confining environment\n"
+                        print("Particle",x0,y0,z0,"is out of the confining environment\n")
                         break
 
                     for x1,y1,z1 in zip(rosette_pair[1]['x'],rosette_pair[1]['y'],rosette_pair[1]['z']):
                         particles_overlap = check_particles_overlap(x0,y0,z0,x1,y1,z1,particle_radius)
 
                         if particles_overlap == 0: # 0 means that the particles are overlapping -> PROBLEM!!!
-                            print "Particle",x0,y0,z0,"and",x1,y1,z1,"overlap\n"         
+                            print("Particle",x0,y0,z0,"and",x1,y1,z1,"overlap\n")         
                             break
                     if particle_inside == 0 or particles_overlap == 0:
                         break
@@ -561,7 +562,7 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
                     break
             
         # Writing the final_rosettes conformation
-        print "Succesfully generated conformation number %d\n" % (cnt+1)
+        print("Succesfully generated conformation number %d\n" % (cnt+1))
         write_initial_conformation_file(final_rosettes,
                                         chromosome_particle_numbers,
                                         confining_environment,
@@ -610,7 +611,7 @@ def generate_rosettes(chromosome_particle_numbers, rosette_radius, particle_radi
             rosette['y'].append(y_tmp)
             rosette['z'].append(z_tmp)
             if distance > ((particle_radius*2.0)*1.2):
-                print "%f %d %d %d" % (distance, particle-1, particle)
+                print("%f %d %d %d" % (distance, particle-1, particle))
             
         rosettes.append(rosette)
         rosettes_lengths.append(rosette['z'][-1]-rosette['z'][0])
@@ -628,9 +629,9 @@ def generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
     segments_P1 = []
 
     if confining_environment[0] != 'sphere':
-        print "ERROR: Biased chromosome positioning is currently implemented"
-        print "only for spherical confinement. If you need other shapes, please"
-        print "contact the developers"
+        print("ERROR: Biased chromosome positioning is currently implemented")
+        print("only for spherical confinement. If you need other shapes, please")
+        print("contact the developers")
     
     for length , target_radial_position in zip(rosettes_lengths,fractional_radial_positions):
         tentative            = 0
@@ -643,15 +644,15 @@ def generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
         # Positioning the rods
         while tentative < 100000 and best_radial_distance > 0.00005:                
 
-            print "Length = %f" % length
+            print("Length = %f" % length)
 
-            print "Trying to position terminus 0"
+            print("Trying to position terminus 0")
             segment_P0_tmp = []
             segment_P0_tmp = draw_point_inside_the_confining_environment(confining_environment,
                                                                          rosette_radius)
-            print "Successfully positioned terminus 0: %f %f %f" % (segment_P0_tmp[0], segment_P0_tmp[1], segment_P0_tmp[2])
+            print("Successfully positioned terminus 0: %f %f %f" % (segment_P0_tmp[0], segment_P0_tmp[1], segment_P0_tmp[2]))
             
-            print "Trying to position terminus 1"
+            print("Trying to position terminus 1")
             segment_P1_tmp = []                            
             segment_P1_tmp = draw_second_extreme_of_a_segment_inside_the_confining_environment(segment_P0_tmp[0],
                                                                                                segment_P0_tmp[1],
@@ -659,7 +660,7 @@ def generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
                                                                                                length,
                                                                                                rosette_radius,
                                                                                                confining_environment)
-            print "Successfully positioned terminus 1: %f %f %f" % (segment_P1_tmp[0], segment_P1_tmp[1], segment_P1_tmp[2])
+            print("Successfully positioned terminus 1: %f %f %f" % (segment_P1_tmp[0], segment_P1_tmp[1], segment_P1_tmp[2]))
 
             # Check clashes with the previously positioned rods
             clashes = 1
@@ -686,7 +687,7 @@ def generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
 
                 radial_distance = fabs(radial_position-target_radial_position)
 
-                print radial_position , target_radial_position , radial_distance , best_radial_distance , tentative
+                print(radial_position , target_radial_position , radial_distance , best_radial_distance , tentative)
                 
                 # If the midpoint of the segment is closer to the target radial position than the
                 # previous guesses. Store the points as the best guesses!
@@ -704,14 +705,14 @@ def generate_rods_biased_conformation(rosettes_lengths, rosette_radius,
                 tentative = tentative + 1
                 
         if best_segment_P0 == []:
-            print "Valid placement not found for chromosome rosette after %d tentatives" % tentative
+            print("Valid placement not found for chromosome rosette after %d tentatives" % tentative)
             sys.exit()
 
-        print "Successfully positioned chromosome of length %lf at tentative %d of %d tentatives" % (length, best_tentative, tentative)        
+        print("Successfully positioned chromosome of length %lf at tentative %d of %d tentatives" % (length, best_tentative, tentative))        
         segments_P0.append(best_segment_P0)
         segments_P1.append(best_segment_P1)
 
-    print "Successfully generated rod conformation!"
+    print("Successfully generated rod conformation!")
     return segments_P1 , segments_P0
     
 ##########
@@ -733,15 +734,15 @@ def generate_rods_random_conformation(rosettes_lengths, rosette_radius,
             clashes    = 1
             #print "Length = %f" % length
 
-            print "Trying to position terminus 0"
+            print("Trying to position terminus 0")
             #pick uniformly within the confining environment using the rejection method 
             first_point = []
             first_point = draw_point_inside_the_confining_environment(confining_environment,
                                                                       rosette_radius)
 
-            print "Successfully positioned terminus 0: %f %f %f" % (first_point[0], first_point[1], first_point[2])
+            print("Successfully positioned terminus 0: %f %f %f" % (first_point[0], first_point[1], first_point[2]))
             
-            print "Trying to position terminus 1"
+            print("Trying to position terminus 1")
             #pick from P0 another point one the sphere of radius length inside the confining environment
             last_point = []
             last_point = draw_second_extreme_of_a_segment_inside_the_confining_environment(first_point[0],
@@ -751,7 +752,7 @@ def generate_rods_random_conformation(rosettes_lengths, rosette_radius,
                                                                                            rosette_radius,
                                                                                            confining_environment)
             
-            print "Successfully positioned terminus 1: %f %f %f" % (last_point[0], last_point[1], last_point[2])
+            print("Successfully positioned terminus 1: %f %f %f" % (last_point[0], last_point[1], last_point[2]))
                 
             # Check clashes with the previously positioned rods
             clashes = 1 
@@ -765,11 +766,11 @@ def generate_rods_random_conformation(rosettes_lengths, rosette_radius,
                     break                
 
             #print clashes
-        print "Successfully positioned chromosome of length %lf at tentative %d\n" % (length, tentative)        
+        print("Successfully positioned chromosome of length %lf at tentative %d\n" % (length, tentative))        
         segments_P1.append(last_point)
         segments_P0.append(first_point)            
 
-    print "Successfully generated rod conformation!"
+    print("Successfully generated rod conformation!")
     return segments_P1 , segments_P0
 
 ##########
@@ -781,21 +782,21 @@ def generate_random_walks(chromosome_particle_numbers,
     random_walks = []
     
     for number_of_particles in chromosome_particle_numbers:
-        print "Trying to position random walk"
+        print("Trying to position random walk")
         random_walk      = {}
         random_walk['x'] = []
         random_walk['y'] = []
         random_walk['z'] = []        
 
 
-        print "Positioning first particle"            
+        print("Positioning first particle")            
         particle_overlap = 0
         while particle_overlap == 0:
             particle_overlap = 1
             first_particle = []
             first_particle = draw_point_inside_the_confining_environment(confining_environment,
                                                                          particle_radius)
-            print first_particle
+            print(first_particle)
             # Check if the particle is overlapping with any other particle in the system
             for rand_walk in random_walks:
                 particle_overlap = check_particle_vs_all_overlap(first_particle[0],
@@ -810,7 +811,7 @@ def generate_random_walks(chromosome_particle_numbers,
         random_walk['z'].append(first_particle[2])
 
         for particle in xrange(1,number_of_particles):
-            print "Positioning particle %d" % (particle+1)
+            print("Positioning particle %d" % (particle+1))
             particle_overlap = 0 # 0 means that there is an overlap -> PROBLEM
             while particle_overlap == 0:
                 particle_overlap = 1
@@ -847,10 +848,10 @@ def generate_random_walks(chromosome_particle_numbers,
             random_walk['y'].append(new_particle[1])
             random_walk['z'].append(new_particle[2])
                     
-        print "Successfully positioned random walk of %d particles" % number_of_particles
+        print("Successfully positioned random walk of %d particles" % number_of_particles)
         random_walks.append(random_walk)
 
-    print "Successfully generated random walk conformation!"
+    print("Successfully generated random walk conformation!")
     return random_walks
 
 ##########
@@ -895,21 +896,21 @@ def draw_point_inside_the_confining_environment(confining_environment, object_ra
         dimension_y = confining_environment[1] * 0.5
         dimension_z = confining_environment[1] * 0.5        
         if len(confining_environment) > 2:
-            print "# WARNING: Defined a cubical confining environment with reduntant paramenters."
-            print "# Only 2 are needed the identifier and the side"
+            print("# WARNING: Defined a cubical confining environment with reduntant paramenters.")
+            print("# Only 2 are needed the identifier and the side")
         
     if confining_environment[0] == 'sphere':
         dimension_x = confining_environment[1]
         dimension_y = confining_environment[1]
         dimension_z = confining_environment[1]
         if len(confining_environment) > 2:
-            print "# WARNING: Defined a spherical confining environment with reduntant paramenters."
-            print "# Only 2 are needed the identifier and the radius"
+            print("# WARNING: Defined a spherical confining environment with reduntant paramenters.")
+            print("# Only 2 are needed the identifier and the radius")
         
     if confining_environment[0] == 'ellipsoid':
         if len(confining_environment) < 4:
-            print "# ERROR: Defined an ellipsoidal confining environment without the necessary paramenters."
-            print "# 4 are needed the identifier, the x-semiaxes, the y-semiaxes, and the z-semiaxes"
+            print("# ERROR: Defined an ellipsoidal confining environment without the necessary paramenters.")
+            print("# 4 are needed the identifier, the x-semiaxes, the y-semiaxes, and the z-semiaxes")
             sys.exit()
         dimension_x = confining_environment[1]
         dimension_y = confining_environment[2]
@@ -917,8 +918,8 @@ def draw_point_inside_the_confining_environment(confining_environment, object_ra
 
     if confining_environment[0] == 'cylinder':
         if len(confining_environment) < 3:
-            print "# WARNING: Defined a cylindrical confining environment without the necessary paramenters."
-            print "# 3 are needed the identifier, the basal radius, and the height"
+            print("# WARNING: Defined a cylindrical confining environment without the necessary paramenters.")
+            print("# 3 are needed the identifier, the basal radius, and the height")
             sys.exit()
         dimension_x = confining_environment[1]
         dimension_y = confining_environment[1]

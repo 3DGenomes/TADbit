@@ -86,10 +86,31 @@ static PyMethodDef squared_distance_matrix_Methods[] =
     {NULL, NULL, 0, NULL}
   };
 
-PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          static struct PyModuleDef moduledef = { \
+            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
+          ob = PyModule_Create(&moduledef);
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          ob = Py_InitModule3(name, methods, doc);
+#endif
 
-initsquared_distance_matrix(void)
-{
-  (void) Py_InitModule3("squared_distance_matrix", squared_distance_matrix_Methods, 
-			"Functions to compute the distance map of a given model.");
+MOD_INIT(squared_distance_matrix) {
+
+	PyObject *m;
+
+	MOD_DEF(m, "squared_distance_matrix", "Functions to compute the distance map of a given model.",
+			squared_distance_matrix_Methods)
+	if (m == NULL)
+		return MOD_ERROR_VAL;
+
+	return MOD_SUCCESS_VAL(m);
+
 }

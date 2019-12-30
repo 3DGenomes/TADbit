@@ -204,7 +204,7 @@ def run(opts):
                 else:
                     out.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
                 if opts.row_names:
-                    out.write('\n'.join('%s\t%d\t%d\t' % (row_names.next()) +
+                    out.write('\n'.join('%s\t%d\t%d\t' % (next(row_names)) +
                                         '\t'.join(str(matrix.get((i, j), 0))
                                                   for i in xrange(b1, e1))
                                         for j in xrange(b2, e2)) + '\n')

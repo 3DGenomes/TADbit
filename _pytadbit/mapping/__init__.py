@@ -1,3 +1,4 @@
+from __future__ import print_function
 from itertools                    import combinations
 from os                           import path, system
 from sys                          import stdout

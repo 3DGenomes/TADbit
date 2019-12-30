@@ -226,22 +226,22 @@ test_ll
    // Value checked manually with R. The value is sensitive to
    // the value of the estimates, which is why the  precision
    // cannot be higher than 0.1.
-   g_assert_cmpfloat(abs(loglik1-6138.2), <, 1e-1);
+   g_assert_cmpfloat(fabs(loglik1-6138.2), <, 1e-1);
 
    // Check symmetry/reproducibility.
    //double loglik2 = ll(20, 10, 19, 10, 19, 1, ideal_matrix_20x20, d, w, lg, c);
    double loglik2 = ll(20, 10, 19, 10, 19, 1, ideal_matrix_20x20, dp, w, lg, c);
-   g_assert_cmpfloat(abs(loglik1-loglik2), <, 1e-12);
+   g_assert_cmpfloat(fabs(loglik1-loglik2), <, 1e-12);
 
    // Same as above, checked manually with R.
    //loglik1 = ll(20, 0, 9, 10, 19, 0, ideal_matrix_20x20, d, w, lg, c);
    loglik1 = ll(20, 0, 9, 10, 19, 0, ideal_matrix_20x20, dp, w, lg, c);
-   g_assert_cmpfloat(abs(loglik1-3036.8), <, 1e-1);
+   g_assert_cmpfloat(fabs(loglik1-3036.8), <, 1e-1);
 
    // Check symmetry/reproducibility again.
    //loglik2 = ll(20, 10, 19, 0, 9, 0, ideal_matrix_20x20, d, w, lg, c);
    loglik2 = ll(20, 10, 19, 0, 9, 0, ideal_matrix_20x20, dp, w, lg, c);
-   g_assert_cmpfloat(abs(loglik1-loglik2), <, 1e-12);
+   g_assert_cmpfloat(fabs(loglik1-loglik2), <, 1e-11);
 
    free(c);
 

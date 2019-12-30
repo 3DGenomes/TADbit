@@ -1,6 +1,7 @@
 """
 09 Jun 2015
 """
+from __future__ import print_function
 
 import os
 import re
@@ -160,13 +161,13 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                 enz_patterns[(r_enz1, r_enz2)][:len(enz_patterns[(r_enz1, r_enz2)])
                                                / 2])
             len_relgs[(r_enz1, r_enz2)] = len(enz_patterns[(r_enz1, r_enz2)])
-        print '  - splitting into restriction enzyme (RE) fragments using ligation sites'
-        print '  - ligation sites are replaced by RE sites to match the reference genome'
+        print('  - splitting into restriction enzyme (RE) fragments using ligation sites')
+        print('  - ligation sites are replaced by RE sites to match the reference genome')
         for r_enz1 in r_enzs:
             for r_enz2 in r_enzs:
-                print '    * enzymes: %s & %s, ligation site: %s, RE site: %s & %s' % (
+                print('    * enzymes: %s & %s, ligation site: %s, RE site: %s & %s' % (
                     r_enz1, r_enz2, enz_patterns[(r_enz1, r_enz2)],
-                    enzymes[r_enz1], enzymes[r_enz2])
+                    enzymes[r_enz1], enzymes[r_enz2]))
         # replace pattern with regex to support IUPAC annotation
         for ezp in enz_patterns:
             enz_patterns[ezp] = re.compile(iupac2regex(enz_patterns[ezp]))
@@ -189,19 +190,19 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
 
     ## Start processing the input file
     if verbose:
-        print 'Preparing %s file' % ('FASTQ' if fastq else 'MAP')
+        print('Preparing %s file' % ('FASTQ' if fastq else 'MAP'))
         if fastq:
-            print '  - conversion to MAP format'
+            print('  - conversion to MAP format')
         if trim:
-            print '  - trimming reads %d-%d' % tuple(trim)
+            print('  - trimming reads %d-%d' % tuple(trim))
     counter = 0
     if skip:
         if fastq:
-            print '    ... skipping, only counting lines'
+            print('    ... skipping, only counting lines')
             counter = sum(1 for _ in magic_open(fastq_path,
                                                 cpus=kwargs.get('nthreads')))
             counter /= 4 if fastq else 1
-            print '            ' + fastq_path, counter, fastq
+            print('            ' + fastq_path, counter, fastq)
         return out_fastq, counter
     # open input file
     fhandler = magic_open(fastq_path, cpus=kwargs.get('nthreads'))
@@ -221,7 +222,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         iter_frags = split_read(seq, qal, enz_patterns, site, len(seq))
         # the first fragment should not be preceded by the RE site
         try:
-            seq, qal, cnt = iter_frags.next()
+            seq, qal, cnt = next(iter_frags)
         except StopIteration:
             # read full of ligation events, fragments not reaching minimum
             continue
@@ -231,7 +232,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             # site is a RE site or nearly, and thus should not be found anyway)
             iter_frags = split_read(seq, qal, sub_enz_patterns, no_site, len(seq))
             try:
-                seq, qal, cnt = iter_frags.next()
+                seq, qal, cnt = next(iter_frags)
             except ValueError:
                 continue
             except StopIteration:
@@ -366,7 +367,7 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
         raise Exception('\n\nERROR: bowtie2 binary not found')
 
     # mapping
-    print 'TO BOWTIE2', fastq_path1, fastq_path2
+    print('TO BOWTIE2', fastq_path1, fastq_path2)
     bowtie2_cmd = [
         bowtie2_binary, '-x', bowtie2_index_path,
         '-p', str(nthreads), '--reorder', '-S',
@@ -384,13 +385,13 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
                 bowtie2_cmd.append(bowtie2_params[bow_param])
     else:
         bowtie2_cmd.append('--very-sensitive')
-    print ' '.join(bowtie2_cmd)
+    print(' '.join(bowtie2_cmd))
     try:
         # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
         out, err = Popen(bowtie2_cmd, stdout=PIPE, stderr=PIPE).communicate()
     except CalledProcessError as e:
-        print out
-        print err
+        print(out)
+        print(err)
         raise Exception(e.output)
 
 
@@ -423,7 +424,7 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path,
                         'not provide any binary for MAC-OS.')
 
     # mapping
-    print 'TO GEM', fastq_path
+    print('TO GEM', fastq_path)
     kgt = kwargs.get
     gem_cmd = [
         gem_binary, '-I', gem_index_path,
@@ -475,13 +476,13 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path,
                       'unique-pairing', 'suffix']:
             warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
-    print ' '.join(gem_cmd)
+    print(' '.join(gem_cmd))
     try:
         # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
         out, err = Popen(gem_cmd, stdout=PIPE, stderr=PIPE).communicate()
     except CalledProcessError as e:
-        print out
-        print err
+        print(out)
+        print(err)
         raise Exception(e.output)
 
 
@@ -577,7 +578,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
             light_storage=light_storage)
         # clean
         if input_reads != fastq_path and clean:
-            print '   x removing original input %s' % input_reads
+            print('   x removing original input %s' % input_reads)
             os.system('rm -f %s' % (input_reads))
         # First mapping, full length
         if not win:
@@ -586,9 +587,9 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
             beg, end = win
         out_map_path = curr_map + '_full_%s-%s%s.map' % (beg, end, suffix)
         if end:
-            print 'Mapping reads in window %s-%s%s...' % (beg, end, suffix)
+            print('Mapping reads in window %s-%s%s...' % (beg, end, suffix))
         else:
-            print 'Mapping full reads...', curr_map
+            print('Mapping full reads...', curr_map)
 
         if not skip:
             if mapper == 'gem':
@@ -596,7 +597,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                              gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
                              **kwargs)
                 # parse map file to extract not uniquely mapped reads
-                print 'Parsing result...'
+                print('Parsing result...')
                 _gem_filter(out_map_path,
                             curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                             os.path.join(out_map_dir,
@@ -607,7 +608,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                                  bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
                                  bowtie2_params=mapper_params, **kwargs)
                 # parse map file to extract not uniquely mapped reads
-                print 'Parsing result...'
+                print('Parsing result...')
                 _bowtie2_filter(out_map_path, curr_map,
                                 curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                                 os.path.join(out_map_dir,
@@ -616,9 +617,9 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                 raise Exception('ERROR: unknown mapper.')
             # clean
             if clean:
-                print '   x removing %s input %s' % (mapper.upper(),curr_map)
+                print('   x removing %s input %s' % (mapper.upper(),curr_map))
                 os.system('rm -f %s' % (curr_map))
-                print '   x removing map %s' % out_map_path
+                print('   x removing map %s' % out_map_path)
                 os.system('rm -f %s' % (out_map_path))
             # for next round, we will use remaining unmapped reads
             input_reads = curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix)
@@ -639,7 +640,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
             light_storage=light_storage)
         # clean
         if clean:
-            print '   x removing pre-%s input %s' % (mapper.upper(),input_reads)
+            print('   x removing pre-%s input %s' % (mapper.upper(),input_reads))
             os.system('rm -f %s' % (input_reads))
         if not win:
             beg, end = 1, 'end'
@@ -648,20 +649,20 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
         out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
         if not skip:
             if mapper == 'gem':
-                print 'Mapping fragments of remaining reads...'
+                print('Mapping fragments of remaining reads...')
                 _gem_mapping(mapper_index_path, frag_map, out_map_path,
                              gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
                              **kwargs)
-                print 'Parsing result...'
+                print('Parsing result...')
                 _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                             os.path.join(out_map_dir,
                                          base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
             elif mapper == 'bowtie2':
-                print 'Mapping fragments of remaining reads...'
+                print('Mapping fragments of remaining reads...')
                 _bowtie2_mapping(mapper_index_path, frag_map, out_map_path,
                                  bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
                                  bowtie2_params=mapper_params, **kwargs)
-                print 'Parsing result...'
+                print('Parsing result...')
                 _bowtie2_filter(out_map_path, frag_map,
                                 curr_map + '_fail%s.map' % (suffix),
                                 os.path.join(out_map_dir,
@@ -670,11 +671,11 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                 raise Exception('ERROR: unknown mapper.')
         # clean
         if clean:
-            print '   x removing %s input %s' % (mapper.upper(),frag_map)
+            print('   x removing %s input %s' % (mapper.upper(),frag_map))
             os.system('rm -f %s' % (frag_map))
-            print '   x removing failed to map ' + curr_map + '_fail%s.map' % (suffix)
+            print('   x removing failed to map ' + curr_map + '_fail%s.map' % (suffix))
             os.system('rm -f %s' % (curr_map + '_fail%s.map' % (suffix)))
-            print '   x removing tmp mapped %s' % out_map_path
+            print('   x removing tmp mapped %s' % out_map_path)
             os.system('rm -f %s' % (out_map_path))
         outfiles.append((os.path.join(out_map_dir,
                                       base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)),

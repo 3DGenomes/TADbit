@@ -3,6 +3,7 @@
 
 convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
+from __future__ import print_function
 
 from collections import OrderedDict
 import multiprocessing as mu
@@ -10,6 +11,7 @@ from os import path
 import re
 
 from pytadbit.utils.file_handling import magic_open
+from functools import reduce
 
 def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                 verbose=True, save_cache=True, reload_cache=False, only_length=False):
@@ -40,7 +42,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
         fname = path.join(path.commonprefix(f_names), 'genome.TADbit')
     if path.exists(fname) and not reload_cache:
         if verbose:
-            print 'Loading cached genome'
+            print('Loading cached genome')
         genome_seq = OrderedDict()
         for line in open(fname):
             if line.startswith('>'):
@@ -78,11 +80,11 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                     header = 'UNWANTED'
                 elif not chr_names:
                     if verbose:
-                        print 'Parsing %s' % (header)
+                        print('Parsing %s' % (header))
                 else:
                     header = chr_names.pop(0)
                     if verbose:
-                        print 'Parsing %s as %s' % (line[1:].rstrip(), header)
+                        print('Parsing %s as %s' % (line[1:].rstrip(), header))
                 seq = []
                 continue
             seq.append(line.rstrip())
@@ -122,7 +124,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
             del(genome_seq['UNWANTED'])
     if save_cache and not only_length:
         if verbose:
-            print 'saving genome in cache'
+            print('saving genome in cache')
         if len(f_names) == 1:
             fname = f_names[0] + '_genome.TADbit'
         else:

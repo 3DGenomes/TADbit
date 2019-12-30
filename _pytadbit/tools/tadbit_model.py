@@ -5,6 +5,7 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
 from argparse                         import HelpFormatter
 from os                               import path, remove, system, rename, makedirs
@@ -66,11 +67,11 @@ def abortable_worker(func, *args, **kwargs):
         out = res.get(timeout)  # Wait timeout seconds for func to complete.
         return out
     except TimeoutError:
-        print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+        print("Model took more than %s seconds to complete ... canceling" % str(timeout))
         p.terminate()
         raise
     except:
-        print "Unknown error with process"
+        print("Unknown error with process")
         p.terminate()
         raise
 
@@ -271,7 +272,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         try:
             result = models.correlate_with_real_data(
                 cutoff=cut)[0]
-        except Exception, e:
+        except Exception as e:
             logging.info('  SKIPPING correlation: %s' % e)
             result = 0
         name = tuple(map(my_round, (m, u, l, d, s)))
@@ -1285,7 +1286,7 @@ def load_hic_data(opts):
         crm.experiments[0].norm[0].bads = hic_bads
         crm.experiments[0]._zeros = hic_bads
         crm.experiments[0]._filtered_cols = True
-    except Exception, e:
+    except Exception as e:
         #logging.info( str(e))
         warn('WARNING: failed to load data as TADbit standardized matrix\n')
         if opts.matrix_beg is None:

@@ -254,7 +254,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
-            ax2.plot(sites[r_enz], linewidth=2, color=color.next(),
+            ax2.plot(sites[r_enz], linewidth=2, color=next(color),
                      alpha=0.9,
                      label='Undigested RE site (%s: %s)' % (r_enz, r_sites[r_enz])
                      if any([f > 0 for f in fixes[r_enz]])
@@ -270,7 +270,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r1, r2 in liges:
             # print 'ligated', r1, r2
             # print liges[(r1, r2)][:20]
-            ax3.plot(liges[(r1, r2)], linewidth=2, color=color.next(),
+            ax3.plot(liges[(r1, r2)], linewidth=2, color=next(color),
                      alpha=0.9,
                      label = 'Ligated (%s-%s: %s)' % (r1, r2, l_sites[(r1, r2)].upper()))
         ax3.yaxis.label.set_color('darkblue')
@@ -290,7 +290,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 ax4.spines["right"].set_visible(True)
                 # print 'repaired', r_enz
                 # print fixes[r_enz][:20]
-                ax4.plot(fixes[r_enz], linewidth=2, color=color.next(),
+                ax4.plot(fixes[r_enz], linewidth=2, color=next(color),
                          alpha=0.9,
                          label='Dangling-ends (%s: %s)' % (r_enz, d_sites[r_enz]))
                 ax4.yaxis.label.set_color('darkgreen')

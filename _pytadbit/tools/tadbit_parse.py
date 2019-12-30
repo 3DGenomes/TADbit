@@ -5,6 +5,7 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
 from os                             import path, remove
 from string                         import ascii_letters
@@ -25,6 +26,7 @@ from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import print_db, get_jobid
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
+from functools import reduce
 
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
@@ -199,7 +201,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                            counts[count][item]))
                     sum_reads += counts[count][item]
             except lite.IntegrityError:
-                print 'WARNING: already parsed (MAPPED_OUTPUTs)'
+                print('WARNING: already parsed (MAPPED_OUTPUTs)')
             try:
                 cur.execute("""
                 insert into PARSED_OUTPUTs
@@ -210,7 +212,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                        sum_reads, ','.join([':'.join(map(str, (n, multis[count][n])))
                                             for n in multis[count] if n])))
             except lite.IntegrityError:
-                print 'WARNING: already parsed (PARSED_OUTPUTs)'
+                print('WARNING: already parsed (PARSED_OUTPUTs)')
 
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
@@ -370,7 +372,7 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
+        print('Writing log to ' + path.join(opts.workdir, 'process.log'))
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),

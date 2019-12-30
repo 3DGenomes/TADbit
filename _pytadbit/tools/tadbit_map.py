@@ -17,6 +17,7 @@ mapping strategy
  - mapper
 
 """
+from __future__ import print_function
 
 from os                                   import path, remove, system
 from string                               import ascii_letters
@@ -141,13 +142,13 @@ def check_options(opts):
 
     # check RE name
     if opts.renz == ['CHECK']:
-        print '\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq)
+        print('\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq))
         try:
             pat, enz, pv = identify_re(opts.fastq, nreads=100000)
-            print ' -> Most probable digested site: %s (pv: %f)' % (pat, pv)
-            print ' -> Enzymes matching: %s' % (', '.join(enz))
+            print(' -> Most probable digested site: %s (pv: %f)' % (pat, pv))
+            print(' -> Enzymes matching: %s' % (', '.join(enz)))
         except ValueError:
-            print ' -> Nothing found...'
+            print(' -> Nothing found...')
         exit()
     for n, renz in enumerate(opts.renz):
         if renz == 'NONE':
@@ -201,7 +202,7 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
+        print('Writing log to ' + path.join(opts.workdir, 'process.log'))
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),

@@ -3,6 +3,7 @@
 
 
 """
+from __future__ import print_function
 import multiprocessing as mu
 
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
@@ -53,7 +54,7 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
     # get the header
     pos = 0
     while True:
-        line = next(fhandler)
+        line = fhandler.next()
         if not line.startswith('#'):
             break
         pos += len(line)
@@ -96,8 +97,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
                     del filter_handlers[k]
             current = set([v for v, _ in filter_handlers.values()])
     if verbose:
-        print '    saving to file {:,} reads {}.'.format(
-            count, 'with' if reverse else 'without')
+        print('    saving to file {:,} reads {}.'.format(
+            count, 'with' if reverse else 'without'))
     out.close()
     return count
 
@@ -167,18 +168,18 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
 
     if not fast: # mainly for debugging
         if verbose:
-            print 'filtering duplicates'
+            print('filtering duplicates')
         sub_mask, total = _filter_duplicates(fnam,output)
         MASKED.update(sub_mask)
         if verbose:
-            print 'filtering same fragments'
+            print('filtering same fragments')
         MASKED.update(_filter_same_frag(fnam, max_molecule_length, output))
         if verbose:
-            print 'filtering fro RE'
+            print('filtering fro RE')
         MASKED.update(_filter_from_res(fnam, max_frag_size, min_dist_to_re,
                                        re_proximity, min_frag_size, output))
         if verbose:
-            print 'filtering over representeds'
+            print('filtering over representeds')
         MASKED.update(_filter_over_represented(fnam, over_represented, output))
     else:
         pool = mu.Pool(4)
@@ -209,13 +210,13 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         # out.write('Valid pairs\t%d\n' % (total - bads))
         out.close()
     if verbose:
-        print 'Filtered reads (and percentage of total):\n'
-        print '     {:>25}  : {:12,} (100.00%)'.format('Mapped both', total)
-        print '  ' + '-' * 53
+        print('Filtered reads (and percentage of total):\n')
+        print('     {:>25}  : {:12,} (100.00%)'.format('Mapped both', total))
+        print('  ' + '-' * 53)
         for k in xrange(1, len(MASKED)):
-            print '  {:2}- {:>25} : {:12,} ({:6.2f}%)'.format(
+            print('  {:2}- {:>25} : {:12,} ({:6.2f}%)'.format(
                 k, MASKED[k]['name'], MASKED[k]['reads'],
-                float(MASKED[k]['reads']) / total * 100)
+                float(MASKED[k]['reads']) / total * 100))
     return MASKED
 
 def _filter_same_frag(fnam, max_molecule_length, output):

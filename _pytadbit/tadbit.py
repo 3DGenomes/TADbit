@@ -1,6 +1,7 @@
 """
 24 Oct 2012
 """
+from __future__ import print_function
 
 from os                           import path, listdir
 from pytadbit.parsers.hic_parser  import read_matrix
@@ -172,7 +173,7 @@ def print_result_r(result, write=True):
                                       result['end'][i]+1,
                                       result['score'][i])
     if write:
-        print table
+        print(table)
     else:
         return table
 
@@ -389,7 +390,7 @@ def Data_Norm(x, y):
 
 def Change_Point(x, y):
     if len(x) != len(y):
-        print "ERROR : The length of x and y should be the same"
+        print("ERROR : The length of x and y should be the same")
         return 0
 
     n_bins = len(x)
@@ -563,7 +564,7 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
     deltas = {}
     for dist, end in dists:
         if not silent:
-            print ' - computing insulation in band %d-%d' % (dist, end)
+            print(' - computing insulation in band %d-%d' % (dist, end))
         insidx[(dist, end)] = {}
         deltas[(dist, end)] = {}
         for crm in hic_data.chromosomes:

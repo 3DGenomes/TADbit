@@ -1,6 +1,7 @@
 """
 some utils relative to sqlite
 """
+from __future__ import print_function
 import sqlite3 as lite
 from os.path import abspath, relpath, join, exists
 from hashlib import md5
@@ -52,7 +53,7 @@ def delete_entries(cur, table, col, val):
     try:
         cur.execute("delete from %s where %s.%s = %d" % (
             table, table, col, val))
-        print ' - deleted %d elements with %s = %s' % (len(elts), col, val)
+        print(' - deleted %d elements with %s = %s' % (len(elts), col, val))
     except lite.OperationalError:
         pass
 

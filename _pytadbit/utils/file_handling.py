@@ -1,6 +1,7 @@
 """
 22 Jan 2014
 """
+from __future__ import print_function
 
 import ctypes
 import os
@@ -37,7 +38,7 @@ def magic_open(filename, verbose=False, cpus=None):
         fhandler = file(filename, 'rb')
         inputpath = True
         if tarfile.is_tarfile(filename):
-            print 'tar'
+            print('tar')
             thandler = tarfile.open(filename)
             if len(thandler.members) != 1:
                 raise NotImplementedError(
@@ -61,7 +62,7 @@ def magic_open(filename, verbose=False, cpus=None):
         fhandler.seek(0)
     if start_of_file.startswith('\x50\x4b\x03\x04'):
         if verbose:
-            print 'zip'
+            print('zip')
         zhandler = zipfile.ZipFile(fhandler)
         if len(zhandler.NameToInfo) != 1:
             raise NotImplementedError(
@@ -69,15 +70,15 @@ def magic_open(filename, verbose=False, cpus=None):
         return zhandler.open(zhandler.NameToInfo.keys()[0])
     if start_of_file.startswith('\x42\x5a\x68'):
         if verbose:
-            print 'bz2'
+            print('bz2')
         fhandler.close()
         return bz2.BZ2File(filename)
     if start_of_file.startswith('\x1f\x8b\x08'):
         if verbose:
-            print 'gz'
+            print('gz')
         return gzip.GzipFile(fileobj=fhandler)
     if verbose:
-        print 'text'
+        print('text')
     return fhandler
 
 
@@ -110,7 +111,7 @@ def is_fastq(thing):
         fh = thing
     for _ in range(100):
         if (fh.next().startswith('@') and fh.next()[0].upper() in 'ATGCN' and
-            fh.next().startswith('+') and fh.next()):
+            fh.next().startswith('+') and next(fh)):
             continue
         return False
     return True

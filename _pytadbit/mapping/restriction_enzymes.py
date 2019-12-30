@@ -3,6 +3,7 @@
 
 Definition and mapping of restriction enymes
 """
+from __future__ import print_function
 
 from re import compile
 from warnings import warn

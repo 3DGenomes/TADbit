@@ -3,6 +3,7 @@
 
 this is not working... Local aligner for Topologically Associated Domains
 """
+from __future__ import print_function
 from numpy import zeros, log
 
 def smith_waterma(tads1, tads2):
@@ -19,8 +20,8 @@ def smith_waterma(tads1, tads2):
             penalty2 = -float(penalty2)/10
             penalty  = -0.3
             penalty2 = -0.1
-            print '-'*50
-            print ' ->', penalty, penalty2
+            print('-'*50)
+            print(' ->', penalty, penalty2)
             l_tads1= len(tads1)
             l_tads2= len(tads2)
             pointers = zeros((l_tads1+1, l_tads2+1))
@@ -69,9 +70,9 @@ def smith_waterma(tads1, tads2):
                     align1.insert(0,'-')
                     align2.insert(0,tads2[j-1])
                     j -= 1
-            print ' '.join(['%6s' % (int(y)) for y in [0.0]+tads2])
-            for x in scores: print ' '.join(['%6s' % (round(y, 2)) for y in x])
-            for x in pointers: print ' '.join(['%s' % (int(y)) for y in x])
-            print '|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in align1])
-            print '|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in align2])
+            print(' '.join(['%6s' % (int(y)) for y in [0.0]+tads2]))
+            for x in scores: print(' '.join(['%6s' % (round(y, 2)) for y in x]))
+            for x in pointers: print(' '.join(['%s' % (int(y)) for y in x]))
+            print('|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in align1]))
+            print('|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in align2]))
             #for x in fieled: print ' '.join(['%6s' % (round(y, 2)) for y in x])
