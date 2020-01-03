@@ -2,6 +2,7 @@
 17 nov. 2014
 """
 from __future__ import print_function
+from builtins import next
 
 from bisect import bisect_right as bisect
 from pysam import Samfile
@@ -129,7 +130,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 else:
                     pos = r.pos + len_seq
                 try:
-                    frag_piece = frags[crm][pos / frag_chunk]
+                    frag_piece = frags[crm][pos // frag_chunk]
                 except KeyError:
                     # Chromosome not in hash
                     continue
@@ -142,7 +143,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                     while idx >= len(frag_piece) and count < len_seq:
                         pos -= 1
                         count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
+                        frag_piece = frags[crm][pos // frag_chunk]
                         idx = bisect(frag_piece, pos)
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +
@@ -197,7 +198,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         ## Multicontacts
         tmp_reads_fh = open(tmp_name)
         try:
-            read_line = tmp_reads_fh.next()
+            read_line = next(tmp_reads_fh)
         except StopIteration:
             raise StopIteration('ERROR!\n Nothing parsed, check input files and'
                                 ' chromosome names (in genome.fasta and SAM/MAP'
@@ -218,6 +219,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
+        tmp_reads_fh.close()
         if clean:
             os.system('rm -rf ' + tmp_name)
     # wait for compression to finish
@@ -247,20 +249,20 @@ def merge_sort(file1, file2, outfiles, nfile):
     fh1 = open(file1)
     fh2 = open(file2)
     greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
-    read1 = fh1.next()
-    read2 = fh2.next()
+    read1 = next(fh1)
+    read2 = next(fh2)
     while True:
         if greater(read2, read1):
             tmp_file.write(read1)
             try:
-                read1 = fh1.next()
+                read1 = next(fh1)
             except StopIteration:
                 tmp_file.write(read2)
                 break
         else:
             tmp_file.write(read2)
             try:
-                read2 = fh2.next()
+                read2 = next(fh2)
             except StopIteration:
                 tmp_file.write(read1)
                 break

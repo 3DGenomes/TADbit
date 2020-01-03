@@ -3,6 +3,7 @@
 """
 from __future__ import print_function
 
+from io       import open
 import ctypes
 import os
 import errno
@@ -16,9 +17,8 @@ import tarfile
 from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 
-
 def check_pik(path):
-    with open(path, "r") as f:
+    with open(path, "rt") as f:
         f.seek (0, 2)                # Seek @ EOF
         fsize = f.tell()             # Get Size
         f.seek (max (fsize-2, 0), 0) # Set pos @ last n chars
@@ -34,8 +34,11 @@ def magic_open(filename, verbose=False, cpus=None):
 
     :returns: opened file ready to be iterated
     """
-    if isinstance(filename, str) or isinstance(filename, unicode):
-        fhandler = file(filename, 'rb')
+    textchars = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
+    is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
+
+    if isinstance(filename, str) or isinstance(filename, str):
+        fhandler = open(filename, 'rb')
         inputpath = True
         if tarfile.is_tarfile(filename):
             print('tar')
@@ -60,25 +63,29 @@ def magic_open(filename, verbose=False, cpus=None):
     if inputpath:
         start_of_file = fhandler.read(1024)
         fhandler.seek(0)
-    if start_of_file.startswith('\x50\x4b\x03\x04'):
-        if verbose:
-            print('zip')
-        zhandler = zipfile.ZipFile(fhandler)
-        if len(zhandler.NameToInfo) != 1:
-            raise NotImplementedError(
-                'Not exactly one file in this zip archieve.')
-        return zhandler.open(zhandler.NameToInfo.keys()[0])
-    if start_of_file.startswith('\x42\x5a\x68'):
-        if verbose:
-            print('bz2')
-        fhandler.close()
-        return bz2.BZ2File(filename)
-    if start_of_file.startswith('\x1f\x8b\x08'):
-        if verbose:
-            print('gz')
-        return gzip.GzipFile(fileobj=fhandler)
-    if verbose:
-        print('text')
+        if is_binary_string(start_of_file):
+            if start_of_file.startswith('b\x50\x4b\x03\x04'):
+                if verbose:
+                    print('zip')
+                zhandler = zipfile.ZipFile(fhandler)
+                if len(zhandler.NameToInfo) != 1:
+                    raise NotImplementedError(
+                        'Not exactly one file in this zip archieve.')
+                return zhandler.open(list(zhandler.NameToInfo.keys())[0])
+            if is_binary_string(start_of_file) and start_of_file.startswith('b\x42\x5a\x68'):
+                if verbose:
+                    print('bz2')
+                fhandler.close()
+                return bz2.BZ2File(filename)
+            if is_binary_string(start_of_file) and start_of_file.startswith('b\x1f\x8b\x08'):
+                if verbose:
+                    print('gz')
+                return gzip.GzipFile(fileobj=fhandler)
+        else:
+            if verbose:
+                print('text')
+            fhandler.close()
+            fhandler = open(filename, 'r')
     return fhandler
 
 
@@ -121,7 +128,7 @@ def wc(fnam):
     """
     Pythonic way to count lines
     """
-    return sum(1 for _ in open(fnam))
+    return sum(1 for _ in open(fnam,'rt'))
 
 
 def mkdir(dnam):

@@ -112,7 +112,7 @@ class HiCBasedRestraints(object):
         # get SLOPE and regression for neighbors of the z-score data
         xarray = [zscores[i][j] for i in zscores for j in zscores[i]
                   if abs(int(i) - int(j)) <= (close_bins + 1)]
-        yarray = [self.particle_radius * 2 for _ in xrange(len(xarray))]
+        yarray = [self.particle_radius * 2 for _ in range(len(xarray))]
         try:
             self.NSLOPE, self.NINTERCEPT = polyfit(xarray, yarray, 1)
         except TypeError:
@@ -122,7 +122,7 @@ class HiCBasedRestraints(object):
         if first == None:
             first = min([int(j) for i in zscores for j in zscores[i]] +
                         [int(i) for i in zscores])
-        self.LOCI  = range(first, nloci + first)
+        self.LOCI  = list(range(first, nloci + first))
 
         # Z-scores
 
@@ -141,9 +141,9 @@ class HiCBasedRestraints(object):
         HiCbasedRestraints = []
         nlocis = list(sorted(set(range(self.nloci)) - set(self.remove_rstrn)))
         for ni, i in enumerate(nlocis):
-            chr1 = [k for k,v in self.chromosomes.items() if v > i][0]
+            chr1 = [k for k,v in list(self.chromosomes.items()) if v > i][0]
             for j in nlocis[ni+1:]:
-                chr2 = [k for k,v in self.chromosomes.items() if v > j][0]
+                chr2 = [k for k,v in list(self.chromosomes.items()) if v > j][0]
                 # Compute the sequence separation (in particles) depending on it the restraint changes
                 seqdist = abs(j - i)
 

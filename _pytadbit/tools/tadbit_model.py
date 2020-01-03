@@ -7,6 +7,8 @@ information needed
 """
 from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from argparse                         import HelpFormatter
 from os                               import path, remove, system, rename, makedirs
 from string                           import ascii_letters
@@ -15,7 +17,7 @@ from random                           import random
 from shutil                           import copyfile
 from itertools                        import product
 from warnings                         import warn
-from cPickle                          import dump
+from pickle                           import dump
 from hashlib                          import md5
 from functools                        import partial
 from multiprocessing                  import cpu_count, TimeoutError, Pool
@@ -76,18 +78,18 @@ def abortable_worker(func, *args, **kwargs):
         raise
 
 def convert_from_unicode(data):
-    if isinstance(data, basestring):
+    if isinstance(data, str):
         return str(data)
     if isinstance(data, collections.Mapping):
-        return dict(map(convert_from_unicode, data.iteritems()))
+        return dict(list(map(convert_from_unicode, iter(data.items()))))
     if isinstance(data, collections.Iterable):
-        return type(data)(map(convert_from_unicode, data))
+        return type(data)(list(map(convert_from_unicode, data)))
     return data
 
 def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
-    zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg)])
+    zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
     nloci = opts.end - opts.beg
     if exp.norm and exp.norm[0].chromosomes:
         coords = []
@@ -95,7 +97,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         chrs = []
         chrom_offset_start = opts.beg
         chrom_offset_end = 0
-        for k, v in exp.norm[0].chromosomes.iteritems():
+        for k, v in exp.norm[0].chromosomes.items():
             tot += v
             if opts.beg > tot:
                 chrom_offset_start = opts.beg - tot
@@ -128,7 +130,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
     n_last = n_jobs*opts.nmodels_per_job - opts.nmodels
     paramsfile = path.join(dirname,'_tmp_common_params.pickle')
-    tmp_params = open(paramsfile, 'w')
+    tmp_params = open(paramsfile, 'wb')
     dump(exp, tmp_params)
     dump(zscores, tmp_params)
     dump(zeros, tmp_params)
@@ -138,7 +140,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     dump(coords, tmp_params)
     tmp_params.close()
     tmp_params.close()
-    for n_job in xrange(n_jobs):
+    for n_job in range(n_jobs):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
@@ -209,7 +211,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
         pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
-        for n_job in xrange(n_jobs):
+        for n_job in range(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
             if job_file_handler:
                 scriptname = path.join(job_dir,'_tmp_optim.py')
@@ -224,7 +226,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
             return None, None
 
         models = None
-        for n_job in xrange(n_jobs):
+        for n_job in range(n_jobs):
             try:
                 job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
                 results_file = path.join(job_dir,'results.models')
@@ -268,7 +270,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
     num=1
     results_corr = {}
     cuts = dict([(d, int(d * opts.reso * float(s))) for d in opts.dcutoff])
-    for d, cut in sorted(cuts.iteritems()):
+    for d, cut in sorted(cuts.items()):
         try:
             result = models.correlate_with_real_data(
                 cutoff=cut)[0]
@@ -291,7 +293,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         out.write('\n'.join(['%s\t%s\t%s\t%.1f\t%.3f' % (
             harm, p1, p2, dist, kforce)
                              for (p1, p2), (harm, dist, kforce)
-                             in models._restraints.iteritems()]) + '\n')
+                             in models._restraints.items()]) + '\n')
         out.close()
 
     return results_corr, modelsfile
@@ -308,7 +310,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
             "Optimization", "UpFreq", "LowFreq", "MaxDist",
             "scale", "cutoff", "| Correlation"))
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
-        m, u, l, s = map(my_round, (m, u, l, s))
+        m, u, l, s = list(map(my_round, (m, u, l, s)))
         muls = tuple((m, u, l, s))
         cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
@@ -320,7 +322,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
     best = ({'corr': None}, [None, None, None, None, None])
     results = {}
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
-        m, u, l, s = map(my_round, (m, u, l, s))
+        m, u, l, s = list(map(my_round, (m, u, l, s)))
         muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler, 
                             script_cmd = script_cmd, script_args = script_args, verbose=verbose)
         if muls_results:
@@ -501,8 +503,8 @@ def run(opts):
 
     if opts.analyze and not opts.job_list:
         outdir, _ = load_models_path_fromdb(opts)
-        batch_job_hash, opts.crm, beg_end = map(str,(outdir.split('/')[-1]).split('_'))
-        opts.beg,opts.end = map(int,beg_end.split('-'))
+        batch_job_hash, opts.crm, beg_end = list(map(str,(outdir.split('/')[-1]).split('_')))
+        opts.beg,opts.end = list(map(int,beg_end.split('-')))
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
         outdir = path.join(opts.workdir,outdir)
@@ -676,7 +678,7 @@ def run(opts):
             # Calculate a consistency plot for all models in cluster #1
             logging.info("\tGetting consistency data...")
             models.model_consistency(
-                cluster=1, cutoffs=range(50, dcutoff + 50, 50),
+                cluster=1, cutoffs=list(range(50, dcutoff + 50, 50)),
                 savefig =path.join(outdir, batch_job_hash + '_consistency.' + opts.fig_format),
                 savedata=path.join(outdir, batch_job_hash + '_consistency.dat'))
 
@@ -1062,8 +1064,8 @@ def populate_args(parser):
     #########################################
     # OUTPUT
     analyz.add_argument('--analyze_list', dest='analyze_list', nargs='+',
-                        choices=range(len(actions)), type=int,
-                        default=range(1, len(actions)), metavar='INT',
+                        choices=list(range(len(actions))), type=int,
+                        default=list(range(1, len(actions))), metavar='INT',
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
                         %s''' % (' '.join([str(i) for i in range(
@@ -1112,7 +1114,7 @@ def check_options(opts):
     # turn options into lists
     def _load_range(range_str, num=float):
         try:
-            beg, end, step = map(num, range_str[0].split(':'))
+            beg, end, step = list(map(num, range_str[0].split(':')))
             return tuple([round(x,2) for x in arange(beg, end + step / 2, step)])
         except (AttributeError, ValueError):
             return tuple([round(num(v),2) for v in range_str])
@@ -1269,7 +1271,7 @@ def load_hic_data(opts):
             if opts.crm not in hic.chromosomes:
                 raise Exception('ERROR: chromosome %s not in input matrix(%s).' % (opts.crm,
                                                     ','.join([h for h in hic.chromosomes])))
-            hic_bads = {k: v for k, v in hic.bads.items() if k >= opts.beg and k < opts.end}
+            hic_bads = {k: v for k, v in list(hic.bads.items()) if k >= opts.beg and k < opts.end}
             hic = hic.get_matrix(focus=(opts.beg+1,opts.end))
             opts.offset = opts.beg
         else:

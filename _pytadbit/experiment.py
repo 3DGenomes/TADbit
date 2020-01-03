@@ -7,6 +7,7 @@ from __future__ import print_function
 
 from copy                                import deepcopy as copy
 from sys                                 import stderr
+from io                                  import IOBase
 from warnings                            import warn
 from math                                import isnan
 from numpy                               import log2, array
@@ -33,6 +34,11 @@ try:
 except ImportError:
     stderr.write('matplotlib not found\n')
 
+try:
+    file_types = file, IOBase
+except NameError:
+    file_types = (IOBase,)
+    
 
 def load_experiment_from_reads(name, fnam, genome_seq, resolution,
                                conditions=None, identifier=None, cell_type=None,
@@ -78,16 +84,16 @@ def load_experiment_from_reads(name, fnam, genome_seq, resolution,
     section_sizes = {}
     sections = []
     for crm in genome_seq:
-        len_crm = int(float(len(genome_seq[crm])) / resolution + 1)
+        len_crm = int(float(len(genome_seq[crm])) // resolution + 1)
         section_sizes[(crm,)] = len_crm
         size += len_crm + 1
-        sections.extend([(crm, '%04d' % i) for i in xrange(len_crm + 1)])
+        sections.extend([(crm, '%04d' % i) for i in range(len_crm + 1)])
     imx = HiC_data((), size)
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     for line in open(fnam):
         _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
-        ps1 = dict_sec[(cr1, '%04d' % (int(ps1) / resolution))]
-        ps2 = dict_sec[(cr2, '%04d' % (int(ps2) / resolution))]
+        ps1 = dict_sec[(cr1, '%04d' % (int(ps1) // resolution))]
+        ps2 = dict_sec[(cr2, '%04d' % (int(ps2) // resolution))]
         imx[ps1 + ps2 * size] += 1
         imx[ps2 + ps1 * size] += 1
 
@@ -374,7 +380,7 @@ class Experiment(object):
                         self._normalization.split('_factor:')[0] +
                         '_factor:' +
                         str(int(self._normalization.split('_factor:')[1]) +
-                            int(other._normalization.split('_factor:')[1]))) / 2
+                            int(other._normalization.split('_factor:')[1]))) // 2
                 except IndexError: # no factor there
                     xpr._normalization = (self._normalization)
         elif self.norm or other.norm:
@@ -455,36 +461,36 @@ class Experiment(object):
                         self._normalization.split('_factor:')[0] +
                         '_factor:'+
                         str(int(self._normalization.split('factor:')[1])
-                            * (resolution / self.resolution)))
+                            * (resolution // self.resolution)))
                 except IndexError: # no factor there
                     pass
         self.resolution = resolution
-        fact = self.resolution / self._ori_resolution
+        fact = self.resolution // self._ori_resolution
         # super for!
         try:
             size = len(self._ori_hic[0])
         except TypeError:
             size = len(self._ori_norm[0])
-        self.size     = size / fact
+        self.size     = size // fact
         rest = size % fact
         if rest:
             self.size += 1
-        self.hic_data = [HiC_data([], size / fact + (1 if rest else 0))]
-        self.norm     = [HiC_data([], size / fact + (1 if rest else 0))]
+        self.hic_data = [HiC_data([], size // fact + (1 if rest else 0))]
+        self.norm     = [HiC_data([], size // fact + (1 if rest else 0))]
         def resize(mtrx, copee):
             "resize both hic_data and normalized data"
-            for i in xrange(0, size, fact):
-                for j in xrange(0, size, fact):
+            for i in range(0, size, fact):
+                for j in range(0, size, fact):
                     val = 0
-                    for k in xrange(fact):
+                    for k in range(fact):
                         if i + k >= size:
                             break
-                        for l in  xrange(fact):
+                        for l in  range(fact):
                             if j + l >= size:
                                 break
                             val += copee[(i + k) * size + j + l]
                     if val:
-                        mtrx[i/fact * self.size + j/fact] = val
+                        mtrx[i//fact * self.size + j//fact] = val
         try:
             resize(self.hic_data[0], self._ori_hic[0])
         except TypeError:
@@ -614,13 +620,13 @@ class Experiment(object):
         self._ori_size       = self.size       = len(self.norm[0])
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data
-            for i in xrange(self.size):
+            for i in range(self.size):
                 if all([isnan(j) for j in
                         [self.norm[0][k] for k in
-                         xrange(i * self.size, i * self.size + self.size)]]):
+                         range(i * self.size, i * self.size + self.size)]]):
                     self._zeros[i] = None
         # remove NaNs, we do not need them as we have zeroes
-        for i in self.norm[0].keys():
+        for i in list(self.norm[0].keys()):
             if isnan(self.norm[0][i]):
                 del(self.norm[0][i])
         self._normalization = normalization
@@ -663,12 +669,12 @@ class Experiment(object):
         sp1 = siz + 1
         zeros = self._zeros or {}
         if norms:
-            for k in xrange(1, siz):
+            for k in range(1, siz):
                 s_k = siz * k
                 diags.append(sum([norms[i * sp1 + s_k]
                                  if not (i in zeros
                                          or (i + k) in zeros) else 1. # 1 is the mean
-                                  for i in xrange(siz - k)]) / (siz - k))
+                                  for i in range(siz - k)]) // (siz - k))
         for tad in tads:
             start, end = (int(tads[tad]['start']) + 1,
                           int(tads[tad]['end']) + 1)
@@ -676,13 +682,13 @@ class Experiment(object):
                 matrix = sum([norms[i + siz * j]
                              if not (i in zeros
                                      or j in zeros) else 1.
-                              for i in xrange(start - 1, end - 1)
-                              for j in xrange(i + 1, end - 1)])
+                              for i in range(start - 1, end - 1)
+                              for j in range(i + 1, end - 1)])
             try:
                 if norms:
                     height = float(matrix) / sum(
                         [diags[i-1] * (end - start - i)
-                         for i in xrange(1, end - start)])
+                         for i in range(1, end - start)])
                 else:
                     height = tads[tad].get('height', 1.0)
             except ZeroDivisionError:
@@ -757,11 +763,11 @@ class Experiment(object):
         zeros  = {}
         self._zscores = {}
         if normalized:
-            for i in xrange(self.size):
+            for i in range(self.size):
                 # zeros are rows or columns having a zero in the diagonal
                 if i in self._zeros:
                     continue
-                for j in xrange(i + 1, self.size):
+                for j in range(i + 1, self.size):
                     if j in self._zeros:
                         continue
                     if (not self.norm[0][i * self.size + j]
@@ -770,20 +776,20 @@ class Experiment(object):
                         continue
                     values[(i, j)] = self.norm[0][i * self.size + j]
         else:
-            for i in xrange(self.size):
+            for i in range(self.size):
                 if i in self._zeros:
                     continue
-                for j in xrange(i + 1, self.size):
+                for j in range(i + 1, self.size):
                     if j in self._zeros:
                         continue
                     values[(i, j)] = self.hic_data[0][i * self.size + j]
         # compute Z-score
         if zscored:
             zscore(values)
-        for i in xrange(self.size):
+        for i in range(self.size):
             if i in self._zeros:
                 continue
-            for j in xrange(i + 1, self.size):
+            for j in range(i + 1, self.size):
                 if j in self._zeros:
                     continue
                 if (i, j) in zeros and remove_zeros:
@@ -886,7 +892,7 @@ class Experiment(object):
             chrs = []
             chrom_offset_start = start
             chrom_offset_end = 0
-            for k, v in self.hic_data[0].chromosomes.iteritems():
+            for k, v in self.hic_data[0].chromosomes.items():
                 tot += v
                 if start > tot:
                     chrom_offset_start = start - tot
@@ -906,7 +912,7 @@ class Experiment(object):
             coords = {'crm'  : self.crm.name,
                       'start': start,
                       'end'  : end}
-        zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        zeros = tuple([i not in zeros for i in range(end - start + 1)])
         nloci = end - start + 1
         if verbose:
             stderr.write('Preparing to model %s particles\n' % nloci)
@@ -1030,19 +1036,19 @@ class Experiment(object):
         siz = self.size
         try:
             matrix = self.get_hic_matrix()
-            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
-                          for j in xrange(start, end)]
+            new_matrix = [[matrix[i][j] for i in range(start, end)]
+                          for j in range(start, end)]
             tmp = Chromosome('tmp')
             tmp.add_experiment('exp1', hic_data=[new_matrix],
                                resolution=self.resolution, filter_columns=False)
             exp = tmp.experiments[0]
             # We want the weights and zeros calculated in the full chromosome
-            exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
-                         for j in xrange(start, end)]]
+            exp.norm = [[self.norm[0][i + siz * j] for i in range(start, end)
+                         for j in range(start, end)]]
         except TypeError: # no Hi-C data provided
             matrix = self.get_hic_matrix(normalized=True)
-            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
-                           for j in xrange(start, end)]
+            new_matrix = [[matrix[i][j] for i in range(start, end)]
+                           for j in range(start, end)]
             tmp = Chromosome('tmp')
             tmp.add_experiment('exp1', norm_data=[new_matrix],
                                resolution=self.resolution, filter_columns=False)
@@ -1053,13 +1059,13 @@ class Experiment(object):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
         exp.get_hic_zscores()
-        values = [[float('nan') for _ in xrange(exp.size)]
-                  for _ in xrange(exp.size)]
-        for i in xrange(exp.size):
+        values = [[float('nan') for _ in range(exp.size)]
+                  for _ in range(exp.size)]
+        for i in range(exp.size):
             # zeros are rows or columns having a zero in the diagonal
             if i in exp._zeros:
                 continue
-            for j in xrange(i + 1, exp.size):  # NaNs kept in the diagonal
+            for j in range(i + 1, exp.size):  # NaNs kept in the diagonal
                 if j in exp._zeros:
                     continue
                 val = exp.norm[0][i * exp.size + j]
@@ -1089,6 +1095,7 @@ class Experiment(object):
            (tsv) or JSON (json)
 
         """
+        cutoff = cutoff or float('-inf')
         if not self._zscores and zscored:
             self.get_hic_zscores()
         if not self.norm and normalized:
@@ -1096,7 +1103,7 @@ class Experiment(object):
         # write to file
         if isinstance(fname, str):
             out = open(fname, 'w')
-        elif isinstance(fname, file):
+        elif isinstance(fname, file_types):
             out = fname
         else:
             raise Exception('Not recognize file type\n')
@@ -1136,11 +1143,11 @@ class Experiment(object):
             start, end = focus[0], focus[1] + 1
         else:
             start, end = 0, self.size
-        for i in xrange(start, end):
+        for i in range(start, end):
             if i in self._zeros:
                 continue
             newstart = i if uniq else 0
-            for j in xrange(newstart, end):
+            for j in range(newstart, end):
                 if j in self._zeros:
                     continue
                 if not diagonal and i == j:
@@ -1209,12 +1216,12 @@ class Experiment(object):
             start = 0
             end   = siz
         if diagonal:
-            return [[hic[i + siz * j] for i in xrange(start, end)]
-                    for j in xrange(start, end)]
+            return [[hic[i + siz * j] for i in range(start, end)]
+                    for j in range(start, end)]
         else:
-            mtrx = [[hic[i + siz * j] for i in xrange(start, end)]
-                    for j in xrange(start, end)]
-            for i in xrange(start, end):
+            mtrx = [[hic[i + siz * j] for i in range(start, end)]
+                    for j in range(start, end)]
+            for i in range(start, end):
                 mtrx[i][i] = 1 if mtrx[i][i] else 0
             return mtrx
 
@@ -1237,12 +1244,12 @@ class Experiment(object):
         if zeros:
             out = '\n'.join(['\t'.join(
                 ['nan' if (i in self._zeros or j in self._zeros) else
-                 str(hic[i+siz * j]) for i in xrange(siz)])
-                             for j in xrange(siz)])
+                 str(hic[i+siz * j]) for i in range(siz)])
+                             for j in range(siz)])
         else:
             out = '\n'.join(['\t'.join([str(hic[i+siz * j])
-                                        for i in xrange(siz)])
-                             for j in xrange(siz)])
+                                        for i in range(siz)])
+                             for j in range(siz)])
         if print_it:
             print(out)
         else:
@@ -1331,7 +1338,7 @@ class Experiment(object):
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
-                mini = min([i for i in norm_data[0].values() if i])
+                mini = min([i for i in list(norm_data[0].values()) if i])
                 if mini == int(mini):
                     vmin = min(norm_data[0].values())
                 else:
@@ -1354,13 +1361,13 @@ class Experiment(object):
                         [norm_data[0][i+size*j]
                          if (not i in self._zeros
                              and not j in self._zeros) else float('nan')
-                         for i in xrange(int(start) - 1, int(end))]
-                        for j in xrange(int(start) - 1, int(end))]
+                         for i in range(int(start) - 1, int(end))]
+                        for j in range(int(start) - 1, int(end))]
                 else:
                     matrix = [
                         [hic_data[0][i+size*j]
-                         for i in xrange(int(start) - 1, int(end))]
-                        for j in xrange(int(start) - 1, int(end))]
+                         for i in range(int(start) - 1, int(end))]
+                        for j in range(int(start) - 1, int(end))]
             elif isinstance(tad, list):
                 if normalized:
                     stderr.write('WARNING: List passed, not going to be ' +
@@ -1374,22 +1381,22 @@ class Experiment(object):
                 matrix = [[norm_data[0][i+size*j]
                            if (not i in self._zeros
                                and not j in self._zeros) else float('nan')
-                           for i in xrange(size)]
-                          for j in xrange(size)]
+                           for i in range(size)]
+                          for j in range(size)]
             else:
                 matrix = [[hic_data[0][i+size*j]\
-                           for i in xrange(size)] \
-                          for j in xrange(size)]
+                           for i in range(size)] \
+                          for j in range(size)]
         if where == 'up':
-            for i in xrange(int(end - start)):
-                for j in xrange(i, int(end - start)):
+            for i in range(int(end - start)):
+                for j in range(i, int(end - start)):
                     matrix[i][j] = vmin
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
             jet._lut[:, -1] = alphas
         elif where == 'down':
-            for i in xrange(int(end - start)):
-                for j in xrange(i + 1):
+            for i in range(int(end - start)):
+                for j in range(i + 1):
                     matrix[i][j] = vmin
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
@@ -1440,7 +1447,7 @@ class Experiment(object):
                      if  ((int(self.tads[t]['start']) + 1 >= start
                            and int(self.tads[t]['end'  ]) + 1 <= end)
                           or not start)])
-        for i, tad in tads.iteritems():
+        for i, tad in tads.items():
             t_start = int(tad['start']) + .5
             t_end   = int(tad['end'])   + 1.5
             nwidth = float(abs(tad['score'])) / 4
@@ -1454,7 +1461,7 @@ class Experiment(object):
                 axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
             pwidth = nwidth
             if tad['score'] < 0:
-                for j in xrange(0, int(t_end) - int(t_start), 2):
+                for j in range(0, int(t_end) - int(t_start), 2):
                     axe.plot((t_start    , t_start + j),
                              (t_end   - j, t_end      ), color='k')
                     axe.plot((t_end      , t_end   - j),
@@ -1468,7 +1475,7 @@ class Experiment(object):
             labels = []
             for tad, tick in [(t, tads[t]['start'] + (tads[t]['end'] -
                                                       tads[t]['start'] - 1))
-                              for t in tads.keys()[::(len(tads)/11 + 1)]]:
+                              for t in list(tads.keys())[::(len(tads)/11 + 1)]]:
                 ticks.append(tick)
                 labels.append(tad + 1)
             axe.set_yticks(ticks)
@@ -1511,13 +1518,13 @@ class Experiment(object):
         sp1 = self.size + 1
         diags = []
         if norms:
-            for k in xrange(1, self.size):
+            for k in range(1, self.size):
                 s_k = self.size * k
                 diags.append(sum([norms[i * sp1 + s_k]
                                  if not (i in zeros
                                          or (i + k) in zeros) else 0.
-                                  for i in xrange(
-                                      self.size - k)]) / (self.size - k))
+                                  for i in range(
+                                      self.size - k)]) // (self.size - k))
         for tad in tads:
             table += '%s\t%s\t%s\t%s%s\n' % (
                 tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
@@ -1526,7 +1533,7 @@ class Experiment(object):
         if not savedata:
             print(table)
             return
-        if isinstance(savedata, file):
+        if isinstance(savedata, file_types):
             out = savedata
         else:
             out = open(savedata, 'w')
@@ -1567,7 +1574,7 @@ class Experiment(object):
             chrs = []
             chrom_offset_start = start
             chrom_offset_end = 0
-            for k, v in self.hic_data[0].chromosomes.iteritems():
+            for k, v in self.hic_data[0].chromosomes.items():
                 tot += v
                 if start > tot:
                     chrom_offset_start = start - tot

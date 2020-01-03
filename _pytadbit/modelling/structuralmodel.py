@@ -15,8 +15,7 @@ from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.tadmaths        import newton_raphson
 from pytadbit                       import __version__ as version
 from math                           import sqrt, pi
-import sha
-
+import hashlib
 
 def model_header(model):
     """
@@ -121,7 +120,7 @@ class StructuralModel(dict):
         com = self.center_of_mass()
         rog = sqrt(sum(self._square_distance_to(i,
                                                 (com['x'], com['y'], com['z']))
-                       for i in xrange(len(self))) / len(self))
+                       for i in range(len(self))) / len(self))
         return rog
 
 
@@ -132,7 +131,7 @@ class StructuralModel(dict):
         :returns: the totals length of the model
         """
         dist = 0
-        for i in xrange(1, len(self)):
+        for i in range(1, len(self)):
             dist += self.distance(i, i+1)
         return dist
 
@@ -144,8 +143,8 @@ class StructuralModel(dict):
         :returns: the maximum distance between two particles in the model
         """
         maxdist = 0
-        for i in xrange(1, len(self)):
-            for j in xrange(i + 1, len(self) + 1):
+        for i in range(1, len(self)):
+            for j in range(i + 1, len(self) + 1):
                 dist = self.distance(i, j)
                 if dist > maxdist:
                     maxdist = dist
@@ -159,8 +158,8 @@ class StructuralModel(dict):
         :returns: the minimum distance between two particles in the model
         """
         mindist = float('inf')
-        for i in xrange(1, len(self)):
-            for j in xrange(i + 1, len(self) + 1):
+        for i in range(1, len(self)):
+            for j in range(i + 1, len(self) + 1):
                 dist = self.distance(i, j)
                 if dist < mindist:
                     mindist = dist
@@ -213,7 +212,7 @@ class StructuralModel(dict):
         """
         inaccessibles = []
         sphere = generate_sphere_points(100)
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             impossibles = 0
             for xxx, yyy, zzz in sphere:
                 thing = (xxx * radius + self['x'][i],
@@ -221,7 +220,7 @@ class StructuralModel(dict):
                          zzz * radius + self['z'][i])
                 # print form % (k+len(self), thing['x'], thing['y'], thing['z'],
                 # 0, 0, 0, k+len(self)),
-                for j in xrange(len(self)):
+                for j in range(len(self)):
                     if i == j:
                         continue
                     # print self._square_distance_to(j, thing), radius
@@ -540,7 +539,7 @@ class StructuralModel(dict):
                 'radius=\"' + #str(30) +
                 str(self['radius']) +
                 '\" note=\"%s\"/>\n')
-        for i in xrange(len(self['x'])):
+        for i in range(len(self['x'])):
             out += form % (i + 1,
                            self['x'][i], self['y'][i], self['z'][i],
                            color[i][0], color[i][1], color[i][2], i + 1)
@@ -554,7 +553,7 @@ class StructuralModel(dict):
                 break_chroms.append((end - beg)/self['description']['resolution']+break_chroms[-1])
         except:
             pass
-        for i in xrange(1, len(self['x'])):
+        for i in range(1, len(self['x'])):
             if i in break_chroms[1:]:
                 continue
             out += form % (i, i + 1)
@@ -600,7 +599,7 @@ class StructuralModel(dict):
                                                 self['rand_init'])
         out = ''
         form = "%12s%12s%12.3f%12.3f%12.3f\n"
-        for i in xrange(len(self['x'])):
+        for i in range(len(self['x'])):
             out += form % ('p' + str(i + 1), i + 1, round(self['x'][i], 3),
                            round(self['y'][i], 3), round(self['z'][i], 3))
         out_f = open(path_f, 'w')
@@ -688,15 +687,15 @@ class StructuralModel(dict):
 }
 '''
         fil = {}
-        fil['sha']     = sha.new(fil['xyz']).hexdigest()
+        fil['sha']     = hashlib.new(fil['xyz']).hexdigest()
         fil['title']   = title or "Sample TADbit data"
         fil['version'] = version
         fil['descr']   = ''.join('\n', ',\n'.join([
             '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, str) else v)
-            for k, v in self.get('description', {}).items()]), '\n')
+            for k, v in list(self.get('description', {}).items())]), '\n')
         fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
                                                          self['z'][i])
-                                   for i in xrange(len(self['x']))])
+                                   for i in range(len(self['x']))])
 
 
         if filename:
@@ -759,15 +758,15 @@ class StructuralModel(dict):
             chrom_start = [chrom_start]
             chrom_end = [chrom_end]
 
-        chrom_start = [(int(c) / int(self['description']['resolution'])
+        chrom_start = [(int(c) // int(self['description']['resolution'])
                         if int(c) else 0)
                        for c in chrom_start]
-        chrom_end = [(int(c) / int(self['description']['resolution'])
+        chrom_end = [(int(c) // int(self['description']['resolution'])
                       if int(c) else len(self['x']))
                      for c in chrom_end]
 
         offset = -chrom_start[0]
-        for crm in xrange(len(chrom_list)):
+        for crm in range(len(chrom_list)):
             for i in range(chrom_start[crm] + offset, chrom_end[crm] + offset):
                 out += form % (
                     i + 1,
@@ -837,7 +836,7 @@ class StructuralModel(dict):
         chrom_start = [int(c)/int(self['description']['resolution']) for c in chrom_start]
         chrom_end = [int(c)/int(self['description']['resolution']) for c in chrom_end]
         offset = 0
-        for crm in xrange(len(chrom_list)):
+        for crm in range(len(chrom_list)):
             for i in range(chrom_start[crm]+offset,chrom_end[crm]+offset):
                 out += form % (
                     i + 1,

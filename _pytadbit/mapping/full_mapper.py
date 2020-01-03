@@ -16,7 +16,6 @@ from pytadbit.mapping.restriction_enzymes import religateds
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.mapping.restriction_enzymes import iupac2regex
 
-
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True,
                     light_storage=False, **kwargs):

@@ -6,7 +6,7 @@ from warnings                             import warn
 from gzip                                 import open as gopen
 from os                                   import SEEK_END
 from subprocess                           import Popen, PIPE
-from itertools                            import izip_longest
+from itertools                            import zip_longest
 import re
 
 from numpy                                import nanstd, nanmean, linspace, nansum
@@ -19,7 +19,6 @@ try:
     from matplotlib import pyplot as plt
 except ImportError:
     warn('matplotlib not found\n')
-
 
 def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, paired=False):
     """
@@ -47,7 +46,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         r_enzs = r_enz
     elif isinstance(r_enz, str):
         r_enzs = [r_enz]
-    for k in RESTRICTION_ENZYMES.keys():
+    for k in list(RESTRICTION_ENZYMES.keys()):
         for i in range(len(r_enzs)):
             if k.lower() == str(r_enz[i]).lower():
                 r_enz[i] = k
@@ -122,7 +121,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 break
             seq = next(fhandler)
             # ligation sites replaced by lower case to ease the search
-            for lig in l_sites.values():
+            for lig in list(l_sites.values()):
                 seq = seq.replace(lig.upper(), lig)
             for r_enz in r_enzs:
                 sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
@@ -141,8 +140,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     fhandler.close()
     if not nreads:
         nreads = len(quals)
-    quals = izip_longest(*quals, fillvalue=float('nan'))
-    meanquals, errorquals = zip(*[(nanmean(q), nanstd(q)) for q in quals])
+    quals = zip_longest(*quals, fillvalue=float('nan'))
+    meanquals, errorquals = list(zip(*[(nanmean(q), nanstd(q)) for q in quals]))
     max_seq_len = len(meanquals)
 
     if axe:
@@ -165,7 +164,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
 
-    ax.errorbar(range(max_seq_len), meanquals,
+    ax.errorbar(list(range(max_seq_len)), meanquals,
                 linewidth=1, elinewidth=1, color='darkblue',
                 yerr=errorquals, ecolor='orange')
 
@@ -361,5 +360,5 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
 def make_patch_spines_invisible(ax):
     ax.set_frame_on(True)
     ax.patch.set_visible(False)
-    for sp in ax.spines.itervalues():
+    for sp in ax.spines.values():
         sp.set_visible(False)

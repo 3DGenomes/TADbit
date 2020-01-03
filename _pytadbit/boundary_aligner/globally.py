@@ -32,8 +32,8 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     dister = lambda x, y: log(1. / (abs(x - y) + 1))
     scores = _virgin_score(penalty, l_tads1, l_tads2)
     pen = penalty
-    for i in xrange(1, l_tads1):
-        for j in xrange(1, l_tads2):
+    for i in range(1, l_tads1):
+        for j in range(1, l_tads2):
             d_dist = dister(tads2[j], tads1[i])
             match  = d_dist + scores[i-1][j-1]
             insert = scores[i-1][j] + pen
@@ -51,7 +51,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     align2 = []
     i = l_tads1 -1
     j = l_tads2 -1
-    max_score = None
+    max_score = float('-inf')
     while i and j:
         score      = scores[i][j]
         if score > max_score:
@@ -106,9 +106,9 @@ def _virgin_score(penalty, l_tads1, l_tads2):
     """
     creates empty matrix
     """
-    zeros    = [0.0 for _ in xrange(l_tads2)]
-    return [[penalty * j for j in xrange(l_tads2)]] + \
-           [[penalty * i] + zeros for i in xrange(1, l_tads1)]
+    zeros    = [0.0 for _ in range(l_tads2)]
+    return [[penalty * j for j in range(l_tads2)]] + \
+           [[penalty * i] + zeros for i in range(1, l_tads1)]
 
 
 def _equal(a, b, cut_off=1e-9):

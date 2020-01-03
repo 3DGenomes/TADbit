@@ -12,7 +12,6 @@ from scipy.stats import binom_test
 
 from pytadbit.utils.file_handling import magic_open
 
-
 def iupac2regex(restring):
     """
     Convert target sites with IUPAC nomenclature to regex pattern
@@ -34,9 +33,9 @@ def iupac2regex(restring):
 def count_re_fragments(fnam):
     frag_count = {}
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split('\t')
@@ -48,9 +47,10 @@ def count_re_fragments(fnam):
                 frag_count[(cr2, rs2)] += 1
             except KeyError:
                 frag_count[(cr2, rs2)] = 1
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     return frag_count
 
 
@@ -136,7 +136,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     :param 100000 frag_chunk: in order to optimize the search for nearby RE
        sites, each chromosome is splitted into chunks.
     """
-    if isinstance(enzyme_name, basestring):
+    if isinstance(enzyme_name, str):
         enzyme_names = [enzyme_name]
     elif isinstance(enzyme_name, list):
         enzyme_names = enzyme_name
@@ -251,10 +251,10 @@ def identify_re(fnam, nreads=100000):
 
     fh = magic_open(fnam)
     for _ in range(nreads):
-        _ = fh.next()
+        _ = next(fh)
         s = fh.next()[:14]
-        _ = fh.next()
-        _ = fh.next()
+        _ = next(fh)
+        _ = next(fh)
         for pat in pats:
             m = pats[pat]['re'].match(s)
             if m and m.start() == 0:

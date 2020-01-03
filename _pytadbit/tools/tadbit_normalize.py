@@ -6,6 +6,8 @@ information needed
 
 """
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from argparse                             import HelpFormatter
 from os                                   import path, remove, system
 from sys                                  import exc_info, stdout
@@ -13,7 +15,7 @@ from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict, defaultdict
-from cPickle                              import dump, load, HIGHEST_PROTOCOL
+from pickle                              import dump, load, HIGHEST_PROTOCOL
 from traceback                            import print_exc
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
@@ -117,7 +119,7 @@ def run(opts):
         n_rsites  = []
         re_site = RESTRICTION_ENZYMES[opts.renz].replace('|', '')
         for crm in refs:
-            for pos in xrange(200, len(genome[crm]) + 200, opts.reso):
+            for pos in range(200, len(genome[crm]) + 200, opts.reso):
                 seq = genome[crm][pos-200:pos + opts.reso + 200]
                 n_rsites.append(seq.count(re_site))
 
@@ -162,7 +164,7 @@ def run(opts):
     # biases
     bias_file = path.join(outdir, 'biases_%s_%s.pickle' % (
         nicer(opts.reso).replace(' ', ''), param_hash))
-    out = open(bias_file, 'w')
+    out = open(bias_file, 'wb')
 
     dump({'biases'    : biases,
           'decay'     : decay,
@@ -503,7 +505,7 @@ Mappability file can be generated with GEM (example from the genomic FASTA file 
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        choices = list(range(1, 11)),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
@@ -584,8 +586,8 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
             try:
-                pos1 = sections[(crm1, pos1 / resolution)]
-                pos2 = sections[(crm2, pos2 / resolution)]
+                pos1 = sections[(crm1, pos1 // resolution)]
+                pos2 = sections[(crm2, pos2 // resolution)]
             except KeyError:
                 continue  # not in the subset matrix we want
             try:
@@ -593,7 +595,7 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
             except KeyError:
                 dico[(pos1, pos2)] = 1
         cisprc = {}
-        for (i, j), v in dico.iteritems():
+        for (i, j), v in dico.items():
             if all_bins[i][0] == all_bins[j][0]:
                 try:
                     cisprc[i][0] += v
@@ -636,8 +638,8 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
             try:
-                pos1 = sections[(crm1, pos1 / resolution)]
-                pos2 = sections[(crm2, pos2 / resolution)]
+                pos1 = sections[(crm1, pos1 // resolution)]
+                pos2 = sections[(crm2, pos2 // resolution)]
             except KeyError:
                 continue  # not in the subset matrix we want
             try:
@@ -645,7 +647,7 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
             except KeyError:
                 dico[(pos1, pos2)] = 1
         cisprc = {}
-        for (i, j), v in dico.iteritems():
+        for (i, j), v in dico.items():
             if all_bins[i][0] == all_bins[j][0]:
                 try:
                     cisprc[i][0] += v
@@ -678,8 +680,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
              max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
     bamfile = AlignmentFile(inbam, 'rb')
-    sections = OrderedDict(zip(bamfile.references,
-                               [x / resolution + 1 for x in bamfile.lengths]))
+    sections = OrderedDict(list(zip(bamfile.references,
+                               [x // resolution + 1 for x in bamfile.lengths])))
     total = 0
     section_pos = dict()
     for crm in sections:
@@ -688,7 +690,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm)])
+        bins.extend([(crm, i) for i in range(len_crm)])
 
     start_bin = 0
     end_bin   = len(bins)
@@ -771,7 +773,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         badcol = {}
         countL = 0
         countZ = 0
-        for c in xrange(total):
+        for c in range(total):
             if cisprc.get(c, [0, 0])[1] < min_count:
                 badcol[c] = cisprc.get(c, [0, 0])[1]
                 countL += 1
@@ -789,11 +791,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         removed_manually = 0
         for ebc in extra_bads:
             c, ebc = ebc.split(':')
-            b, e = map(int, ebc.split('-'))
-            b = b / resolution + section_pos[c][0]
-            e = e / resolution + section_pos[c][0]
+            b, e = list(map(int, ebc.split('-')))
+            b = b // resolution + section_pos[c][0]
+            e = e // resolution + section_pos[c][0]
             removed_manually += (e - b)
-            badcol.update(dict((p, 'manual') for p in xrange(b, e)))
+            badcol.update(dict((p, 'manual') for p in range(b, e)))
         printime('  - Removed %d columns manually.' % removed_manually)
     raw_cisprc = sum(float(cisprc[k][0]) / cisprc[k][1]
                      for k in cisprc if not k in badcol) / (len(cisprc) - len(badcol))
@@ -801,7 +803,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     printime('  - Rescaling sum of interactions per bins')
     size = len(bins)
     biases = [float('nan') if k in badcol else cisprc.get(k, [0, 1.])[1]
-              for k in xrange(size)]
+              for k in range(size)]
 
     if normalization == 'ICE':
         printime('  - ICE normalization')
@@ -840,7 +842,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         biases = {}
         print('Using provided biases...')
         with open(biases_path, 'r') as r:
-            r.next()
+            next(r)
             for line in r:
                 if line[0] == 'N':
                     #b = float('nan')
@@ -927,8 +929,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     rawdec = {}
     for proc in procs:
         tmpnrm, tmpraw = proc.get()
-        for c, d in tmpnrm.iteritems():
-            for k, v in d.iteritems():
+        for c, d in tmpnrm.items():
+            for k, v in d.items():
                 try:
                     nrmdec[c][k] += v
                     rawdec[c][k] += tmpraw[c][k]
@@ -944,12 +946,12 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     # find largest chromosome
     len_crms = dict((c, section_pos[c][1] - section_pos[c][0]) for c in section_pos)
     # initialize dictionary
-    ndiags = dict((c, dict((k, 0) for k in xrange(len_crms[c]))) for c in sections)
+    ndiags = dict((c, dict((k, 0) for k in range(len_crms[c]))) for c in sections)
     for crm in section_pos:
         beg_chr, end_chr = section_pos[crm][0], section_pos[crm][1]
         chr_size = end_chr - beg_chr
         thesebads = [b for b in badcol if beg_chr <= b <= end_chr]
-        for dist in xrange(1, chr_size):
+        for dist in range(1, chr_size):
             ndiags[crm][dist] += chr_size - dist
             # from this we remove bad columns
             # bad columns will only affect if they are at least as distant from
@@ -1014,7 +1016,7 @@ def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
     rawdec = {}
     nrmdec = {}
-    for (i, j), v in dico.iteritems():
+    for (i, j), v in dico.items():
         if i < j:
             continue
         # different chromosome
@@ -1042,7 +1044,7 @@ def sum_dec_matrix(fname, biases, badcol, bins):
 def get_cis_perc(fname, biases, badcol, bins):
     dico = load(open(fname))
     cis = total = 0
-    for (i, j), v in dico.iteritems():
+    for (i, j), v in dico.items():
         if i <= j:
             continue
         if i in badcol or j in badcol:
@@ -1058,7 +1060,7 @@ def get_cis_perc(fname, biases, badcol, bins):
 def sum_nrm_matrix(fname, biases):
     dico = load(open(fname))
     sumnrm = nansum([v / biases[i] / biases[j]
-                     for (i, j), v in dico.iteritems()])
+                     for (i, j), v in dico.items()])
     return sumnrm
 
 

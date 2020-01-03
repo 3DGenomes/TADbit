@@ -1,4 +1,6 @@
 
+from future import standard_library
+standard_library.install_aliases()
 from os import environ
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 

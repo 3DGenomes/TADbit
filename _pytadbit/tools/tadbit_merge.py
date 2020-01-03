@@ -137,7 +137,7 @@ def run(opts):
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
-                len(bads.keys()), ncols, scc, std, reprod,
+                len(list(bads.keys())), ncols, scc, std, reprod,
                 eigen_corr_dat, eigen_corr_fig, outbam, corr, eig_corr,
                 biases1, biases2, launch_time, finish_time)
     printime('\nDone.')
@@ -572,7 +572,7 @@ def populate_args(parser):
 
     glopts.add_argument('--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        choices = list(range(1, 11)),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +

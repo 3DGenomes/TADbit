@@ -4,12 +4,14 @@
 
 """
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from pytadbit.modelling import LAMMPS_CONFIG as CONFIG
 from pytadbit.modelling.lammpsmodel import LAMMPSmodel
 from pytadbit.modelling.structuralmodels import StructuralModels
 from os.path import exists
 from random import randint, seed
-from cPickle import load, dump
+from pickle import load, dump
 import multiprocessing as mu
 import random 
 from math import atan2
@@ -169,7 +171,7 @@ def lammps_simulate(initial_conformation, run_time, colvars=None,
     
     kseeds = []
     
-    for k in xrange(n_models):
+    for k in range(n_models):
         kseeds.append(randint(1,100000))
         
     jobs = {}
@@ -203,12 +205,12 @@ def lammps_simulate(initial_conformation, run_time, colvars=None,
         else:
             old_models = {}
         models.update(old_models)
-        out = open(outfile, 'w')
+        out = open(outfile, 'wb')
         dump((models), out)
         out.close()
     else:
         return StructuralModels(
-            nloci, models, [], resolution,description=description, zeros=tuple([1 for i in xrange(nloci)]))
+            nloci, models, [], resolution,description=description, zeros=tuple([1 for i in range(nloci)]))
 
 def run_lammps(kseed, initial_conformation, run_time, colvars=None,
                     neighbor=CONFIG.neighbor, tethering=False, 
@@ -263,7 +265,7 @@ def run_lammps(kseed, initial_conformation, run_time, colvars=None,
                        
     lmp.close()
     
-    for i in xrange(0,len(xc),3):
+    for i in range(0,len(xc),3):
         result['x'].append(xc[i])
         result['y'].append(xc[i+1])
         result['z'].append(xc[i+2])
@@ -453,7 +455,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
     chromosome_particle_numbers = [int(x) for x in chromosome_particle_numbers]
     chromosome_particle_numbers.sort(key=int,reverse=True)
 
-    for cnt in xrange(number_of_conformations):
+    for cnt in range(number_of_conformations):
 
         final_random_walks = generate_random_walks(chromosome_particle_numbers,
                                                    particle_radius,
@@ -506,7 +508,7 @@ def generate_chromosome_rosettes_conformation ( chromosome_particle_numbers ,
 
     
     # Constructing the rosettes conformations
-    for cnt in xrange(number_of_conformations):
+    for cnt in range(number_of_conformations):
 
         particle_inside   = 0 # 0 means a particle is outside
         particles_overlap = 0 # 0 means two particles are overlapping
@@ -595,7 +597,7 @@ def generate_rosettes(chromosome_particle_numbers, rosette_radius, particle_radi
         #print "First bead is in position: %f %f %f" % (rosette['x'][0], rosette['y'][0], rosette['z'][0])
 
         # Building the chain: The rosette is growing along the positive z-axes
-        for particle in xrange(1,number_of_particles):
+        for particle in range(1,number_of_particles):
 
             distance = 0.0
             while distance < (particle_radius*2.0): 
@@ -810,7 +812,7 @@ def generate_random_walks(chromosome_particle_numbers,
         random_walk['y'].append(first_particle[1])
         random_walk['z'].append(first_particle[2])
 
-        for particle in xrange(1,number_of_particles):
+        for particle in range(1,number_of_particles):
             print("Positioning particle %d" % (particle+1))
             particle_overlap = 0 # 0 means that there is an overlap -> PROBLEM
             while particle_overlap == 0:
@@ -1068,7 +1070,7 @@ def distance_between_segments(s1_P1, s1_P0, s2_P1, s2_P0):
         tc = tN / tD
      
     # Get the difference of the two closest points
-    for i in xrange(len(w)):    
+    for i in range(len(w)):    
         dP.append(w[i] + ( sc * u[i] ) - ( tc * v[i] )) # = S1(sc) - S2(tc)
     
     return norm(dP)   # return the closest distance
@@ -1077,7 +1079,7 @@ def distance_between_segments(s1_P1, s1_P0, s2_P1, s2_P0):
 
 def rosettes_rototranslation(rosettes, segments_P1, segments_P0):
 
-    for i in xrange(len(segments_P1)):
+    for i in range(len(segments_P1)):
         vector = []
         theta  = []
 
@@ -1104,7 +1106,7 @@ def rosettes_rototranslation(rosettes, segments_P1, segments_P0):
         #print x_temp_1 , y_temp_1 , z_temp_1 
         
         # Chromosome roto-translations
-        for particle in xrange(len(rosettes[i]['x'])):
+        for particle in range(len(rosettes[i]['x'])):
 
             x_temp_2 =   rosettes[i]['x'][particle]
             y_temp_2 =   cos(theta[2]) * rosettes[i]['y'][particle] + sin(theta[2]) * rosettes[i]['z'][particle]
@@ -1226,7 +1228,7 @@ def write_initial_conformation_file(chromosomes,
     bond_number          = 1
     first_particle_index = 1
     for chromosome in chromosomes:
-        for i in xrange(len(chromosome['x'])-1):
+        for i in range(len(chromosome['x'])-1):
             fileout.write("%-4d %s %4d %4d\n" % (bond_number, "1", first_particle_index, first_particle_index+1))
             bond_number          += 1
             first_particle_index += 1
@@ -1236,7 +1238,7 @@ def write_initial_conformation_file(chromosomes,
     angle_number         = 1
     first_particle_index = 1
     for chromosome in chromosomes:        
-        for i in xrange(len(chromosome['x'])-2):
+        for i in range(len(chromosome['x'])-2):
             fileout.write("%-4d %s %5d %5d %5d\n" % (angle_number, "1", first_particle_index, first_particle_index+1, first_particle_index+2))
             angle_number         += 1    
             first_particle_index += 1

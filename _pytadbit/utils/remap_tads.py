@@ -121,7 +121,7 @@ def reorder(genome):
             genome[exp][crm]['end']   = [genome[exp][crm]['end'  ][i] for i in order]
             genome[exp][crm]['score'] = [genome[exp][crm]['score'][i] for i in order]
             todel = []
-            for brk in xrange(1, len(genome[exp][crm]['end'])):
+            for brk in range(1, len(genome[exp][crm]['end'])):
                 if genome[exp][crm]['end'][brk] == genome[exp][crm]['end'][brk-1]:
                     todel.append(brk-1)
                     genome[exp][crm]['score'][brk] = max(
@@ -130,7 +130,7 @@ def reorder(genome):
                 genome[exp][crm]['end'].pop(brk)
                 genome[exp][crm]['score'].pop(brk)
             genome[exp][crm]['start'] = []
-            for brk in xrange(len(genome[exp][crm]['end']) + 1):
+            for brk in range(len(genome[exp][crm]['end']) + 1):
                 genome[exp][crm]['start'].append(genome[exp][crm]['end'][brk - 1] + 1 \
                                                  if brk > 0 else 0)
                     

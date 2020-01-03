@@ -40,11 +40,11 @@ def core_nw_long(p_scores, penalty, l_p1, l_p2):
     ins = rmv = 0
     lpen = 4
     # pens=[penalty-penalty*(1-1/exp(i**2)) for i in xrange(0, 2 * (lpen+ 1),2)]
-    pens = [penalty - penalty / (2 * lpen) * i for i in xrange(lpen + 1)] # BEST
+    pens = [penalty - penalty / (2 * lpen) * i for i in range(lpen + 1)] # BEST
     # pens = [penalty, penalty, penalty, penalty/1.2, 0]
     # pens = [penalty, penalty*1.5, penalty*2, penalty, penalty]
-    for i in xrange(1, l_p1 + 1):
-        for j in xrange(1, l_p2 + 1):
+    for i in range(1, l_p1 + 1):
+        for j in range(1, l_p2 + 1):
             mmax = max((ins, rmv))
             match  = p_scores[i - 1][j - 1] + scores[i - 1][j - 1]
             insert = scores[i - 1][j] + pens[mmax]
@@ -141,8 +141,8 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
     Core of the fast Needleman-Wunsch algorithm that aligns matrices
     """
     scores = virgin_score(penalty, l_p1 + 1, l_p2 + 1)
-    for i in xrange(1, l_p1 + 1):
-        for j in xrange(1, l_p2 + 1):
+    for i in range(1, l_p1 + 1):
+        for j in range(1, l_p2 + 1):
             match  = p_scores[i - 1][j - 1] + scores[i - 1][j - 1]
             insert = scores[i - 1][j] + penalty
             delete = scores[i][j - 1] + penalty
@@ -233,13 +233,13 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     val2 = val2[idx]
     vec2 = vec2[idx]
     #
-    vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
-    vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
+    vec1 = array([val1[i] * vec1[:, i] for i in range(num_v)]).transpose()
+    vec2 = array([val2[i] * vec2[:, i] for i in range(num_v)]).transpose()
     nearest = float('inf')
     nw = core_nw_long if long_nw else core_nw
     dister = _get_dist_long if long_dist else _get_dist
     best_alis = []
-    for num in xrange(1, num_v + 1):
+    for num in range(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
             vec2p = vec2[:, :num]
@@ -282,9 +282,9 @@ def virgin_score(penalty, l_p1, l_p2):
     Fill a matrix with zeros, except first row and first column filled with \
     multiple values of penalty.
     """
-    zeros    = [0.0 for _ in xrange(l_p2)]
-    return [[penalty * j for j in xrange(l_p2)]] + \
-           [[penalty * i] + zeros for i in xrange(1, l_p1)]
+    zeros    = [0.0 for _ in range(l_p2)]
+    return [[penalty * j for j in range(l_p2)]] + \
+           [[penalty * i] + zeros for i in range(1, l_p1)]
 
 
 def _prescoring(vc1, vc2, l_p1, l_p2):
@@ -292,9 +292,9 @@ def _prescoring(vc1, vc2, l_p1, l_p2):
     yes... this is the bottle neck, almost 2/3 of the time spent here
     """
     p_score = []
-    for i in xrange(l_p1):
+    for i in range(l_p1):
         vci = vc1[i].__mul__
-        p_score.append([vci(vc2[j]).sum() for j in xrange(l_p2)])
+        p_score.append([vci(vc2[j]).sum() for j in range(l_p2)])
     return p_score
     #return [[sum(vc1[i] * vc2[j]) for j in xrange(l_p2)] for i in xrange(l_p1)]
 
@@ -373,10 +373,10 @@ def _get_OLD_score(align1, align2, p1, p2):
     com = len(map1)
     pp1 = [[p1[i][j] for j in map1] for i in map1]
     pp2 = [[p2[i][j] for j in map2] for i in map2]
-    cm1 = sum([pp1[i][j] for i in xrange(com) for j in xrange(i + 1, com)])
-    cm2 = sum([pp2[i][j] for i in xrange(com) for j in xrange(i + 1, com)])
+    cm1 = sum([pp1[i][j] for i in range(com) for j in range(i + 1, com)])
+    cm2 = sum([pp2[i][j] for i in range(com) for j in range(i + 1, com)])
     cmo = sum([1 - abs(pp2[i][j] - pp1[i][j]) \
-               for i in xrange(com) for j in xrange(i + 1, com)])
+               for i in range(com) for j in range(i + 1, com)])
     return float(2 * cmo)/(cm1+cm2)
 
 
@@ -388,13 +388,13 @@ def matrix2binnary_contacts(tad1, tad2):
     cutoff = median(tad1)
     contacts1 = []
     contacts2 = []
-    for i in xrange(len(tad1)):
-        for j in xrange(i, len(tad1)):
+    for i in range(len(tad1)):
+        for j in range(i, len(tad1)):
             if tad1[i][j] > cutoff:
                 contacts1.append((i, j))
     cutoff = median(tad2)
-    for i in xrange(len(tad2)):
-        for j in xrange(i, len(tad2)):
+    for i in range(len(tad2)):
+        for j in range(i, len(tad2)):
             if tad2[i][j] > cutoff:
                 contacts2.append((i, j))
     return contacts1, contacts2
@@ -443,7 +443,7 @@ def merge_tads(tad1, tad2, ali1, ali2):
     ali = []
     ali.append(deepcopy(ali1))
     ali.append(deepcopy(ali2))
-    for i in xrange(max(ali1[0], ali2[0]) - 1, -1, -1):
+    for i in range(max(ali1[0], ali2[0]) - 1, -1, -1):
         if ali[0][0]:
             ali1.insert(0, i)
             ali2.insert(0, '-')
@@ -451,24 +451,24 @@ def merge_tads(tad1, tad2, ali1, ali2):
             ali1.insert(0, '-')
             ali2.insert(0, i)
     size = len(ali1)
-    matrix1 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    matrix2 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    matrixm = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    for i in xrange(size):
+    matrix1 = [[0.1 for _ in range(size)] for _ in range(size)]
+    matrix2 = [[0.1 for _ in range(size)] for _ in range(size)]
+    matrixm = [[0.1 for _ in range(size)] for _ in range(size)]
+    for i in range(size):
         if ali1[i] == '-' or ali2[i] == '-':
-            matrixm[i] = [float('nan') for _ in xrange(size)]
+            matrixm[i] = [float('nan') for _ in range(size)]
             if ali1[i] == '-':
-                matrix1[i]  = [float('nan') for _ in xrange(size)]
+                matrix1[i]  = [float('nan') for _ in range(size)]
                 matrix2[i]  = [tad2[ali2[i]][ali2[j]] \
                                if ali2[j] != '-' else float('nan')\
-                               for j in xrange(size)]
+                               for j in range(size)]
             elif ali2[i] == '-':
-                matrix2[i]  = [float('nan') for _ in xrange(size)]
+                matrix2[i]  = [float('nan') for _ in range(size)]
                 matrix1[i]  = [tad1[ali1[i]][ali1[j]] \
                                if ali1[j] != '-' else float('nan')\
-                               for j in xrange(size)]
+                               for j in range(size)]
             continue
-        for j in xrange(size):
+        for j in range(size):
             if ali1[j] == '-' or ali2[j] == '-':
                 matrixm[i][j] = float('nan')
                 if ali1[j] == '-':

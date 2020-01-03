@@ -8,12 +8,14 @@ chromosome in an other species, this script needs to be used over whole genomes.
 """
 from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 import sys, re, os
 from os                           import listdir
 from os.path                      import isfile
 from pytadbit                     import Chromosome
 from pytadbit.parsers.tad_parser  import parse_tads
-from cPickle import dump, load
+from pickle import dump, load
 
 GOOD_CRM = re.compile("^(?:chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
 
@@ -79,8 +81,8 @@ def get_synteny_defitinion(fname):
         if line.startswith('#'):
             continue
         to_crm, to_beg, to_end, at_crm, at_beg, at_end, at_std = line.split()
-        to_beg, to_end, at_beg, at_end, at_std = map(
-            int, [to_beg, to_end, at_beg, at_end, at_std])
+        to_beg, to_end, at_beg, at_end, at_std = list(map(
+            int, [to_beg, to_end, at_beg, at_end, at_std]))
         synteny.setdefault(at_crm.upper(), []).append(
             {'targ': {'crm': to_crm.upper(),
                       'beg': to_beg,
@@ -99,15 +101,15 @@ def filter_non_syntenic_alignments(synteny_file, synteny_reso=0):
         for blk in synteny[at_crm]:
             to_crm = blk['targ']['crm']
             # to_std = blk['targ']['std']
-            at_pos = set(range((blk['from']['beg'] - synteny_reso) / 100,
-                               (blk['from']['end'] + synteny_reso) / 100 + 1))
-            to_pos = set(range((blk['targ']['beg'] - synteny_reso) / 100,
-                               (blk['targ']['end'] + synteny_reso) / 100 + 1))
+            at_pos = set(range((blk['from']['beg'] - synteny_reso) // 100,
+                               (blk['from']['end'] + synteny_reso) // 100 + 1))
+            to_pos = set(range((blk['targ']['beg'] - synteny_reso) // 100,
+                               (blk['targ']['end'] + synteny_reso) // 100 + 1))
             for num, ali in enumerate(ALIGNMENTS):
                 if ali['targ']['crm'] != to_crm:
                     continue
-                if not to_pos.intersection(set(range(ali['targ']['beg']/100,
-                                                     ali['targ']['end']/100 + 1))):
+                if not to_pos.intersection(set(range(ali['targ']['beg']//100,
+                                                     ali['targ']['end']//100 + 1))):
                     continue
                 # print 'ok: %3s %11s %11s [%5s] %2s %3s %11s %11s' % (
                 #     ali['targ']['crm'], ali['targ']['beg'], ali['targ']['end'],
@@ -119,8 +121,8 @@ def filter_non_syntenic_alignments(synteny_file, synteny_reso=0):
                 #     print " " * 39, "'-> STRAND!!!"
                 #     continue
                 # check that the region in close from definition of any syntenic region
-                if not at_pos.intersection(set(range(ali['from']['beg']/100,
-                                                     ali['from']['end']/100 + 1))):
+                if not at_pos.intersection(set(range(ali['from']['beg']//100,
+                                                     ali['from']['end']//100 + 1))):
                     print('Found target alignment outside any syntenic block', end=' ')
                     print(' (while seed alignment is inside)')
                     print('SYNT: %3s %10s %10s %3s %10s %10s [%9s] %2s' % (
@@ -133,7 +135,7 @@ def filter_non_syntenic_alignments(synteny_file, synteny_reso=0):
                         ali['from']['end'] - ali['from']['beg'], ali['from']['std']))
                     continue
                 goods.add(num)
-    for num in xrange(len(ALIGNMENTS) - 1, -1, -1):
+    for num in range(len(ALIGNMENTS) - 1, -1, -1):
         if not num in goods:
             ALIGNMENTS.pop(num)
 
@@ -146,6 +148,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
     :param 'i' breaker: first character of the lines thata marks the end of the
        sequence. Use '\n' for pairwise alignments
     """
+    global ALIGNMENTS
     # get alignments
     pre_alignments = []
     pick_path = os.path.join(maf_path, 'alignments_%s-%s.pick' % (seed, targ))
@@ -196,7 +199,6 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
         crm_num += 1
 
     # reduce alignments to our species, and merge chunks if possible
-    global ALIGNMENTS
     ALIGNMENTS = []
     dico1 = {}
     for k, dico2 in enumerate(pre_alignments[1:]):
@@ -221,7 +223,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
     ALIGNMENTS.append(dico1)
 
     bads = []
-    for i in xrange(len(ALIGNMENTS)):
+    for i in range(len(ALIGNMENTS)):
         try:
             ALIGNMENTS[i] = {
                 'targ': {'crm': ALIGNMENTS[i][seed][0],
@@ -248,7 +250,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
         filter_non_syntenic_alignments(synteny_file, synteny_reso)
 
     print('Dumping alignment to file', pick_path)
-    out = open(pick_path, 'w')
+    out = open(pick_path, 'wb')
     dump(ALIGNMENTS, out)
     out.close()
 
@@ -480,8 +482,8 @@ def save_new_genome(genome, trace, check=False, rootdir='./'):
         new_crm = genome[crm]
         for exp in new_crm.experiments:
             # reorder the TADs in increasing order of their end position
-            end, _, score = zip(*sorted(zip(
-                *[exp._tads[k] for k in ['end', 'start', 'score']])))
+            end, _, score = list(zip(*sorted(zip(
+                *[exp._tads[k] for k in ['end', 'start', 'score']]))))
             exp._tads['start'] = [0.] + [v - 1 for v in end[:-1]]
             exp._tads['end'  ] = list(end)
             exp._tads['score'] = list(score)

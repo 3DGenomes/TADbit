@@ -8,12 +8,11 @@ from pytadbit.modelling.imp_modelling    import generate_3d_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
 from pytadbit.modelling.structuralmodels import StructuralModels
-from cPickle                       import dump, load
+from pickle                        import dump, load
 from sys                           import stderr
 import itertools
 import numpy           as np
 import multiprocessing as mu
-
 
 class IMPoptimizer(object):
     """
@@ -50,7 +49,7 @@ class IMPoptimizer(object):
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end)
         self.resolution = experiment.resolution
-        self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        self.zeros = tuple([i not in zeros for i in range(end - start + 1)])
         self.nloci = end - start + 1
         if not self.nloci == len(self.zeros):
             raise Exception('ERROR: in optimization, bad number of particles\n')
@@ -65,7 +64,7 @@ class IMPoptimizer(object):
             chrs = []
             chrom_offset_start = 1
             chrom_offset_end = 0
-            for k, v in experiment.hic_data[0].chromosomes.iteritems():
+            for k, v in experiment.hic_data[0].chromosomes.items():
                 tot += v
                 if start > tot:
                     chrom_offset_start = start - tot
@@ -339,7 +338,7 @@ class IMPoptimizer(object):
                     tdm._reduce_models(minimal=["restraints", "zscores", "original_data"])
 
         if savedata:
-            out = open(savedata, 'w')
+            out = open(savedata, 'wb')
             dump(models, out)
             out.close()
 
@@ -473,11 +472,11 @@ class IMPoptimizer(object):
         best = ((float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')), 0.0)
         kbending = 0
         try:
-            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
+            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.items():
                 if val > best[-1]:
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
         except ValueError:
-            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.iteritems():
+            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.items():
                 if val > best[-1]:
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
 

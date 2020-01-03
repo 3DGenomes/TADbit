@@ -93,7 +93,7 @@ def parse_bed(fnam, resolution=1):
     fhandler.seek(fpos)
     for line in fhandler:
         crm, beg, end, val = parse_line(line)
-        pos = (beg + end - beg) / resolution
+        pos = (beg + end - beg) // resolution
         dico.setdefault(crm, {})
         dico[crm].setdefault(pos, 0)
         dico[crm][pos] += val
@@ -127,7 +127,7 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
     if path.exists(tadbit_fname) and not reload_cache:
         def read_line(line):
             crm, elements = line.split()
-            return crm, map(float, elements.split(','))
+            return crm, list(map(float, elements.split(',')))
         return dict(read_line(l) for l in open(tadbit_fname))
 
     fh = open(fname)

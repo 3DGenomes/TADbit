@@ -5,13 +5,15 @@ information needed
  - path working directory with parsed reads
 
 """
+from future import standard_library
+standard_library.install_aliases()
 from argparse                        import HelpFormatter
 from os                              import path, remove, system
 from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
 from random                          import random
-from cPickle                         import load
+from pickle                         import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
@@ -49,7 +51,7 @@ def run(opts):
         vmin = vmax = None
 
     if opts.figsize:
-        opts.figsize = map(float, opts.figsize.split(','))
+        opts.figsize = list(map(float, opts.figsize.split(',')))
 
     clean = True  # change for debug
 
@@ -151,8 +153,8 @@ def run(opts):
 
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
-        sections = OrderedDict(zip(bamfile.references,
-                                   [x for x in bamfile.lengths]))
+        sections = OrderedDict(list(zip(bamfile.references,
+                                   [x for x in bamfile.lengths])))
         total = 0
         section_pos = OrderedDict()
         for crm in sections:
@@ -206,18 +208,18 @@ def run(opts):
                 if opts.row_names:
                     out.write('\n'.join('%s\t%d\t%d\t' % (next(row_names)) +
                                         '\t'.join(str(matrix.get((i, j), 0))
-                                                  for i in xrange(b1, e1))
-                                        for j in xrange(b2, e2)) + '\n')
+                                                  for i in range(b1, e1))
+                                        for j in range(b2, e2)) + '\n')
                 else:
                     out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0))
-                                                  for i in xrange(b1, e1))
-                                        for j in xrange(b2, e2)) + '\n')
+                                                  for i in range(b1, e1))
+                                        for j in range(b2, e2)) + '\n')
                 out.close()
             if opts.plot:
                 # transform matrix
                 matrix = array([array([matrix.get((i, j), 0)
-                                       for i in xrange(b1, e1)])
-                                for j in xrange(b2, e2)])
+                                       for i in range(b1, e1)])
+                                for j in range(b2, e2)])
                 m = zeros_like(matrix)
                 for bad1 in bads1:
                     m[:,bad1] = 1
@@ -324,7 +326,7 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
         axe1.set_yticks(vals)
         axe1.set_yticklabels('')
         axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
-                         for i in xrange(len(vals) - 1)],
+                         for i in range(len(vals) - 1)],
                         minor=True)
         axe1.set_yticklabels(keys, minor=True)
         for t in axe1.yaxis.get_minor_ticks():
@@ -334,7 +336,7 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
         axe1.set_xticks(vals)
         axe1.set_xticklabels('')
         axe1.set_xticks([float(vals[i]+vals[i+1])/2
-                         for i in xrange(len(vals) - 1)],
+                         for i in range(len(vals) - 1)],
                         minor=True)
         axe1.set_xticklabels(keys, minor=True)
         for t in axe1.xaxis.get_minor_ticks():
@@ -639,7 +641,7 @@ def populate_args(parser):
 
     rfiltr.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(0, 11),
+                        choices = list(range(0, 11)),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +

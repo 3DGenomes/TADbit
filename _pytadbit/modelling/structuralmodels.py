@@ -2,11 +2,17 @@
 19 Jul 2013
 """
 from __future__ import print_function
-from cPickle                          import load, dump, HIGHEST_PROTOCOL
+from future import standard_library
+standard_library.install_aliases()
+from pickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn
-from string                           import uppercase as uc, lowercase as lc
+from sys                              import version_info
+if (version_info > (3, 0)):
+    from string                           import ascii_uppercase as uc, ascii_lowercase as lc
+else:
+    from string                           import uppercase as uc, lowercase as lc
 from random                           import random
 from os.path                          import exists
 from itertools                        import combinations
@@ -55,7 +61,6 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-
 def R2_vs_L(L, P):
     """
     Calculates the persistence length (Lp) of given section of the model.
@@ -84,8 +89,9 @@ def load_structuralmodels(input_):
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
-    if isinstance(input_, basestring):
-        svd = load(open(input_))
+    if isinstance(input_, str):
+        with open(input_,'rb') as f_input_:
+            svd = load(f_input_)
     else:
         svd = input_
     try:
@@ -162,6 +168,9 @@ class StructuralModels(object):
                     return self.__models[key]
             raise KeyError('Model %s not found\n' % (i))
 
+    def __next__(self):
+        return next(self.__models)
+
     def __iter__(self):
         for m in self.__models:
             yield self.__models[m]
@@ -182,7 +191,7 @@ class StructuralModels(object):
             int(self.__models[len(self.__models) - 1]['objfun']),
             len(self.__models) + len(self._bad_models),
             '\n'.join(['   - %-12s: %s' % (k, v)
-                       for k, v in self._config.iteritems()]),
+                       for k, v in list(self._config.items())]),
             len(self.clusters))
 
     def _extend_models(self, models, nbest=None, different_stage=False):
@@ -204,19 +213,19 @@ class StructuralModels(object):
         nall  = len(self.__models) + len(self._bad_models)
         self.define_best_models(nall)
         if different_stage:
-            chars = list(lc) + map(str, range(10))
-            sha = ''.join(chars[int(random() * len(chars))] for _ in xrange(12))
-            for m in models.keys():
+            chars = list(lc) + list(map(str, list(range(10))))
+            sha = ''.join(chars[int(random() * len(chars))] for _ in range(12))
+            for m in list(models.keys()):
                 models[m]['rand_init'] += '_%s' % (sha)
-        ids = set(self.__models[m]['rand_init'] for m in self.__models.keys())
-        for m in models.keys():
+        ids = set(self.__models[m]['rand_init'] for m in list(self.__models.keys()))
+        for m in list(models.keys()):
             if models[m]['rand_init'] in ids:
                 warn(('WARNING: model with seed: %s already here (use '
                       'different_stage=True, to force extesion)\n  '
                       'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
-        for i, m in enumerate(sorted(models.values() + self.__models.values(),
+        for i, m in enumerate(sorted(list(models.values()) + list(self.__models.values()),
                                      key=lambda x: x['objfun'])):
             new_models[i] = m
             new_models[i]['index'] = i
@@ -241,6 +250,7 @@ class StructuralModels(object):
         :param False by_cluster: if True align each cluster individually in case
             we align all the models (models=None)
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -248,7 +258,7 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             if by_cluster and len(self.clusters) > 0:
-                aligned_coords = [None for _ in xrange(len(self.__models))]
+                aligned_coords = [None for _ in range(len(self.__models))]
                 for cluster in self.clusters:
                     clust_aligned_coords = self.align_models(cluster=cluster,
                                                               in_place=in_place,
@@ -257,7 +267,7 @@ class StructuralModels(object):
                         aligned_coords[self[str(m)]['index']] = clust_aligned_coords[midx]
                 # Complete with models with singletons
                 if not in_place:
-                    for midx in xrange(len(self.__models)):
+                    for midx in range(len(self.__models)):
                         if not aligned_coords[midx]:
                             aligned_coords[midx] = [self[midx]['x'][:],
                                                     self[midx]['y'][:],
@@ -331,6 +341,7 @@ class StructuralModels(object):
         :returns: the centroid model of a given group of models (the most model
            representative)
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -342,14 +353,14 @@ class StructuralModels(object):
         x = []
         y = []
         z = []
-        for model in xrange(len(models)):
-            x.append([self[model]['x'][i] for i in xrange(self.nloci)
+        for model in range(len(models)):
+            x.append([self[model]['x'][i] for i in range(self.nloci)
                       if self._zeros[i]])
-            y.append([self[model]['y'][i] for i in xrange(self.nloci)
+            y.append([self[model]['y'][i] for i in range(self.nloci)
                       if self._zeros[i]])
-            z.append([self[model]['z'][i] for i in xrange(self.nloci)
+            z.append([self[model]['z'][i] for i in range(self.nloci)
                       if self._zeros[i]])
-        zeros = tuple([True for _ in xrange(len(x[0]))])
+        zeros = tuple([True for _ in range(len(x[0]))])
         idx = centroid_wrapper(x, y, z, zeros, len(x[0]), len(models),
                                int(verbose), 0)
         return models[idx]
@@ -370,6 +381,7 @@ class StructuralModels(object):
            ARTIFICIAL model)
 
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -381,10 +393,10 @@ class StructuralModels(object):
         x = []
         y = []
         z = []
-        for model in xrange(len(models)):
-            x.append([self[model]['x'][i] for i in xrange(self.nloci)])
-            y.append([self[model]['y'][i] for i in xrange(self.nloci)])
-            z.append([self[model]['z'][i] for i in xrange(self.nloci)])
+        for model in range(len(models)):
+            x.append([self[model]['x'][i] for i in range(self.nloci)])
+            y.append([self[model]['y'][i] for i in range(self.nloci)])
+            z.append([self[model]['z'][i] for i in range(self.nloci)])
         idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
                                int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
@@ -440,7 +452,7 @@ class StructuralModels(object):
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
-            ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
+            ''.join([(uc + lc)[int(random() * 52)] for _ in range(4)]))
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
         crm = None
@@ -449,7 +461,7 @@ class StructuralModels(object):
         if region:
             if ':' in region:
                 crm, pos = region.split(':')
-                beg, end = map(int, pos.split('-'))
+                beg, end = list(map(int, pos.split('-')))
             else:
                 crm = region
                 end = None
@@ -485,9 +497,9 @@ class StructuralModels(object):
         new_singles = 0
         if method == 'ward':
 
-            matrix = [[0.0 for _ in xrange(len(self))]
-                      for _ in xrange(len(self))]
-            for (i, j), score in scores.iteritems():
+            matrix = [[0.0 for _ in range(len(self))]
+                      for _ in range(len(self))]
+            for (i, j), score in list(scores.items()):
                 matrix[i][j] = score if score > fact * nloci else 0.0
             clust = linkage(squareform(matrix), method='ward')
             # score each possible cut in hierarchical clustering
@@ -504,7 +516,7 @@ class StructuralModels(object):
                 if solutions[s]['score'] > 0][-1]['out']
             # sort clusters, the more populated, the first.
             clusters = dict((i + 1, j) for i, j in
-                            enumerate(sorted(clusters.values(),
+                            enumerate(sorted(list(clusters.values()),
                                              key=len, reverse=True)))
             if external:
                 return clusters
@@ -533,20 +545,21 @@ class StructuralModels(object):
             if not exists(tmp_file + '.mcl'):
                 raise Exception('Problem with clustering, try increasing ' +
                                 '"dcutoff", now: %s\n' % (dcutoff))
-            for cluster, line in enumerate(open(tmp_file + '.mcl')):
-                models = line.split()
-                if len(models) == 1:
-                    new_singles += 1
-                else:
-                    clusters[cluster + 1] = []
-                    for model in models:
-                        model = int(model.split('_')[1])
-                        if not external:
-                            self[model]['cluster'] = cluster + 1
-                        clusters[cluster + 1].append(
-                            str(self[model]['rand_init']))
-                    clusters[cluster + 1].sort(
-                        key=lambda x: self[str(x)]['objfun'])
+            with open(tmp_file + '.mcl') as f_tmp_file:
+                for cluster, line in enumerate(f_tmp_file):
+                    models = line.split()
+                    if len(models) == 1:
+                        new_singles += 1
+                    else:
+                        clusters[cluster + 1] = []
+                        for model in models:
+                            model = int(model.split('_')[1])
+                            if not external:
+                                self[model]['cluster'] = cluster + 1
+                            clusters[cluster + 1].append(
+                                str(self[model]['rand_init']))
+                        clusters[cluster + 1].sort(
+                            key=lambda x: self[str(x)]['objfun'])
             if external:
                 return clusters
             self.clusters = clusters
@@ -657,6 +670,7 @@ class StructuralModels(object):
 
         :returns: matrix frequency of interaction
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -672,9 +686,9 @@ class StructuralModels(object):
         if not cutoff:
             cutoff = [float(2 * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
-        matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
-                            for _ in xrange(self.nloci)]) for c in cutoff])
-        wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
+        matrix = dict([(c, [[0. for _ in range(self.nloci)]
+                            for _ in range(self.nloci)]) for c in cutoff])
+        wloci = [i for i in range(self.nloci) if self._zeros[i]]
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
@@ -690,7 +704,7 @@ class StructuralModels(object):
                         matrix[c][j][i] += frac  # * 100
         if cutoff_list:
             return matrix
-        return matrix.values()[0]
+        return list(matrix.values())[0]
 
     def define_best_models(self, nbest):
         """
@@ -707,9 +721,9 @@ class StructuralModels(object):
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
         nbest = min(len(tmp_models), nbest)
-        self.__models = dict((i, tmp_models[i]) for i in xrange(nbest))
+        self.__models = dict((i, tmp_models[i]) for i in range(nbest))
         self._bad_models = dict((i, tmp_models[i]) for i in
-                                xrange(nbest, len(tmp_models)))
+                                range(nbest, len(tmp_models)))
 
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
@@ -780,9 +794,9 @@ class StructuralModels(object):
         # pre-calculate contact-matrices
         cmatrices = [self.get_contact_matrix(
             [str(m) for m in clusters[i + 1]], cutoff=dcutoff)
-            for i in xrange(n_best_clusters)]
-        for i in xrange(n_best_clusters - 1 + add):
-            for j in xrange(n_best_clusters - 1 + add):
+            for i in range(n_best_clusters)]
+        for i in range(n_best_clusters - 1 + add):
+            for j in range(n_best_clusters - 1 + add):
                 try:
                     axes[i, j].set(adjustable='box-forced', aspect=1)
                     axes[i, j].set_visible(False)
@@ -790,8 +804,8 @@ class StructuralModels(object):
                     axes.set(adjustable='box-forced', aspect=1)
                     axes.set_visible(False)
         # doing the plot
-        for i in xrange(n_best_clusters - 1):
-            for j in xrange(1, n_best_clusters):
+        for i in range(n_best_clusters - 1):
+            for j in range(1, n_best_clusters):
                 if j < i + 1:
                     continue
                 try:
@@ -801,8 +815,8 @@ class StructuralModels(object):
                     axes.set_visible(True)
                     axes.set(adjustable='box-forced', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
-                            for l in xrange(self.nloci)]
-                           for k in xrange(self.nloci)]
+                            for l in range(self.nloci)]
+                           for k in range(self.nloci)]
                 try:
                     ims = axes[i + add, j - 1].imshow(
                         matrix3, origin='lower', cmap=bwr,
@@ -879,9 +893,9 @@ class StructuralModels(object):
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
         cbar = fig.colorbar(ims, cax=cell, cmap=viridis)
         cbar.set_ticks([float(k) / 100
-                        for k in xrange(-100, 150, 50)])
+                        for k in range(-100, 150, 50)])
         cbar.set_ticklabels(['%3s%% ' % (p)
-                             for p in xrange(-100, 150, 50)])
+                             for p in range(-100, 150, 50)])
         for item in cell.get_yticklabels():
             item.set_fontsize(10)
         cbar.ax.set_ylabel('\n\nPercentage of models with a\n' +
@@ -891,7 +905,7 @@ class StructuralModels(object):
                            (''.join([' ' * 10 +
                                      'Cluster #%-2s: %3s models\n' % (
                                          i + 1, len(clusters[i + 1]))
-                                     for i in xrange(n_best_clusters)])),
+                                     for i in range(n_best_clusters)])),
                            rotation=0, ha='left', va='center')
         plt.suptitle(('Deconvolution analysis for the %s top clusters ' +
                       '(cutoff=%s nm)') % (
@@ -962,8 +976,8 @@ class StructuralModels(object):
         if savedata:
             out = open(savedata, 'w')
             out.write('#Particle1\tParticle2\tModels_percentage\n')
-            for i in xrange(len(matrix)):
-                for j in xrange(i + 1, len(matrix)):
+            for i in range(len(matrix)):
+                for j in range(i + 1, len(matrix)):
                     out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
         if not savefig and not show and not axe:
@@ -983,7 +997,7 @@ class StructuralModels(object):
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
         oldlabels = cbar.ax.get_yticklabels()
-        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+        newlabels = [str(int(100 * float(x.get_text())))+'%' for x in oldlabels]
         cbar.ax.set_yticklabels(newlabels)
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
@@ -1075,6 +1089,7 @@ class StructuralModels(object):
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -1089,12 +1104,12 @@ class StructuralModels(object):
                 include_edges=False)[-1]
             acc.append([(float(j) / (j + k))  if (j + k) else 0.0
                         for _, j, k in acc_vs_inacc])
-        accper, errorn, errorp = self._windowize(zip(*acc), steps, average=True)
+        accper, errorn, errorp = self._windowize(list(zip(*acc)), steps, average=True)
         if savedata:
             out = open(savedata, 'w')
             out.write('# Particle\t%s\n' % ('\t'.join([
                 str(c) + '\t' + '2*stddev(%d)' % c for c in steps])))
-            for part in xrange(self.nloci):
+            for part in range(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['nan\tnan' if part >= len(accper[c]) else
                      (str(round(accper[c][part], 3)) + '\t' +
@@ -1194,7 +1209,7 @@ class StructuralModels(object):
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([
                 str(c) + '\t' + '2*stddev(%d)' % c for c in steps])))
-            for part in xrange(self.nloci):
+            for part in range(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['nan\tnan' if part >= len(distsk[c]) else
                      (str(round(distsk[c][part], 3)) + '\t' +
@@ -1213,15 +1228,15 @@ class StructuralModels(object):
                                             ylabel=ylabel, title=title)
 
     def _get_interactions(self, models, cutoff):
-        interactions = [[] for _ in xrange(self.nloci)]
+        interactions = [[] for _ in range(self.nloci)]
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff2 = cutoff**2
-        for i in xrange(self.nloci):
+        for i in range(self.nloci):
             for m in models:
                 val = 0
                 mdl = self[m]
-                for j in xrange(self.nloci):
+                for j in range(self.nloci):
                     if i == j:
                         continue
                     val += ((mdl['x'][i] - mdl['x'][j])**2 +
@@ -1275,7 +1290,7 @@ class StructuralModels(object):
             out.write('#Particle\t%s\n' % (
                 '\t'.join(['%s_interactions(%s)\t2*stddev(%s)' % (
                     'Average' if average else 'Median', k, k) for k in steps])))
-            for i in xrange(self.nloci):
+            for i in range(self.nloci):
                 out.write('%s\t%s\n' % (i + 1, '\t'.join(
                     ['%s\t%s' % (str('nan' if (len(distsk[k]) <= i or
                                                distsk[k][i] is None)
@@ -1341,7 +1356,7 @@ class StructuralModels(object):
         if savedata:
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
-            for part in xrange(self.nloci):
+            for part in range(self.nloci):
                 out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
                     [str(round(consistencies[c][part], 3)) for c in cutoffs])))
             out.close()
@@ -1357,7 +1372,7 @@ class StructuralModels(object):
         scat2 = plt.Line2D((0, 1), (0, 0), color=(0.7 , 0.7 , 0.7 ), marker='o',
                            linestyle='')
         for i, cut in enumerate(cutoffs[::-1]):
-            plots += axe.plot(range(1, self.nloci + 1),
+            plots += axe.plot(list(range(1, self.nloci + 1)),
                               consistencies[cut], color='darkred',
                               alpha=1 - i / float(len(cutoffs)))
         try:
@@ -1444,7 +1459,7 @@ class StructuralModels(object):
             raise ValueError('ERROR: last element of span should be negative')
 
         rads = [[None] * len(models)] * (-span[0])
-        for res in xrange(-span[0], self.nloci - span[-1]):
+        for res in range(-span[0], self.nloci - span[-1]):
             subrad = self.dihedral_angle(res + span[0], res + span[1],
                                          res + span[2],
                                          res + span[3], res + span[4], models)
@@ -1465,7 +1480,7 @@ class StructuralModels(object):
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([
                 str(c) + '\t' + '2*stddev(%d)' % c for c in steps])))
-            for part in xrange(self.nloci):
+            for part in range(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['nan\tnan' if part >= len(radsk[c]) else
                      (str(round(radsk[c][part], 3)) + '\t' +
@@ -1540,7 +1555,7 @@ class StructuralModels(object):
             moy = self[model]['y']
             moz = self[model]['z']
             subrad = [None] * 3
-            for res in xrange(1, self.nloci - 5):
+            for res in range(1, self.nloci - 5):
                 subrad.append(self.angle_between_3_particles(
                     res, res + 3, res + 6, models=[model], all_angles=False))
                 if signed:
@@ -1555,7 +1570,7 @@ class StructuralModels(object):
             subrad += [None] * 3
             rads.append(subrad)
 
-        radsk, errorn, errorp = self._windowize(zip(*rads), steps, interval=0,
+        radsk, errorn, errorp = self._windowize(list(zip(*rads)), steps, interval=0,
                                                 average=False, minerr=-360)
         if plot:
             xlabel = 'Particle number'
@@ -1568,7 +1583,7 @@ class StructuralModels(object):
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([
                 str(c) + '\t' + '2*stddev(%d)' % c for c in steps])))
-            for part in xrange(self.nloci):
+            for part in range(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['nan\tnan' if part >= len(radsk[c]) else
                      (str(round(radsk[c][part], 3)) + '\t' +
@@ -1601,13 +1616,13 @@ class StructuralModels(object):
 
         """
 
-        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + self._zscores[k].keys()
-                                               for k in self._zscores.keys()])
+        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + list(self._zscores[k].keys())
+                                               for k in list(self._zscores.keys())])
         max_bin = max([int(i) for i in zsc_mtrx])
-        zsc_mtrx = [[float('nan') for _ in xrange(max_bin)]
-                    for _ in xrange(max_bin)]
-        for i in xrange(max_bin):
-            for j in xrange(max_bin):
+        zsc_mtrx = [[float('nan') for _ in range(max_bin)]
+                    for _ in range(max_bin)]
+        for i in range(max_bin):
+            for j in range(max_bin):
                 try:
                     zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
                 except KeyError:
@@ -1637,8 +1652,8 @@ class StructuralModels(object):
 
         ax = plt.axes([.38, 0.11, .28, .61])
         zdata = sorted(reduce(lambda x, y: x + y,
-                              [self._zscores[v].values()
-                               for v in self._zscores.keys()]))
+                              [list(self._zscores[v].values())
+                               for v in list(self._zscores.keys())]))
         try:
             _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
                                     facecolor='none', edgecolor='k', density=True)
@@ -1650,14 +1665,14 @@ class StructuralModels(object):
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
         try:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [list(self._zscores[v].values())
+                                            for v in list(self._zscores.keys())]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled', density=True)
         except AttributeError:
             ax.hist(
-                reduce(lambda x, y: x + y, [self._zscores[v].values()
-                                            for v in self._zscores.keys()]),
+                reduce(lambda x, y: x + y, [list(self._zscores[v].values())
+                                            for v in list(self._zscores.keys())]),
                 bins=25, linewidth=2, facecolor='none', edgecolor='k',
                 histtype='stepfilled')
         height1 = height2 = 0
@@ -1809,7 +1824,7 @@ class StructuralModels(object):
         ax.set_xlabel('Particle')
         cbar = ax.figure.colorbar(ims)
         oldlabels = cbar.ax.get_yticklabels()
-        newlabels = map(lambda x: str(int(100 * float(x.get_text())))+'%', oldlabels)
+        newlabels = [str(int(100 * float(x.get_text())))+'%' for x in oldlabels]
         cbar.ax.set_yticklabels(newlabels)
         # cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
@@ -2012,6 +2027,7 @@ class StructuralModels(object):
 
 
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2210,6 +2226,7 @@ class StructuralModels(object):
         :param None cluster: compute the angle only for the models in the
            cluster number 'cluster'
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2286,6 +2303,7 @@ class StructuralModels(object):
            calculated distances or their median value distances, either the
            list of distances.
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2306,6 +2324,7 @@ class StructuralModels(object):
         """
         same as median_3d_dist, but return the square of the distance instead
         """
+        cluster = cluster or -1
         part1 -= 1
         part2 -= 1
         if models:
@@ -2361,7 +2380,7 @@ class StructuralModels(object):
         """
         gaps = []
         gap = 0
-        for pos in xrange(self.nloci):
+        for pos in range(self.nloci):
             if not self._zeros[pos]:
                 gap += 1
             elif gap > 1:
@@ -2384,7 +2403,7 @@ class StructuralModels(object):
             xstep = (x2 - x1) / div
             ystep = (y2 - y1) / div
             zstep = (z2 - z1) / div
-            for pos, i in enumerate(range(beg + 1, end), 1):
+            for pos, i in enumerate(list(range(beg + 1, end)), 1):
                 xcoords[i] = x1 + xstep * pos
                 ycoords[i] = y1 + ystep * pos
                 zcoords[i] = z1 + zstep * pos
@@ -2428,6 +2447,8 @@ class StructuralModels(object):
            function
 
         """
+        cluster = cluster or -1
+        model_num = model_num or -1
         if model_num > -1:
             models = [model_num]
         elif models:
@@ -2469,6 +2490,7 @@ class StructuralModels(object):
            restraints
 
         """
+        cluster = cluster or -1
         form = '''
 {
         "metadata" : {
@@ -2499,7 +2521,7 @@ class StructuralModels(object):
         fil['title']   = title or "Sample TADbit data"
         fil['scale']   = str(self._config['scale'])
         versions = get_dependencies_version(dico=True)
-        fil['dep'] = str(dict((k.strip(), v.strip()) for k, v in versions.items()
+        fil['dep'] = str(dict((k.strip(), v.strip()) for k, v in list(versions.items())
                               if k in ['  TADbit', 'IMP', 'MCL'])).replace("'", '"')
         ukw = 'UNKNOWN'
 
@@ -2548,7 +2570,7 @@ class StructuralModels(object):
                                                     isinstance(v, list) or
                                                     isinstance(v, float))
                                             else str(v).replace("'", '"'))
-                for k, v in my_descr.items())
+                for k, v in list(my_descr.items()))
             if fil['descr']:
                 fil['descr'] += ','
         except AttributeError:
@@ -2573,7 +2595,7 @@ class StructuralModels(object):
                  for c in self.clusters]) + ']'
 
         fil['xyz'] = []
-        for m_idx in xrange(len(models)):
+        for m_idx in range(len(models)):
             m = models[m_idx]
             if infer_unrestrained:
                 self.infer_unrestrained_particle_coords(
@@ -2587,10 +2609,10 @@ class StructuralModels(object):
             fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % (
                 model['rand_init']) + ','.join(
                     '%.0f,%.0f,%.0f' % (model['x'][i], model['y'][i], model['z'][i])
-                    for i in xrange(len(model['x']))) + ']}')
+                    for i in range(len(model['x']))) + ']}')
         fil['xyz'] = ',\n'.join(fil['xyz'])
         # creates a UUID for this particular set of coordinates AND for TADbit version
-        fil['sha'] = str(uuid5(UUID(md5(versions['  TADbit']).hexdigest()),
+        fil['sha'] = str(uuid5(UUID(md5(versions['  TADbit'].encode('utf-8')).hexdigest()),
                                fil['xyz']))
         try:
             fil['restr']  = '[' + ','.join('[%s,%s,"%s",%f]' % (
@@ -2645,6 +2667,8 @@ class StructuralModels(object):
         :param False get_path: whether to return, or not, the full path where
            the file has been written
         """
+        cluster = cluster or -1
+        model_num = model_num or -1
         if model_num > -1:
             models = [model_num]
         elif models:
@@ -2687,6 +2711,8 @@ class StructuralModels(object):
         :param False get_path: whether to return, or not, the full path where
            the file has been written
         """
+        cluster = cluster or -1
+        model_num = model_num or -1
         if model_num > -1:
             models = [model_num]
         elif models:
@@ -2729,7 +2755,7 @@ class StructuralModels(object):
         if not end:
             end = self.nloci
 
-        wloci = [i for i in xrange(self.nloci)]
+        wloci = [i for i in range(self.nloci)]
 
         # Maximum genomic distance
         max_gen_dist=end-begin
@@ -2738,7 +2764,7 @@ class StructuralModels(object):
         R4_all  = [0]*max_gen_dist
         cnt_all = [0]*max_gen_dist
 
-        for model in xrange(len(self.__models)):
+        for model in range(len(self.__models)):
 
             # Quantities within each model
             R2  = [0]*max_gen_dist
@@ -2746,7 +2772,7 @@ class StructuralModels(object):
             cnt = [0]*max_gen_dist
 
             x = [] ; y = [] ; z = []
-            for locus in xrange(begin,end):
+            for locus in range(begin,end):
                 x.append(self[model]['x'][locus])
                 y.append(self[model]['y'][locus])
                 z.append(self[model]['z'][locus])
@@ -2760,7 +2786,7 @@ class StructuralModels(object):
                 R4[abs(i-j)]  += (squared_distance_matrix[i][j]*squared_distance_matrix[i][j])
                 cnt[abs(i-j)] += 1
 
-            for i in xrange(max_gen_dist):
+            for i in range(max_gen_dist):
                 if cnt[i] != 0:
                     R2[i] = R2[i] / cnt[i]
                     R4[i] = R4[i] / cnt[i]
@@ -2768,14 +2794,14 @@ class StructuralModels(object):
                     R2[i] = 0.0
                     R4[i] = 0.0
 
-            for i in xrange(max_gen_dist):
+            for i in range(max_gen_dist):
                 R2_all[i]  += R2[i]
                 R4_all[i]  += R4[i]
                 cnt_all[i] += 1
 
         avgs     = []
         std_devs = []
-        for i in xrange(max_gen_dist):
+        for i in range(max_gen_dist):
             if cnt_all[i] != 0:
                 avg     = R2_all[i]/cnt_all[i]
                 avg2    = R4_all[i]/cnt_all[i]
@@ -2794,7 +2820,7 @@ class StructuralModels(object):
             out = open(savedata, 'w')
             out.write('#gen_dist\tR2\tstd_dev_R2\n')
             out.write('#persistence_length = %f\n' % (persistence_length))
-            for gen_dist in xrange(max_gen_dist):
+            for gen_dist in range(max_gen_dist):
                 out.write('%f\t%f\t%f\n' % (gen_dist,avgs[gen_dist],std_devs[gen_dist]))
             out.close()
 
@@ -2805,7 +2831,7 @@ class StructuralModels(object):
         show = False if axe else True
         axe = setup_plot(axe)
         plots = []
-        plots = axe.plot(range(0, self.nloci),
+        plots = axe.plot(list(range(0, self.nloci)),
                          avgs, color='black')
 
         axe.set_xlim((0, max_gen_dist))
@@ -2834,7 +2860,7 @@ class StructuralModels(object):
 
         """
 
-        out = open(outfile, 'w')
+        out = open(outfile, 'wb')
         dump(self._reduce_models(minimal=minimal), out, HIGHEST_PROTOCOL)
         out.close()
 
@@ -2877,6 +2903,7 @@ class StructuralModels(object):
         into proper list of models that can be processed by StructuralModels
         functions
         """
+        cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -2890,7 +2917,7 @@ class StructuralModels(object):
         lmodels = len(dists[0])
         distsk = {1: dists}
         for k in steps[1:] if steps[0] == 1 else steps:
-            distsk[k] = [None for _ in range(k / 2 + interval)]
+            distsk[k] = [None for _ in range(k // 2 + interval)]
             for i in range(interval, self.nloci - k - interval + 1):
                 distsk[k].append(reduce(lambda x, y: x + y,
                                         [dists[i + j] for j in range(k)]))
@@ -2898,12 +2925,12 @@ class StructuralModels(object):
                     continue
                 # calculate the mean for steps larger than 1
                 distsk[k][-1] = [mean_none([distsk[k][-1][i + lmodels * j]
-                                            for j in xrange(k)])
-                                 for i in xrange(lmodels)]
+                                            for j in range(k)])
+                                 for i in range(lmodels)]
         new_distsk = {}
         errorp     = {}
         errorn     = {}
-        for k, dists in distsk.iteritems():
+        for k, dists in list(distsk.items()):
             new_distsk[k] = []
             errorp[k] = []
             errorn[k] = []
@@ -2936,7 +2963,7 @@ class StructuralModels(object):
 
     def _plot_polymer(self, axe):
         where = axe.get_ylim()[0]
-        axe.scatter(range(1, self.nloci + 1), [where] * self.nloci,
+        axe.scatter(list(range(1, self.nloci + 1)), [where] * self.nloci,
                     s=40,
                     color=[(0.15, 0.15, 0.15) if i else (0.7, 0.7, 0.7)
                            for i in self._zeros], clip_on=False,
@@ -2954,14 +2981,14 @@ class StructuralModels(object):
         ax = setup_plot(axe)
         plots = []
         for k in steps:
-            plots += ax.plot(range(1, len(distsk[k]) + 1),
+            plots += ax.plot(list(range(1, len(distsk[k]) + 1)),
                              distsk[k], color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
         if error:
             for k in steps:
-                plots += ax.plot(range(1, len(errorp[k]) + 1),
+                plots += ax.plot(list(range(1, len(errorp[k]) + 1)),
                                  errorp[k], color=colors[steps.index(k)], ls='--')
-                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
+                ax.plot(list(range(1, len(errorp[k]) + 1)), errorn[k],
                         color=colors[steps.index(k)], ls='--')
         ax.set_ylabel(ylabel)
         ax.set_xlabel(xlabel)

@@ -4,6 +4,7 @@
 
 """
 from __future__ import print_function
+from builtins   import next
 import multiprocessing as mu
 
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
@@ -39,12 +40,12 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
 
     :returns: number of reads kept
     """
-    filters = filters or masked.keys()
+    filters = filters or list(masked.keys())
     filter_handlers = {}
     for k in filters:
         try:
             fh = open(masked[k]['fnam'])
-            val = fh.next().strip()
+            val = next(fh).strip()
             filter_handlers[k] = [val, fh]
         except StopIteration:
             pass
@@ -54,14 +55,14 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
     # get the header
     pos = 0
     while True:
-        line = fhandler.next()
+        line = next(fhandler)
         if not line.startswith('#'):
             break
         pos += len(line)
         out.write(line)
     fhandler.seek(pos)
 
-    current = set([v for v, _ in filter_handlers.values()])
+    current = set([v for v, _ in list(filter_handlers.values())])
     count = 0
     if reverse:
         for line in fhandler:
@@ -72,14 +73,15 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
             else:
                 continue
             # iterate over different filters to update current filters
-            for k in filter_handlers.keys():
+            for k in list(filter_handlers.keys()):
                 if read != filter_handlers[k][0]:
                     continue
                 try: # get next line from filter file
-                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                    filter_handlers[k][0] = next(filter_handlers[k][1]).strip()
                 except StopIteration:
+                    filter_handlers[k][1].close()
                     del filter_handlers[k]
-            current = set([v for v, _ in filter_handlers.values()])
+            current = set([v for v, _ in list(filter_handlers.values())])
     else:
         for line in fhandler:
             read = line.split('\t', 1)[0]
@@ -88,18 +90,20 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
                 out.write(line)
                 continue
             # iterate over different filters to update current filters
-            for k in filter_handlers.keys():
+            for k in list(filter_handlers.keys()):
                 if read != filter_handlers[k][0]:
                     continue
                 try: # get next line from filter file
-                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                    filter_handlers[k][0] = next(filter_handlers[k][1]).strip()
                 except StopIteration:
+                    filter_handlers[k][1].close()
                     del filter_handlers[k]
-            current = set([v for v, _ in filter_handlers.values()])
+            current = set([v for v, _ in list(filter_handlers.values())])
     if verbose:
         print('    saving to file {:,} reads {}.'.format(
             count, 'with' if reverse else 'without'))
     out.close()
+    fhandler.close()
     return count
 
 def filter_reads(fnam, output=None, max_molecule_length=500,
@@ -205,7 +209,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     if savedata:
         out = open(savedata, 'w')
         out.write('Mapped both\t%d\n' % total)
-        for k in xrange(1, len(MASKED) + 1):
+        for k in range(1, len(MASKED) + 1):
             out.write('%s\t%d\n' % (MASKED[k]['name'], MASKED[k]['reads']))
         # out.write('Valid pairs\t%d\n' % (total - bads))
         out.close()
@@ -213,7 +217,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         print('Filtered reads (and percentage of total):\n')
         print('     {:>25}  : {:12,} (100.00%)'.format('Mapped both', total))
         print('  ' + '-' * 53)
-        for k in xrange(1, len(MASKED)):
+        for k in range(1, len(MASKED)):
             print('  {:2}- {:>25} : {:12,} ({:6.2f}%)'.format(
                 k, MASKED[k]['name'], MASKED[k]['reads'],
                 float(MASKED[k]['reads']) / total * 100))
@@ -230,15 +234,15 @@ def _filter_same_frag(fnam, max_molecule_length, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             (read,
              cr1, pos1, sd1, _, _, re1,
              cr2, pos2, sd2, _, _, re2) = line.split('\t')
-            ps1, ps2, sd1, sd2 = map(int, (pos1, pos2, sd1, sd2))
+            ps1, ps2, sd1, sd2 = list(map(int, (pos1, pos2, sd1, sd2)))
             if cr1 == cr2:
                 if re1 == re2.rstrip():
                     if sd1 != sd2:
@@ -260,9 +264,10 @@ def _filter_same_frag(fnam, max_molecule_length, output):
                     # different fragments but facing and very close
                     masked[4]["reads"] += 1
                     outfil[4].write(read + '\n')
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     # print 'done 1', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
@@ -277,9 +282,9 @@ def _filter_duplicates(fnam, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     (read,
      cr1, pos1, sd1, _ , _, _,
      cr2, pos2, sd2, _ , _, _) = line.split('\t')
@@ -294,6 +299,7 @@ def _filter_duplicates(fnam, output):
             outfil[9].write(read + '\n')
         total += 1
         prev_elts = new_elts
+    fhandler.close()
     # print 'done 4', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
@@ -312,15 +318,15 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             (read,
              _, pos1, _, _, rs1, re1,
              _, pos2, _, _, rs2, re2) = line.split('\t')
-            ps1, ps2, re1, rs1, re2, rs2 = map(int, (pos1, pos2, re1, rs1, re2, rs2))
+            ps1, ps2, re1, rs1, re2, rs2 = list(map(int, (pos1, pos2, re1, rs1, re2, rs2)))
             diff11 = re1 - ps1
             diff12 = ps1 - rs1
             diff21 = re2 - ps2
@@ -348,9 +354,10 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
             if (dif1 > max_frag_size) or (dif2 > max_frag_size):
                 masked[7]["reads"] += 1
                 outfil[7].write(read + '\n')
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     # print 'done 2', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
@@ -370,9 +377,9 @@ def _filter_over_represented(fnam, over_represented, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             read, cr1,  _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split('\t')
@@ -380,9 +387,10 @@ def _filter_over_represented(fnam, over_represented, output):
                   frag_count.get((cr2, rs2), 0) > cut):
                 masked[8]["reads"] += 1
                 outfil[8].write(read + '\n')
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     # print 'done 3', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
@@ -407,16 +415,16 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             (read,
              n1, pos1, strand1, _, rs1, re1,
              n2, pos2, strand2, _, rs2, re2) = line.split('\t')
-            pos1, pos2, re1, rs1, re2, rs2, strand1, strand2 = map(int,
-                    (pos1, pos2, re1, rs1, re2, rs2, strand1, strand2))
+            pos1, pos2, re1, rs1, re2, rs2, strand1, strand2 = list(map(int,
+                    (pos1, pos2, re1, rs1, re2, rs2, strand1, strand2)))
             #lexicographic order for chromosomes
             if n1 > n2 or (n1 == n2 and pos2<pos1):
                 pos1,pos2,n1,n2,re1,rs1,re2,rs2,strand1,strand2 = \
@@ -455,9 +463,10 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
             #apply classification
             masked[cat]["reads"] += 1
             outfil[cat].write(read + '\n')
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     for k in masked:
         masked[k]['fnam'] = output + '_' +\
                 masked[k]['name'].replace(' ', '_') + '.tsv'

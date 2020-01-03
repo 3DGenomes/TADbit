@@ -6,13 +6,15 @@ information needed
 
 """
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from argparse                       import HelpFormatter
 from os                             import path, remove
 from shutil                         import copyfile
 from string                         import ascii_letters
 from random                         import random
 from warnings                       import warn
-from cPickle                        import load
+from pickle                        import load
 from multiprocessing                import cpu_count
 from traceback                      import print_exc
 import sqlite3 as lite
@@ -149,7 +151,7 @@ def run(opts):
                 continue
             # transform bad column in chromosome referential
             if hic_data.bads:
-                to_rm = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
+                to_rm = tuple([1 if i in hic_data.bads else 0 for i in range(beg, end)])
             else:
                 to_rm = None
             # maximum size of a TAD
@@ -261,7 +263,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        for ncrm, crm in enumerate(max(cmp_result.keys(), tad_result.keys(), key=len)):
+        for ncrm, crm in enumerate(max(list(cmp_result.keys()), list(tad_result.keys()), key=len)):
             if crm in cmp_result:
                 add_path(cur, cmp_result[crm]['path_cmprt1'], 'COMPARTMENT',
                          jobid, opts.workdir)
@@ -461,7 +463,7 @@ def populate_args(parser):
 
     glopts.add_argument('-F', '--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        choices = list(range(1, 11)),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +
@@ -610,11 +612,11 @@ def load_tad_height(tad_def, size, beg, end, hic_data):
         norm = lambda i, j: 1 # Non-normalized height, keep in mind!
     tads, _ = parse_tads(tad_def)
     diags = []
-    for k in xrange(1, size):
+    for k in range(1, size):
         try:
             diags.append(sum(
                 hic_data[i, i + k] / norm(i + k, i)
-                for i in xrange(beg, end - k) if not i in zeros and not i + k in zeros
+                for i in range(beg, end - k) if not i in zeros and not i + k in zeros
                 ) / float(sum(1 for i in range(beg, end - k)
                               if not i in zeros and not i + k in zeros)))
         except ZeroDivisionError:
@@ -624,12 +626,12 @@ def load_tad_height(tad_def, size, beg, end, hic_data):
                         int(tads[tad]['end']) + 1)
         matrix = sum(
             hic_data[i, j] / norm(j, i)
-            for i in xrange(beg + start - 1, beg + final - 1) if not i in zeros
-            for j in xrange(i + 1          , beg + final - 1) if not j in zeros)
+            for i in range(beg + start - 1, beg + final - 1) if not i in zeros
+            for j in range(i + 1          , beg + final - 1) if not j in zeros)
         try:
             height = float(matrix) / sum(
                 [diags[i - 1] * (final - start - i)
-                 for i in xrange(1, final - start)])
+                 for i in range(1, final - start)])
         except ZeroDivisionError:
             height = 0.
         tads[tad]['height'] = height

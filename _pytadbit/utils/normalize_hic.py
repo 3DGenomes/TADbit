@@ -107,7 +107,7 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None,
     headers = sorted(kwargs.keys())
     csvfile.write(','.join(headers) + '\n')
     csvfile.write('\n'.join(','.join(str(kwargs[k][i]) for k in headers)
-                            for i in xrange(len(kwargs['tot']))) + '\n')
+                            for i in range(len(kwargs['tot']))) + '\n')
     csvfile.close()
 
     out_csv = path.join(tmp_dir, 'biases.csv')
@@ -165,7 +165,7 @@ def _update_W(W, DB):
 def copy_matrix(hic_data, bads):
     W = {}
     N = len(hic_data)
-    for k, v in hic_data.iteritems():
+    for k, v in hic_data.items():
         i, j = divmod(k, N)
         if i in bads or j in bads:
             continue
@@ -196,8 +196,8 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     size = len(hic_data)
     if not bads:
         bads = {}
-    remove = [i in bads for i in xrange(size)]
-    remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
+    remove = [i in bads for i in range(size)]
+    remove = remove or tuple([int(hic_data[i+i*size]==0) for i in range(size)])
 
     if verbose:
         print("  - copying matrix")
@@ -208,7 +208,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     if verbose:
         print("  - computing biases")
-    for it in xrange(iterations + 1):
+    for it in range(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
         if iterations == 0: # exit before, we do not need to update W
@@ -220,7 +220,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
             print('   %15.3f %15.3f %15.3f %4s %9.5f' % (S[0], meanS, S[-1], it, dev))
         if dev < max_dev:
             break
-    for i in xrange(size):
+    for i in range(size):
         try:
             if B[i]:
                 B[i] *= meanS**.5
@@ -271,13 +271,13 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwa
 def _meandiag(hic_data, dist, diag, min_n, size, bads):
     if hic_data.section_pos:
         for crm in hic_data.section_pos:
-            for i in xrange(hic_data.section_pos[crm][0],
+            for i in range(hic_data.section_pos[crm][0],
                             hic_data.section_pos[crm][1] - dist):
                 if i in bads:
                     continue
                 diag.append(hic_data[i, i + dist])
     else:
-        for i in xrange(size - dist):
+        for i in range(size - dist):
             if i in bads:
                 continue
             diag.append(hic_data[i, i + dist])

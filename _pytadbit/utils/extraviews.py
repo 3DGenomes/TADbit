@@ -19,7 +19,6 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-
 NTH = {
     1 : "First",
     2 : "Second",
@@ -144,7 +143,7 @@ def color_residues(x, **kwargs):
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
-    for n in xrange(len(x)):
+    for n in range(len(x)):
         red = float(n + 1) / len(x)
         result.append((red, 0, 1 - red))
     return result
@@ -282,10 +281,10 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     # just to display nice numbers
     form = lambda x: ''.join([(s + ',') if not i%3 and i else s
                               for i, s in enumerate(str(x)[::-1])][::-1])
-    plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
+    plt.yticks([bot+i for i in range(0, -bot-bot//cut, -bot//cut)],
                # "{:,}".format (int(minnrj)/cutter * cutter  + i)
                ["%s" % (form(int(minnrj)/cutter * cutter  + i))
-                for i in xrange(0, -bot-bot/cut, -bot/cut)],
+                for i in range(0, -bot-bot//cut, -bot//cut)],
                size=kwargs.get('fontsize', 8))
     ax.set_ylabel('Minimum IMP objective function',
                   size=kwargs.get('fontsize', 8) + 1)
@@ -460,13 +459,13 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
             xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
             axe.plot(xs, ys, zs, color='lightgrey', lw=lw_main, alpha=0.8)
         else:
-            for i in xrange(len(x)-1):
+            for i in range(len(x)-1):
                 axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
                          color=color[i], lw=lw_main)
                 if label:
                     axe.text(x[i], y[i], z[i], str(i), size=7)
         if label:
-            for i in xrange(len(x)):
+            for i in range(len(x)):
                 axe.text(x[i], y[i], z[i],str(i), size=7)
         axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
     axe.pbaspect = [1,1,1]
@@ -503,7 +502,7 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
         out.write('open %s\n' % (cmm_file))
     nmodels = len(cmm_files)
     if nmodels > 1:
-        for i in xrange(nmodels):
+        for i in range(nmodels):
             if i == 0:
                 continue
             if align:
@@ -530,7 +529,7 @@ set dc_start 0.5
 set dc_end 1
 scale 0.8%s\n
 ''' % ('\n'.join([the_shape % (mdl, mdl, mdl) for mdl in (
-                       [highlight] if highlight!='all' else range(nmodels))]),
+                       [highlight] if highlight!='all' else list(range(nmodels)))]),
        '\ntile' if grid else '')) +
                   ('define centroid radius %s color 1,0,0,0.2\n' % (
                       gyradius if gyradius else 10) if center_of_mass else '')
@@ -596,7 +595,7 @@ def plot_3d_optimization_result(result,
     nrows  = int(np.sqrt(len(wax)) + 0.5)
     fig = plt.figure(figsize=((ncols)*6,(nrows)*4.5))
 
-    for i in xrange(len(wax)):
+    for i in range(len(wax)):
         col = [result[i, j, k, l] for j in range(len(axes_range[1]))
                for k in range(len(axes_range[2])) for l in range(len(axes_range[3]))]
 
@@ -665,7 +664,7 @@ def plot_2d_optimization_result(result,
         tmp_axes_range = axes_range
         tmp_axes_range[1]  = [0.0]         # kbending !!!New option!!!
         len_kbending_range = 1
-        for i in xrange(len(ori_axes)):
+        for i in range(len(ori_axes)):
             if ori_axes[i] == 'scale':
                 tmp_axes_range[0] = axes_range[i] # scale
                 len_scale_range   = len(axes_range[i])
@@ -687,10 +686,10 @@ def plot_2d_optimization_result(result,
         tmp_result     = np.empty((len_scale_range  , len_kbending_range, len_maxdist_range,
                                    len_lowfreq_range, len_upfreq_range))
 
-        indeces_sets = product(range(len(axes_range[0])),
-                                         range(len(axes_range[1])),
-                                         range(len(axes_range[2])),
-                                         range(len(axes_range[3])))
+        indeces_sets = product(list(range(len(axes_range[0]))),
+                                         list(range(len(axes_range[1]))),
+                                         list(range(len(axes_range[2]))),
+                                         list(range(len(axes_range[3]))))
 
         for indeces_set in indeces_sets:
             tmp_indeces_set = [0, 0, 0, 0, 0]
@@ -732,11 +731,11 @@ def plot_2d_optimization_result(result,
 
     # This part marks the set of best correlations that the
     # user wants to be highlighted in the plot
-    vax_range = range(len(vax))[::-1] # scale
-    wax_range = range(len(wax))[::-1] # kbending
-    zax_range = range(len(zax))       # maxdist
-    yax_range = range(len(yax))       # lowfreq
-    xax_range = range(len(xax))       # upfreq
+    vax_range = list(range(len(vax)))[::-1] # scale
+    wax_range = list(range(len(wax)))[::-1] # kbending
+    zax_range = list(range(len(zax)))       # maxdist
+    yax_range = list(range(len(yax)))       # lowfreq
+    xax_range = list(range(len(xax)))       # upfreq
     indeces_sets = product(vax_range, wax_range,
                                      zax_range, yax_range,
                                      xax_range)
@@ -857,8 +856,8 @@ def plot_2d_optimization_result(result,
     # is set equal to True.
     # grid.axes_llc.set_ylim(-0.5, len(yax)+1)
 
-    grid.axes_llc.set_xticks(range(0, len(xax), 2))
-    grid.axes_llc.set_yticks(range(0, len(yax), 2))
+    grid.axes_llc.set_xticks(list(range(0, len(xax), 2)))
+    grid.axes_llc.set_yticks(list(range(0, len(yax), 2)))
     grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2], size=9)
     grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2], size=9)
     grid.axes_llc.set_xlabel(axes[4], size=9)
@@ -906,8 +905,8 @@ def compare_models(sm1, sm2, cutoff=150,
     mtx1 = sm1.get_contact_matrix(models=models1, cluster=cluster1, cutoff=cutoff)
     mtx2 = sm2.get_contact_matrix(models=models2, cluster=cluster2, cutoff=cutoff)
     mtx3 = [[mtx2[i][j] - mtx1[i][j]
-             for j in xrange(len(mtx1))]
-            for i in xrange(len(mtx1))]
+             for j in range(len(mtx1))]
+            for i in range(len(mtx1))]
     fig = plt.figure(figsize=(8, 6))
     axe = fig.add_subplot(111)
     im = axe.imshow(mtx3, origin='lower', interpolation="nearest")
@@ -950,8 +949,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
 
     shapes = {'ellipse'   : lambda h: [0] + list(h * zsin) + [0],
               'rectangle' : lambda h: [0] + [h] * 50 + [0],
-              'triangle'  : lambda h: ([h/25 * i for i in xrange(26)] +
-                                       [h/25 * i for i in xrange(25, -1, -1)])}
+              'triangle'  : lambda h: ([h/25 * i for i in range(26)] +
+                                       [h/25 * i for i in range(25, -1, -1)])}
 
     try:
         shape = shapes[shape]
@@ -962,8 +961,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             [this.s[i].upper() if this.s[i-1] is 'v' else this.s[i]
              for i in [24, 36, 163, 8, 6, 16, 36]]):
             shape = lambda h: (
-                [h / 25 * i for i in xrange(25)] + [h + 0.2] * 2 +
-                [h / 25 * i for i in xrange(24, -1, -1)])
+                [h / 25 * i for i in range(25)] + [h + 0.2] * 2 +
+                [h / 25 * i for i in range(24, -1, -1)])
         else:
             raise NotImplementedError(
                 '%s not valid, use one of ellipse, rectangle or triangle')
@@ -979,17 +978,17 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         warn("WARNING: raw Hi-C data not available, " +
              "TAD's height fixed to 1")
         norms = None
-    if tads and not 'height' in tads[tads.keys()[0]]:
+    if tads and not 'height' in tads[list(tads.keys())[0]]:
         diags = []
         siz = xpr.size
         sp1 = siz + 1
         if norms:
-            for k in xrange(1, siz):
+            for k in range(1, siz):
                 s_k = siz * k
                 diags.append(sum([norms[i * sp1 + s_k]
                                  if not (i in zeros
                                          or (i + k) in zeros) else 0.
-                                  for i in xrange(siz - k)]) / (siz - k))
+                                  for i in range(siz - k)]) / (siz - k))
         for tad in tads:
             start, end = (int(tads[tad]['start']) + 1,
                           int(tads[tad]['end']) + 1)
@@ -997,13 +996,13 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                 matrix = sum([norms[i + siz * j]
                              if not (i in zeros
                                      or j in zeros) else 0.
-                              for i in xrange(start - 1, end - 1)
-                              for j in xrange(i + 1, end - 1)])
+                              for i in range(start - 1, end - 1)
+                              for j in range(i + 1, end - 1)])
             try:
                 if norms:
                     height = float(matrix) / sum(
                         [diags[i-1] * (end - start - i)
-                         for i in xrange(1, end - start)])
+                         for i in range(1, end - start)])
                 else:
                     height = 1.
             except ZeroDivisionError:
@@ -1025,7 +1024,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                      alpha=.8 if height > 1 else 0.4,
                      facecolor='grey', edgecolor='grey')
     if extras:
-        axe.plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
+        axe.plot(extras, [.5 for _ in range(len(extras))], 'rx')
     axe.grid()
     axe.patch.set_visible(False)
     axe.set_ylabel('Relative\nHi-C count')
@@ -1039,13 +1038,13 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                  mec=jet(tad['score'] / 10) if tad['score'] else 'k',
                  marker=6, ms=9, alpha=1, clip_on=False)
     try:
-        axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+        axe.set_xticks([1] + list(range(100, int(tad['end'] + 1), 50)))
     except UnboundLocalError:
         pass
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))
     try:
-        axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
+        axe.hlines(1, tads[list(tads.keys())[0]]['start'], end, 'k', lw=1.5)
     except IndexError:
         pass
     if show:
@@ -1053,18 +1052,18 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         plt.subplots_adjust(top=0.76)
         fig.set_facecolor('white')
         plots = []
-        for scr in xrange(1, 11):
+        for scr in range(1, 11):
             plots += plt.plot((100,),(100,), marker=6, ms=9,
                               color=jet(float(scr) / 10), mec='none')
         try:
             axe.legend(plots,
-                       [str(scr) for scr in xrange(1, 11)],
+                       [str(scr) for scr in range(1, 11)],
                        numpoints=1, title='Border scores',
                        fontsize='small', loc='lower left',
                        bbox_to_anchor=(1, 0.1))
         except TypeError:
             axe.legend(plots,
-                       [str(scr) for scr in xrange(1, 11)],
+                       [str(scr) for scr in range(1, 11)],
                        numpoints=1, title='Border scores',
                        loc='lower left',
                        bbox_to_anchor=(1, 0.1))
@@ -1079,7 +1078,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                       vmin=-1, vmax=1, whichpc=1,showAB=False):
     heights = []
     val = 0
-    for i in xrange(len(matrix)):
+    for i in range(len(matrix)):
         try:
             val = [c['dens'] for c in cmprts[crm] if c['start']==i][0]
         except IndexError:
@@ -1133,7 +1132,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     div = 1000 / len(matrix) + 1
     _div = float(div)
     half_first = np.array([sum(first[(i + j) / div] for j in range(div)) / _div
-                           for i in xrange(len(first) * div - div + 1)])
+                           for i in range(len(first) * div - div + 1)])
     axex.fill_between([i / _div for i in range(len(half_first))],
                       [0] * len(half_first), half_first,
                       where=half_first > 0, color='olive', alpha=0.5)
@@ -1255,7 +1254,7 @@ def pcolormesh_45deg(matrix, axe=None, **kwargs):
     rot = np.array([[1,0.5],[-1,0.5]])
     # create coordinate matrix and transform it
     A = np.dot(np.array([(j, i) for i, j in product(
-        range(size, -1, -1), range(0, size + 1, 1))]), rot)
+        list(range(size, -1, -1)), list(range(0, size + 1, 1)))]), rot)
     # plot
     im = axe.pcolormesh(A[:,1].reshape(size + 1,size + 1) - 0.5,
                         A[:,0].reshape(size + 1,size + 1),

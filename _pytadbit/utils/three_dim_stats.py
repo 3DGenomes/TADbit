@@ -49,7 +49,7 @@ def get_center_of_mass(x, y, z, zeros):
     xm = ym = zm = 0.
     size = len(x)
     subsize  = 0
-    for i in xrange(size):
+    for i in range(size):
         if not zeros[i]:
             continue
         subsize += 1
@@ -71,7 +71,7 @@ def mass_center(x, y, z, zeros):
     :param z: list of z coordinates
     """
     xm, ym, zm = get_center_of_mass(x, y, z, zeros)
-    for i in xrange(len(x)):
+    for i in range(len(x)):
         x[i] -= xm
         y[i] -= ym
         z[i] -= zm
@@ -149,7 +149,7 @@ def find_angle_rotation_improve_x(x, y, z, center_of_mass):
     Finds the rotation angle needed to face the longest edge of the molecule
     """
     # find most distant point from center of mass:
-    coords = zip(*(x, y, z))
+    coords = list(zip(*(x, y, z)))
     xdst, ydst, zdst = max(coords, key=lambda i: square_distance(i, center_of_mass))
     dist = distance((xdst, ydst, zdst), center_of_mass)
     angle = acos((-xdst**2 - (dist + sqrt(dist**2 - xdst**2))) /
@@ -295,12 +295,12 @@ def angle_between_3_points(point1, point2, point3):
 
 def calc_consistency(models, nloci, zeros, dcutoff=200):
     combines = list(combinations(models, 2))
-    parts = [0 for _ in xrange(nloci)]
+    parts = [0 for _ in range(nloci)]
     for pm in consistency_wrapper([model['x'] for model in models],
                                   [model['y'] for model in models],
                                   [model['z'] for model in models],
                                   zeros,
-                                  nloci, dcutoff, range(len(models)),
+                                  nloci, dcutoff, list(range(len(models))),
                                   len(models)):
         for i, p in enumerate(pm):
             parts[i] += p
@@ -346,13 +346,13 @@ def calc_eqv_rmsd(models, beg, end, zeros, dcutoff=200, one=False, what='score',
     x = []
     y = []
     z = []
-    for m in xrange(len(models)):
+    for m in range(len(models)):
         x.append([models[m]['x'][i] for i in range(beg, end) if zeros[i]])
         y.append([models[m]['y'][i] for i in range(beg, end) if zeros[i]])
         z.append([models[m]['z'][i] for i in range(beg, end) if zeros[i]])
-    zeros = tuple([True for _ in xrange(len(x[0]))])
+    zeros = tuple([True for _ in range(len(x[0]))])
     scores = rmsdRMSD_wrapper(x, y, z, zeros, len(zeros),
-                              dcutoff, range(len(models)), len(models),
+                              dcutoff, list(range(len(models))), len(models),
                               int(one), what, int(normed))
     return scores
 
@@ -406,7 +406,7 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
     positions = {} # a dict to get dots belonging to a given point
     sphere    = generate_sphere_points(nump)
     i = 0
-    for i in xrange(nloci - 1):
+    for i in range(nloci - 1):
         modelx   = xis[i]
         modely   = yis[i]
         modelz   = zis[i]
@@ -537,7 +537,7 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
                     len(subpoints) - 1)
 
         # define slices
-        for k in xrange(between - 1, 0, -1):
+        for k in range(between - 1, 0, -1):
             point = [modelx - k * stepx, modely - k * stepy, modelz - k * stepz]
             points.append(point)
             pointx, pointy, pointz = point
@@ -574,11 +574,11 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
 def randomize_matrix(data, savefig=None):
     size = len(data)
     rand_data = deepcopy(data)
-    for d in xrange(size):
-        diag = zip(*[range(d, size), range(size - d)])
+    for d in range(size):
+        diag = list(zip(*[list(range(d, size)), list(range(size - d))]))
         rdiag = diag[:]
         np_shuffle(rdiag)
-        for v in xrange(len(diag)):
+        for v in range(len(diag)):
             val = data[diag[v][0]][diag[v][1]]
             a, b = rdiag[v][0], rdiag[v][1]
             rand_data[b][a] = rand_data[a][b] = val
@@ -616,7 +616,7 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
 
     if verbose:
         sys.stdout.write('  - randomization\n')
-    for i in xrange(int(nrand)):
+    for i in range(int(nrand)):
         if verbose:
             sys.stdout.write('\r    ' + str(i + 1) + ' / ' + str(nrand))
             sys.stdout.flush()
@@ -626,7 +626,7 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         regvals.append( regval)
     if verbose:
         sys.stdout.write('\n')
-    regvals = zip(*regvals)
+    regvals = list(zip(*regvals))
     rvmean = []
     for rv in regvals:
         rvmean.append(np.mean(rv))
@@ -638,8 +638,8 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         rvstd = np.std(rv/total)
         err.append(2 * rvstd)
 
-    zdata = sorted(np.log2([data[i][j] for i in xrange(len(data))
-                            for j in xrange(i, len(data)) if data[i][j]]))
+    zdata = sorted(np.log2([data[i][j] for i in range(len(data))
+                            for j in range(i, len(data)) if data[i][j]]))
     skewness = skew(zdata)
     kurtness = kurtosis(zdata)
 
@@ -692,14 +692,14 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         except AttributeError:
             ax1.set_facecolor((.9,.9,.9))
 
-        ax1.errorbar(range(1, 1 + len(rvmean)), rvmean, yerr=err, ecolor='red',
+        ax1.errorbar(list(range(1, 1 + len(rvmean))), rvmean, yerr=err, ecolor='red',
                      color='orange', lw=2,
                      label='%s randomizations' % (nrand))
 
     total = sum(abs(egval)) / 100
     egval = np.array(sorted([e/total for e in abs(egval)], reverse=True))
 
-    for i in xrange(len(rvmean)):
+    for i in range(len(rvmean)):
         if rvmean[i] + err[i] > egval[i]:
             break
     signifidx = i
@@ -709,13 +709,13 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
     sev = sum(egval[:signifidx]-rvmean[:signifidx])
 
     if savefig:
-        ax1.plot(range(1, 1 + len(rvmean)), egval,
+        ax1.plot(list(range(1, 1 + len(rvmean))), egval,
                  color='green', lw=2, label='Observed data')
 
-        ax1.fill_between(range(1, 1 + len(rvmean)), rvmean, egval,
+        ax1.fill_between(list(range(1, 1 + len(rvmean))), rvmean, egval,
                          where=(np.array(rvmean) + np.array(err))<egval,
                          facecolor='green', interpolate=True, alpha=0.2)
-        ax1.fill_between(range(1, 1 + len(rvmean)), rvmean, egval,
+        ax1.fill_between(list(range(1, 1 + len(rvmean))), rvmean, egval,
                          where=(np.array(rvmean) + np.array(err))>egval,
                          facecolor='red'  , interpolate=True, alpha=0.2)
         ax1.set_xlim((0,len(rvmean)))

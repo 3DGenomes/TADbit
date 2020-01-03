@@ -60,7 +60,7 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
         nums = [num.get_as_tuple() for num in nums]
         if not remove:
             # if not given just remove columns with zero in diagonal
-            remove = tuple([0 if nums[0][i*size+i] else 1 for i in xrange(size)])
+            remove = tuple([0 if nums[0][i*size+i] else 1 for i in range(size)])
         n_cpus = n_cpus if n_cpus != 'max' else 0
         max_tad_size = size if max_tad_size in ["max", "auto"] else max_tad_size
         _, nbks, passages, _, _, bkpts = \
@@ -75,11 +75,11 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
                            int(no_heuristic),# heuristic 0/1
                            )
 
-        breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
+        breaks = [i for i in range(size) if bkpts[i + nbks * size] == 1]
         scores = [p for p in passages if p > 0]
 
         result = {'start': [], 'end'  : [], 'score': []}
-        for brk in xrange(len(breaks)+1):
+        for brk in range(len(breaks)+1):
             result['start'].append((breaks[brk-1] + 1) if brk > 0 else 0)
             result['end'  ].append(breaks[brk] if brk < len(breaks) else size - 1)
             result['score'].append(scores[brk] if brk < len(breaks) else None)
@@ -99,7 +99,7 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
                 result['score'].append(0)
 
         max_score = max(result['score'])
-        for i in xrange(len(result['score'])):
+        for i in range(len(result['score'])):
             result['score'][i] = 1-int((result['score'][i]/max_score)*10)
 
     return result
@@ -168,7 +168,7 @@ def print_result_r(result, write=True):
     """
     table = ''
     table += '%-6s%6s%6s%6s\n' % ('#', 'start', 'end', 'score')
-    for i in xrange(len(result['end'])):
+    for i in range(len(result['end'])):
         table += '%-6s%6s%6s%6s\n' % (i+1, result['start'][i]+1,
                                       result['end'][i]+1,
                                       result['score'][i])
@@ -197,7 +197,7 @@ def TopDom(hic_data,window_size,statFilter=True):
 
     #Step 1
     csr_mat = hic_data.get_hic_data_as_csr()
-    for i in xrange(n_bins):
+    for i in range(n_bins):
         diamond_mean = Get_Diamond_Matrix_Mean(data=csr_mat, i=i, size=window_size)
         mean_cf[i] = diamond_mean
 
@@ -221,7 +221,7 @@ def TopDom(hic_data,window_size,statFilter=True):
 
           mat_row = []
           mat_column = []
-          my_range = range((n_bins*k), (n_bins*n_bins), 1+n_bins)
+          my_range = list(range((n_bins*k), (n_bins*n_bins), 1+n_bins))
           mat_values = np.empty(len(my_range))
           col_arr = 0
           for j in my_range:
@@ -232,7 +232,7 @@ def TopDom(hic_data,window_size,statFilter=True):
 
           scale_values = scale(mat_values)
 
-          for i in xrange(len(mat_row)):
+          for i in range(len(mat_row)):
               lil_mat[mat_column[i],mat_row[i]] = scale_values[i]
 
 
@@ -242,7 +242,7 @@ def TopDom(hic_data,window_size,statFilter=True):
 
             pvalue[start:end] = Get_Pvalue(data=lil_mat[start:end+1, start:end+1], size=window_size, scale=1)
 
-        for i in xrange(len(local_ext)):
+        for i in range(len(local_ext)):
             if local_ext[i] == -1 and pvalue[i] < 0.05:
                 local_ext[i] = -2
         local_ext[local_ext==-1] = 0
@@ -602,7 +602,7 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
                                  hic_data.section_pos[crm][1] - end):
                     up_vals = []
                     dw_vals = []
-                    for spos in xrange(delta):
+                    for spos in range(delta):
                         try:
                             up_vals.append(insidx[(dist, end)][pos - delta + spos])
                         except KeyError:

@@ -5,7 +5,6 @@ Aligner based on reciprocal closest hits for Topologically Associated Domains
 """
 from __future__ import print_function
 
-
 def find_closest(num, tads1, start=0):
     closest = 0
     diff = inf = float('inf')

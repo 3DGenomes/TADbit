@@ -7,7 +7,6 @@ from os.path import abspath, relpath, join, exists
 from hashlib import md5
 from sys import stdout
 
-
 def digest_parameters(opts, get_md5=True, extra=None):
     """
     digestion is truncated at 10 characters. More than a 1000 runs are not
@@ -24,13 +23,13 @@ def digest_parameters(opts, get_md5=True, extra=None):
         #                   'skip', 'keep_tmp', 'tmpdb'] + extra])
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-             for k, v in sorted(opts.__dict__.iteritems())
+             for k, v in sorted(opts.__dict__.items())
              if k not in ['force', 'workdir', 'func', 'tmp',
                           'skip', 'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-         for k, v in opts.__dict__.iteritems()
+         for k, v in opts.__dict__.items()
          if k not in ['fastq', 'index', 'renz', 'iterative', 'workdir',
                       'skip', 'func', 'tmp', 'keep_tmp'] + extra and v is not None])
     parameters = parameters.replace("'", "")
@@ -145,7 +144,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             ','.join(map(str, jobids))))
     elif kwargs:
         filterstr = ' AND '.join("%s='%s'" % (k, 'NULL' if v == 'None' else v)
-                                 for k, v in kwargs.iteritems())
+                                 for k, v in kwargs.items())
         try:
             cur.execute("select %s from %s where %s" % (
                 ','.join(columns), name, filterstr))
@@ -222,7 +221,7 @@ def _rev_tsv_print_db(names, rows, savedata, append):
         out = savedata
     pos = names.index('Name')
     out.write('\t'.join([row[pos] for row in rows]) + '\n')
-    for col in xrange(len(rows[pos])):
+    for col in range(len(rows[pos])):
         if col == pos:
             continue
         out.write('\t'.join([str(row[col]) for row in rows]) + '\n')

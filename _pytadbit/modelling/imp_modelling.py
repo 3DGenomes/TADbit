@@ -5,8 +5,10 @@
 """
 from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from math            import fabs
-from cPickle         import load, dump
+from pickle         import load, dump
 from sys             import stdout
 from os.path         import exists
 import multiprocessing as mu
@@ -180,7 +182,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     if first == None:
         first = min([int(j) for i in zscores for j in zscores[i]] +
                     [int(i) for i in zscores])
-    LOCI  = range(first, nloci + first)
+    LOCI  = list(range(first, nloci + first))
 
     # random inital number
     global START
@@ -217,12 +219,12 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             description[desc] = xpr.description[desc]
         for desc in crm.description:
             description[desc] = xpr.description[desc]
-        for i, m in enumerate(models.values() + bad_models.values()):
+        for i, m in enumerate(list(models.values()) + list(bad_models.values())):
             m['index'] = i
             m['description'] = description
     except AttributeError:  # case we are doing optimization
         description = None
-        for i, m in enumerate(models.values() + bad_models.values()):
+        for i, m in enumerate(list(models.values()) + list(bad_models.values())):
             m['index'] = i
     if outfile:
         if exists(outfile):
@@ -231,7 +233,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             old_models, old_bad_models = {}, {}
         models.update(old_models)
         bad_models.update(old_bad_models)
-        out = open(outfile, 'w')
+        out = open(outfile, 'wb')
         dump((models, bad_models), out)
         out.close()
     else:
@@ -256,7 +258,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
 
     pool = mu.Pool(n_cpus, maxtasksperchild=1)
     jobs = {}
-    for rand_init in xrange(START, n_models + START):
+    for rand_init in range(START, n_models + START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
                                            args=(rand_init,HiCRestraints, use_HiC,
                                                  use_confining_environment, use_excluded_volume,
@@ -266,7 +268,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
     pool.join()
 
     results = []
-    for rand_init in xrange(START, n_models + START):
+    for rand_init in range(START, n_models + START):
         results.append((rand_init, jobs[rand_init].get()))
 
     models = {}
@@ -419,7 +421,7 @@ def add_excluded_volume_restraint(model, particle_list, kforce): #, restraints):
 def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints):
 
     harmonic = IMP.core.Harmonic(theta0, bending_kforce)
-    for particle in xrange(0,len(LOCI)-2):
+    for particle in range(0,len(LOCI)-2):
         p1  = model['particles'].get_particle(particle)
         p2  = model['particles'].get_particle(particle+1)
         p3  = model['particles'].get_particle(particle+2)

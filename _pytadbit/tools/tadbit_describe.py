@@ -88,7 +88,7 @@ def populate_args(parser):
                               'the sequence of names or indexes, according to '
                               'this list: {}').format(', '.join(
                                   ['%s: %s' % (k, v)
-                                   for k, v in TABLE_IDX.iteritems()])))
+                                   for k, v in TABLE_IDX.items()])))
 
     glopts.add_argument('-T', '--skip_tables', dest='skip_tables', metavar='',
                         action='store', nargs='+', type=str,
@@ -97,7 +97,7 @@ def populate_args(parser):
                               'the sequence of names or indexes, according to '
                               'this list: {}').format(', '.join(
                                   ['%s: %s' % (k, v)
-                                   for k, v in TABLE_IDX.iteritems()])))
+                                   for k, v in TABLE_IDX.items()])))
 
     glopts.add_argument('-j', '--jobids', dest='jobids', metavar="INT",
                         nargs='+', action='store', default=None, type=int,
@@ -136,7 +136,7 @@ def check_options(opts):
         raise Exception('ERROR: output option required.')
 
     choices = reduce(lambda x, y: x + y,
-                     [kv for kv in sorted(TABLE_IDX.iteritems(),
+                     [kv for kv in sorted(iter(TABLE_IDX.items()),
                                           key=lambda x: int(x[0]))])
 
     recovered = []
@@ -147,7 +147,7 @@ def check_options(opts):
             # check if the beginning of the input string matches any of
             # the possible choices
             found = False
-            for choice in TABLE_IDX.values():
+            for choice in list(TABLE_IDX.values()):
                 if choice.startswith(opts.tables[t]):
                     recovered.append(choice)
                     found = True
@@ -164,7 +164,7 @@ def check_options(opts):
         if not opts.skip_tables[t] in choices:
             # check if the beginning of the input string matches any of
             # the possible choices
-            for choice in TABLE_IDX.values():
+            for choice in list(TABLE_IDX.values()):
                 if choice.startswith(opts.skip_tables[t]):
                     break
             else:

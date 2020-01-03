@@ -14,9 +14,9 @@ def smith_waterma(tads1, tads2):
     tads2 = [1.0, 5.0, 6.0, 7.0, 10.0, 11.0, 13.0, 17.0, 19.0, 20.0]
     bin_size = 1.
     chr_len  = 20.
-    for penalty in xrange(1,10):
+    for penalty in range(1,10):
         penalty  = -float(penalty)/10
-        for penalty2 in xrange(1,10):
+        for penalty2 in range(1,10):
             penalty2 = -float(penalty2)/10
             penalty  = -0.3
             penalty2 = -0.1
@@ -28,8 +28,8 @@ def smith_waterma(tads1, tads2):
             scores   = zeros((l_tads1+1, l_tads2+1))
             fieled   = zeros((l_tads1+1, l_tads2+1))
             #penalty  = -.5
-            for i in xrange(1, l_tads1+1):
-                for j in xrange(1, l_tads2+1):
+            for i in range(1, l_tads1+1):
+                for j in range(1, l_tads2+1):
                     value = 1-log((1+bin_size*abs(tads2[j-1]-tads1[i-1]))**2)/log((1+chr_len)**2)
                     penalty_i = penalty_j = penalty
                     penalty_j = penalty2 if pointers[i, j-1] == 1 else penalty

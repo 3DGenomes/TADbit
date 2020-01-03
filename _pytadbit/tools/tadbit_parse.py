@@ -7,12 +7,14 @@ information needed
 """
 from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from os                             import path, remove
 from string                         import ascii_letters
 from random                         import random
 from shutil                         import copyfile
 from argparse                       import HelpFormatter
-from cPickle                        import load, UnpicklingError
+from pickle                        import load, UnpicklingError
 from warnings                       import warn
 
 import time

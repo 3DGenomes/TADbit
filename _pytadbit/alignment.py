@@ -84,6 +84,8 @@ class Alignment(object):
             except ValueError:
                 raise ValueError('ERROR: %s not in alignment' % (i))
 
+    def __next__(self):
+        return next(self.__keys)
 
     def __iter__(self):
         for key in self.__keys:
@@ -94,7 +96,7 @@ class Alignment(object):
         """
         Iterate over experiment names and aligned boundaries
         """
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             yield (self.__keys[i], self.__values[i])
 
 
@@ -102,7 +104,7 @@ class Alignment(object):
         """
         Iterate over experiment names and aligned boundaries
         """
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             yield self.__values[i]
 
 
@@ -110,9 +112,9 @@ class Alignment(object):
         """
         Iterate over columns in the alignment
         """
-        for pos in xrange(len(self)):
+        for pos in range(len(self)):
             col = []
-            for exp in xrange(len(self.__keys)):
+            for exp in range(len(self.__keys)):
                 col.append(self[exp][pos])
             yield col
 
@@ -153,7 +155,7 @@ class Alignment(object):
         else:
             raise NotImplementedError('Only ansi and html ftype implemented.\n')
         out += 'Alignment shown in %s Kb (%s experiments) (' % (
-            int(xpers[0].resolution / 1000), len(xpers))
+            int(xpers[0].resolution // 1000), len(xpers))
         out += 'scores: %s)\n' % (' '.join(
             [colorize(x, x, ftype) for x in range(11)]))
         for i, xpr in enumerate(xpers):
@@ -228,10 +230,10 @@ class Alignment(object):
         cond = lambda x: cond1(x) and cond2(x)
         min_num = min_num or len(self.__keys)
         column = []
-        for pos in xrange(len(self)):
+        for pos in range(len(self)):
             col = []
             cnt = 0
-            for exp in xrange(len(self.__keys)):
+            for exp in range(len(self.__keys)):
                 col.append(self.__values[exp][pos])
                 if cond(self.__values[exp][pos]):
                     cnt += 1
@@ -296,14 +298,14 @@ class Alignment(object):
         experiments = self.__experiments
 
         maxres = max([e.resolution for e in experiments])
-        facts = [maxres / e.resolution for e in experiments]
+        facts = [maxres // e.resolution for e in experiments]
 
 
         siz = experiments[0].size
         if focus:
-            figsiz = 4 + (focus[1] - focus[0]) / 30
+            figsiz = 4 + (focus[1] - focus[0]) // 30
         else:
-            figsiz = 4 + siz / 30
+            figsiz = 4 + siz // 30
         fig, axes = plt.subplots(nrows=len(experiments),
                                  sharex=True, sharey=True,
                                  figsize=(figsiz, 1 + len(experiments) * 1.8))
@@ -325,7 +327,7 @@ class Alignment(object):
             for iex in range(len(experiments)):
                 starting = focus[0] if focus else 1
                 ending = (focus[1] if focus
-                          else experiments[iex].tads.values()[-1]['end'])
+                          else list(experiments[iex].tads.values())[-1]['end'])
                 axes[iex].hlines(1, 1, end, 'k', lw=1.5)
                 axes[iex].set_ylim((0, maxy))
                 maxxs.append(ending / facts[iex])
@@ -369,18 +371,18 @@ class Alignment(object):
         # cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
         fig.set_facecolor('white')
         plots = []
-        for scr in xrange(1, 11):
+        for scr in range(1, 11):
             plots += plt.plot((100,),(100,), marker=6, ms=9,
                               color=jet(float(scr) / 10), mec='none')
         try:
             axes[-1].legend(plots,
-                            [str(scr) for scr in xrange(1, 11)],
+                            [str(scr) for scr in range(1, 11)],
                             numpoints=1, title='Border scores',
                             fontsize='small', loc='lower left',
                             bbox_to_anchor=(1, 0.5))
         except TypeError:
             axes[-1].legend(plots,
-                            [str(scr) for scr in xrange(1, 11)],
+                            [str(scr) for scr in range(1, 11)],
                             numpoints=1, title='Border scores',
                             loc='lower left',
                             bbox_to_anchor=(1, 0.5))
@@ -411,7 +413,7 @@ class TAD(dict):
         self.update(dict((('pos', i),('exp', exp), ('index', idx))))
 
     def __repr__(self):
-        return '>' + (str(int(self['end']) * self['exp'].resolution / 1000) \
+        return '>' + (str(int(self['end']) * self['exp'].resolution // 1000) \
                       if int(self['end']) else '-') + '<'
 
 
@@ -428,7 +430,7 @@ def _interpolation(experiments):
     # get all TAD lengths and multiply it by bin size of the experiment
     norm_tads = []
     for tad in experiments:
-        for brk in tad.tads.values():
+        for brk in list(tad.tads.values()):
             if not brk['brk']:
                 continue
             norm_tads.append((brk['end'] - brk['start']) * tad.resolution)
@@ -480,12 +482,12 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
         if not xpr.tads:
             raise Exception('No TADs defined, use find_tad function.\n')
         tads.append([(t['end'] - t['start']) * \
-                     xpr.resolution for t in xpr.tads.values()])
+                     xpr.resolution for t in list(xpr.tads.values())])
     rnd_distr = []
     # rnd_len = []
     distr = _interpolation(xpers) if rnd_method is 'interpolate' else None
     rnd_exp = lambda : tads[int(random() * len(tads))]
-    for val in xrange(num):
+    for val in range(num):
         if verbose:
             val = float(val)
             if not val / num * 100 % 5:
@@ -495,12 +497,12 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
                 stdout.flush()
         if rnd_method is 'interpolate':
             rnd_tads = [generate_rnd_tads(r_size, distr)
-                        for _ in xrange(len(tads))]
+                        for _ in range(len(tads))]
             # rnd_len.append(float(sum([len(r) for r in rnd_tads]))
             #                / len(rnd_tads))
         else:
             rnd_tads = [generate_shuffle_tads(rnd_exp())
-                        for _ in xrange(len(tads))]
+                        for _ in range(len(tads))]
             # rnd_len.append(len(tads))
         rnd_distr.append(align(rnd_tads, verbose=False, method=method,
                                max_dist=max_dist)[0][1])
