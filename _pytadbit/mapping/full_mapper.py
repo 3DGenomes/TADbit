@@ -4,15 +4,19 @@
 
 import os
 import re
+import copy
+import multiprocessing  as mu
 from warnings import warn
 from tempfile import gettempdir, mkstemp
-from subprocess import CalledProcessError, PIPE, Popen
+from subprocess import CalledProcessError, PIPE, STDOUT, Popen
 from pysam import Samfile
 
 from pytadbit.utils.file_handling import mkdir, which, is_fastq
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
+from pytadbit.parsers.sam_parser import parse_gem_3c, merge_sort
 from pytadbit.mapping.restriction_enzymes import religateds
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import map_re_sites
 from pytadbit.mapping.restriction_enzymes import iupac2regex
 
 
@@ -263,7 +267,7 @@ def insert_mark_light(header, num):
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
 
-def _bowtie2_filter(fnam, fastq_path, unmap_out, map_out):
+def _sam_filter(fnam, fastq_path, unmap_out, map_out):
     """
     Divides reads in a map file in two categories: uniquely mapped, and not.
     Writes them in two files
@@ -363,13 +367,13 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
     # check that we have the GEM binary:
     bowtie2_binary = which(bowtie2_binary)
     if not bowtie2_binary:
-        raise Exception('\n\nERROR: bowtie2 binary not found')
+        raise Exception('\n\nERROR: %s binary not found'%bowtie2_binary)
 
     # mapping
-    print 'TO BOWTIE2', fastq_path1, fastq_path2
+    print 'TO %s'%bowtie2_binary, fastq_path1, fastq_path2
     bowtie2_cmd = [
         bowtie2_binary, '-x', bowtie2_index_path,
-        '-p', str(nthreads), '--reorder', '-S',
+        '-p', str(nthreads), '--reorder','-k','1','-S',
         out_map_path]
 
     if paired_map:
@@ -382,7 +386,7 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
             bowtie2_cmd.append('-'+bow_param)
             if bowtie2_params[bow_param]:
                 bowtie2_cmd.append(bowtie2_params[bow_param])
-    else:
+    elif bowtie2_binary == 'bowtie2':
         bowtie2_cmd.append('--very-sensitive')
     print ' '.join(bowtie2_cmd)
     try:
@@ -394,8 +398,9 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
         raise Exception(e.output)
 
 
-def _gem_mapping(gem_index_path, fastq_path, out_map_path,
-                gem_binary='gem-mapper', **kwargs):
+def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
+                 r_enz=None, gem_binary='gem-mapper', gem_version=2, compress=False,
+                 **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
        (start, end) position, or the name of a restriction enzyme. By default it
@@ -409,72 +414,79 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path,
     max_edit_distance = kwargs.get('max_edit_distance'   , 0.04)
     mismatches        = kwargs.get('mismatches'          , 0.04)
 
-    # check that we have the GEM binary:
-    gem_binary = which(gem_binary)
-    if not gem_binary:
-        raise Exception('\n\nERROR: GEM binary not found, install it from:'
-                        '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
-                        '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
-                        'have a recent computer, the '
-                        'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
-                        'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
-                        'Copy the binary gem-mapper to /usr/local/bin/ for '
-                        'example (somewhere in your PATH).\n\nNOTE: GEM does '
-                        'not provide any binary for MAC-OS.')
-
     # mapping
-    print 'TO GEM', fastq_path
+    print 'TO GEM', gem_version, fastq_path
     kgt = kwargs.get
-    gem_cmd = [
-        gem_binary, '-I', gem_index_path,
-        '-q'                        , kgt('q', 'offset-33'                    ),
-        '-m'                        , kgt('m', str(max_edit_distance       )  ),
-        '-s'                        , kgt('s', kgt('strata-after-best', '0')  ),
-        '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'   ),
-        '--granularity'             , kgt('granularity', '10000'              ),
-        '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1')),
-        '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0') ),
-        '--min-insert-size'         , kgt('min-insert-size', '0'              ),
-        '--max-insert-size'         , kgt('max-insert-size', '0'              ),
-        '--min-matched-bases'       , kgt('min-matched-bases', '0.8'          ),
-        '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'       ),
-        '--max-big-indel-length'    , kgt('max-big-indel-length', '15'        ),
-        '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'         ),
-        '-E'                        , kgt('E', '0.30'                         ),
-        '--max-extendable-matches'  , kgt('max-extendable-matches', '20'      ),
-        '--max-extensions-per-match', kgt('max-extensions-per-match', '1'     ),
-        '-e'                        , kgt('e', str(mismatches)                ),
-        '-T'                        , str(nthreads),
-        '-i'                        , fastq_path,
-        '-o', out_map_path.replace('.map', '')]
+    if gem_version == 2:
+        gem_cmd = [
+            gem_binary, '-I', gem_index_path,
+            '-q'                        , kgt('q', 'offset-33'                    ),
+            '-m'                        , kgt('m', str(max_edit_distance       )  ),
+            '-s'                        , kgt('s', kgt('strata-after-best', '0')  ),
+            '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'   ),
+            '--granularity'             , kgt('granularity', '10000'              ),
+            '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1')),
+            '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0') ),
+            '--min-insert-size'         , kgt('min-insert-size', '0'              ),
+            '--max-insert-size'         , kgt('max-insert-size', '0'              ),
+            '--min-matched-bases'       , kgt('min-matched-bases', '0.8'          ),
+            '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'       ),
+            '--max-big-indel-length'    , kgt('max-big-indel-length', '15'        ),
+            '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'         ),
+            '-E'                        , kgt('E', '0.30'                         ),
+            '--max-extendable-matches'  , kgt('max-extendable-matches', '20'      ),
+            '--max-extensions-per-match', kgt('max-extensions-per-match', '1'     ),
+            '-e'                        , kgt('e', str(mismatches)                ),
+            '-T'                        , str(nthreads),
+            '-i'                        , fastq_path,
+            '-o', out_map_path.replace('.map', '')]
 
-    if 'paired-end-alignment' in kwargs or 'p' in kwargs:
-        gem_cmd.append('--paired-end-alignment')
-    if 'map-both-ends' in kwargs or 'b' in kwargs:
-        gem_cmd.append('--map-both-ends')
-    if 'fast-mapping' in kwargs:
-        gem_cmd.append('--fast-mapping')
-    if 'unique-mapping' in kwargs:
-        gem_cmd.append('--unique-mapping')
-    if 'unique-pairing' in kwargs:
-        gem_cmd.append('--unique-pairing')
+        if 'paired-end-alignment' in kwargs or 'p' in kwargs:
+            gem_cmd.append('--paired-end-alignment')
+        if 'map-both-ends' in kwargs or 'b' in kwargs:
+            gem_cmd.append('--map-both-ends')
+        if 'fast-mapping' in kwargs:
+            gem_cmd.append('--fast-mapping')
+        if 'unique-mapping' in kwargs:
+            gem_cmd.append('--unique-mapping')
+        if 'unique-pairing' in kwargs:
+            gem_cmd.append('--unique-pairing')
 
-    # check kwargs
-    for kw in kwargs:
-        if not kw in ['nthreads', 'max_edit_distance',
-                      'mismatches', 'max_reads_per_chunk',
-                      'out_files', 'temp_dir', 'skip', 'q', 'm', 's',
-                      'strata-after-best', 'allow-incomplete-strata',
-                      'granularity', 'max-decoded-matches',
-                      'min-decoded-strata', 'min-insert-size',
-                      'max-insert-size', 'min-matched-bases',
-                      'gem-quality-threshold', 'max-big-indel-length',
-                      'mismatch-alphabet', 'E', 'max-extendable-matches',
-                      'max-extensions-per-match', 'e', 'paired-end-alignment',
-                      'p', 'map-both-ends', 'fast-mapping', 'unique-mapping',
-                      'unique-pairing', 'suffix']:
-            warn('WARNING: %s not in usual keywords, misspelled?' % kw)
-
+        # check kwargs
+        for kw in kwargs:
+            if not kw in ['nthreads', 'max_edit_distance',
+                          'mismatches', 'max_reads_per_chunk',
+                          'out_files', 'temp_dir', 'skip', 'q', 'm', 's',
+                          'strata-after-best', 'allow-incomplete-strata',
+                          'granularity', 'max-decoded-matches',
+                          'min-decoded-strata', 'min-insert-size',
+                          'max-insert-size', 'min-matched-bases',
+                          'gem-quality-threshold', 'max-big-indel-length',
+                          'mismatch-alphabet', 'E', 'max-extendable-matches',
+                          'max-extensions-per-match', 'e', 'paired-end-alignment',
+                          'p', 'map-both-ends', 'fast-mapping', 'unique-mapping',
+                          'unique-pairing', 'suffix']:
+                warn('WARNING: %s not in usual keywords, misspelled?' % kw)
+    else:
+        gem_cmd = [
+            gem_binary, '-I', gem_index_path,
+            '-t'            , str(nthreads),
+            '-F'            , 'SAM',
+            '-o', out_map_path]
+        if compress:
+            gem_cmd += ['--gzip-output']
+        if fastq_path2:
+            if not r_enz:
+                raise Exception('ERROR: need enzyme name to fragment.')
+            print 'Using GEM', gem_version, 'with 3c mapping'
+            gem_cmd += ['--i1', fastq_path, '--i2', fastq_path2, '--3c']
+            if isinstance(r_enz, str):
+                gem_cmd += ['--restriction-enzyme', r_enz]
+            elif isinstance(r_enz, list):
+                for r_z in r_enz:
+                    gem_cmd += ['--restriction-enzyme', r_z]
+        else:
+            gem_cmd += ['-i', fastq_path]
     print ' '.join(gem_cmd)
     try:
         # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
@@ -539,6 +551,27 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
+    if mapper == 'gem':
+        gem_version = None
+        # check that we have the GEM binary:
+        gem_binary = mapper_binary or 'gem-mapper'
+        gem_binary = which(gem_binary)
+        if not gem_binary:
+            raise Exception('\n\nERROR: GEM binary not found, install it from:'
+                            '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
+                            '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
+                            'have a recent computer, the '
+                            'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
+                            'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
+                            'Copy the binary gem-mapper to /usr/local/bin/ for '
+                            'example (somewhere in your PATH).\n\nNOTE: GEM does '
+                            'not provide any binary for MAC-OS.')
+        try:
+            out, err = Popen([gem_binary,'--version'], stdout=PIPE, stderr=STDOUT).communicate()
+            gem_version = int(out[1])
+        except ValueError as e:
+            gem_version = 2
+            print 'Falling to gem v2'
     if mapper_params:
         kwargs.update(mapper_params)
     # create directories
@@ -593,22 +626,28 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
         if not skip:
             if mapper == 'gem':
                 _gem_mapping(mapper_index_path, curr_map, out_map_path,
-                             gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
+                             gem_binary=gem_binary, gem_version=gem_version,
                              **kwargs)
                 # parse map file to extract not uniquely mapped reads
                 print 'Parsing result...'
-                _gem_filter(out_map_path,
-                            curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
-                            os.path.join(out_map_dir,
-                                         base_name + '_full_%s-%s%s.map' % (
-                                             beg, end, suffix)))
-            elif mapper == 'bowtie2':
+                if gem_version >= 3:
+                    _sam_filter(out_map_path, curr_map,
+                                curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+                                os.path.join(out_map_dir,
+                                             base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                else:
+                    _gem_filter(out_map_path,
+                                curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+                                os.path.join(out_map_dir,
+                                             base_name + '_full_%s-%s%s.map' % (
+                                                 beg, end, suffix)))
+            elif mapper == 'bowtie2' or mapper == 'hisat2':
                 _bowtie2_mapping(mapper_index_path, curr_map, out_map_path,
-                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_binary=(mapper_binary if mapper_binary else mapper),
                                  bowtie2_params=mapper_params, **kwargs)
                 # parse map file to extract not uniquely mapped reads
                 print 'Parsing result...'
-                _bowtie2_filter(out_map_path, curr_map,
+                _sam_filter(out_map_path, curr_map,
                                 curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                                 os.path.join(out_map_dir,
                                              base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
@@ -650,19 +689,26 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
             if mapper == 'gem':
                 print 'Mapping fragments of remaining reads...'
                 _gem_mapping(mapper_index_path, frag_map, out_map_path,
-                             gem_binary=(mapper_binary if mapper_binary else 'gem-mapper'),
+                             gem_binary=gem_binary, gem_version=gem_version,
                              **kwargs)
                 print 'Parsing result...'
-                _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
-                            os.path.join(out_map_dir,
+                # check if output is sam format for gem3
+                if gem_version >= 3:
+                    _sam_filter(out_map_path, frag_map,
+                                curr_map + '_fail%s.map' % (suffix),
+                                os.path.join(out_map_dir,
                                          base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
-            elif mapper == 'bowtie2':
+                else:
+                    _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
+                                os.path.join(out_map_dir,
+                                             base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+            elif mapper == 'bowtie2' or mapper == 'hisat2':
                 print 'Mapping fragments of remaining reads...'
                 _bowtie2_mapping(mapper_index_path, frag_map, out_map_path,
-                                 bowtie2_binary=(mapper_binary if mapper_binary else 'bowtie2'),
+                                 bowtie2_binary=(mapper_binary if mapper_binary else mapper),
                                  bowtie2_params=mapper_params, **kwargs)
                 print 'Parsing result...'
-                _bowtie2_filter(out_map_path, frag_map,
+                _sam_filter(out_map_path, frag_map,
                                 curr_map + '_fail%s.map' % (suffix),
                                 os.path.join(out_map_dir,
                                          base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
@@ -682,3 +728,184 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
+
+def fast_fragment_mapping(mapper_index_path, fastq_path1, fastq_path2, r_enz,
+                          genome_seq, out_map, clean=True, get_nread=False,
+                          mapper_binary=None, mapper_params=None,
+                          samtools = 'samtools', **kwargs):
+    """
+    Maps FASTQ reads to an indexed reference genome with the knowledge of
+    the restriction enzyme used (fragment-based mapping).
+
+    :param mapper_index_path: path to index file created from a reference genome
+       using gem-index tool, bowtie2-build or hisat2-build
+    :param fastq_path1: PATH to FASTQ file of read 1, either compressed or not.
+    :param fastq_path2: PATH to FASTQ file of read 2, either compressed or not.
+    :param out_map_dir: path to outfile tab separated format containing mapped
+       read information.
+    :param r_enz: name of the restriction enzyme used in the experiment e.g.
+       HindIII.
+    :param genome_seq: a dictionary generated by :func:`pyatdbit.parser.genome_parser.parse_fasta`.
+       containing the genomic sequence
+    :param False clean: remove intermediate files created in temp_dir
+    :param False get_nread: returns a list of lists where each element contains
+       a path and the number of reads processed
+    :param 4 nthreads: number of threads to use for mapping (number of CPUs)
+    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be
+       written there.
+    :param gem-mapper mapper_binary: path to the binary mapper
+    :param None mapper_params: extra parameters for the mapper
+    :param samtools samtools: path to samtools binary.
+
+    :returns: outfile with the intersected read pairs
+    """
+
+    suffix = kwargs.get('suffix', '')
+    suffix = ('_' * (suffix != '')) + suffix
+    nthreads = kwargs.get('nthreads', 8)
+    samtools = which(samtools)
+    # check out folder
+    if not os.path.isdir(os.path.dirname(os.path.abspath(out_map))):
+        raise Exception('\n\nERROR: Path to store the output does not exist.\n')
+    temp_dir = os.path.abspath(os.path.expanduser(
+        kwargs.get('temp_dir', gettempdir())))
+    gem_version = None
+    # check that we have the GEM binary:
+    gem_binary = mapper_binary or 'gem-mapper'
+    gem_binary = which(gem_binary)
+    if not gem_binary:
+        raise Exception('\n\nERROR: GEM v3 binary not found, install it from:'
+                        '\nhttps://github.com/smarco/gem3-mapper'
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n')
+    try:
+        out, err = Popen([gem_binary,'--version'], stdout=PIPE, stderr=STDOUT).communicate()
+        gem_version = int(out[1])
+    except ValueError as e:
+        gem_version = 2
+        print 'Falling to gem v2'
+    if gem_version < 3:
+        raise Exception('\n\nERROR: GEM v3 binary not found, install it from:'
+                        '\nhttps://github.com/smarco/gem3-mapper'
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n')
+    if mapper_params:
+        kwargs.update(mapper_params)
+    # create directories
+    for rep in [temp_dir]:
+        mkdir(rep)
+    # check space
+    fspace = int(get_free_space_mb(temp_dir, div=3))
+    if fspace < 200:
+        warn('WARNING: only %d Gb left on tmp_dir: %s\n' % (fspace, temp_dir))
+
+    # iterative mapping
+    base_name1 = os.path.split(fastq_path1)[-1].replace('.gz', '')
+    base_name1 = '.'.join(base_name1.split('.')[:-1])
+
+    curr_map1, _ = transform_fastq(
+            fastq_path1, mkstemp(prefix=base_name1 + '_', dir=temp_dir)[1],
+            fastq=is_fastq(fastq_path1), nthreads=nthreads, light_storage=True)
+
+    base_name2 = os.path.split(fastq_path2)[-1].replace('.gz', '')
+    base_name2 = '.'.join(base_name2.split('.')[:-1])
+
+    curr_map2, count_fastq = transform_fastq(
+            fastq_path2, mkstemp(prefix=base_name2 + '_', dir=temp_dir)[1],
+            fastq=is_fastq(fastq_path1), nthreads=nthreads, light_storage=True)
+
+    out_map_path = curr_map1 + '_frag%s.map' % (suffix)
+
+    print 'Mapping fragments of remaining reads...'
+    _gem_mapping(mapper_index_path, curr_map1, out_map_path,fastq_path2=curr_map2,
+                 r_enz=r_enz, gem_binary=gem_binary, gem_version=gem_version, **kwargs)
+    # clean
+    if clean:
+        print '   x removing GEM 3 input %s' % (curr_map1)
+        os.system('rm -f %s' % (curr_map1))
+        print '   x removing GEM 3 input %s' % (curr_map2)
+        os.system('rm -f %s' % (curr_map2))
+
+    #sort sam file
+    os.system(samtools + ' sort -n -O SAM -@ %d -T %s -o %s %s'
+                      % (nthreads, out_map_path, out_map_path, out_map_path))
+    genome_lengths = dict((crm, len(genome_seq[crm])) for crm in genome_seq)
+    frag_chunk = kwargs.get('frag_chunk', 100000)
+    frags = map_re_sites(r_enz, genome_seq, frag_chunk=frag_chunk)
+    if samtools and nthreads > 1:
+        print 'Splitting sam file'
+        # headers
+        for i in xrange(nthreads):
+            os.system(samtools + ' view -H -O SAM %s > "%s_%d"'
+                      % (out_map_path, out_map_path, (i+1)))
+        chunk_lines = int((count_fastq*2.3)/nthreads) # estimate lines in sam with reads and frags
+        os.system(samtools + ''' view -O SAM %s | awk -v n=%d -v FS="\\t" '
+              BEGIN { part=0; line=n }       
+              { if( line>=n && $1!=last_read ) {part++; line=1; print $0 >> "%s_"part } 
+                else { print $0 >> "%s_"part; line++; } 
+                last_read = $1;
+              }'
+        ''' % (out_map_path, chunk_lines, out_map_path, out_map_path))
+        if clean:
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
+        print 'Parsing results...'
+        kwargs['nthreads'] = 1
+        procs = []
+        pool = mu.Pool(nthreads)
+        for i in xrange(nthreads):
+            frags_shared = copy.deepcopy(frags)
+            procs.append(pool.apply_async(
+                parse_gem_3c, args=('%s_%d' % (out_map_path,(i+1)),
+                                    '%s_parsed_%d' % (out_map_path,(i+1)),
+                                    copy.deepcopy(genome_lengths), frags_shared,
+                                    False, True), kwds=kwargs))
+            #results.append('%s_parsed_%d' % (out_map_path,(i+1)))
+        pool.close()
+        pool.join()
+        results = [proc.get() for proc in procs if proc.get()]
+        if clean:
+            for i in xrange(nthreads):
+                print '   x removing tmp mapped %s_%d' % (out_map_path,(i+1))
+                os.system('rm -f %s_%d' % (out_map_path,(i+1)))
+
+        #Final sort and merge
+        nround = 0
+        while len(results) > 1:
+            nround += 1
+            num_procs = min(nthreads,int(len(results)/2))
+            pool = mu.Pool(num_procs)
+            procs = [pool.apply_async(
+                merge_sort,
+                (results.pop(0), results.pop(0), out_map_path+'_%d' % nround, i, True)
+            ) for i in xrange(num_procs)]
+            pool.close()
+            pool.join()
+            results = [proc.get() for proc in procs if proc.get()]
+
+        map_out = open(out_map, 'w')
+        tmp_reads_fh = open(results[0],'rb')
+        for crm in genome_seq:
+            map_out.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
+        for read_line in tmp_reads_fh:
+            read = read_line.split('\t')
+            map_out.write('\t'.join([read[0]]+read[2:8]+read[9:]))
+        map_out.close()
+        if clean:
+            print '   x removing tmp mapped %s' % results[0]
+            os.system('rm -f %s' % (results[0]))
+
+    else:
+        print 'Parsing result...'
+        parse_gem_3c(out_map_path, out_map, genome_lengths, frags, verbose=False,
+                     tmp_format=False, **kwargs)
+
+        # clean
+        if clean:
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
+
+    if get_nread:
+        return [(out_map,count_fastq)]
+    return out_map
+    
