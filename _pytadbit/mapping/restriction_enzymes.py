@@ -252,7 +252,7 @@ def identify_re(fnam, nreads=100000):
     fh = magic_open(fnam)
     for _ in range(nreads):
         _ = next(fh)
-        s = fh.next()[:14]
+        s = next(fh)[:14]
         _ = next(fh)
         _ = next(fh)
         for pat in pats:

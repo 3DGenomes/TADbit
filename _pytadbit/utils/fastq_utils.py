@@ -62,7 +62,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
     elif fnam.endswith('.dsrc'):
-        proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE)
+        proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE, universal_newlines=True)
         fhandler = proc.stdout
     else:
         fhandler = open(fnam)
@@ -319,10 +319,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r_enz in r_enzs:
             if any([f > 0 for f in fixes[r_enz]]):
                 des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(max_seq_len // 2)]
-                                                          if paired else 0))) // nreads)
+                                                          if paired else 0))) / nreads)
             else:
                 des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len // 2)]
-                                                         if paired else 0))) // nreads
+                                                         if paired else 0))) / nreads
 
         # Decorate plot
         title = ''

@@ -2,6 +2,7 @@
 simple BED and BEDgraph parser
 """
 from __future__ import print_function
+from builtins   import next
 
 from pytadbit.utils.file_handling import magic_open
 from pytadbit.utils.extraviews import nicer
@@ -55,13 +56,13 @@ def parse_bed(fnam, resolution=1):
     """
 
     fhandler = magic_open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     fpos = len(line)
     while (line.startswith('#')     or
            line.startswith('track') or
            line.startswith('browser')):
         fpos += len(line)
-        line = fhandler.next()
+        line = next(fhandler)
     ##################
     # check file type
     try:

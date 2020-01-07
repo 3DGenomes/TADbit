@@ -4,6 +4,7 @@ into compressed BAM format.
 
 """
 from __future__ import print_function
+from builtins   import next
 
 from future import standard_library
 standard_library.install_aliases()
@@ -284,7 +285,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
                 if filter_line[i] == rid:
                     flag += filter_keys[i]
                     try:
-                        filter_line[i] = filter_handler[i].next().strip()
+                        filter_line[i] = next(filter_handler[i]).strip()
                     except StopIteration:
                         pass
             # get output in sam format
@@ -330,7 +331,7 @@ def get_filters(infile, masked):
     for i in filter_files:
         filter_handler[i.replace('_', '-')] = open(filter_files[i])
         try:
-            filter_line[i.replace('_', '-')] = filter_handler[i.replace('_', '-')].next().strip()
+            filter_line[i.replace('_', '-')] = next(filter_handler[i.replace('_', '-')]).strip()
         except StopIteration:
             filter_line[i.replace('_', '-')] = ""
     return filter_line, filter_handler

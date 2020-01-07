@@ -2,6 +2,7 @@
 09 Jun 2015
 """
 from __future__ import print_function
+from builtins   import next
 
 import os
 import re
@@ -36,9 +37,9 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         Note: header also contains the sequence
         """
         rlines = rlines.rstrip('\n').split()[0][1:]
-        seq = fhandler.next()
-        _   = fhandler.next()  # lose qualities header but not needed
-        qal = fhandler.next()  # lose qualities but not needed
+        seq = next(fhandler)
+        _   = next(fhandler)  # lose qualities header but not needed
+        qal = next(fhandler)  # lose qualities but not needed
         # header now also contains original read
         return (rlines.split('/',1)[0].split('~',1)[0] + ' ' + seq.strip() + ' ' + qal.strip(),
                 seq.strip(), qal.strip())
@@ -49,9 +50,9 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         Note: header also contains the sequence
         """
         rlines = rlines.rstrip('\n').split()[0][1:]
-        seq = fhandler.next()
-        _   = fhandler.next()  # lose qualities header but not needed
-        qal = fhandler.next()  # lose qualities but not needed
+        seq = next(fhandler)
+        _   = next(fhandler)  # lose qualities header but not needed
+        qal = next(fhandler)  # lose qualities but not needed
         return (rlines.split('/',1)[0].split('~',1)[0], seq.strip(), qal.strip())
 
     def _get_map_read_heavy(line):

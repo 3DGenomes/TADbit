@@ -2,6 +2,7 @@
 22 Jan 2014
 """
 from __future__ import print_function
+from builtins   import next
 
 from io       import open
 import ctypes
@@ -58,7 +59,7 @@ def magic_open(filename, verbose=False, cpus=None):
             raise Exception('\n\nERROR: DSRC binary not found, install it from:'
                             '\nhttps://github.com/lrog/dsrc/releases')
         proc = Popen([dsrc_binary, 'd', '-t%d' % (cpus or cpu_count()),
-                      '-s', filename], stdout=PIPE)
+                      '-s', filename], stdout=PIPE, universal_newlines=True)
         return proc.stdout
     if inputpath:
         start_of_file = fhandler.read(1024)
@@ -117,8 +118,8 @@ def is_fastq(thing):
     else:
         fh = thing
     for _ in range(100):
-        if (fh.next().startswith('@') and fh.next()[0].upper() in 'ATGCN' and
-            fh.next().startswith('+') and next(fh)):
+        if (next(fh).startswith('@') and next(fh)[0].upper() in 'ATGCN' and
+            next(fh).startswith('+') and next(fh)):
             continue
         return False
     return True
