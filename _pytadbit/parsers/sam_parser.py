@@ -4,9 +4,11 @@
 from __future__ import print_function
 from builtins import next
 
+from itertools import combinations
 from bisect import bisect_right as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
+from shutil import copyfileobj
 from warnings import warn
 import os
 from sys import stdout
@@ -227,6 +229,201 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         p.communicate()
     return windows, multis
 
+def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
+                 tmp_format=False, **kwargs):
+    """
+    Parse gem 3c sam file using pysam tools.
+
+    :param f_name: path to sam file corresponding to the mapping of reads
+    :param out_file: path to outfile tab separated format containing paired read information
+    :param genome_lengths: a dictionary generated containing the length of the genomic sequence
+                           per chromosome
+    :param False tmp_format: If True leave the file prepared to be merged with other map files.
+    """
+
+    frag_chunk = kwargs.get('frag_chunk', 100000)
+    try:
+        fhandler = Samfile(f_name)
+    except IOError:
+        raise Exception('ERROR: file "%s" not found' % f_name)
+
+    # max number of reads in buffer
+    max_size = 1000000
+
+    # getrname chromosome names
+    i = 0
+    crm_dict = {}
+    while True:
+        try:
+            crm_dict[i] = fhandler.getrname(i)
+            i += 1
+        except ValueError:
+            break
+    # iteration over reads
+    sub_count = 0
+    nfile = 0
+    tmp_files = []
+    reads = []
+    cur_name = ''
+    write_pairs = False
+    read1 = None
+    read2 = []
+    samiter = fhandler.fetch(until_eof=True)
+    r = None
+    try:
+        r = next(samiter)
+    except StopIteration:
+        # empty SAM file
+        return None
+        pass
+    while r:
+        if not r.is_paired or r.is_unmapped or r.mapq < 4:
+            try:
+                r = next(samiter)
+            except StopIteration:
+                break
+            continue
+
+        if r.is_read1 and cur_name != r.qname:
+            if read1 is None:
+                read1 = r
+                cur_name = r.qname
+                try:
+                    r = next(samiter)
+                except StopIteration:
+                    break
+                continue
+            else:
+                write_pairs = True
+
+        if not write_pairs:
+            if r.is_read2 or r.is_supplementary:
+                read2.append(r)
+                try:
+                    r = next(samiter)
+                except StopIteration:
+                    break
+                continue
+        else:
+            if not read2:
+                write_pairs = False
+                read1 = None
+                try:
+                    r = next(samiter)
+                except StopIteration:
+                    break
+                continue
+            reads_grp = []
+            read_id = read1.query_name
+            for read in [read1]+read2:
+                if read.query_name != read_id:
+                    continue
+                positive = not read.is_reverse
+                crm      = crm_dict[read.tid]
+                len_seq  = read.reference_end-read.pos
+                if positive:
+                    pos = read.pos + 1
+                else:
+                    pos = read.pos + len_seq
+                try:
+                    frag_piece = frags[crm][pos / frag_chunk]
+                except KeyError:
+                    # Chromosome not in hash
+                    read_multi = []
+                    break
+                idx = bisect(frag_piece, pos)
+                try:
+                    next_re = frag_piece[idx]
+                except IndexError:
+                    # case where part of the read is mapped outside chromosome
+                    count = 0
+                    while idx >= len(frag_piece) and count < len_seq:
+                        pos -= 1
+                        count += 1
+                        frag_piece = frags[crm][pos / frag_chunk]
+                        idx = bisect(frag_piece, pos)
+                    if count >= len_seq:
+                        raise Exception('Read mapped mostly outside ' +
+                                        'chromosome\n')
+                    next_re    = frag_piece[idx]
+                prev_re    = frag_piece[idx - 1 if idx else 0]
+                reads_grp.append([read.tid, crm, pos, positive,
+                                  len_seq, prev_re, next_re])
+            if len(reads_grp) > 2:
+                _merge_multis(reads_grp)
+            elif len(reads_grp) < 2:
+                reads_grp = []
+            reads_multi = []
+            for paired_reads in combinations(reads_grp, 2):
+                read_multi = [item for sublist in sorted(paired_reads,key = lambda x: (x[0], x[2]))
+                              for item in sublist]
+                if read_multi:
+                    reads_multi.append(read_multi)
+                sub_count += 1
+
+            paired_total = len(reads_multi)
+            paired_nbr = 0
+            for pair_read in reads_multi:
+                read_name_id = read_id
+                paired_nbr += 1
+                if paired_total > 1:
+                    read_name_id += '#%d/%d' % (paired_nbr,paired_total)
+                reads.append([read_name_id]+pair_read)
+
+            if sub_count >= max_size:
+                sub_count = 0
+                nfile += 1
+                reads = sorted(reads, key = lambda x: (x[1], x[3], x[8], x[10]))
+                read_lines = ['%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\n'
+                              % tuple(read) for read in reads]
+                write_paired_reads_to_file(read_lines, out_file, tmp_files, nfile)
+                #map_out.write('\n'.join(reads)+'\n')
+                del reads[:]
+            write_pairs = False
+            read1 = None
+            del read2[:]
+    if reads:
+        nfile += 1
+        reads = sorted(reads, key = lambda x: (x[1], x[3], x[8], x[10]))
+        read_lines = ['%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\n'
+                      % tuple(read) for read in reads]
+        write_paired_reads_to_file(read_lines, out_file, tmp_files, nfile)
+        #map_out.write('\n'.join(reads))
+
+    #map_out.close()
+    # we have now sorted temporary files
+    # we do merge sort for eah pair
+    if verbose:
+        stdout.write('Merge sort')
+        stdout.flush()
+    while len(tmp_files) > 1:
+        file1 = tmp_files.pop(0)
+        try:
+            file2 = tmp_files.pop(0)
+        except IndexError:
+            break
+        if verbose:
+            stdout.write('.')
+        stdout.flush()
+        nfile += 1
+        tmp_files.append(merge_sort(file1, file2, out_file, nfile, paired=True))
+    if verbose:
+        stdout.write('\n')
+
+    if tmp_format:
+        os.rename(tmp_files[0], out_file)
+    else:
+        map_out   = open(out_file, 'w')
+        tmp_reads_fh = open(tmp_files[0],'rb')
+        for crm in genome_lengths:
+            map_out.write('# CRM %s\t%d\n' % (crm, genome_lengths[crm]))
+        for read_line in tmp_reads_fh:
+            read = read_line.split('\t')
+            map_out.write('\t'.join([read[0]]+read[2:8]+read[9:]))
+        map_out.close()
+        os.system('rm -rf ' + tmp_files[0])
+
+    return out_file
 
 def write_reads_to_file(reads, outfiles, tmp_files, nfile):
     if not reads: # can be...
@@ -240,15 +437,76 @@ def write_reads_to_file(reads, outfiles, tmp_files, nfile):
     out.close()
     del(reads[:]) # empty list
 
+def write_paired_reads_to_file(reads, outfiles, tmp_files, nfile):
+    if not reads: # can be...
+        return
+    tmp_name = os.path.join(*outfiles.split('/')[:-1] +
+                            [('tmp_%03d_' % nfile) + outfiles.split('/')[-1]])
+    tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
+    tmp_files.append(tmp_name)
+    out = open(tmp_name, 'w')
+    out.write(''.join(reads))
+    out.close()
+    del(reads[:]) # empty list
 
-def merge_sort(file1, file2, outfiles, nfile):
+def _merge_multis(reads_multi):
+
+    merged_reads = []
+    elts = {}
+    for read in reads_multi:
+        elts.setdefault((read[1], read[5], read[6]), []).append(read)
+    # write contacts by pairs
+    # loop over RE fragments
+    for elt in elts:
+        # case we have 1 read-frags inside current fragment
+        if len(elts[elt]) == 1:
+            merged_reads.append(elts[elt][0])
+        # case all fragments felt into a single RE frag
+        # we take only first and last
+        elif len(elts) == 1:
+            elts[elt] = sorted(
+                elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+            merged_reads.append(elts[elt][0])
+            merged_reads.append(elts[elt][1])
+        # case we have several read-frag in this RE fragment
+        else:
+            # take first and last
+            map1, map2 = sorted(
+                elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+            strand = map1[3]
+            # if the 2 strands are different keep the longest fragment
+            if strand != map2[3]:
+                map1 = max(elts[elt], key=lambda x: int(x[4]))
+                merged_reads.append(map1)
+                continue
+            # sum up read-frags in the RE fragment  by putting
+            # them on the same strand
+            # use the strand of the first fragment as reference
+            if strand == 1:
+                beg = int(map1[2])
+                nts = int(map2[2]) + int(map2[4]) - beg
+            else:
+                beg = int(map2[2])
+                nts = beg - (int(map1[2]) - (int(map1[4])))
+            merged_reads.append(list(map1[:2]) + [str(beg), strand, str(nts)] + list(map1[5:]))
+
+    reads_multi = merged_reads
+
+
+def merge_sort(file1, file2, outfiles, nfile, paired=False):
     tmp_name = os.path.join(*outfiles.split('/')[:-1] +
                             [('tmp_merged_%03d_' % nfile) + outfiles.split('/')[-1]])
     tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
     tmp_file = open(tmp_name, 'w')
     fh1 = open(file1)
     fh2 = open(file2)
-    greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
+    if paired:
+        greater = lambda x, y: [y,x] == sorted([y,x], key=lambda j: (int(j.split('\t')[1]),
+                                                                 float(j.split('\t')[3]),
+                                                                 int(j.split('\t')[8]),
+                                                                 float(j.split('\t')[10])))
+    else:
+        greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
     read1 = next(fh1)
     read2 = next(fh2)
     while True:
