@@ -645,21 +645,24 @@ def lammps_simulate(lammps_folder, run_time,
             if restart_path != False:
                 restart_file = restart_path + 'lammps_' + str(k) + '/'
                 dirfiles = os.listdir(restart_file)
-                # check for last step
-                maxi = (0, '')
+                # check for last k and step
+                maxi = (0, 0, '')
                 for f in dirfiles:
                     if f.startswith('restart_kincrease_'):
+                        kincrease = int(f.split('_')[2])
                         step = int(f.split('_')[-1][:-8])
-                        if step > maxi[0]:
-                            maxi = (step, f)
+                        if kincrease > maxi[0]:
+                            maxi = (kincrease, step, f)
+                        elif kincrease == maxi[0] and step > maxi[1]:
+                            maxi = (kincrease, step, f)
                 # In case there is no restart file at all
-                if maxi[1] == '':
+                if maxi[2] == '':
                     print 'Could not find a LAMMPS restart file'
                     # will check later if we have a path or a file
                     getIniConf = True
                     #restart_file = False
                 else:
-                    restart_file = restart_file + maxi[1]
+                    restart_file = restart_file + maxi[2]
                     getIniConf = False
             else:
                 restart_file = False
@@ -1658,6 +1661,7 @@ harmonicWalls {
             outf.write(colvars_template % (name,region1,region2,seqdist,particle1,particle2))
             
             if isinstance(target_pairs, HiCBasedRestraints):
+                # If the spring constant is zero we avoid to add the restraint!
                 if cols_vals[4] == 0.0:
                     continue
                  
