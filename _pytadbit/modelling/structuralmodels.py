@@ -7,7 +7,7 @@ standard_library.install_aliases()
 from pickle                          import load, dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
-from warnings                         import warn
+from warnings                         import warn, catch_warnings, simplefilter    
 from sys                              import version_info
 if (version_info > (3, 0)):
     from string                           import ascii_uppercase as uc, ascii_lowercase as lc
@@ -25,7 +25,7 @@ from numpy                            import median as np_median
 from numpy                            import mean as np_mean
 from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
-from numpy                            import histogram, linspace
+from numpy                            import histogram, linspace, errstate
 from numpy                            import nanmin, nanmax
 from numpy.linalg                     import norm
 
@@ -58,8 +58,14 @@ from functools import reduce
 try:
     from matplotlib import pyplot as plt
     from matplotlib.cm import viridis, Reds, Blues, bwr
+    from matplotlib.ticker import PercentFormatter
 except ImportError:
     warn('matplotlib not found\n')
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def R2_vs_L(L, P):
     """
@@ -89,7 +95,7 @@ def load_structuralmodels(input_):
 
     :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
-    if isinstance(input_, str):
+    if isinstance(input_, basestring):
         with open(input_,'rb') as f_input_:
             svd = load(f_input_)
     else:
@@ -154,7 +160,7 @@ class StructuralModels(object):
         self.description    = description
 
     def __getitem__(self, nam):
-        if isinstance(nam, str):
+        if isinstance(nam, basestring):
             for m in self.__models:
                 if self.__models[m]['rand_init'] == nam:
                     return self.__models[m]
@@ -253,7 +259,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -344,7 +350,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -384,7 +390,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -482,8 +488,8 @@ class StructuralModels(object):
 
             if not end:
                 end = my_descr['end'][my_descr['chromosome'].index(crm)]
-            beg = int(float(beg + chrom_start) / self.resolution)
-            end = int(float(end + chrom_start) / self.resolution)
+            beg = int(float(beg + chrom_start) // self.resolution)
+            end = int(float(end + chrom_start) // self.resolution)
         nloci = end - beg
         scores = calc_eqv_rmsd(self.__models, beg, end, self._zeros, dcutoff,
                                what=what, normed=True)
@@ -540,7 +546,7 @@ class StructuralModels(object):
             Popen('%s %s --abc -te %s -V all -o %s.mcl %s' % (
                 mcl_bin, tmp_file, n_cpus, tmp_file, ' '.join(
                     mclargs or [])), stdout=PIPE, stderr=PIPE,
-                  shell=True).communicate()
+                  shell=True, universal_newlines=True).communicate()
             clusters = ClusterOfModels()
             if not exists(tmp_file + '.mcl'):
                 raise Exception('Problem with clustering, try increasing ' +
@@ -673,7 +679,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -798,10 +804,10 @@ class StructuralModels(object):
         for i in range(n_best_clusters - 1 + add):
             for j in range(n_best_clusters - 1 + add):
                 try:
-                    axes[i, j].set(adjustable='box-forced', aspect=1)
+                    axes[i, j].set(adjustable='box', aspect=1)
                     axes[i, j].set_visible(False)
                 except TypeError:
-                    axes.set(adjustable='box-forced', aspect=1)
+                    axes.set(adjustable='box', aspect=1)
                     axes.set_visible(False)
         # doing the plot
         for i in range(n_best_clusters - 1):
@@ -810,10 +816,10 @@ class StructuralModels(object):
                     continue
                 try:
                     axes[i + add, j - 1].set_visible(True)
-                    axes[i + add, j - 1].set(adjustable='box-forced', aspect=1)
+                    axes[i + add, j - 1].set(adjustable='box', aspect=1)
                 except TypeError:
                     axes.set_visible(True)
-                    axes.set(adjustable='box-forced', aspect=1)
+                    axes.set(adjustable='box', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
                             for l in range(self.nloci)]
                            for k in range(self.nloci)]
@@ -1092,7 +1098,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -1201,8 +1207,10 @@ class StructuralModels(object):
 
         models = self._get_models(models, cluster)
         dists = self._get_density(models, interval, use_mass_center)
-        distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
-                                                 average=False)
+        with catch_warnings():
+            simplefilter("ignore", category=RuntimeWarning)
+            distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
+                                                     average=False)
 
         # write consistencies to file
         if savedata:
@@ -1569,8 +1577,9 @@ class StructuralModels(object):
                 subrad[-1] *= sign
             subrad += [None] * 3
             rads.append(subrad)
-
-        radsk, errorn, errorp = self._windowize(list(zip(*rads)), steps, interval=0,
+        with catch_warnings():
+            simplefilter("ignore", category=RuntimeWarning)
+            radsk, errorn, errorp = self._windowize(list(zip(*rads)), steps, interval=0,
                                                 average=False, minerr=-360)
         if plot:
             xlabel = 'Particle number'
@@ -1823,10 +1832,7 @@ class StructuralModels(object):
         ax.set_ylabel('Particle')
         ax.set_xlabel('Particle')
         cbar = ax.figure.colorbar(ims)
-        oldlabels = cbar.ax.get_yticklabels()
-        newlabels = [str(int(100 * float(x.get_text())))+'%' for x in oldlabels]
-        cbar.ax.set_yticklabels(newlabels)
-        # cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        cbar.ax.yaxis.set_major_formatter(PercentFormatter(1.0))
         cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
         ax.set_title('Contact map')        # correlation
@@ -1905,9 +1911,10 @@ class StructuralModels(object):
         ax = fig.add_subplot(133)
         cmap = plt.get_cmap('viridis')
         cmap.set_bad('darkgrey', 1)
-        ims = ax.imshow(log2(self._original_data), origin='lower',
-                        interpolation="nearest", cmap=cmap,
-                        extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+        with errstate(divide='ignore'):
+            ims = ax.imshow(log2(self._original_data), origin='lower',
+                            interpolation="nearest", cmap=cmap,
+                            extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Genomic bin')
         ax.set_xlabel('Genomic bin')
         ax.set_title('Normalized Hi-C count')
@@ -2030,7 +2037,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2229,7 +2236,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2306,7 +2313,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2329,7 +2336,7 @@ class StructuralModels(object):
         part2 -= 1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2453,7 +2460,7 @@ class StructuralModels(object):
             models = [model_num]
         elif models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2579,7 +2586,7 @@ class StructuralModels(object):
         aligned_coords = self.align_models(models=models, cluster=cluster, by_cluster=True)
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
             fil['cluster'] = '[]'
             fil['centroid'] = '[]'
         elif cluster > -1 and len(self.clusters) > 0:
@@ -2673,7 +2680,7 @@ class StructuralModels(object):
             models = [model_num]
         elif models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2717,7 +2724,7 @@ class StructuralModels(object):
             models = [model_num]
         elif models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2906,7 +2913,7 @@ class StructuralModels(object):
         cluster = cluster or -1
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
+                      if isinstance(m, basestring) else m['index'] for m in models]
         elif cluster > -1 and len(self.clusters) > 0:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:

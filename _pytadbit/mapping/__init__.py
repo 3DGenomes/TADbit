@@ -118,7 +118,8 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
         print('  - Indexing new BAM file')
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
-                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            for l in Popen(samtools, stderr=PIPE,
+                                           universal_newlines=True).communicate()[1].split('\n')
                             if 'Version' in l][0])
     if version >= LooseVersion('1.3.1'):
         system(samtools  + ' index -@ %d %s' % (cpus, outbam))

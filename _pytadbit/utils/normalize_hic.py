@@ -124,7 +124,7 @@ def oneD(tmp_dir='.', form='tot ~ s(map) + s(cg) + s(res)', p_fit=None,
         raise Exception(('ERROR: seed number (currently: %d) should be an '
                          'interger greater than 1 (because of R)') % (seed))
 
-    proc = Popen(proc_par, stderr=PIPE)
+    proc = Popen(proc_par, stderr=PIPE, universal_newlines=True)
     err = proc.stderr.readlines()
     print('\n'.join(err))
 

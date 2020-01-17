@@ -57,7 +57,7 @@ def liftover(coords, tmp_path, lft_path, chn_path):
                     chn_path + ' ' +
                     tmp_path + '/out ' +
                     tmp_path + '/out.log'
-                    ), shell =True, stdout=PIPE, stderr=PIPE).communicate()
+                    ), shell =True, stdout=PIPE, stderr=PIPE, universal_newlines=True).communicate()
     if (not 'Reading' in err) or (not 'Mapping' in err):
         raise Exception(err)
     founds = [[l.split()[0],

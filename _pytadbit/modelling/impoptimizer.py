@@ -14,6 +14,11 @@ import itertools
 import numpy           as np
 import multiprocessing as mu
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 class IMPoptimizer(object):
     """
     This class optimizes a set of parameters (scale, kbending, maxdist, lowfreq, and
@@ -363,7 +368,7 @@ class IMPoptimizer(object):
         :param True verbose: print the results to the standard output
 
         """
-        if isinstance(filenames, str):
+        if isinstance(filenames, basestring):
             filenames = [filenames]
         models = {}
         for filename in filenames:
@@ -415,7 +420,7 @@ class IMPoptimizer(object):
         :param True verbose: print the results to the standard output
 
         """
-        if isinstance(filenames, str):
+        if isinstance(filenames, basestring):
             filenames = [filenames]
         models = {}
         for filename in filenames:
@@ -536,11 +541,11 @@ class IMPoptimizer(object):
                             len(self.lowfreq_range), len(self.upfreq_range)))
 
         """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
+        for i in range(len(self.scale_range)):
+            for j in range(len(self.kbending_range)):
+                for k in range(len(self.maxdist_range)):
+                    for l in range(len(self.lowfreq_range)):
+                        for m in range(len(self.upfreq_range)):
                             print "Correlation",self.scale_range[i],self.kbending_range[j],\
                             self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
                             results[i][j][k][l][m]
@@ -569,11 +574,11 @@ class IMPoptimizer(object):
                                 results[v, w, x, y, z] = float('nan')
 
         """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
+        for i in range(len(self.scale_range)):
+            for j in range(len(self.kbending_range)):
+                for k in range(len(self.maxdist_range)):
+                    for l in range(len(self.lowfreq_range)):
+                        for m in range(len(self.upfreq_range)):
                             print "Correlation",self.scale_range[i],self.kbending_range[j],\
                             self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
                             results[i][j][k][l][m]

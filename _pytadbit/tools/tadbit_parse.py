@@ -68,9 +68,9 @@ def run(opts):
 
     logging.info('parsing genomic sequence')
     try:
-        # allows the use of cPickle genome to make it faster
-        genome = load(open(opts.genome[0]))
-    except UnpicklingError:
+        # allows the use of pickle genome to make it faster
+        genome = load(open(opts.genome[0],'rb'))
+    except (UnpicklingError, KeyError):
         genome = parse_fasta(opts.genome, chr_regexp=opts.filter_chrom)
 
     if not opts.skip:
@@ -378,12 +378,12 @@ def check_options(opts):
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
-                            filemode='aw')
+                            filemode='a+')
     except IOError:
         logging.basicConfig(level=logging.DEBUG,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log2'),
-                            filemode='aw')
+                            filemode='a+')
 
     # to display log on stdout also
     logging.getLogger().addHandler(logging.StreamHandler())

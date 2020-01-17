@@ -156,7 +156,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
         print('       Found pre-computed alignment at %s' % pick_path)
         print('         -> loading it...')
         global ALIGNMENTS
-        ALIGNMENTS = load(open(pick_path))
+        ALIGNMENTS = load(open(pick_path, 'rb'))
         return
     crm_num = 1
     for crm_file in os.listdir(maf_path):

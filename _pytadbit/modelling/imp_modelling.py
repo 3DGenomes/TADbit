@@ -228,7 +228,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             m['index'] = i
     if outfile:
         if exists(outfile):
-            old_models, old_bad_models = load(open(outfile))
+            old_models, old_bad_models = load(open(outfile, 'rb'))
         else:
             old_models, old_bad_models = {}, {}
         models.update(old_models)

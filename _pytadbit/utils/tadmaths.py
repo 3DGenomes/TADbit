@@ -87,7 +87,8 @@ class Interpolate(object):
 
 
 def transform(val):
-    return np.log10(val)
+    with np.errstate(divide='ignore'):
+        return np.log10(val)
 
 
 def nozero_log(values):

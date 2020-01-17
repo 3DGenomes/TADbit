@@ -219,21 +219,21 @@ def TopDom(hic_data,window_size,statFilter=True):
         lil_mat = csr_mat.todense()
         for k in range(1,(2*window_size)):
 
-          mat_row = []
-          mat_column = []
-          my_range = list(range((n_bins*k), (n_bins*n_bins), 1+n_bins))
-          mat_values = np.empty(len(my_range))
-          col_arr = 0
-          for j in my_range:
-              mat_row.append(int(round(j/lil_mat.shape[0])))
-              mat_column.append(j%lil_mat.shape[0])
-              mat_values[col_arr] = lil_mat[int(round(j/lil_mat.shape[0])),j%lil_mat.shape[0]]
-              col_arr = col_arr + 1
-
-          scale_values = scale(mat_values)
-
-          for i in range(len(mat_row)):
-              lil_mat[mat_column[i],mat_row[i]] = scale_values[i]
+            mat_row = []
+            mat_column = []
+            my_range = list(range((n_bins*k), (n_bins*n_bins), 1+n_bins))
+            mat_values = np.empty(len(my_range))
+            col_arr = 0
+            for j in my_range:
+                mat_row.append(int(round(j//lil_mat.shape[0])))
+                mat_column.append(j%lil_mat.shape[0])
+                mat_values[col_arr] = lil_mat[int(round(j//lil_mat.shape[0])),j%lil_mat.shape[0]]
+                col_arr = col_arr + 1
+            
+            scale_values = scale(mat_values)
+            
+            for i in range(len(mat_row)):
+                lil_mat[mat_column[i],mat_row[i]] = scale_values[i]
 
 
         for key in proc_regions:
@@ -264,108 +264,108 @@ def TopDom(hic_data,window_size,statFilter=True):
 
 def Get_Diamond_Matrix_Mean(data, i, size):
 
-  n_bins = data.shape[1]
-  if i==n_bins-1:
-       return
-
-  lowerbound = max( 0, i-size+1 )
-  upperbound = min( i+size+1, n_bins)
-
-  return (data[lowerbound:(i+1),(i+1):upperbound].mean())
+    n_bins = data.shape[1]
+    if i==n_bins-1:
+        return
+    
+    lowerbound = max( 0, i-size+1 )
+    upperbound = min( i+size+1, n_bins)
+    
+    return (data[lowerbound:(i+1),(i+1):upperbound].mean())
 
 def Which_Gap_Region(data):
 
-  n_bins = data.shape[1]
-
-  gap = np.zeros(n_bins)
-
-  i=0
-  while i < n_bins:
-
-    j = i + 1
-    while j < n_bins:
-      if data[i:j+1, i:j+1].sum() == 0:
-        gap[i:j+1] = -0.5
-        j = j+1
-      else:
-        break
-
-    i = j
-
-  idx = np.where(gap==-0.5)[0]
-
-  #return dict(zip(idx,idx))
-  return idx
+    n_bins = data.shape[1]
+    
+    gap = np.zeros(n_bins)
+    
+    i=0
+    while i < n_bins:
+    
+        j = i + 1
+        while j < n_bins:
+            if data[i:j+1, i:j+1].sum() == 0:
+                gap[i:j+1] = -0.5
+                j = j+1
+            else:
+                break
+        
+        i = j
+    
+    idx = np.where(gap==-0.5)[0]
+    
+    #return dict(zip(idx,idx))
+    return idx
 
 def Which_process_region(rmv_idx, n_bins, min_size):
 
-  gap_idx = rmv_idx
-
-  proc_regions = dict()
-  proc_set = np.arange(n_bins)
-  proc_set = np.setdiff1d(proc_set,gap_idx)
-
-  n_proc_set = proc_set.shape[0]
-
-  i=0
-  while i < n_proc_set:
-    start = proc_set[i]
-    j = i+1
-
-    while j < n_proc_set:
-        if proc_set[j] - proc_set[j-1] <= 1:
-            j = j + 1
-        else:
+    gap_idx = rmv_idx
+    
+    proc_regions = dict()
+    proc_set = np.arange(n_bins)
+    proc_set = np.setdiff1d(proc_set,gap_idx)
+    
+    n_proc_set = proc_set.shape[0]
+    
+    i=0
+    while i < n_proc_set:
+        start = proc_set[i]
+        j = i+1
+        
+        while j < n_proc_set:
+            if proc_set[j] - proc_set[j-1] <= 1:
+                j = j + 1
+            else:
+                tmp_dict = {'start':start,'end':proc_set[j-1]}
+                if abs(proc_set[j-1]-start) >= min_size:
+                    proc_regions[start]=tmp_dict
+                i = j
+                break
+        
+        if j >= n_proc_set:
             tmp_dict = {'start':start,'end':proc_set[j-1]}
             if abs(proc_set[j-1]-start) >= min_size:
                 proc_regions[start]=tmp_dict
-            i = j
             break
-
-    if j >= n_proc_set:
-        tmp_dict = {'start':start,'end':proc_set[j-1]}
-        if abs(proc_set[j-1]-start) >= min_size:
-            proc_regions[start]=tmp_dict
-        break
-
-  return(proc_regions)
+    
+    return(proc_regions)
 
 def Detect_Local_Extreme(x):
 
-  n_bins = len(x)
-  ret = np.zeros(n_bins)
-  x[np.isnan(x)]=0
-
-  if n_bins <= 3:
-      ret[np.argmin(x)]=-1
-      ret[np.argmax(x)]=1
-
-      return ret
-  # Norm##################################################3
-  new_point_x, new_point_y = Data_Norm(x=np.arange(n_bins), y=x)
-
-
-  x=new_point_y
-  cp,Fv,Ev = Change_Point(x=np.arange(n_bins), y=x)
-
-  if len(cp) <= 2:
-      return ret
-  for i in range(1,len(cp)-1):
-      if x[cp[i]] >= x[cp[i]-1] and x[cp[i]] >= x[cp[i]+1]:
-           ret[cp[i]] = 1
-      else:
-           if x[cp[i]] < x[cp[i]-1] and x[cp[i]] < x[cp[i]+1]:
-               ret[cp[i]] = -1
-
-      min_val = min( x[ cp[i-1] ], x[ cp[i] ] )
-      max_val = max( x[ cp[i-1] ], x[ cp[i] ] )
-
-      if np.min( x[cp[i-1]:cp[i]+1] ) < min_val:
-           ret[ cp[i-1] + np.argmin( x[cp[i-1]:cp[i]+1] ) ] = -1
-      if np.max( x[cp[i-1]:cp[i]+1] ) > max_val:
-           ret[ cp[i-1] + np.argmax( x[cp[i-1]:cp[i]+1] ) ] = 1
-
-  return ret
+    n_bins = len(x)
+    ret = np.zeros(n_bins)
+    x[np.isnan(x)]=0
+    
+    if n_bins <= 3:
+        ret[np.argmin(x)]=-1
+        ret[np.argmax(x)]=1
+    
+        return ret
+    # Norm##################################################3
+    new_point_x, new_point_y = Data_Norm(x=np.arange(n_bins), y=x)
+    
+    
+    x=new_point_y
+    cp,Fv,Ev = Change_Point(x=np.arange(n_bins), y=x)
+    
+    if len(cp) <= 2:
+        return ret
+    for i in range(1,len(cp)-1):
+        if x[cp[i]] >= x[cp[i]-1] and x[cp[i]] >= x[cp[i]+1]:
+            ret[cp[i]] = 1
+        else:
+            if x[cp[i]] < x[cp[i]-1] and x[cp[i]] < x[cp[i]+1]:
+                ret[cp[i]] = -1
+    
+        min_val = min( x[ cp[i-1] ], x[ cp[i] ] )
+        max_val = max( x[ cp[i-1] ], x[ cp[i] ] )
+    
+        if np.min( x[cp[i-1]:cp[i]+1] ) < min_val:
+            ret[ cp[i-1] + np.argmin( x[cp[i-1]:cp[i]+1] ) ] = -1
+        if np.max( x[cp[i-1]:cp[i]+1] ) > max_val:
+            ret[ cp[i-1] + np.argmax( x[cp[i-1]:cp[i]+1] ) ] = 1
+    
+    return ret
 
 def Data_Norm(x, y):
     ret_x = np.zeros(len(x))
@@ -463,7 +463,7 @@ def Convert_Bin_To_Domain_TMP(n_bins, signal_idx, gap_idx, pvalues=None, pvalue_
                 bins[key]['score'] = p_value_constr.mean()
                 p_value_constr = p_value_constr[p_value_constr < pvalue_cut]
                 if end_id - start_id == len(p_value_constr):
-                     bins[key]['tag'] = "boundary"
+                    bins[key]['tag'] = "boundary"
 
     return bins
 
@@ -594,7 +594,8 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
                 for pos in range(hic_data.section_pos[crm][0] + end,
                                  hic_data.section_pos[crm][1] - end):
                     try:
-                        insidx[(dist, end)][pos] = np.log2(insidx[(dist, end)][pos] / total)
+                        with np.errstate(divide='ignore'):
+                            insidx[(dist, end)][pos] = np.log2(insidx[(dist, end)][pos] / total)
                     except ZeroDivisionError:
                         insidx[(dist, end)][pos] = float('nan')
             if deltas:
@@ -611,7 +612,8 @@ def insulation_score(hic_data, dists, normalize=False, resolution=1,
                             dw_vals.append(insidx[(dist, end)][pos + delta - spos])
                         except KeyError:
                             pass
-                    deltas[(dist, end)][pos] = (np.mean(up_vals) - np.mean(dw_vals))
+                    with np.errstate(invalid='ignore'):
+                        deltas[(dist, end)][pos] = (np.mean(up_vals) - np.mean(dw_vals))
 
     if savedata:
         out = open(savedata, 'w')

@@ -37,6 +37,11 @@ try:
 except ImportError:
     pass
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
 
@@ -63,7 +68,7 @@ def print_progress(procs):
             stdout.write('.')
             stdout.flush()
         prev_done = done
-    print('%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
+    print('%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) // 10),
                         '%s/%s' % (len(procs),len(procs))))
 
 
@@ -255,14 +260,15 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     fhandler.seek(pos_fh)
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
-                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            for l in Popen(samtools, stderr=PIPE,
+                                           universal_newlines=True).communicate()[1].split('\n')
                             if 'Version' in l][0])
     pre = '-o' if version >= LooseVersion('1.3') else ''
 
     proc = Popen(samtools + ' view -Shb -@ %d - | samtools sort -@ %d - %s %s' % (
         ncpus, ncpus, pre,
         outbam + '.bam' if  version >= LooseVersion('1.3') else ''),  # in new version '.bam' is no longer added
-                 shell=True, stdin=PIPE)
+                 shell=True, stdin=PIPE, universal_newlines=True)
     proc.stdin.write(output)
     if frmt == 'mid':
         map2sam = _map2sam_mid
@@ -294,7 +300,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     proc.wait()
 
     # Index BAM
-    _ = Popen(samtools + ' index %s.bam' % (outbam), shell=True).communicate()
+    _ = Popen(samtools + ' index %s.bam' % (outbam), shell=True, universal_newlines=True).communicate()
 
     # close file handlers
     fhandler.close()
@@ -459,7 +465,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
 
     njobs = min(total, nchunks) + 1
 
-    nbins = total / njobs + 1
+    nbins = total // njobs + 1
     for i in range(start_bin1, end_bin1, nbins):
         if i + nbins > end_bin1:  # make sure that we stop at the right place
             nbins = end_bin1 - i
@@ -469,13 +475,27 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             (crm1, beg1), (crm2, fin2) = bins[i], bins[-1]
         if crm1 != crm2:
             fin1 = sections[crm1]
-            beg2 = 0
             regs.append(crm1)
-            regs.append(crm2)
             begs.append(beg1 * resolution)
-            begs.append(beg2 * resolution)
             ends.append(fin1 * resolution + resolution)  # last nt included
-            ends.append(fin2 * resolution + resolution - 1)  # last nt not included (overlap with next window)
+            # be sure we don't miss regions in between the start and end bins
+            start_chunk = i+fin1-beg1
+            end_chunk = i + nbins - 1 if i + nbins - 1 < len(bins) else len(bins) - 1
+            (crm1, beg1) = bins[start_chunk]
+            fin1 = beg1
+            for j in range(start_chunk, end_chunk+1):
+                (crm2, beg2) = bins[j]
+                if crm1 == crm2:
+                    fin1 = beg2
+                    continue
+                regs.append(crm1)
+                begs.append(beg1 * resolution)
+                fin1 = sections[crm1]
+                ends.append(fin1 * resolution + resolution - 1)  # last nt not included (overlap with next window)
+                (crm1, beg1) = (crm2, beg2)
+            regs.append(crm1)
+            begs.append(beg1 * resolution)
+            ends.append(fin1 * resolution + resolution - 1)  # last nt not included (overlap with next window)
         else:
             regs.append(crm1)
             begs.append(beg1 * resolution)
@@ -586,7 +606,7 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
-        print('%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
+        print('%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) // 10),
                             '%s/%s' % (len(chunks[0]),len(chunks[0]))))
 
 
@@ -597,8 +617,8 @@ def get_biases_region(biases, bin_coords, check_resolution=None):
     """
     start_bin1, end_bin1, start_bin2, end_bin2 = bin_coords
     # load decay
-    if isinstance(biases, str):
-        biases = load(open(biases))
+    if isinstance(biases, basestring):
+        biases = load(open(biases, 'rb'))
     resolution = biases.get('resolution', float('NaN'))
     if check_resolution is not None:
         if check_resolution != resolution:
@@ -814,7 +834,7 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     if isinstance(normalizations, list):
         normalizations = tuple(normalizations)
-    elif isinstance(normalizations, str):
+    elif isinstance(normalizations, basestring):
         normalizations = tuple([normalizations])
 
     if not isinstance(filter_exclude, int):

@@ -201,7 +201,7 @@ def lammps_simulate(initial_conformation, run_time, colvars=None,
         
     if outfile:
         if exists(outfile):
-            old_models = load(open(outfile))
+            old_models = load(open(outfile, 'rb'))
         else:
             old_models = {}
         models.update(old_models)

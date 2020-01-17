@@ -6,9 +6,10 @@
 
 import sys
 
+from warnings  import catch_warnings, simplefilter
 from itertools import combinations
-from math import pi, sqrt, cos, sin, acos
-from copy import deepcopy
+from math      import pi, sqrt, cos, sin, acos
+from copy      import deepcopy
 
 import numpy as np
 from numpy.random import shuffle as np_shuffle
@@ -649,7 +650,8 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         ax1 = plt.subplot(gs[:   , 0:3])
         ax2 = plt.subplot(gs[1:5 , 3: ])
         ax3 = plt.subplot(gs[5:7 , 3: ])
-        img = ax2.imshow(np.log2(data), interpolation='none')
+        with np.errstate(divide='ignore'):
+            img = ax2.imshow(np.log2(data), interpolation='none')
         plt.colorbar(img, ax=ax2)
 
         if savefig:
@@ -659,7 +661,7 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         ax2.set_ylabel('Bin')
 
         normfit = sc_norm.pdf(zdata, np.mean(zdata), np.std(zdata))
-        _ = ax3.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4,
+        _ = ax3.plot(zdata, normfit, ':o', color='grey', alpha=.4,
                      markersize=.5)
         ax3.tick_params(axis='both', which='major', labelsize=10)
 
@@ -718,8 +720,10 @@ def mmp_score(matrix, nrand=10, verbose=False, savefig=None):
         ax1.fill_between(list(range(1, 1 + len(rvmean))), rvmean, egval,
                          where=(np.array(rvmean) + np.array(err))>egval,
                          facecolor='red'  , interpolate=True, alpha=0.2)
-        ax1.set_xlim((0,len(rvmean)))
-        ax1.set_ylim((0, max(max(rvmean), max(egval))))
+        with catch_warnings():
+            simplefilter("ignore")
+            ax1.set_xlim((0,len(rvmean)))
+            ax1.set_ylim((0, max(max(rvmean), max(egval))))
         ax1.legend(frameon=False, loc='upper right', prop={'size': 10})
         ax1.set_xlabel('Log indexes of Eigenvalues')
         ax1.set_ylabel('Eigenvalues (percentage of total)')

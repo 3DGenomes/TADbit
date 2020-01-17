@@ -416,7 +416,7 @@ def _run_aleigen(contacts1, contacts2, num_v):
     write_contacts(contacts1, contacts2, f_string)
     sc_str = re.compile('Score\s+C1\s+C2\s+CMO\n([0-9.]+)\s+[0-9]+\s+.*')
     out = Popen('aleigen %s %s %s' % (f_name1, f_name2, num_v),
-                shell=True, stdout=PIPE).communicate()[0]
+                shell=True, stdout=PIPE, universal_newlines=True).communicate()[0]
     score = [float(c) for c in re.findall(sc_str, out)]
     print(out)
     align1 = []

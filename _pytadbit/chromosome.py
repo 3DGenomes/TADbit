@@ -26,6 +26,11 @@ try:
 except ImportError:
     stderr.write('matplotlib not found\n')
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def load_chromosome(in_f, fast=2):
     """
     Load a Chromosome object from a file. A Chromosome object can be saved with
@@ -87,9 +92,9 @@ def load_chromosome(in_f, fast=2):
         crm.species         = None
         crm.assembly        = None
         crm.description     = {}
-    if isinstance(dico['experiments'][name]['hi-c'], str) or fast != int(2):
+    if isinstance(dico['experiments'][name]['hi-c'], basestring) or fast != int(2):
         try:
-            dicp = load(open(in_f + '_hic'))
+            dicp = load(open(in_f + '_hic','rb'))
             for name in dico['experiments']:
                 crm.get_experiment(name).hic_data = dicp[name]['hi-c']
                 if fast != 1:
@@ -294,10 +299,10 @@ class Chromosome(object):
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
         """
         Save a Chromosome object to a file (it uses :py:func:`pickle.load` from
-        the :py:mod:`cPickle`). Once saved, the object can be loaded with
+        the :py:mod:`pickle`). Once saved, the object can be loaded with
         :func:`load_chromosome`.
 
-        :param out_f: path to the file where to store the :py:mod:`cPickle`
+        :param out_f: path to the file where to store the :py:mod:`pickle`
            object
         :param True fast: if True, skip Hi-C data and weights
         :param True divide: if True writes two pickles, one with what would
@@ -354,7 +359,7 @@ class Chromosome(object):
         dump(dico, out)
         out.close()
         if not fast and divide:
-            out = open(out_f + '_hic', 'w')
+            out = open(out_f + '_hic', 'wb')
             dump(dicp, out)
             out.close()
 

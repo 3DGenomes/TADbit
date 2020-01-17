@@ -3,7 +3,7 @@
 """
 from __future__ import print_function
 
-from warnings                     import warn
+from warnings                     import warn, catch_warnings, simplefilter
 from collections                  import OrderedDict
 
 from pysam                        import AlignmentFile
@@ -29,6 +29,11 @@ from pytadbit.utils.tadmaths      import right_double_mad as mad
 from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
 from pytadbit.utils.extraviews    import nicer
 from pytadbit.utils.file_handling import mkdir
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
@@ -81,7 +86,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        calculating decay of the number of interactions with genomic distance.
        Default is equal to resolution of the matrix.
     """
-    if isinstance(data, str):
+    if isinstance(data, basestring):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
         if not kwargs.get('get_sections', True) and decay:
             warn('WARNING: not decay not available when get_sections is off.')
@@ -401,7 +406,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
 
     :returns: slope, intercept and R square of each of the 3 correlations
     """
-    if isinstance(data, str):
+    if isinstance(data, basestring):
         resolution = resolution or 1
         dist_intr = dict([(i, {})
                           for i in range(min_diff, max_diff)])
@@ -599,7 +604,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     axe.set_yscale('log')
     axe.set_xlim((min_diff, max_diff))
     try:
-        axe.set_ylim((0, max(y)))
+        with catch_warnings():
+            simplefilter("ignore")
+            axe.set_ylim((0, max(y)))
     except ValueError:
         pass
     if savefig:
@@ -842,7 +849,7 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
                 if cond2(count):
                     break
                 continue
-            pos = int(pos) / resolution
+            pos = int(pos) // resolution
             try:
                 distr[crm][pos] += 1
             except KeyError:

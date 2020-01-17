@@ -11,7 +11,7 @@ from sys                            import stderr, modules
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
-from pickle                        import HIGHEST_PROTOCOL, dump, load
+from pickle                         import HIGHEST_PROTOCOL, dump, load
 
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan, mean
@@ -37,6 +37,11 @@ try:
     from pytadbit.parsers.cooler_parser import cooler_file
 except ImportError:
     pass
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
@@ -151,7 +156,7 @@ class HiC_data(dict):
                     'ERROR: row or column larger than %s' % self.__size)
             super(HiC_data, self).__setitem__(pos, val)
         except TypeError:
-            if row_col > self._size2:
+            if hasattr(self, '_size2') and row_col > self._size2:
                 raise IndexError(
                     'ERROR: position %d larger than %s^2' % (row_col,
                                                              self.__size))
@@ -167,7 +172,7 @@ class HiC_data(dict):
         cols = []
         rows = []
         for key, value in self.items():
-            row, col = round(key / self.__size), key % self.__size
+            row, col = round(key // self.__size), key % self.__size
             values.append(float(value))
             cols.append(col)
             rows.append(row)
@@ -428,7 +433,7 @@ class HiC_data(dict):
 
         :param fnam: path to input pickle file
         """
-        biases = load(open(fnam))
+        biases = load(open(fnam,'rb'))
         if biases['resolution'] != self.resolution:
             raise Exception(('Error: resolution in Pickle (%d) does not match '
                              'the one of this HiC_data object (%d)') % (
@@ -472,7 +477,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:
@@ -560,7 +565,9 @@ class HiC_data(dict):
         out.create_bins()
         out.prepare_matrix()
         for key, value in self.items():
-            row, col = round(key / self.__size), key % self.__size
+            row, col = key // self.__size, key % self.__size
+            if row > col: # only upper triangular
+                continue
             out.write_iter(0, row, col, value)
         out.close()
         if normalized:
@@ -590,7 +597,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:
@@ -689,7 +696,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0].split(':')[0]]
                 start2, end2 = self.section_pos[focus[1].split(':')[0]]
                 if ':' in focus[0]:
@@ -819,7 +826,7 @@ class HiC_data(dict):
         if suffix != '':
             suffix = '_' + suffix
         # parse bed file
-        if rich_in_A and isinstance(rich_in_A, str):
+        if rich_in_A and isinstance(rich_in_A, basestring):
             rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
 
         cmprts = {}
@@ -1522,7 +1529,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:

@@ -17,7 +17,7 @@ from random                           import random
 from shutil                           import copyfile
 from itertools                        import product
 from warnings                         import warn
-from pickle                           import dump
+from pickle                           import dump, HIGHEST_PROTOCOL
 from hashlib                          import md5
 from functools                        import partial
 from multiprocessing                  import cpu_count, TimeoutError, Pool
@@ -41,6 +41,10 @@ from pytadbit.utils.sqlite_utils      import digest_parameters
 from pytadbit                         import get_dependencies_version
 from pytadbit.parsers.hic_parser      import read_matrix
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
@@ -78,7 +82,7 @@ def abortable_worker(func, *args, **kwargs):
         raise
 
 def convert_from_unicode(data):
-    if isinstance(data, str):
+    if isinstance(data, basestring):
         return str(data)
     if isinstance(data, collections.Mapping):
         return dict(list(map(convert_from_unicode, iter(data.items()))))
@@ -139,7 +143,6 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     dump(optpar, tmp_params)
     dump(coords, tmp_params)
     tmp_params.close()
-    tmp_params.close()
     for n_job in range(n_jobs):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
@@ -149,11 +152,11 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
         tmp.write('''
-from cPickle import load, dump
+from pickle import load, dump
 from os                               import path
 from pytadbit.modelling.imp_modelling import generate_3d_models
 
-params_file = open("%s")
+params_file = open("%s","rb")
 exp = load(params_file)
 zscores = load(params_file)
 zeros = load(params_file)
@@ -190,7 +193,8 @@ def run_distributed_job(job_dir, script_cmd , script_args):
     with open(logname, 'a') as f:
         f.write('Log %s\n' % job_dir)
         f.flush()
-        subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f)
+        subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f,
+                         universal_newlines=True)
     f.close()
     results_file = path.join(job_dir,'results.models')
     failed_flag = path.join(job_dir,'failed.flag')
@@ -319,7 +323,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
             prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
 
     # get the best combination
-    best = ({'corr': None}, [None, None, None, None, None])
+    best = ({'corr': 0}, [0, 0, 0, 0, 0])
     results = {}
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
         m, u, l, s = list(map(my_round, (m, u, l, s)))
@@ -417,6 +421,9 @@ def run(opts):
                                 opts.crm if opts.crm else 'all',
                                 (opts.beg + 1) if opts.beg is not None else '',
                                 opts.end if opts.end else ''))
+        if path.exists(outdir):
+            logging.info ('     o WARNING: reusing existing folder, \
+                                    please check if you need to remove')
         mkdir(outdir)
 
         if opts.crm:
@@ -844,8 +851,8 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                 batch_job_hash))
             optimid = cur.fetchall()[0][0]
             for m, u, l, d, s in results:
-                optpar_md5 = md5('%s%s%s%s%s' %
-                                 (m, u, l, d, s)).hexdigest()[:12]
+                optpar_md5 = md5(('%s%s%s%s%s' %
+                                 (m, u, l, d, s)).encode('utf-8')).hexdigest()[:12]
                 cur.execute(("SELECT Id from MODELs where "
                              "OPTPAR_md5='%s' and REGIONid='%s'") % (
                                  optpar_md5, optimid))

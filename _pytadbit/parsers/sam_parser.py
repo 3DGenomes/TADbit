@@ -13,6 +13,11 @@ from warnings import warn
 import os
 from sys import stdout
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
               mapper=None, **kwargs):
@@ -55,9 +60,9 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
     frags = map_re_sites(re_name, genome_seq, frag_chunk=frag_chunk,
                          verbose=verbose)
 
-    if isinstance(f_names1, str):
+    if isinstance(f_names1, basestring):
         f_names1 = [f_names1]
-    if isinstance(f_names2, str):
+    if isinstance(f_names2, basestring):
         f_names2 = [f_names2]
     if f_names2:
         fnames = f_names1, f_names2
@@ -326,7 +331,7 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
                 else:
                     pos = read.pos + len_seq
                 try:
-                    frag_piece = frags[crm][pos / frag_chunk]
+                    frag_piece = frags[crm][pos // frag_chunk]
                 except KeyError:
                     # Chromosome not in hash
                     read_multi = []
@@ -340,7 +345,7 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
                     while idx >= len(frag_piece) and count < len_seq:
                         pos -= 1
                         count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
+                        frag_piece = frags[crm][pos // frag_chunk]
                         idx = bisect(frag_piece, pos)
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +

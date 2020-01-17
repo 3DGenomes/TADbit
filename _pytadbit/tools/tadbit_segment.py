@@ -164,9 +164,9 @@ def run(opts):
             # use normalization to compute height on TADs called
             if opts.all_bins:
                 if opts.nosql:
-                    biases = load(open(biases))
+                    biases = load(open(biases, 'rb'))
                 else:
-                    biases = load(open(path.join(opts.workdir, biases)))
+                    biases = load(open(path.join(opts.workdir, biases), 'rb'))
                 hic_data.bads = biases['badcol']
                 hic_data.bias = biases['biases']
             tads = load_tad_height(result, size, beg, end, hic_data)

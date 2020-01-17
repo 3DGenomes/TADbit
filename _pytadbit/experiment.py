@@ -38,7 +38,11 @@ try:
     file_types = file, IOBase
 except NameError:
     file_types = (IOBase,)
-    
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def load_experiment_from_reads(name, fnam, genome_seq, resolution,
                                conditions=None, identifier=None, cell_type=None,
@@ -1101,7 +1105,7 @@ class Experiment(object):
         if not self.norm and normalized:
             raise Exception('Experiment not normalized.')
         # write to file
-        if isinstance(fname, str):
+        if isinstance(fname, basestring):
             out = open(fname, 'w')
         elif isinstance(fname, file_types):
             out = fname
@@ -1402,7 +1406,7 @@ class Experiment(object):
             jet._init()
             jet._lut[:,-1] = alphas
 
-        if isinstance(cmap, str):
+        if isinstance(cmap, basestring):
             cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
         if relative:
@@ -1475,7 +1479,7 @@ class Experiment(object):
             labels = []
             for tad, tick in [(t, tads[t]['start'] + (tads[t]['end'] -
                                                       tads[t]['start'] - 1))
-                              for t in list(tads.keys())[::(len(tads)/11 + 1)]]:
+                              for t in list(tads.keys())[::(len(tads)//11 + 1)]]:
                 ticks.append(tick)
                 labels.append(tad + 1)
             axe.set_yticks(ticks)

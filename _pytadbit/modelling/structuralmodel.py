@@ -17,6 +17,11 @@ from pytadbit                       import __version__ as version
 from math                           import sqrt, pi
 import hashlib
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def model_header(model):
     """
     Defines the header to write in output files for a given model
@@ -513,7 +518,7 @@ class StructuralModel(dict):
         :param kwargs: any extra argument will be passed to the coloring
            function
         """
-        if isinstance(color, str):
+        if isinstance(color, basestring):
             if color == 'index':
                 color = color_residues(self, **kwargs)
             elif color == 'tad':
@@ -646,7 +651,7 @@ class StructuralModel(dict):
         :param kwargs: any extra argument will be passed to the coloring
            function
         """
-        if isinstance(color, str):
+        if isinstance(color, basestring):
             if color == 'index':
                 color = color_residues(self, **kwargs)
             elif color == 'tad':
@@ -691,7 +696,7 @@ class StructuralModel(dict):
         fil['title']   = title or "Sample TADbit data"
         fil['version'] = version
         fil['descr']   = ''.join('\n', ',\n'.join([
-            '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, str) else v)
+            '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, basestring) else v)
             for k, v in list(self.get('description', {}).items())]), '\n')
         fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
                                                          self['z'][i])

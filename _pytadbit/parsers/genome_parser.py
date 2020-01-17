@@ -13,6 +13,11 @@ import re
 from pytadbit.utils.file_handling import magic_open
 from functools import reduce
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                 verbose=True, save_cache=True, reload_cache=False, only_length=False):
     """
@@ -33,7 +38,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
     :returns: a sorted dictionary with chromosome names as keys, and sequences
        as values (sequence in upper case)
     """
-    if isinstance(f_names, str):
+    if isinstance(f_names, basestring):
         f_names = [f_names]
 
     if len(f_names) == 1:
@@ -55,7 +60,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                         genome_seq[c] = line.strip()
         return genome_seq
 
-    if isinstance(chr_names, str):
+    if isinstance(chr_names, basestring):
         chr_names = [chr_names]
 
     if chr_filter:

@@ -18,6 +18,11 @@ import tarfile
 from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 
+try:
+    basestring
+except NameError:
+    basestring = str
+  
 def check_pik(path):
     with open(path, "rt") as f:
         f.seek (0, 2)                # Seek @ EOF
@@ -38,7 +43,7 @@ def magic_open(filename, verbose=False, cpus=None):
     textchars = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
     is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
 
-    if isinstance(filename, str) or isinstance(filename, str):
+    if isinstance(filename, basestring) or isinstance(filename, basestring):
         fhandler = open(filename, 'rb')
         inputpath = True
         if tarfile.is_tarfile(filename):
@@ -113,7 +118,7 @@ def is_fastq(thing):
     """
     Check if a given file is in fastq format
     """
-    if isinstance(thing, str):
+    if isinstance(thing, basestring):
         fh = magic_open(thing)
     else:
         fh = thing

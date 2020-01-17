@@ -20,6 +20,11 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, paired=False):
     """
     Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme
@@ -44,7 +49,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
     if isinstance(r_enz, list):
         r_enzs = r_enz
-    elif isinstance(r_enz, str):
+    elif isinstance(r_enz, basestring):
         r_enzs = [r_enz]
     for k in list(RESTRICTION_ENZYMES.keys()):
         for i in range(len(r_enzs)):

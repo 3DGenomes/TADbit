@@ -33,7 +33,11 @@ try:
     file_types = file, IOBase
 except NameError:
     file_types = (IOBase,)
-    
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 HIC_DATA = True
 
@@ -223,7 +227,7 @@ def abc_reader(f):
     size = 0
     for c in chroms:
         sections[c] = size
-        size += chroms[c] / reso + 1
+        size += chroms[c] // reso + 1
     if beg:
         header = [(crm, '%d-%d' % (l * reso + 1, (l + 1) * reso))
                   for l in range(beg, end)]
@@ -236,7 +240,7 @@ def abc_reader(f):
     def _disect(x):
         a, b, v = x.split()
         return (int(a) + int(b) * size + offset, num(v))
-    items = (_disect(line) for line in f)
+    items = tuple(_disect(line) for line in f)
     return items, size, header, masked, False
 
 
@@ -444,7 +448,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                      chromosomes=chromosomes,
                                      resolution=resolution,
                                      symmetricized=sym, masked=masked))
-        elif isinstance(thing, str):
+        elif isinstance(thing, basestring):
             if is_cooler(thing, resolution if resolution > 1 else None):
                 matrix, size, header, masked, sym = parse_cooler(thing,
                                                                  resolution if resolution > 1 else None,
@@ -583,8 +587,8 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                    resolution=resolution)
 
     if biases:
-        if isinstance(biases, str):
-            biases = load(open(biases))
+        if isinstance(biases, basestring):
+            biases = load(open(biases,'rb'))
         if biases['resolution'] != resolution:
             raise Exception('ERROR: resolution of biases do not match to the '
                             'one wanted (%d vs %d)' % (

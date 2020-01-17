@@ -12,6 +12,11 @@ from scipy.stats import binom_test
 
 from pytadbit.utils.file_handling import magic_open
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def iupac2regex(restring):
     """
     Convert target sites with IUPAC nomenclature to regex pattern
@@ -78,7 +83,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
        chromosome
     """
     warn('WARNING: not reviewed since multiple-cut branch, and the use of regexpinstead of index')
-    if isinstance(enzyme_name, str):
+    if isinstance(enzyme_name, basestring):
         enzyme_names = [enzyme_name]
     elif isinstance(enzyme_name, list):
         enzyme_names = enzyme_name
@@ -136,7 +141,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     :param 100000 frag_chunk: in order to optimize the search for nearby RE
        sites, each chromosome is splitted into chunks.
     """
-    if isinstance(enzyme_name, str):
+    if isinstance(enzyme_name, basestring):
         enzyme_names = [enzyme_name]
     elif isinstance(enzyme_name, list):
         enzyme_names = enzyme_name

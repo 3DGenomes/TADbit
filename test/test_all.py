@@ -55,12 +55,13 @@ def check_hic(hic, size):
                 raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
 
-
 class TestTadbit(unittest.TestCase):
     """
     test main tadbit functions
     """
-
+    def setUp(self):
+        simplefilter('ignore')
+        
     def test_01_tadbit(self):
 
         print('PYTHON SIDE')
@@ -1095,7 +1096,7 @@ if __name__ == "__main__":
         from time import time
     else:
         CHKTIME = False
-
+        
     with catch_warnings():
         simplefilter("ignore")
         unittest.main()

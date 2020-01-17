@@ -167,7 +167,7 @@ def run(opts):
             try:
                 matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
                     mreads, opts.reso,
-                    load(open(biases)) if biases and norm != 'raw' else None,
+                    load(open(biases, 'rb')) if biases and norm != 'raw' else None,
                     normalization=norm, filter_exclude=opts.filter,
                     region1=region1, start1=start1, end1=end1,
                     region2=region2, start2=start2, end2=end2,
@@ -263,7 +263,7 @@ def run(opts):
         printime('Getting and writing matrices')
         out_files.update(write_matrix(
             mreads, opts.reso,
-            load(open(biases)) if biases else None,
+            load(open(biases, 'rb')) if biases else None,
             outdir, filter_exclude=opts.filter,
             normalizations=opts.normalizations,
             region1=region1, start1=start1, end1=end1,
@@ -330,8 +330,8 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
                         minor=True)
         axe1.set_yticklabels(keys, minor=True)
         for t in axe1.yaxis.get_minor_ticks():
-            t.tick1On = False
-            t.tick2On = False
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
 
         axe1.set_xticks(vals)
         axe1.set_xticklabels('')

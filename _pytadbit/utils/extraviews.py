@@ -19,6 +19,11 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 NTH = {
     1 : "First",
     2 : "Second",
@@ -277,13 +282,13 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     except OverflowError: # case that the two are exactly the same
         cutter = 1
     cut = 10 if cutter >= 10 else 1
-    bot = (-int(difnrj)/cutter * cutter) or -1 # do not want this to be null
+    bot = (-int(difnrj)//cutter * cutter) or -1 # do not want this to be null
     # just to display nice numbers
     form = lambda x: ''.join([(s + ',') if not i%3 and i else s
                               for i, s in enumerate(str(x)[::-1])][::-1])
     plt.yticks([bot+i for i in range(0, -bot-bot//cut, -bot//cut)],
                # "{:,}".format (int(minnrj)/cutter * cutter  + i)
-               ["%s" % (form(int(minnrj)/cutter * cutter  + i))
+               ["%s" % (form(int(minnrj)//cutter * cutter  + i))
                 for i in range(0, -bot-bot//cut, -bot//cut)],
                size=kwargs.get('fontsize', 8))
     ax.set_ylabel('Minimum IMP objective function',
@@ -414,7 +419,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
            Each r, g, b between 0 and 1.
     """
     show = False
-    if isinstance(color, str):
+    if isinstance(color, basestring):
         if color == 'index':
             color = color_residues(x, **kwargs)
         elif color == 'tad':
@@ -1129,16 +1134,17 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
         axex.plot(heights, color='black', alpha=1, linewidth=2)
         axex.plot(heights, color='orange', alpha=1, linewidth=1)
 
-    div = 1000 / len(matrix) + 1
+    div = 1000 // len(matrix) + 1
     _div = float(div)
-    half_first = np.array([sum(first[(i + j) / div] for j in range(div)) / _div
+    half_first = np.array([sum(first[(i + j) // div] for j in range(div)) / _div
                            for i in range(len(first) * div - div + 1)])
-    axex.fill_between([i / _div for i in range(len(half_first))],
-                      [0] * len(half_first), half_first,
-                      where=half_first > 0, color='olive', alpha=0.5)
-    axex.fill_between([i / _div for i in range(len(half_first))],
-                      [0] * len(half_first), half_first,
-                      where=half_first < 0, color='darkgreen', alpha=0.5)
+    with np.errstate(invalid='ignore'):
+        axex.fill_between([i / _div for i in range(len(half_first))],
+                          [0] * len(half_first), half_first,
+                          where=half_first > 0, color='olive', alpha=0.5)
+        axex.fill_between([i / _div for i in range(len(half_first))],
+                          [0] * len(half_first), half_first,
+                          where=half_first < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
     if heights:
         axex.set_ylabel('%s PC (green)\nrich in A (orange)' % (NTH[whichpc]))
@@ -1323,7 +1329,8 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
             mini = 0.
         matrix[matrix==0] = mini
 
-    matrix = np.ma.masked_where(np.isnan(matrix), transform(matrix))
+    with np.errstate(divide='ignore', invalid='ignore'):
+        matrix = np.ma.masked_where(np.isnan(matrix), transform(matrix))
 
     if triangular:
         if not axe:

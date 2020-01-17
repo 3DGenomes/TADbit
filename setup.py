@@ -154,9 +154,9 @@ def main():
     git_revision = git_version = None
     try:
         git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
-                                  stderr=PIPE).communicate()
+                                  stderr=PIPE, universal_newlines=True).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
-                                stderr=PIPE).communicate()
+                                stderr=PIPE, universal_newlines=True).communicate()
         git_revision = str(git_revision)
         git_status = str(git_status)
         if err or err2:

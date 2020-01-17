@@ -7,6 +7,11 @@ from os.path import abspath, relpath, join, exists
 from hashlib import md5
 from sys import stdout
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def digest_parameters(opts, get_md5=True, extra=None):
     """
     digestion is truncated at 10 characters. More than a 1000 runs are not
@@ -16,16 +21,11 @@ def digest_parameters(opts, get_md5=True, extra=None):
     """
     extra = extra or []
     if get_md5:
-        # print 'MD5', ' '.join(
-        #     ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-        #      for k, v in sorted(opts.__dict__.iteritems())
-        #      if k not in ['force', 'workdir', 'func', 'tmp',
-        #                   'skip', 'keep_tmp', 'tmpdb'] + extra])
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.items())
              if k not in ['force', 'workdir', 'func', 'tmp',
-                          'skip', 'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
+                          'skip', 'keep_tmp', 'tmpdb'] + extra]).encode('utf-8')).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
@@ -158,7 +158,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             for vals in rows]
     if not rows:
         return
-    if isinstance(no_print, str):
+    if isinstance(no_print, basestring):
         no_print = [no_print]
     for nop in no_print:
         if nop.lower() in columns:
@@ -179,7 +179,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
 
 
 def _ascii_print_db(name, names, cols, rows, savedata):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'w')
         to_close = True
     else:
@@ -202,7 +202,7 @@ def _ascii_print_db(name, names, cols, rows, savedata):
 
 
 def _tsv_print_db(name, names, rows, savedata, append):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
     else:
         out = savedata
@@ -215,7 +215,7 @@ def _tsv_print_db(name, names, rows, savedata, append):
 
 
 def _rev_tsv_print_db(names, rows, savedata, append):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
     else:
         out = savedata

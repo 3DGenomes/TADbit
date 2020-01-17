@@ -608,11 +608,11 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
                 except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
-                             'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
+                             'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'wb')
         dump(dico, out, HIGHEST_PROTOCOL)
         out.close()
         out = open(path.join(outdir,
-                             'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
+                             'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'wb')
         dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
     except Exception as e:
@@ -660,11 +660,11 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
                 except KeyError:
                     cisprc[i] = [0, v]
         out = open(path.join(outdir,
-                             'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'w')
+                             'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'wb')
         dump(dico, out, HIGHEST_PROTOCOL)
         out.close()
         out = open(path.join(outdir, 'tmp_bins_%s:%d-%d_%s.pickle' % (
-            region, start, end, extra_out)), 'w')
+            region, start, end, extra_out)), 'wb')
         dump(cisprc, out, HIGHEST_PROTOCOL)
         out.close()
     except Exception as e:
@@ -700,7 +700,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     begs = []
     ends = []
     njobs = min(total, max_njobs) + 1
-    nbins = total / njobs + 1
+    nbins = total // njobs + 1
     for i in range(start_bin, end_bin, nbins):
         if i + nbins > end_bin:  # make sure that we stop
             nbins = end_bin - i
@@ -754,7 +754,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
 
         fname = path.join(outdir,
                           'tmp_bins_%s:%d-%d_%s.pickle' % (region, start, end, extra_out))
-        tmp_cisprc = load(open(fname))
+        tmp_cisprc = load(open(fname,'rb'))
         system('rm -f %s' % fname)
         cisprc.update(tmp_cisprc)
     stdout.write('\n')
@@ -1013,7 +1013,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
 
 
 def sum_dec_matrix(fname, biases, badcol, bins):
-    dico = load(open(fname))
+    dico = load(open(fname,'rb'))
     rawdec = {}
     nrmdec = {}
     for (i, j), v in dico.items():
@@ -1042,7 +1042,7 @@ def sum_dec_matrix(fname, biases, badcol, bins):
 
 
 def get_cis_perc(fname, biases, badcol, bins):
-    dico = load(open(fname))
+    dico = load(open(fname,'rb'))
     cis = total = 0
     for (i, j), v in dico.items():
         if i <= j:
@@ -1058,7 +1058,7 @@ def get_cis_perc(fname, biases, badcol, bins):
 
 
 def sum_nrm_matrix(fname, biases):
-    dico = load(open(fname))
+    dico = load(open(fname,'rb'))
     sumnrm = nansum([v / biases[i] / biases[j]
                      for (i, j), v in dico.items()])
     return sumnrm

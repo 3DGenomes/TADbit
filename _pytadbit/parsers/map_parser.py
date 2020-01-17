@@ -12,6 +12,11 @@ import os
 from pytadbit.utils.file_handling         import magic_open
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
               **kwargs):
@@ -64,9 +69,9 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                              verbose=verbose)
         read_read = read_read_frags
 
-    if isinstance(f_names1, str):
+    if isinstance(f_names1, basestring):
         f_names1 = [f_names1]
-    if isinstance(f_names2, str):
+    if isinstance(f_names2, basestring):
         f_names2 = [f_names2]
     if f_names2:
         fnames = f_names1, f_names2
