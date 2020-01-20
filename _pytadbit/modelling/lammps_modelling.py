@@ -42,6 +42,7 @@ from pytadbit.modelling.restraints import HiCBasedRestraints
 
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', None)
+    failedSeedLog = kwargs.get('failedSeedLog', None)
     p = ThreadPool(1)
     res = p.apply_async(func, args=args)
     try:
@@ -53,6 +54,10 @@ def abortable_worker(func, *args, **kwargs):
         raise
     except:
         print "Unknown error with process"
+        if failedSeedLog != None:
+            failedSeedLog, k = failedSeedLog
+            with open(failedSeedLog, 'a') as f:
+                f.write('%s\t%s\n' %(k, 'Failed'))
         p.terminate()
         raise
 
@@ -62,9 +67,10 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        values=None, experiment=None, coords=None, zeros=None,
                        first=None, container=None,tmp_folder=None,timeout_job=10800,
                        initial_conformation=None, connectivity="FENE",
-                       timesteps_per_k=10000,
+                       timesteps_per_k=10000,keep_restart_out_dir=None,
                        kfactor=1, adaptation_step=False, cleanup=False,
-                       hide_log=True, remove_rstrn=[], initial_seed=0):
+                       hide_log=True, remove_rstrn=[], initial_seed=0,
+                       restart_path=False, store_n_steps=10):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -157,9 +163,14 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param True hide_log: do not generate lammps log information
     :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
         potential for neighbours
+    :param None keep_restart_out_dir: path to write files to restore LAMMPs
+                session (binary)
     :param True cleanup: delete lammps folder after completion
     :param [] remove_rstrn: list of particles which must not have restrains
     :param 0 initial_seed: Initial random seed for modelling.
+    :param False restart_path: path to files to restore LAMMPs session (binary)
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
 
     :returns: a StructuralModels object
     """
@@ -281,9 +292,11 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              time_dependent_steering_pairs=time_dependent_steering_pairs,
                              initial_seed=initial_seed,
                              n_models=n_keep, n_keep=n_keep, n_cpus=n_cpus,
+                             keep_restart_out_dir=keep_restart_out_dir,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
-                             hide_log=hide_log)
+                             hide_log=hide_log, restart_path=restart_path,
+                             store_n_steps=store_n_steps)
 
     try:
         xpr = experiment
@@ -367,7 +380,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
 def init_lammps_run(lmp, initial_conformation,
                     neighbor=CONFIG.neighbor,
                     hide_log=True,
-                    connectivity="FENE"):
+                    connectivity="FENE",
+                    restart_file=False):
 
     """
     Initialise the parameters for the computation in lammps job
@@ -378,6 +392,7 @@ def init_lammps_run(lmp, initial_conformation,
     :param True hide_log: do not generate lammps log information
     :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic 
         potential for neighbours
+    :param False restart_file: path to file to restore LAMMPs session (binary)
 
     """
 
@@ -401,7 +416,15 @@ def init_lammps_run(lmp, initial_conformation,
     ##########################
     # READ "start" data file #
     ##########################
-    lmp.command("read_data %s" % initial_conformation)
+    if restart_file == False :
+        lmp.command("read_data %s" % initial_conformation)
+    else:
+        restart_time = int(restart_file.split('/')[-1].split('_')[4][:-8])
+        print 'Previous unfinished LAMMPS steps found'
+        print 'Loaded %s file' %restart_file
+        lmp.command("read_restart %s" % restart_file)
+        lmp.command("reset_timestep %i" % restart_time)
+        
     lmp.command("mass %s" % CONFIG.mass)
 
     ##################################################################
@@ -489,14 +512,15 @@ def lammps_simulate(lammps_folder, run_time,
                     neighbor=CONFIG.neighbor, tethering=True,
                     minimize=True, compress_with_pbc=False,
                     compress_without_pbc=False,
-                    keep_restart_step=1000000,
                     keep_restart_out_dir=None, outfile=None, n_cpus=1,
                     confining_environment=['cube',100.],
                     steering_pairs=None,
                     time_dependent_steering_pairs=None,
                     loop_extrusion_dynamics=None, cleanup = True,
                     to_dump=100000, pbc=False, timeout_job=3600,
-                    hide_log=True):
+                    hide_log=True,
+                    restart_path=False,
+                    store_n_steps=10):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
@@ -540,11 +564,14 @@ def lammps_simulate(lammps_folder, run_time,
     :param 500 n_models: number of models to generate.
     :param CONFIG.neighbor neighbor: see LAMMPS_CONFIG.py.
     :param True minimize: whether to apply minimize command or not. 
-    :param 1000000 keep_restart_step: step to recover stopped computation. To be implemented.
-    :param None keep_restart_out_dir: recover stopped computation. To be implemented.
+    :param None keep_restart_out_dir: path to write files to restore LAMMPs
+                session (binary)
     :param None outfile: store result in outfile
     :param 1 n_cpus: number of CPUs to use.
-    
+    :param False restart_path: path to files to restore LAMMPs session (binary)
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
+
     :returns: a StructuralModels object
 
     """
@@ -552,18 +579,6 @@ def lammps_simulate(lammps_folder, run_time,
     if confining_environment[0] != 'cube' and pbc == True:
         print "ERROR: It is not possible to implement the pbc"
         print "for simulations inside a %s" % (confining_environment[0])    
-
-    #===========================================================================
-    # ##########################################################
-    # # Generate RESTART file, SPECIAL format, not a .txt file #
-    # # Useful if simulation crashes                           #
-    # ##########################################################
-    # 
-    # if keep_restart_out_dir:
-    #     if not os.path.exists(keep_restart_out_dir):
-    #         os.makedirs(keep_restart_out_dir)
-    #     lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir, kseed))
-    #===========================================================================
 
     if initial_seed:
         seed(initial_seed)
@@ -594,41 +609,101 @@ def lammps_simulate(lammps_folder, run_time,
 
     jobs = {}
     for k_id, k in enumerate(kseeds):
-        #print "#RandomSeed: %s" % k
         k_folder = lammps_folder + 'lammps_' + str(k) + '/'
-        ini_conf = None
-        if not os.path.exists(k_folder):
-            os.makedirs(k_folder)
-            if initial_conformation:
-                ini_conf = '%sinitial_conformation.dat' % k_folder
-                write_initial_conformation_file(initial_conformation[k_id],
-                                                chromosome_particle_numbers,
-                                                confining_environment,
-                                                out_file=ini_conf)
-#         jobs[k] = run_lammps(k, k_folder, run_time,
-#                                               initial_conformation, connectivity,
-#                                               neighbor,
-#                                               tethering, minimize,
-#                                               compress_with_pbc, compress_without_pbc,
-#                                               confining_environment,
-#                                               steering_pairs,
-#                                               time_dependent_steering_pairs,
-#                                               loop_extrusion_dynamics,
-#                                               to_dump, pbc,)
-#       jobs[k] = pool.schedule(run_lammps,
-        jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job)
-        pool.apply_async(jobs[k],
-                         args=(k, k_folder, run_time,
-                              ini_conf, connectivity,
-                              neighbor,
-                              tethering, minimize,
-                              compress_with_pbc, compress_without_pbc,
-                              confining_environment,
-                              steering_pairs,
-                              time_dependent_steering_pairs,
-                              loop_extrusion_dynamics,
-                              to_dump, pbc, hide_log,), callback=collect_result)
-#                         , timeout=timeout_job)
+        failedSeedLog = None
+        # First we check if the modelling fails with this seed
+        if restart_path != False:
+            restart_file = restart_path + 'lammps_' + str(k) + '/'
+            failedSeedLog = restart_file + 'runLog.txt'
+            if os.path.exists(failedSeedLog):
+                with open(failedSeedLog, 'r') as f:
+                    for line in f:
+                        prevRun = line.split()
+                # add number of models done so dont repeat same seed
+                if prevRun[1] == 'Failed':
+                    k = int(prevRun[0]) + n_models
+                    k_folder = lammps_folder + 'lammps_' + str(k) + '/'
+
+        #print "#RandomSeed: %s" % k
+        keep_restart_out_dir2 = None
+        if keep_restart_out_dir != None:
+            keep_restart_out_dir2 = keep_restart_out_dir + 'lammps_' + str(k) + '/'
+            if not os.path.exists(keep_restart_out_dir2):
+                os.makedirs(keep_restart_out_dir2)
+        model_path = False
+        if restart_path != False:
+            # check presence of previously finished jobs
+            model_path = restart_path + 'lammps_' + str(k) + '/finishedModel_%s.pickle' %k
+        # define restart file by checking for finished jobs or last step
+        if model_path != False and os.path.exists(model_path):
+            with open(model_path, "rb") as input_file:
+                m = load(input_file)
+            results.append((m[0], m[1]))
+        else:
+            if restart_path != False:
+                restart_file = restart_path + 'lammps_' + str(k) + '/'
+                dirfiles = os.listdir(restart_file)
+                # check for last k and step
+                maxi = (0, 0, '')
+                for f in dirfiles:
+                    if f.startswith('restart_kincrease_'):
+                        kincrease = int(f.split('_')[2])
+                        step = int(f.split('_')[-1][:-8])
+                        if kincrease > maxi[0]:
+                            maxi = (kincrease, step, f)
+                        elif kincrease == maxi[0] and step > maxi[1]:
+                            maxi = (kincrease, step, f)
+                # In case there is no restart file at all
+                if maxi[2] == '':
+                    print 'Could not find a LAMMPS restart file'
+                    # will check later if we have a path or a file
+                    getIniConf = True
+                    #restart_file = False
+                else:
+                    restart_file = restart_file + maxi[2]
+                    getIniConf = False
+            else:
+                restart_file = False
+                getIniConf = True
+
+            ini_conf = None
+            if not os.path.exists(k_folder):
+                os.makedirs(k_folder)
+                if initial_conformation and getIniConf == True:
+                    ini_conf = '%sinitial_conformation.dat' % k_folder
+                    write_initial_conformation_file(initial_conformation[k_id],
+                                                    chromosome_particle_numbers,
+                                                    confining_environment,
+                                                    out_file=ini_conf)
+    #         jobs[k] = run_lammps(k, k_folder, run_time,
+    #                                               initial_conformation, connectivity,
+    #                                               neighbor,
+    #                                               tethering, minimize,
+    #                                               compress_with_pbc, compress_without_pbc,
+    #                                               confining_environment,
+    #                                               steering_pairs,
+    #                                               time_dependent_steering_pairs,
+    #                                               loop_extrusion_dynamics,
+    #                                               to_dump, pbc,)
+    #       jobs[k] = pool.schedule(run_lammps,
+            jobs[k] = partial(abortable_worker, run_lammps, timeout=timeout_job,
+                                failedSeedLog=[failedSeedLog, k])
+            pool.apply_async(jobs[k],
+                            args=(k, k_folder, run_time,
+                                ini_conf, connectivity,
+                                neighbor,
+                                tethering, minimize,
+                                compress_with_pbc, compress_without_pbc,
+                                confining_environment,
+                                steering_pairs,
+                                time_dependent_steering_pairs,
+                                loop_extrusion_dynamics,
+                                to_dump, pbc, hide_log,
+                                keep_restart_out_dir2,
+                                restart_file,
+                                model_path,
+                                store_n_steps,), callback=collect_result)
+    #                         , timeout=timeout_job)
 
     pool.close()
     pool.join()
@@ -684,7 +759,11 @@ def run_lammps(kseed, lammps_folder, run_time,
                time_dependent_steering_pairs=None,
                loop_extrusion_dynamics=None,
                to_dump=10000, pbc=False,
-               hide_log=True):
+               hide_log=True,
+               keep_restart_out_dir2=None,
+               restart_file=False,
+               model_path=False, 
+               store_n_steps=10):
     """
     Generates one lammps model
     
@@ -745,27 +824,66 @@ def run_lammps(kseed, lammps_folder, run_time,
                              }
 
             Should at least contain Chromosome, loci1, loci2 as 1st, 2nd and 3rd column 
-
+    :param None keep_restart_out_dir2: path to write files to restore LAMMPs
+                session (binary)
+    :param False restart_file: path to file to restore LAMMPs session (binary)
+    :param False model_path: path to/for pickle with finished model (name included)
+    :param 10 store_n_steps: Integer with number of steps to be saved if 
+        restart_file != False
     :returns: a LAMMPSModel object
 
     """
 
     lmp = lammps(cmdargs=['-screen','none','-log',lammps_folder+'log.lammps','-nocite'])
-
-    if not initial_conformation:    
+    # check if we have a restart file or a path to which restart
+    if restart_file == False:
+        doRestart = False
+        saveRestart = False
+    elif os.path.isdir(restart_file):
+        doRestart = False
+        saveRestart = True
+    else:
+        doRestart = True
+        saveRestart = True
+    if not initial_conformation and doRestart == False:    
         initial_conformation = lammps_folder+'initial_conformation.dat'
         generate_chromosome_random_walks_conformation ([len(LOCI)],
                                                        outfile=initial_conformation,
                                                        seed_of_the_random_number_generator=kseed,
                                                        confining_environment=confining_environment)
-
-    init_lammps_run(lmp, initial_conformation,
+    
+    # Just prepared the steps recovery for steering pairs
+    if steering_pairs and doRestart == True:
+        init_lammps_run(lmp, initial_conformation,
                 neighbor=neighbor,
                 hide_log=hide_log,
-                connectivity=connectivity)
+                connectivity=connectivity,
+                restart_file=restart_file)
+    else:
+        init_lammps_run(lmp, initial_conformation,
+                    neighbor=neighbor,
+                    hide_log=hide_log,
+                    connectivity=connectivity)
 
     lmp.command("dump    1       all    custom    %i   %slangevin_dynamics_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
     #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id append yes")
+
+    # ##########################################################
+    # # Generate RESTART file, SPECIAL format, not a .txt file #
+    # # Useful if simulation crashes             
+    # Prepared an optimisation for steering pairs, but not for the rest#
+    # ##########################################################
+    # create lammps restart files every x steps. 1000 is ok
+    # There was the doubt of using text format session info (which allows use in other computers)
+    # but since the binary can be converted later and this: "Because a data file is in text format, 
+    # if you use a data file written out by this command to restart a simulation, the initial state 
+    # of the new run will be slightly different than the final state of the old run (when the file 
+    # was written) which was represented internally by LAMMPS in binary format. A new simulation 
+    # which reads the data file will thus typically diverge from a simulation that continued 
+    # in the original input script." will continue with binary. To convert use restart2data
+    #if keep_restart_out_dir2:
+    #    lmp.command("restart %i %s/relaxation_%i_*.restart" % (keep_restart_step, keep_restart_out_dir2, kseed))
+
 
     #######################################################
     # Set up fixes                                        #
@@ -879,28 +997,36 @@ def run_lammps(kseed, lammps_folder, run_time,
     xc = []
     # Setup the pairs to co-localize using the COLVARS plug-in
     if steering_pairs:
-
-        # Start relaxation step
-        lmp.command("reset_timestep 0")
-        lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
-        lmp.command("reset_timestep %i" % 0)
         
-        # Start Steered Langevin dynamics
-        if to_dump:
-            lmp.command("undump 1")
-            lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
-            #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
+        if doRestart == False:
+            # Start relaxation step
+            lmp.command("reset_timestep 0")   # cambiar para punto ionicial
+            lmp.command("run %i" % steering_pairs['timesteps_relaxation'])
+            lmp.command("reset_timestep %i" % 0)
+        
+            # Start Steered Langevin dynamics
+            if to_dump:
+                lmp.command("undump 1")
+                lmp.command("dump    1       all    custom    %i   %ssteered_MD_*.XYZ  id  xu yu zu" % (to_dump,lammps_folder))
+                #lmp.command("dump_modify     1 format line \"%d %.5f %.5f %.5f\" sort id")
 
         if 'number_of_kincrease' in steering_pairs:
             nbr_kincr = steering_pairs['number_of_kincrease']
         else:
             nbr_kincr = 1
         
+        if doRestart == True:
+            restart_k_increase = int(restart_file.split('/')[-1].split('_')[2])
+            restart_time       = int(restart_file.split('/')[-1].split('_')[4][:-8])
+
         #steering_pairs['colvar_output'] = os.path.dirname(os.path.abspath(steering_pairs['colvar_output'])) + '/' + str(kseed) + '_'+ os.path.basename(steering_pairs['colvar_output'])    
         steering_pairs['colvar_output'] = lammps_folder+os.path.basename(steering_pairs['colvar_output'])
         for kincrease in xrange(nbr_kincr):
             # Write the file containing the pairs to constraint
             # steering_pairs should be a dictionary with:
+            # Avoid to repeat calculations in case of restart
+            if (doRestart == True) and (kincrease < restart_k_increase):
+                continue
             generate_colvars_list(steering_pairs, kincrease+1)
 
             # Adding the colvar option
@@ -914,7 +1040,25 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("variable objfun equal f_4")
                 lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
 
-            lmp.command("run %i" % steering_pairs['timesteps_per_k'])
+            
+            #lmp.command("reset_timestep %i" % 0)
+            resettime = 0
+            runtime   = steering_pairs['timesteps_per_k']
+            if (doRestart == True) and (kincrease == restart_k_increase):
+                resettime = restart_time 
+                runtime   = steering_pairs['timesteps_per_k'] - restart_time
+
+            # Create 10 restarts with name restart_kincrease_%s_time_%s.restart every
+            if saveRestart == True:
+                if os.path.isdir(restart_file):
+                    restart_file_new = restart_file + 'restart_kincrease_%s_time_*.restart' %(kincrease)
+                else:
+                    restart_file_new = '/'.join(restart_file.split('/')[:-1]) + '/restart_kincrease_%s_time_*.restart' %(kincrease)
+                print restart_file_new
+                lmp.command("restart %i %s" %(int(steering_pairs['timesteps_per_k']/store_n_steps), restart_file_new))
+
+            #lmp.command("reset_timestep %i" % resettime)
+            lmp.command("run %i" % runtime)
 
     # Setup the pairs to co-localize using the COLVARS plug-in
     if time_dependent_steering_pairs:
@@ -1286,7 +1430,22 @@ def run_lammps(kseed, lammps_folder, run_time,
             result.append(lammps_model)
 
     #os.remove("%slog.cite" % lammps_folder)
-     
+    # safe finished model
+    if model_path != False:
+        with open(model_path, "wb") as output_file:
+            dump((kseed,result), output_file)
+    ################### Special case for clusters with disk quota
+    # Remove the saved steps
+    if saveRestart == True:
+        if os.path.isdir(restart_file):
+            restart_path = restart_file
+        else:
+            restart_path = '/'.join(restart_file.split('/')[:-1]) + '/'
+        for pathfile in os.listdir(restart_path):
+            if pathfile.startswith('restart'):
+                os.remove(restart_path + pathfile)    
+    ##################################################################
+
     return (kseed,result)
 
 def read_trajectory_file(fname):
@@ -1500,6 +1659,7 @@ harmonicWalls {
             outf.write(colvars_template % (name,region1,region2,seqdist,particle1,particle2))
             
             if isinstance(target_pairs, HiCBasedRestraints):
+                # If the spring constant is zero we avoid to add the restraint!
                 if cols_vals[4] == 0.0:
                     continue
                  
@@ -1833,7 +1993,7 @@ def generate_chromosome_random_walks_conformation ( chromosome_particle_numbers 
                                                     number_of_conformations=1,
                                                     outfile="Initial_random_walk_conformation.dat",
                                                     pbc=False,
-                                                    center=None):
+                                                    center=True):
     """
     Generates lammps initial conformation file by random walks
     

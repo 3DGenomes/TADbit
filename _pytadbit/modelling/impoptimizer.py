@@ -122,7 +122,10 @@ class IMPoptimizer(object):
                         ev_kforce=5, timeout_job=300,
                         connectivity="FENE", hide_log=True,
                         kfactor=1, cleanup=False,
-                        initial_conformation=None):
+                        initial_conformation=None,
+                        remove_rstrn=[], initial_seed=0,
+                        keep_restart_out_dir=None,
+                        restart_path=False, store_n_steps=10):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -164,6 +167,13 @@ class IMPoptimizer(object):
             'random' to compute the initial conformation as a 3D random walk
              {[x],[y],[z]} a dictionary containing lists with x,y,x positions,
              e.g an IMPModel or LAMMPSModel object
+        :param [] remove_rstrn: list of particles which must not have restrains
+        :param 0 initial_seed: Initial random seed for modelling.
+        :param None keep_restart_out_dir: recover stopped computation
+        :param False restart_path: path to files to restore LAMMPs session (binary)
+        :param 10 store_n_steps: Integer with number of steps to be saved if 
+            restart_file != False
+
         """
         if verbose:
             stderr.write('Optimizing %s particles\n' % self.nloci)
@@ -348,13 +358,16 @@ class IMPoptimizer(object):
                                           close_bins=self.close_bins, config=config_tmp,
                                           container=self.container, zeros=self.zeros,
                                           tmp_folder=self.tmp_folder,timeout_job=timeout_job,
-					                      hide_log=hide_log, kfactor=kfactor, cleanup=cleanup,
-                                          initial_conformation='tadbit' if not initial_conformation \
-                                            else initial_conformation)
+					                      hide_log=hide_log, 
+                                          keep_restart_out_dir=keep_restart_out_dir, kfactor=kfactor, 
+                                          cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
+                                            else initial_conformation,
+                                          restart_path=restart_path, remove_rstrn=remove_rstrn,
+                                          initial_seed=initial_seed, store_n_steps=store_n_steps)
                     result = 0
                     matrices = tdm.get_contact_matrix(
-                        #cutoff=[int(i * self.resolution * float(scale)) for i in dcutoff_arange])
-                        cutoff=[int(i) for i in dcutoff_arange])
+                        #cutoff=[int(dc * self.resolution * float(scale)) for dc in dcutoff_arange])
+                        cutoff=[int(dc) for dc in dcutoff_arange])
                     for m in matrices:
                         cut = int(m**0.5)
                         sub_result = tdm.correlate_with_real_data(cutoff=cut, corr=corr,
@@ -362,6 +375,11 @@ class IMPoptimizer(object):
                                                                   contact_matrix=matrices[m])[0]
                         
                         avg_result[cut] += sub_result
+
+                 # Update nmodels with the ones that really finished
+                if self.n_models != len(tdm):
+                    print 'WARNING: not all models produced: step %s, nmodels=%s' %(i+1, len(tdm))
+                    self.n_models = len(tdm)
 
             except Exception, e:
                 print '  SKIPPING: %s' % e

@@ -843,7 +843,9 @@ class Experiment(object):
                      stages=0, initial_conformation=None, connectivity="FENE",
                      timesteps_per_k=10000, kfactor=1, adaptation_step=False,
                      cleanup=True, single_particle_restraints=None, use_HiC=True,
-                     start_seed=1, hide_log=True):
+                     start_seed=1, hide_log=True, remove_rstrn=[],
+                     keep_restart_out_dir=None,
+                     restart_path=False, store_n_steps=10):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -925,6 +927,12 @@ class Experiment(object):
         :param FENE connectivity: use FENE for a fene bond or harmonic for harmonic
             potential for neighbours
         :param True cleanup: delete lammps folder after completion
+        :param [] remove_rstrn: list of particles which must not have restrains
+        :param None keep_restart_out_dir: path to write files to restore LAMMPs 
+            session (binary)
+        :param False restart_path: path to files to restore LAMMPs session (binary)
+        :param 10 store_n_steps: Integer with number of steps to be saved if 
+                restart_file != False
 
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
@@ -993,7 +1001,11 @@ class Experiment(object):
                                       connectivity=connectivity,
                                       timesteps_per_k=timesteps_per_k, kfactor=kfactor,
                                       adaptation_step=adaptation_step, cleanup=cleanup,
-                                      hide_log=hide_log, initial_seed=start_seed)
+                                      hide_log=hide_log, initial_seed=start_seed,
+                                      remove_rstrn=remove_rstrn, restart_path=restart_path,
+                                      keep_restart_out_dir=keep_restart_out_dir,
+                                      store_n_steps=store_n_steps
+                                      )
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
