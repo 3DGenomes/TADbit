@@ -765,7 +765,8 @@ def run_lammps(kseed, lammps_folder, run_time,
                keep_restart_out_dir2=None,
                restart_file=False,
                model_path=False, 
-               store_n_steps=10):
+               store_n_steps=10,
+               useColvars=False):
     """
     Generates one lammps model
     
@@ -832,6 +833,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param False model_path: path to/for pickle with finished model (name included)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
         restart_file != False
+    :param False useColvars: True if you want the restrains to be loaded from by colvars
     :returns: a LAMMPSModel object
 
     """
@@ -1889,7 +1891,7 @@ def generate_bond_list(steering_pairs):
         poffset += chrlength
 
     return outf
-    
+
 ##########
 
 def generate_time_dependent_colvars_list(steering_pairs,
