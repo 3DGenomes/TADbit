@@ -70,7 +70,7 @@ def magic_open(filename, verbose=False, cpus=None):
         start_of_file = fhandler.read(1024)
         fhandler.seek(0)
         if is_binary_string(start_of_file):
-            if start_of_file.startswith('b\x50\x4b\x03\x04'):
+            if start_of_file.startswith(b'\x50\x4b\x03\x04'):
                 if verbose:
                     print('zip')
                 zhandler = zipfile.ZipFile(fhandler)
@@ -78,12 +78,12 @@ def magic_open(filename, verbose=False, cpus=None):
                     raise NotImplementedError(
                         'Not exactly one file in this zip archieve.')
                 return zhandler.open(list(zhandler.NameToInfo.keys())[0])
-            if is_binary_string(start_of_file) and start_of_file.startswith('b\x42\x5a\x68'):
+            if is_binary_string(start_of_file) and start_of_file.startswith(b'\x42\x5a\x68'):
                 if verbose:
                     print('bz2')
                 fhandler.close()
                 return bz2.BZ2File(filename)
-            if is_binary_string(start_of_file) and start_of_file.startswith('b\x1f\x8b\x08'):
+            if is_binary_string(start_of_file) and start_of_file.startswith(b'\x1f\x8b\x08'):
                 if verbose:
                     print('gz')
                 return gzip.GzipFile(fileobj=fhandler)
