@@ -439,7 +439,6 @@ def init_lammps_run(lmp, initial_conformation,
     # Sample thermodynamic info  (temperature, energy, pressure) #
     ##############################################################
     lmp.command("thermo %i" % CONFIG.thermo)
-    lmp.command("thermo_style   custom   step temp epair emol")
     
     ###############################
     # Stiffness term              #
@@ -1033,26 +1032,28 @@ def run_lammps(kseed, lammps_folder, run_time,
                 continue
 
             if useColvars == True:
+                lmp.command("thermo_style   custom   step temp epair emol")
                 generate_colvars_list(steering_pairs, kincrease+1)
 
                 # Adding the colvar option
                 #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
                 lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
 
+                if to_dump:
+                    lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
+                    lmp.command("thermo_modify norm no flush yes")
+                    lmp.command("variable step equal step")
+                    lmp.command("variable objfun equal f_4")
+                    lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+
             # will load the bonds directly into LAMMPS
             else:
+                lmp.command("thermo_style   custom   step temp etotal")
                 bond_list = generate_bond_list(steering_pairs)
                 for bond in bond_list:
                     lmp.command(bond)
 
-            if to_dump:
-                lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
-                lmp.command("thermo_modify norm no flush yes")
-                lmp.command("variable step equal step")
-                lmp.command("variable objfun equal f_4")
-                lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
 
-            
             #lmp.command("reset_timestep %i" % 0)
             resettime = 0
             runtime   = steering_pairs['timesteps_per_k']
@@ -1883,8 +1884,9 @@ def generate_bond_list(steering_pairs):
                     bonType = 'lbond'
 
                 if bonType:
-                    outf.append('fix %s all restrain %s %s %s %s %s %s %s' %(
-                        name, bonType, particle1, particle2, kappa, kappa, centre))
+                    outf.append('fix %s all restrain %s %d %d %f %f %f %f' %(
+                        name, bonType, particle1, particle2, kappa, kappa, 
+                        centre, centre))
 
             
             i += 1
