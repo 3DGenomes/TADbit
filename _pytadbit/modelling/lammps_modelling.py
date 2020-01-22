@@ -1032,7 +1032,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                 continue
 
             if useColvars == True:
-                lmp.command("thermo_style   custom   step temp epair emol")
+                
                 generate_colvars_list(steering_pairs, kincrease+1)
 
                 # Adding the colvar option
@@ -1040,6 +1040,7 @@ def run_lammps(kseed, lammps_folder, run_time,
                 lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
 
                 if to_dump:
+                    # lmp.command("thermo_style   custom   step temp epair emol")
                     lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
                     lmp.command("thermo_modify norm no flush yes")
                     lmp.command("variable step equal step")
@@ -1048,10 +1049,17 @@ def run_lammps(kseed, lammps_folder, run_time,
 
             # will load the bonds directly into LAMMPS
             else:
-                lmp.command("thermo_style   custom   step temp etotal")
                 bond_list = generate_bond_list(steering_pairs)
                 for bond in bond_list:
                     lmp.command(bond)
+
+                if to_dump:
+                    lmp.command("thermo_style   custom   step temp etotal")
+                    lmp.command("thermo_modify norm no flush yes")
+                    lmp.command("variable step equal step")
+                    lmp.command("variable objfun equal etotal")
+                    lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+
 
 
             #lmp.command("reset_timestep %i" % 0)
