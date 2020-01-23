@@ -52,7 +52,6 @@ def run(opts):
         opts.figsize = map(float, opts.figsize.split(','))
 
     clean = True  # change for debug
-
     if opts.bam:
         mreads = path.realpath(opts.bam)
         if not opts.biases and all(v != 'raw' for v in opts.normalizations):
@@ -551,7 +550,7 @@ def populate_args(parser):
 
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
-                        help='''Write text matrix in multiple columns (square). 
+                        help='''Write text matrix in multiple columns (square).
                         By defaults matrices are written in BED-like format (also
                         only way to get a raw matrix with all values including
                         the ones in masked columns).''')

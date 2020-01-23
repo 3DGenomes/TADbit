@@ -761,7 +761,7 @@ def write_matrix(inbam, resolution, biases, outdir,
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
                  half_matrix=True, nchunks=100, tmpdir='.', append_to_tar=None,
-                 ncpus=8, cooler=False, verbose=True):
+                 ncpus=8, cooler=False, row_names=False, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -797,6 +797,8 @@ def write_matrix(inbam, resolution, biases, outdir,
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
+    :param False row_names: Writes geneomic coocrdinates instead of bins.
+       WARNING: results in two extra columns
     :param 100 nchunks: maximum number of chunks into which to cut the BAM
 
     :returns: path to output files
