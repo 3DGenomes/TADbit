@@ -557,7 +557,8 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     return regions, rand_hash, bin_coords, chunks
 
 
-def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True):
+def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
+                       include_chunk_count=False):
     if verbose:
         stdout.write('     ')
     countbin = 0
