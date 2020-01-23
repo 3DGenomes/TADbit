@@ -1,8 +1,9 @@
 """
 18 Nov 2014
 """
+from __future__ import print_function
 
-from warnings                     import warn
+from warnings                     import warn, catch_warnings, simplefilter
 from collections                  import OrderedDict
 
 from pysam                        import AlignmentFile
@@ -29,6 +30,10 @@ from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
 from pytadbit.utils.extraviews    import nicer
 from pytadbit.utils.file_handling import mkdir
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
@@ -81,7 +86,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        calculating decay of the number of interactions with genomic distance.
        Default is equal to resolution of the matrix.
     """
-    if isinstance(data, str):
+    if isinstance(data, basestring):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
         if not kwargs.get('get_sections', True) and decay:
             warn('WARNING: not decay not available when get_sections is off.')
@@ -103,7 +108,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
         if savefig:
             mkdir(savefig)
         for i, crm1 in enumerate(hic_data.chromosomes):
-            for crm2 in hic_data.chromosomes.keys()[i:]:
+            for crm2 in list(hic_data.chromosomes.keys())[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:
                     continue
                 if by_chrom == 'inter' and crm1 == crm2:
@@ -121,11 +126,11 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                         masked2 = dict([(m - start2, hic_data.bads[m])
                                         for m in hic_data.bads])
                     if masked1 or masked2:
-                        for i in xrange(len(subdata)):
+                        for i in range(len(subdata)):
                             if i in masked1:
                                 subdata[i] = [float('nan')
-                                              for j in xrange(len(subdata))]
-                            for j in xrange(len(subdata)):
+                                              for j in range(len(subdata))]
+                            for j in range(len(subdata)):
                                 if j in masked2:
                                     subdata[i][j] = float('nan')
                     if savedata:
@@ -141,7 +146,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                             continue
                         draw_map(subdata,
                                  OrderedDict([(k, hic_data.chromosomes[k])
-                                              for k in hic_data.chromosomes.keys()
+                                              for k in list(hic_data.chromosomes.keys())
                                               if k in [crm1, crm2]]),
                                  hic_data.section_pos,
                                  '%s/%s.%s' % (savefig,
@@ -150,12 +155,12 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                  show, one=True, clim=clim, perc_clim=perc_clim,
                                  cmap=cmap, decay_resolution=decay_resolution,
                                  perc=perc, name=name, cistrans=float('NaN'))
-                except ValueError, e:
-                    print 'Value ERROR: problem with chromosome %s' % crm1
-                    print str(e)
-                except IndexError, e:
-                    print 'Index ERROR: problem with chromosome %s' % crm1
-                    print str(e)
+                except ValueError as e:
+                    print('Value ERROR: problem with chromosome %s' % crm1)
+                    print(str(e))
+                except IndexError as e:
+                    print('Index ERROR: problem with chromosome %s' % crm1)
+                    print(str(e))
     else:
         if savedata:
             hic_data.write_matrix(savedata, focus=focus,
@@ -171,11 +176,11 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                 # rescale masked
                 masked = dict([(m - start1, masked[m]) for m in masked])
             if masked:
-                for i in xrange(len(subdata)):
+                for i in range(len(subdata)):
                     if i in masked:
                         subdata[i] = [float('nan')
-                                      for j in xrange(len(subdata))]
-                    for j in xrange(len(subdata)):
+                                      for j in range(len(subdata))]
+                    for j in range(len(subdata)):
                         if j in masked:
                             subdata[i][j] = float('nan')
             draw_map(subdata,
@@ -217,8 +222,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         vals = [i for d in data for i in d if not np.isnan(i)]
         minoridata   = np.min(vals)
         maxoridata   = np.max(vals)
-    totaloridata = np.nansum([data[i][j] for i in xrange(len(data))
-                              for j in xrange(i, len(data[i]))]) # may not be square
+    totaloridata = np.nansum([data[i][j] for i in range(len(data))
+                              for j in range(i, len(data[i]))]) # may not be square
     data = nozero_log(data, np.log2)
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
@@ -265,14 +270,14 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     size1 = len(data)
     size2 = len(data[0])
     if size1 == size2:
-        for i in xrange(size1):
-            for j in xrange(i, size2):
+        for i in range(size1):
+            for j in range(i, size2):
                 if np.isnan(data[i][j]):
                     data[i][j] = 0
                     data[j][i] = 0
     else:
-        for i in xrange(size1):
-            for j in xrange(size2):
+        for i in range(size1):
+            for j in range(size2):
                 if np.isnan(data[i][j]):
                     data[i][j] = 0
             #data[j][i] = data[i][j]
@@ -315,11 +320,11 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
             ax1.set_yticks(vals)
             ax1.set_yticklabels('')
             ax1.set_yticks([float(vals[i]+vals[i+1])/2
-                            for i in xrange(len(vals) - 1)], minor=True)
+                            for i in range(len(vals) - 1)], minor=True)
             ax1.set_yticklabels(keys, minor=True)
             for t in ax1.yaxis.get_minor_ticks():
-                t.tick1On = False
-                t.tick2On = False
+                t.tick1line.set_visible(False)
+                t.tick2line.set_visible(False)
     # totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
     # minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
     # maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
@@ -346,21 +351,21 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
     try:
-        ax4.vlines(range(size1), 0, evect[:,-1], color='k')
+        ax4.vlines(list(range(size1)), 0, evect[:,-1], color='k')
     except (TypeError, IndexError):
         pass
     ax4.hlines(0, 0, size2, color='red')
     ax4.set_ylabel('E1')
     ax4.set_yticklabels([])
     try:
-        ax5.vlines(range(size1), 0, evect[:,-2], color='k')
+        ax5.vlines(list(range(size1)), 0, evect[:,-2], color='k')
     except (TypeError, IndexError):
         pass
     ax5.hlines(0, 0, size2, color='red')
     ax5.set_ylabel('E2')
     ax5.set_yticklabels([])
     try:
-        ax6.vlines(range(size1), 0, evect[:,-3], color='k')
+        ax6.vlines(list(range(size1)), 0, evect[:,-3], color='k')
     except (TypeError, IndexError):
         pass
     ax6.hlines(0, 0, size2, color='red')
@@ -404,33 +409,33 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     if isinstance(data, basestring):
         resolution = resolution or 1
         dist_intr = dict([(i, {})
-                          for i in xrange(min_diff, max_diff)])
+                          for i in range(min_diff, max_diff)])
         fhandler = open(data)
-        line = fhandler.next()
+        line = next(fhandler)
         while line.startswith('#'):
-            line = fhandler.next()
+            line = next(fhandler)
         try:
             while True:
                 _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
                 if cr1 != cr2:
-                    line = fhandler.next()
+                    line = next(fhandler)
                     continue
-                diff = abs(int(ps1)  / resolution - int(ps2) / resolution)
+                diff = abs(int(ps1)  // resolution - int(ps2) // resolution)
                 if max_diff > diff >= min_diff:
                     try:
-                        dist_intr[diff][int(ps1) / resolution] += 1.
+                        dist_intr[diff][int(ps1) // resolution] += 1.
                     except KeyError:
-                        dist_intr[diff][int(ps1) / resolution] = 1.
-                line = fhandler.next()
+                        dist_intr[diff][int(ps1) // resolution] = 1.
+                line = next(fhandler)
         except StopIteration:
             pass
         fhandler.close()
         for diff in dist_intr:
             dist_intr[diff] = [dist_intr[diff].get(k, 0)
-                               for k in xrange(max(dist_intr[diff]) - diff)]
+                               for k in range(max(dist_intr[diff]) - diff)]
     elif isinstance(data, HiC_data):
         resolution = resolution or data.resolution
-        dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
+        dist_intr = dict([(i, []) for i in range(min_diff, max_diff)])
         if normalized:
             get_data = lambda x, y: data[x, y] / data.bias[x] / data.bias[y]
         else:
@@ -438,14 +443,14 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
         max_diff = min(len(data), max_diff)
         if data.section_pos:
             for crm in data.section_pos:
-                for diff in xrange(min_diff, min(
+                for diff in range(min_diff, min(
                     (max_diff, 1 + data.chromosomes[crm]))):
-                    for i in xrange(data.section_pos[crm][0],
+                    for i in range(data.section_pos[crm][0],
                                     data.section_pos[crm][1] - diff):
                         dist_intr[diff].append(get_data(i, i + diff))
         else:
-            for diff in xrange(min_diff, max_diff):
-                for i in xrange(len(data) - diff):
+            for diff in range(min_diff, max_diff):
+                for i in range(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
                         dist_intr[diff].append(get_data(i, diff))
     elif isinstance(data, dict):  # if we pass decay/expected dictionary, computes weighted mean
@@ -458,21 +463,21 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
             else:
                 dist_intr[i] = [0]
     else:
-        dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
+        dist_intr = dict([(i, []) for i in range(min_diff, max_diff)])
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
             cnt = 0
             for crm in genome_seq:
-                for diff in xrange(min_diff, min(
+                for diff in range(min_diff, min(
                     (max_diff, genome_seq[crm]))):
-                    for i in xrange(cnt, cnt + genome_seq[crm] - diff):
+                    for i in range(cnt, cnt + genome_seq[crm] - diff):
                         if not np.isnan(data[i][i + diff]):
                             dist_intr[diff].append(data[i][i + diff])
                 cnt += genome_seq[crm]
         else:
             max_diff = min(len(data), max_diff)
-            for diff in xrange(min_diff, max_diff):
-                for i in xrange(len(data) - diff):
+            for diff in range(min_diff, max_diff):
+                for i in range(len(data) - diff):
                     if not np.isnan(data[i][i + diff]):
                         dist_intr[diff].append(data[i][i + diff])
     resolution = resolution or 1
@@ -480,7 +485,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
         fig=plt.figure()
         axe = fig.add_subplot(111)
     # remove last part of the plot in case no interaction is count... reduce max_dist
-    for diff in xrange(max_diff - 1, min_diff, -1):
+    for diff in range(max_diff - 1, min_diff, -1):
         try:
             if not dist_intr[diff]:
                 del(dist_intr[diff])
@@ -495,21 +500,21 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                       for i in dist_intr if len(dist_intr[i])])
     if plot_each_cell:
         xp, yp = [], []
-        for x, y in sorted(dist_intr.items(), key=lambda x:x[0]):
+        for x, y in sorted(list(dist_intr.items()), key=lambda x:x[0]):
             xp.extend([x] * len(y))
             yp.extend(y)
         x = []
         y = []
-        for k in xrange(len(xp)):
+        for k in range(len(xp)):
             if yp[k]:
                 x.append(xp[k])
                 y.append(yp[k])
         axe.plot(x, y, color='grey', marker='.', alpha=0.1, ms=1,
                  linestyle='None')
-    xp, yp = zip(*sorted(mean_intr.items(), key=lambda x:x[0]))
+    xp, yp = list(zip(*sorted(list(mean_intr.items()), key=lambda x:x[0])))
     x = []
     y = []
-    for k in xrange(len(xp)):
+    for k in range(len(xp)):
         if yp[k]:
             x.append(xp[k])
             y.append(yp[k])
@@ -522,14 +527,14 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     # for k in xrange(1, ntries/5, ntries/5/5):
     if resolution == 1:
         k = 1
-        for i in xrange(3, ntries-2-k):
+        for i in range(3, ntries-2-k):
             v1 = i * len(x) / ntries
             try:
                 a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
             except ValueError:
                 a1 = b1 = r21 = 0
             r21 *= r21
-            for j in xrange(i + 1 + k, ntries - 2 - k):
+            for j in range(i + 1 + k, ntries - 2 - k):
                 v2 = j * len(x) / ntries
                 try:
                     a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
@@ -562,9 +567,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                  # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
     else:
         # from 0.7 Mb
-        v1 = 700000   / resolution
+        v1 = 700000   // resolution
         # to 10 Mb
-        v2 = 10000000 / resolution
+        v2 = 10000000 // resolution
         try:
             a1, b1, r21, _, _ = linregress(logx[  :v1], logy[  :v1])
         except ValueError:
@@ -599,7 +604,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     axe.set_yscale('log')
     axe.set_xlim((min_diff, max_diff))
     try:
-        axe.set_ylim((0, max(y)))
+        with catch_warnings():
+            simplefilter("ignore")
+            axe.set_ylim((0, max(y)))
     except ValueError:
         pass
     if savefig:
@@ -635,13 +642,13 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     iteration = False
     for i, fnam in enumerate([fnam1, fnam2]):
         fhandler = open(fnam)
-        line = fhandler.next()
+        line = next(fhandler)
         count_by_len[i] = {}
         while line.startswith('#'):
             if line.startswith('# MAPPED '):
                 itr, num = line.split()[2:]
                 count_by_len[i][int(itr)] = int(num)
-            line = fhandler.next()
+            line = next(fhandler)
         if not count_by_len[i]:
             iteration = True
             try:
@@ -651,7 +658,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
                         count_by_len[i][int(length)] += 1
                     except KeyError:
                         count_by_len[i][int(length)] = 1
-                    line = fhandler.next()
+                    line = next(fhandler)
             except StopIteration:
                 pass
         fhandler.close()
@@ -740,7 +747,7 @@ def fragment_size(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     to_return = {'median': perc50}
     cutoff = len(des) / 100000.
     count  = 0
-    for v in xrange(int(perc50), int(max(des))):
+    for v in range(int(perc50), int(max(des))):
         if des.count(v) < cutoff:
             count += 1
         else:
@@ -842,7 +849,7 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
                 if cond2(count):
                     break
                 continue
-            pos = int(pos) / resolution
+            pos = int(pos) // resolution
             try:
                 distr[crm][pos] += 1
             except KeyError:
@@ -856,10 +863,10 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
     fhandler.close()
     if savefig or show:
         _ = plt.figure(figsize=(15, 1 + 3 * len(
-            chr_names if chr_names else distr.keys())))
+            chr_names if chr_names else list(distr.keys()))))
 
     max_y = max([max(distr[c].values()) for c in distr])
-    max_x = max([len(distr[c].values()) for c in distr])
+    max_x = max([len(list(distr[c].values())) for c in distr])
     ncrms = len(chr_names if chr_names else genome_seq if genome_seq else distr)
     data = {}
     for i, crm in enumerate(chr_names if chr_names else genome_seq
@@ -867,10 +874,10 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
         try:
             # data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]  # genome_seq[crm]
             data[crm] = [distr[crm].get(j, 0)
-                         for j in xrange(genome_seq[crm] / resolution + 1)]
+                         for j in range(genome_seq[crm] // resolution + 1)]
             if savefig or show:
                 plt.subplot(ncrms, 1, i + 1)
-                plt.plot(range(genome_seq[crm] / resolution + 1), data[crm],
+                plt.plot(list(range(genome_seq[crm] // resolution + 1)), data[crm],
                          color='red', lw=1.5, alpha=0.7)
                 if yscale:
                     plt.yscale(yscale)
@@ -878,9 +885,9 @@ def plot_genomic_distribution(fnam, first_read=None, resolution=10000,
             pass
         if savefig or show:
             if ylim:
-                plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
+                plt.vlines(genome_seq[crm] // resolution, ylim[0], ylim[1])
             else:
-                plt.vlines(genome_seq[crm] / resolution, 0, max_y)
+                plt.vlines(genome_seq[crm] // resolution, 0, max_y)
             plt.xlim((0, max_x))
             plt.ylim(ylim or (0, max_y))
             plt.title(crm)
@@ -957,11 +964,11 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
 
     if (intra and hic_data1.sections and hic_data2.sections and
         hic_data1.sections == hic_data2.sections):
-        for dist in xrange(1, max_dist + 1):
+        for dist in range(1, max_dist + 1):
             diag1 = []
             diag2 = []
             for crm in hic_data1.section_pos:
-                for j in xrange(hic_data1.section_pos[crm][0],
+                for j in range(hic_data1.section_pos[crm][0],
                                 hic_data1.section_pos[crm][1] - dist):
                     i = j + dist
                     if j in bads or i in bads:
@@ -979,10 +986,10 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
         if intra:
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
-        for dist in xrange(min_dist, max_dist + min_dist):
+        for dist in range(min_dist, max_dist + min_dist):
             diag1 = []
             diag2 = []
-            for j in xrange(len(hic_data1) - dist):
+            for j in range(len(hic_data1) - dist):
                 i = j + dist
                 if j in bads or i in bads:
                     continue
@@ -1000,9 +1007,9 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     # print weigs
     tot_weigth = sum(weigs)
     scc = sum(pearsons[i] * weigs[i] / tot_weigth
-              for i in xrange(len(pearsons)))
+              for i in range(len(pearsons)))
     var_corr = np.var(pearsons, ddof=1)
-    std = (sum(weigs[i]**2 for i in xrange(len(pearsons))) * var_corr /
+    std = (sum(weigs[i]**2 for i in range(len(pearsons))) * var_corr /
            sum(weigs)**2)**0.5
     # plot
     if show or savefig or axe:
@@ -1025,7 +1032,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
-        for i in xrange(len(spearmans)):
+        for i in range(len(spearmans)):
             out.write('%s\t%s\n' % (dists[i], spearmans[i]))
         out.close()
     if kwargs.get('get_bads', False):
@@ -1085,7 +1092,7 @@ def get_reproducibility(hic_data1, hic_data2, num_evec, verbose=True,
         for bad in sorted(bads, reverse=True):
             del(M1[bad])
             del(M2[bad])
-            for i in xrange(len(M1)):
+            for i in range(len(M1)):
                 _ = M1[i].pop(bad)
                 _ = M2[i].pop(bad)
 
@@ -1180,7 +1187,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         for bad in sorted(bads, reverse=True):
             del(data1[bad])
             del(data2[bad])
-            for i in xrange(len(data1)):
+            for i in range(len(data1)):
                 _ = data1[i].pop(bad)
                 _ = data2[i].pop(bad)
     # get the log
@@ -1189,7 +1196,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
     # get the eigenvectors
     ev1, evect1 = eigh(data1)
     ev2, evect2 = eigh(data2)
-    corr = [[0 for _ in xrange(nvect)] for _ in xrange(nvect)]
+    corr = [[0 for _ in range(nvect)] for _ in range(nvect)]
     # sort eigenvectors according to their eigenvalues => first is last!!
     sort_perm = ev1.argsort()
     ev1.sort()
@@ -1198,8 +1205,8 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
     ev2.sort()
     evect2 = evect2[sort_perm]
     # calculate Pearson correlation
-    for i in xrange(nvect):
-        for j in xrange(nvect):
+    for i in range(nvect):
+        for j in range(nvect):
             corr[i][j] = abs(pearsonr(evect1[:,-i-1],
                                       evect2[:,-j-1])[0])
     # plot
@@ -1209,10 +1216,10 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         im = axe.imshow(corr, interpolation="nearest",origin='lower', **kwargs)
         axe.set_xlabel('Eigen Vectors exp. 1')
         axe.set_ylabel('Eigen Vectors exp. 2')
-        axe.set_xticks(range(nvect))
-        axe.set_yticks(range(nvect))
-        axe.set_xticklabels(range(1, nvect + 2))
-        axe.set_yticklabels(range(1, nvect + 2))
+        axe.set_xticks(list(range(nvect)))
+        axe.set_yticks(list(range(nvect)))
+        axe.set_xticklabels(list(range(1, nvect + 2)))
+        axe.set_yticklabels(list(range(1, nvect + 2)))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
 
@@ -1220,7 +1227,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         cbar.ax.set_ylabel('Pearson correlation', rotation=90*3,
                            verticalalignment='bottom')
         axe2 = axe.twinx()
-        axe2.set_yticks(range(nvect))
+        axe2.set_yticks(list(range(nvect)))
         axe2.set_yticklabels(['%.1f' % (e) for e in ev2[-nvect:][::-1]])
         axe2.set_ylabel('corresponding Eigen Values exp. 2', rotation=90*3,
                         verticalalignment='bottom')
@@ -1228,7 +1235,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         axe2.yaxis.set_tick_params(length=0, width=0)
 
         axe3 = axe.twiny()
-        axe3.set_xticks(range(nvect))
+        axe3.set_xticks(list(range(nvect)))
         axe3.set_xticklabels(['%.1f' % (e) for e in ev1[-nvect:][::-1]])
         axe3.set_xlabel('corresponding Eigen Values exp. 1')
         axe3.set_xlim((-0.5, nvect - 0.5))
@@ -1245,10 +1252,10 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
     if savedata:
         out = open(savedata, 'w')
         out.write('# ' + '\t'.join(['Eigen Vector %s'% i
-                                    for i in xrange(nvect)]) + '\n')
-        for i in xrange(nvect):
+                                    for i in range(nvect)]) + '\n')
+        for i in range(nvect):
             out.write('\t'.join([str(corr[i][j])
-                                 for j in xrange(nvect)]) + '\n')
+                                 for j in range(nvect)]) + '\n')
         out.close()
     if kwargs.get('get_bads', False):
         return corr, bads
@@ -1259,10 +1266,10 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         maxdist=1000):
     de_right={}
     de_left={}
-    print "process reads"
+    print("process reads")
     fl=open(reads_file)
     while True:
-        line=fl.next()
+        line=next(fl)
         if not line.startswith('#'):
             break
     nreads=0
@@ -1270,18 +1277,18 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         while True:
             nreads += 1
             if nreads % 1000000 == 0:
-                print nreads
+                print(nreads)
             try:
                 _, n1, sb1, sd1, l1, ru1, rd1, n2, sb2, sd2, l2, ru2, rd2\
                         = line.split()
                 sb1, sd1, l1, ru1, rd1, sb2, sd2, l2, ru2, rd2 = \
-                        map(int, [sb1, sd1, l1, ru1, rd1, sb2, sd2, l2,
-                            ru2, rd2])
+                        list(map(int, [sb1, sd1, l1, ru1, rd1, sb2, sd2, l2,
+                            ru2, rd2]))
             except ValueError:
-                print line
+                print(line)
                 raise ValueError("line is not the right format!")
             if n1 != n2:
-                line=fl.next()
+                line=next(fl)
                 continue
             #read1 ahead of read2
             if sb1 > sb2:
@@ -1289,11 +1296,11 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
                     sb2, sd2, l2, ru2, rd2, sb1, sd1, l1, ru1, rd1
             #direction always -> <-
             if not (sd1 == 1 and sd2 == 0):
-                line=fl.next()
+                line=next(fl)
                 continue
             #close to the diagonal
             if sb2-sb1 > maxdist:
-                line=fl.next()
+                line=next(fl)
                 continue
             #close to RE 1
             if abs(sb1-ru1) < abs(sb1-rd1):
@@ -1315,18 +1322,18 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
                 if not pos in de_left:
                     de_left[pos]=0
                 de_left[pos]+=1
-            line=fl.next()
+            line=next(fl)
     except StopIteration:
         pass
-    print "   finished processing {} reads".format(nreads)
+    print("   finished processing {} reads".format(nreads))
 
     #transform to arrays
-    ind = range(-window,window+1)
-    de_r = map(lambda x:de_right.get(x,0), ind)
-    de_l = map(lambda x:de_left.get(x,0), ind)
+    ind = list(range(-window,window+1))
+    de_r = [de_right.get(x,0) for x in ind]
+    de_l = [de_left.get(x,0) for x in ind]
 
     #write to files
-    print "write to files"
+    print("write to files")
     fl=open(outprefix+'_count.dat','w')
     fl.write('#dist\tX~~\t~~X\n')
     for i,j,k in zip(ind,de_r, de_l):
@@ -1359,10 +1366,10 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     rbreaks={}
     rejoined={}
     des={}
-    print "process reads"
+    print("process reads")
     fl=open(reads_file)
     while True:
-        line=fl.next()
+        line=next(fl)
         if not line.startswith('#'):
             break
     nreads=0
@@ -1370,17 +1377,17 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
         while True:
             nreads += 1
             if nreads % 1000000 == 0:
-                print nreads
+                print(nreads)
             try:
                 _, n1, sb1, sd1, _, ru1, rd1, n2, sb2, sd2, _, ru2, rd2\
                         = line.split()
                 sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2 = \
-                        map(int, [sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2])
+                        list(map(int, [sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2]))
             except ValueError:
-                print line
+                print(line)
                 raise ValueError("line is not the right format!")
             if n1 != n2:
-                line=fl.next()
+                line=next(fl)
                 continue
             #read1 ahead of read2
             if sb1 > sb2:
@@ -1388,11 +1395,11 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
                     sb2, sd2, ru2, rd2, sb1, sd1, ru1, rd1
             #direction always -> <-
             if not (sd1 == 1 and sd2 == 0):
-                line=fl.next()
+                line=next(fl)
                 continue
             mollen = sb2-sb1
             if mollen > maxdist:
-                line=fl.next()
+                line=next(fl)
                 continue
             #DE1
             if abs(sb1-ru1) < abs(sb1-rd1):
@@ -1404,7 +1411,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
                 if not mollen in des:
                     des[mollen]=0
                 des[mollen]+=1
-                line=fl.next()
+                line=next(fl)
                 continue
             #DE2
             if abs(sb2-ru2) < abs(sb2-rd2):
@@ -1416,35 +1423,35 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
                 if not mollen in des:
                     des[mollen]=0
                 des[mollen]+=1
-                line=fl.next()
+                line=next(fl)
                 continue
             #random: map on same fragment
             if rd1 == rd2:
                 if not mollen in rbreaks:
                     rbreaks[mollen]=0
                 rbreaks[mollen]+=1
-                line=fl.next()
+                line=next(fl)
                 continue
             #rejoined ends
             if not mollen in rejoined:
                 rejoined[mollen]=0
             rejoined[mollen]+=1
-            line=fl.next()
+            line=next(fl)
     except StopIteration:
         pass
-    print "   finished processing {} reads".format(nreads)
+    print("   finished processing {} reads".format(nreads))
 
     #transform to arrays
     maxlen = max(max(rejoined),max(des),max(rbreaks))
-    ind = range(1,maxlen+1)
-    des = map(lambda x:des.get(x,0), ind)
-    rbreaks = map(lambda x:rbreaks.get(x,0), ind)
-    rejoined = map(lambda x:rejoined.get(x,0), ind)
+    ind = list(range(1,maxlen+1))
+    des = [des.get(x,0) for x in ind]
+    rbreaks = [rbreaks.get(x,0) for x in ind]
+    rejoined = [rejoined.get(x,0) for x in ind]
     #reweight corner for rejoined
-    rejoined = map(lambda x: x**.5 * rejoined[x-1]/x, ind)
+    rejoined = [x**.5 * rejoined[x-1]/x for x in ind]
 
     #write to files
-    print "write to files"
+    print("write to files")
     fl=open(outprefix+'_count.dat','w')
     fl.write('#dist\trbreaks\tdes\trejoined\n')
     for i,j,k,l in zip(ind,rbreaks,des,rejoined):
@@ -1452,10 +1459,8 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
 
     #transform data a bit more
     ind, des, rbreaks, rejoined = \
-            map(lambda x: moving_average(np.array(x), ma_window),
-                    [ind, des, rbreaks, rejoined])
-    des, rbreaks, rejoined = map(lambda x:x/float(x.sum()),
-            [des, rbreaks, rejoined])
+            [moving_average(np.array(x), ma_window) for x in [ind, des, rbreaks, rejoined]]
+    des, rbreaks, rejoined = [x/float(x.sum()) for x in [des, rbreaks, rejoined]]
     np.insert(ind,0,0)
     np.insert(des,0,0)
     np.insert(rbreaks,0,0)
@@ -1531,7 +1536,7 @@ def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
             [0 for i in range(max_len)],
             [0 for i in range(max_len)]]
 
-    iterator = (fhandler.next() for _ in xrange(nreads)) if nreads else fhandler
+    iterator = (next(fhandler) for _ in range(nreads)) if nreads else fhandler
 
     if valid_pairs:
         comp_re = lambda x, y: x != y
@@ -1597,7 +1602,7 @@ def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
 
     axLp.set_ylabel('Proportion of reads in each category')
 
-    axLb.bar(range(0, half_len / half_step - 1),
+    axLb.bar(list(range(0, half_len // half_step - 1)),
              [sum(sum_dirs[i:i + half_step]) / half_step
               for i in range(0, half_len - half_step, half_step)],
              alpha=0.5, color='k')
@@ -1610,13 +1615,13 @@ def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
 
     if full_step:
         for d in range(4):
-            axRp.plot([sum(dirs[d][i:i + full_step]) / full_step
+            axRp.plot([sum(dirs[d][i:i + full_step]) // full_step
                        for i in range(half_len, full_len + full_step, full_step)],
                       alpha=0.7, label=names[d])
 
         axRp.spines['left'].set_visible(False)
-        axRp.set_xlim(0, full_len / full_step - 2000 / full_step)
-        axRp.set_xticks(range((10000 - half_step) / full_step, (full_len + full_step) / full_step, 20))
+        axRp.set_xlim(0, full_len // full_step - 2000 // full_step)
+        axRp.set_xticks(list(range((10000 - half_step) // full_step, (full_len + full_step) // full_step, 20)))
         axRp.set_xticklabels([int(i) for i in range(10000, full_len + full_step, full_step * 20)])
         plt.setp(axRp.get_xticklabels(), visible=False)
         axRp.legend(title='Strand on which each read-end is mapped\n(first read-end is always smaller than second)')
@@ -1625,8 +1630,8 @@ def plot_strand_bias_by_distance(fnam, nreads=1000000, valid_pairs=True,
         axRp.tick_params(labelright=False)
         axRp.grid()
 
-        axRb.bar(range(0, full_len / full_step - half_len / full_step + 1),
-                 [sum(sum_dirs[i:i + full_step]) / full_step
+        axRb.bar(list(range(0, full_len // full_step - half_len // full_step + 1)),
+                 [sum(sum_dirs[i:i + full_step]) // full_step
                   for i in range(half_len, full_len + full_step, full_step)],
                  alpha=0.5, color='k')
 

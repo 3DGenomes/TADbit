@@ -3,16 +3,21 @@
 
 
 """
+from __future__ import print_function
 from pytadbit.modelling.imp_modelling    import generate_3d_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
 from pytadbit.modelling.structuralmodels import StructuralModels
-from cPickle                       import dump, load
+from pickle                        import dump, load
 from sys                           import stderr
 import itertools
 import numpy           as np
 import multiprocessing as mu
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class IMPoptimizer(object):
     """
@@ -49,7 +54,7 @@ class IMPoptimizer(object):
         (self.zscores,
          self.values, zeros) = experiment._sub_experiment_zscore(start, end)
         self.resolution = experiment.resolution
-        self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        self.zeros = tuple([i not in zeros for i in range(end - start + 1)])
         self.nloci = end - start + 1
         if not self.nloci == len(self.zeros):
             raise Exception('ERROR: in optimization, bad number of particles\n')
@@ -64,7 +69,7 @@ class IMPoptimizer(object):
             chrs = []
             chrom_offset_start = 1
             chrom_offset_end = 0
-            for k, v in experiment.hic_data[0].chromosomes.iteritems():
+            for k, v in experiment.hic_data[0].chromosomes.items():
                 tot += v
                 if start > tot:
                     chrom_offset_start = start - tot
@@ -282,7 +287,7 @@ class IMPoptimizer(object):
                     if verbose == 2:
                         stderr.write(verb + str(round(result, 4)) + '\n')
                     else:
-                        print verb + str(round(result, 4))
+                        print(verb + str(round(result, 4)))
                 continue
 
             config_tmp = {'kforce'   : 5,
@@ -324,12 +329,12 @@ class IMPoptimizer(object):
                         if verbose == 2:
                             stderr.write(verb + str(round(result, 4)) + '\n')
                         else:
-                            print verb + str(round(result, 4))
+                            print(verb + str(round(result, 4)))
 
                     # Store the correlation for the TADbit parameters set
                     self.results[(scale, kbending, maxdist, lowfreq, upfreq, cutoff)] = result
-            except Exception, e:
-                print '  SKIPPING: %s' % e
+            except Exception as e:
+                print('  SKIPPING: %s' % e)
                 result = 0
                 cutoff = my_round(dcutoff_arange[0])
 
@@ -338,7 +343,7 @@ class IMPoptimizer(object):
                     tdm._reduce_models(minimal=["restraints", "zscores", "original_data"])
 
         if savedata:
-            out = open(savedata, 'w')
+            out = open(savedata, 'wb')
             dump(models, out)
             out.close()
 
@@ -363,7 +368,7 @@ class IMPoptimizer(object):
         :param True verbose: print the results to the standard output
 
         """
-        if isinstance(filenames, str):
+        if isinstance(filenames, basestring):
             filenames = [filenames]
         models = {}
         for filename in filenames:
@@ -415,7 +420,7 @@ class IMPoptimizer(object):
         :param True verbose: print the results to the standard output
 
         """
-        if isinstance(filenames, str):
+        if isinstance(filenames, basestring):
             filenames = [filenames]
         models = {}
         for filename in filenames:
@@ -472,16 +477,16 @@ class IMPoptimizer(object):
         best = ((float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')), 0.0)
         kbending = 0
         try:
-            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.iteritems():
+            for (scale, maxdist, upfreq, lowfreq, kbending, cutoff), val in self.results.items():
                 if val > best[-1]:
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
         except ValueError:
-            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.iteritems():
+            for (scale, maxdist, upfreq, lowfreq, cutoff), val in self.results.items():
                 if val > best[-1]:
                     best = ((scale, maxdist, upfreq, lowfreq, kbending, cutoff), val)
 
         if with_corr:
-            print best
+            print(best)
             return (dict((('scale'    , float(best[0][0])),
                           ('kbending' , float(best[0][1])),
                           ('maxdist'  , float(best[0][2])),
@@ -536,11 +541,11 @@ class IMPoptimizer(object):
                             len(self.lowfreq_range), len(self.upfreq_range)))
 
         """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
+        for i in range(len(self.scale_range)):
+            for j in range(len(self.kbending_range)):
+                for k in range(len(self.maxdist_range)):
+                    for l in range(len(self.lowfreq_range)):
+                        for m in range(len(self.upfreq_range)):
                             print "Correlation",self.scale_range[i],self.kbending_range[j],\
                             self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
                             results[i][j][k][l][m]
@@ -569,11 +574,11 @@ class IMPoptimizer(object):
                                 results[v, w, x, y, z] = float('nan')
 
         """
-        for i in xrange(len(self.scale_range)):
-            for j in xrange(len(self.kbending_range)):
-                for k in xrange(len(self.maxdist_range)):
-                    for l in xrange(len(self.lowfreq_range)):
-                        for m in xrange(len(self.upfreq_range)):
+        for i in range(len(self.scale_range)):
+            for j in range(len(self.kbending_range)):
+                for k in range(len(self.maxdist_range)):
+                    for l in range(len(self.lowfreq_range)):
+                        for m in range(len(self.upfreq_range)):
                             print "Correlation",self.scale_range[i],self.kbending_range[j],\
                             self.maxdist_range[k],self.lowfreq_range[l],self.upfreq_range[m],\
                             results[i][j][k][l][m]
@@ -611,7 +616,7 @@ class IMPoptimizer(object):
                     key=lambda x: self.results[
                         (scale, kbending, maxdist, lowfreq, upfreq, x)])[0]
             except IndexError:
-                print 'Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq)
+                print('Missing dcutoff', (scale, kbending, maxdist, lowfreq, upfreq))
                 continue
 
             try:
@@ -619,7 +624,7 @@ class IMPoptimizer(object):
                 out.write('  %-5s\t%-8s\t%-8s\t%-8s\t%-7s\t%-7s\t%-11s\n' % (
                     scale, kbending, maxdist, lowfreq, upfreq, cut, result))
             except KeyError:
-                print 'KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result)
+                print('KeyError', (scale, kbending, maxdist, lowfreq, upfreq, cut, result))
                 continue
         out.close()
 
@@ -758,7 +763,7 @@ def _mu_correlate(svd, corr, off_diag, scale, kbending, maxdist, lowfreq, upfreq
             if verbose == 2:
                 stderr.write(verb + str(result) + '\n')
             else:
-                print verb + str(result)
-    except Exception, e:
-        print 'ERROR %s' % e
+                print(verb + str(result))
+    except Exception as e:
+        print('ERROR %s' % e)
     return result

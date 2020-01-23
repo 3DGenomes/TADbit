@@ -3,14 +3,18 @@ parser provided by Enrique Vidal <enrique.vidal@crg.eu> to read write 2D beds
 into compressed BAM format.
 
 """
+from __future__ import print_function
+from builtins   import next
 
-from cPickle                      import load, dump
+from future import standard_library
+standard_library.install_aliases()
+from pickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
-from StringIO                     import StringIO
+from io                     import StringIO
 from shutil                       import copyfile
 import datetime
 from sys                          import stdout, stderr, exc_info, modules
@@ -32,6 +36,11 @@ try:
     from pytadbit.parsers.cooler_parser import cooler_file
 except ImportError:
     pass
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
@@ -59,8 +68,8 @@ def print_progress(procs):
             stdout.write('.')
             stdout.flush()
         prev_done = done
-    print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
-                        '%s/%s' % (len(procs),len(procs)))
+    print('%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) // 10),
+                        '%s/%s' % (len(procs),len(procs))))
 
 
 def _map2sam_short(line, flag):
@@ -214,7 +223,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     # write header
     output += ("\t".join(("@HD" ,"VN:1.5", "SO:queryname")) + '\n')
     fhandler = open(infile)
-    line = fhandler.next()
+    line = next(fhandler)
     # chromosome lengths
     pos_fh = 0
 
@@ -222,7 +231,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
         (_, _, cr, ln) = line.replace("\t", " ").strip().split(" ")
         output += ("\t".join(("@SQ", "SN:" + cr, "LN:" + ln)) + '\n')
         pos_fh += len(line)
-        line = fhandler.next()
+        line = next(fhandler)
 
     # filter codes
     for i in filter_keys:
@@ -251,14 +260,15 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     fhandler.seek(pos_fh)
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
-                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            for l in Popen(samtools, stderr=PIPE,
+                                           universal_newlines=True).communicate()[1].split('\n')
                             if 'Version' in l][0])
     pre = '-o' if version >= LooseVersion('1.3') else ''
 
     proc = Popen(samtools + ' view -Shb -@ %d - | samtools sort -@ %d - %s %s' % (
         ncpus, ncpus, pre,
         outbam + '.bam' if  version >= LooseVersion('1.3') else ''),  # in new version '.bam' is no longer added
-                 shell=True, stdin=PIPE)
+                 shell=True, stdin=PIPE, universal_newlines=True)
     proc.stdin.write(output)
     if frmt == 'mid':
         map2sam = _map2sam_mid
@@ -281,7 +291,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
                 if filter_line[i] == rid:
                     flag += filter_keys[i]
                     try:
-                        filter_line[i] = filter_handler[i].next().strip()
+                        filter_line[i] = next(filter_handler[i]).strip()
                     except StopIteration:
                         pass
             # get output in sam format
@@ -290,7 +300,7 @@ def bed2D_to_BAMhic(infile, valid, ncpus, outbam, frmt, masked=None, samtools='s
     proc.wait()
 
     # Index BAM
-    _ = Popen(samtools + ' index %s.bam' % (outbam), shell=True).communicate()
+    _ = Popen(samtools + ' index %s.bam' % (outbam), shell=True, universal_newlines=True).communicate()
 
     # close file handlers
     fhandler.close()
@@ -327,7 +337,7 @@ def get_filters(infile, masked):
     for i in filter_files:
         filter_handler[i.replace('_', '-')] = open(filter_files[i])
         try:
-            filter_line[i.replace('_', '-')] = filter_handler[i.replace('_', '-')].next().strip()
+            filter_line[i.replace('_', '-')] = next(filter_handler[i.replace('_', '-')]).strip()
         except StopIteration:
             filter_line[i.replace('_', '-')] = ""
     return filter_line, filter_handler
@@ -352,8 +362,8 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
             try:
-                pos1 = sections1[(crm1, pos1 / resolution)]
-                pos2 = sections2[(crm2, pos2 / resolution)]
+                pos1 = sections1[(crm1, pos1 // resolution)]
+                pos2 = sections2[(crm2, pos2 // resolution)]
             except KeyError:
                 continue  # not in the subset matrix we want
             crm = crm1 * (crm1 == crm2)
@@ -371,12 +381,12 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
         out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                                 '%s:%d-%d.tsv' % (region, start, end)), 'w')
         out.write(''.join('%s\t%d\t%d\t%d\n' % (c, a, b, v)
-                          for (c, a, b), v in dico.iteritems()))
+                          for (c, a, b), v in dico.items()))
         out.close()
         if sum_columns:
             sumcol = {}
             cisprc = {}
-            for (c, i, j), v in dico.iteritems():
+            for (c, i, j), v in dico.items():
                 # out.write('%d\t%d\t%d\n' % (i, j, v))
                 try:
                     sumcol[i] += v
@@ -386,10 +396,10 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                     cisprc[i]  = [0, 0]
                     cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
             return sumcol, cisprc
-    except Exception, e:
+    except Exception as e:
         exc_type, exc_obj, exc_tb = exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print e
+        print(e)
         print(exc_type, fname, exc_tb.tb_lineno)
 
 
@@ -399,8 +409,8 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              tmpdir='.', verbose=True, normalize=False, max_size=None):
 
     bamfile = AlignmentFile(inbam, 'rb')
-    sections = OrderedDict(zip(bamfile.references,
-                               [x / resolution + 1 for x in bamfile.lengths]))
+    sections = OrderedDict(list(zip(bamfile.references,
+                               [x // resolution + 1 for x in bamfile.lengths])))
     # get chromosomes and genome sizes
     total = 0
     section_pos = dict()
@@ -412,7 +422,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     bins = []
     for crm in sections:
         len_crm = sections[crm]
-        bins.extend([(crm, i) for i in xrange(len_crm)])
+        bins.extend([(crm, i) for i in range(len_crm)])
     if not bins:
         raise Exception('ERROR: Chromosome %s smaller than bin size\n' % (crm))
 
@@ -430,7 +440,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             raise Exception('ERROR: Cannot use start/end1 without region')
 
     if start1 is not None:
-        start_bin1 = section_pos[region1][0] + start1 / resolution
+        start_bin1 = section_pos[region1][0] + start1 // resolution
     else:
         if region1:
             start_bin1 = section_pos[region1][0]
@@ -438,7 +448,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             start_bin1 = 0
         start1 = 0
     if end1 is not None:
-        end_bin1 = section_pos[region1][0] + end1 / resolution
+        end_bin1 = section_pos[region1][0] + end1 // resolution
     else:
         if region1:
             end_bin1 = section_pos[region1][1]
@@ -455,8 +465,8 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
 
     njobs = min(total, nchunks) + 1
 
-    nbins = total / njobs + 1
-    for i in xrange(start_bin1, end_bin1, nbins):
+    nbins = total // njobs + 1
+    for i in range(start_bin1, end_bin1, nbins):
         if i + nbins > end_bin1:  # make sure that we stop at the right place
             nbins = end_bin1 - i
         try:
@@ -465,13 +475,27 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
             (crm1, beg1), (crm2, fin2) = bins[i], bins[-1]
         if crm1 != crm2:
             fin1 = sections[crm1]
-            beg2 = 0
             regs.append(crm1)
-            regs.append(crm2)
             begs.append(beg1 * resolution)
-            begs.append(beg2 * resolution)
             ends.append(fin1 * resolution + resolution)  # last nt included
-            ends.append(fin2 * resolution + resolution - 1)  # last nt not included (overlap with next window)
+            # be sure we don't miss regions in between the start and end bins
+            start_chunk = i+fin1-beg1
+            end_chunk = i + nbins - 1 if i + nbins - 1 < len(bins) else len(bins) - 1
+            (crm1, beg1) = bins[start_chunk]
+            fin1 = beg1
+            for j in range(start_chunk, end_chunk+1):
+                (crm2, beg2) = bins[j]
+                if crm1 == crm2:
+                    fin1 = beg2
+                    continue
+                regs.append(crm1)
+                begs.append(beg1 * resolution)
+                fin1 = sections[crm1]
+                ends.append(fin1 * resolution + resolution - 1)  # last nt not included (overlap with next window)
+                (crm1, beg1) = (crm2, beg2)
+            regs.append(crm1)
+            begs.append(beg1 * resolution)
+            ends.append(fin1 * resolution + resolution - 1)  # last nt not included (overlap with next window)
         else:
             regs.append(crm1)
             begs.append(beg1 * resolution)
@@ -488,7 +512,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         else:
             start = 0
             end   = section_pos[crm][1] - section_pos[crm][0]
-        all_bins.extend([(crm, i) for i in xrange(start, end)
+        all_bins.extend([(crm, i) for i in range(start, end)
                           if not (crm, i) in seenbins])
         seenbins = set(all_bins)
     del(seenbins)
@@ -500,18 +524,18 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         bins = []
         beg_crm = section_pos[region2][0]
         if start2 is not None:
-            start_bin2 = section_pos[region2][0] + start2 / resolution
+            start_bin2 = section_pos[region2][0] + start2 // resolution
         else:
             start_bin2 = section_pos[region2][0]
             start2 = 0
         if end2 is not None:
-            end_bin2   = section_pos[region2][0] + end2   / resolution
+            end_bin2   = section_pos[region2][0] + end2   // resolution
         else:
             end_bin2   = section_pos[region2][1]
             end2       = sections[region2] * resolution
         start = start_bin2 - beg_crm
         end   = end_bin2   - beg_crm
-        bins = [(region2, i) for i in xrange(start, end)]
+        bins = [(region2, i) for i in range(start, end)]
         bins_dict2 = dict([(j, i) for i, j in enumerate(bins)])
     else:
         start_bin2 = start_bin1
@@ -582,8 +606,8 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
         if clean:
             os.system('rm -f %s' % fname)
     if verbose:
-        print '%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) / 10),
-                            '%s/%s' % (len(chunks[0]),len(chunks[0])))
+        print('%s %9s\n' % (' ' * (54 - (countbin % 50) - (countbin % 50) // 10),
+                            '%s/%s' % (len(chunks[0]),len(chunks[0]))))
 
 
 def get_biases_region(biases, bin_coords, check_resolution=None):
@@ -593,8 +617,8 @@ def get_biases_region(biases, bin_coords, check_resolution=None):
     """
     start_bin1, end_bin1, start_bin2, end_bin2 = bin_coords
     # load decay
-    if isinstance(biases, str):
-        biases = load(open(biases))
+    if isinstance(biases, basestring):
+        biases = load(open(biases, 'rb'))
     resolution = biases.get('resolution', float('NaN'))
     if check_resolution is not None:
         if check_resolution != resolution:
@@ -604,17 +628,17 @@ def get_biases_region(biases, bin_coords, check_resolution=None):
     decay = biases.get('decay' , {})
     # load biases and bad columns
     bias1  = dict((k - start_bin1, v)
-                  for k, v in biases.get('biases', {}).iteritems()
+                  for k, v in biases.get('biases', {}).items()
                   if start_bin1 <= k < end_bin1)
     bads1  = dict((k - start_bin1, v)
-                  for k, v in biases.get('badcol', {}).iteritems()
+                  for k, v in biases.get('badcol', {}).items()
                   if start_bin1 <= k < end_bin1)
     if start_bin1 != start_bin2:
         bias2  = dict((k - start_bin2, v)
-                      for k, v in biases.get('biases', {}).iteritems()
+                      for k, v in biases.get('biases', {}).items()
                       if start_bin2 <= k < end_bin2)
         bads2  = dict((k - start_bin2, v)
-                      for k, v in biases.get('badcol', {}).iteritems()
+                      for k, v in biases.get('badcol', {}).items()
                       if start_bin2 <= k < end_bin2)
     else:
         bias2 = bias1
@@ -745,8 +769,8 @@ def _generate_name(regions, starts, ends, resolution):
     if len(regions) in [1, 2]:
         for i, region in enumerate(regions):
             try:
-                name.append('%s:%d-%d' % (region, starts[i] / resolution,
-                                        ends[i] / resolution))
+                name.append('%s:%d-%d' % (region, starts[i] // resolution,
+                                        ends[i] // resolution))
             except TypeError: # all chromosomes
                 name.append('%s' % (region))
         name = '_'.join(name)
@@ -812,7 +836,7 @@ def write_matrix(inbam, resolution, biases, outdir,
 
     if isinstance(normalizations, list):
         normalizations = tuple(normalizations)
-    elif isinstance(normalizations, str):
+    elif isinstance(normalizations, basestring):
         normalizations = tuple([normalizations])
 
     if not isinstance(filter_exclude, int):
@@ -830,8 +854,8 @@ def write_matrix(inbam, resolution, biases, outdir,
             regions.append(region2)
 
     bamfile = AlignmentFile(inbam, 'rb')
-    sections = OrderedDict(zip(bamfile.references,
-                               [x for x in bamfile.lengths]))
+    sections = OrderedDict(list(zip(bamfile.references,
+                               [x for x in bamfile.lengths])))
 
     start_bin1, end_bin1, start_bin2, end_bin2 = bin_coords
 

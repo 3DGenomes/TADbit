@@ -8,7 +8,11 @@ from pytadbit import Chromosome
 from random import random
 from scipy.interpolate import interp1d
 import numpy as np
-from string import uppercase
+from sys import version_info
+if (version_info > (3, 0)):
+    from string import ascii_uppercase as uppercase
+else:
+    from string import uppercase
 from copy import deepcopy
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram

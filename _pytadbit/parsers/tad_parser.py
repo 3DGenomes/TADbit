@@ -31,7 +31,7 @@ def parse_tads(handler):
         handler, weights = handler
     if isinstance(handler, dict):
         try:
-            for pos in xrange(len(handler['end'])):
+            for pos in range(len(handler['end'])):
                 start = float(handler['start'][pos])
                 end   = float(handler['end'][pos])
                 try:

@@ -3,8 +3,11 @@
 
 unittest for pytadbit functions
 """
+from __future__ import print_function
 
 import matplotlib
+from functools import reduce
+from collections import OrderedDict
 matplotlib.use('Agg')
 
 import unittest
@@ -46,22 +49,23 @@ def check_hic(hic, size):
     """
     check if hi-c data is symmetric
     """
-    for i in xrange(size):
-        for j in xrange(i + 1, size):
+    for i in range(size):
+        for j in range(i + 1, size):
             if not hic[i * size + j] == hic[j * size + i]:
                 raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
-
 
 class TestTadbit(unittest.TestCase):
     """
     test main tadbit functions
     """
-
+    def setUp(self):
+        simplefilter('ignore')
+        
     def test_01_tadbit(self):
 
-        print 'PYTHON SIDE'
-        print '-----------'
+        print('PYTHON SIDE')
+        print('-----------')
 
         # if ONLY and ONLY != '01':
         #     return
@@ -90,7 +94,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(exp1['score'], scores)
 
         if CHKTIME:
-            print '1', time() - t0
+            print('1', time() - t0)
 
 
     def test_02_batch_tadbit(self):
@@ -109,7 +113,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
         if CHKTIME:
-            print '2', time() - t0
+            print('2', time() - t0)
 
 
     def test_03_tad_multi_aligner(self):
@@ -149,7 +153,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(0.001, 1), round(pval1, 1))
         self.assertTrue(abs(0.04 - pval2) < 0.1)
         if CHKTIME:
-            print "3", time() - t0
+            print("3", time() - t0)
 
 
     def test_04_chromosome_batch(self):
@@ -177,7 +181,7 @@ class TestTadbit(unittest.TestCase):
                            71.0, 89.0, 94.0, 99.0], found)
 
         if CHKTIME:
-            print "4", time() - t0
+            print("4", time() - t0)
 
 
     def test_05_save_load(self):
@@ -197,7 +201,7 @@ class TestTadbit(unittest.TestCase):
         system("rm -f lolo_hic")
         self.assertEqual(str(test_chr1.__dict__), str(test_chr2.__dict__))
         if CHKTIME:
-            print "5", time() - t0
+            print("5", time() - t0)
 
 
     def test_06_tad_clustering(self):
@@ -226,7 +230,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(align1, [0, 1, 2, "-", "-", 3, 4, 5, 6, 7, 8, "-", 9])
         self.assertEqual(align2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         if CHKTIME:
-            print "6", time() - t0
+            print("6", time() - t0)
 
 
     def test_07_forbidden_regions(self):
@@ -248,11 +252,11 @@ class TestTadbit(unittest.TestCase):
         tads = test_chr.experiments["exp1"].tads
         found = [tads[t]["end"] for t in tads if tads[t]["score"] > 0]
         self.assertEqual(brks, found)
-        items1 = test_chr.forbidden.keys(), test_chr.forbidden.values()
+        items1 = list(test_chr.forbidden.keys()), list(test_chr.forbidden.values())
         test_chr.add_experiment("exp2", 20000, tad_def=exp3,
                                 hic_data=PATH + "/20Kb/chrT/chrT_C.tsv",
                                 silent=True)
-        items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
+        items2 = list(test_chr.forbidden.keys()), list(test_chr.forbidden.values())
         know1 = ([38, 39], ["Centromere", "Centromere"])
         #know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
         #          23, 24, 25, 26, 27, 28, 29, 30, 31],
@@ -263,7 +267,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(items1, know1)
         self.assertEqual(items2, know2)
         if CHKTIME:
-            print "7", time() - t0
+            print("7", time() - t0)
 
 
     def test_08_changing_resolution(self):
@@ -302,7 +306,7 @@ class TestTadbit(unittest.TestCase):
         self.assertTrue(sum20 == sum80 == sum160 == sum360 == sum40 \
                         == sum21 == sum2400 == sum41)
         if CHKTIME:
-            print "8", time() - t0
+            print("8", time() - t0)
 
 
     def test_09_hic_normalization(self):
@@ -323,11 +327,11 @@ class TestTadbit(unittest.TestCase):
         exp.normalize_hic(silent=True)
         exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
-        sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
+        sumz = sum([exp._zscores[k1][k2] for k1 in list(exp._zscores.keys())
                     for k2 in exp._zscores[k1]])
         self.assertEqual(round(sumz, 4), round(4059.2877, 4))
         if CHKTIME:
-            print "9", time() - t0
+            print("9", time() - t0)
 
 
     def test_10_compartments(self):
@@ -349,7 +353,7 @@ class TestTadbit(unittest.TestCase):
         # self.assertEqual(round(hic_data.compartments[None][24]["dens"], 5),
         #                  0.75434)
         if CHKTIME:
-            print "10", time() - t0
+            print("10", time() - t0)
 
 
     # def test_10_generate_weights(self):
@@ -391,13 +395,14 @@ class TestTadbit(unittest.TestCase):
         exp.normalize_hic(factor=None, silent=True)
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs("lala")
-        lines = open("lala").readlines()
+        with open("lala") as f_lala:
+            lines = f_lala.readlines()
         self.assertEqual(len(lines), 4674)
-        self.assertEqual(lines[25], "1\t28\t0.612332461036\n")
-        self.assertEqual(lines[2000], "26\t70\t0.0738742984321\n")
+        self.assertAlmostEqual(float(lines[25].split('\t')[2]),0.612332461036)
+        self.assertAlmostEqual(float(lines[2000].split('\t')[2]),0.0738742984321)
         system("rm -f lala")
         if CHKTIME:
-            print "11", time() - t0
+            print("11", time() - t0)
 
 
     def test_12_3d_modelling_optimization(self):
@@ -434,10 +439,10 @@ class TestTadbit(unittest.TestCase):
                   "dcutoff": 2,
                   "reference": "", "lowfreq": -0.6, "scale": 0.01}
 
-        self.assertEqual([round(config[i], 4) for i in config.keys() if not type(i) is str],
-                         [round(config[i], 4) for i in wanted.keys() if not type(i) is str])
+        self.assertEqual([round(config[i], 4) for i in list(config.keys()) if not type(i) is str],
+                         [round(config[i], 4) for i in list(wanted.keys()) if not type(i) is str])
         if CHKTIME:
-            print "12", time() - t0
+            print("12", time() - t0)
 
 
     def test_13_3d_modelling_centroid(self):#model with no optimisation
@@ -472,19 +477,23 @@ class TestTadbit(unittest.TestCase):
         avg = models.average_model()
         nmd = len(models)
         dev = rmsdRMSD_wrapper(
-            [models[m]["x"] for m in xrange(nmd)] + [avg["x"]],
-            [models[m]["y"] for m in xrange(nmd)] + [avg["y"]],
-            [models[m]["z"] for m in xrange(nmd)] + [avg["z"]],
+            [models[m]["x"] for m in range(nmd)] + [avg["x"]],
+            [models[m]["y"] for m in range(nmd)] + [avg["y"]],
+            [models[m]["z"] for m in range(nmd)] + [avg["z"]],
             models._zeros,
-            models.nloci, 200, range(len(models)+1),
+            models.nloci, 200, list(range(len(models)+1)),
             len(models)+1, int(False), "rmsd", 0)
         centroid = models[models.centroid_model()]
         # find closest
         model = min([(k, dev[(k, nmd)] )
                      for k in range(nmd)], key=lambda x: x[1])[0]
         self.assertEqual(centroid["rand_init"], models[model]["rand_init"])
-
-        refmodels = load_structuralmodels(PATH + "/models.pick")
+        
+        if sys.version_info[0] < 3:
+            refmodels_path = PATH + "/models.pick"
+        else:
+            refmodels_path = PATH + "/models_py3.pick"
+        refmodels = load_structuralmodels(refmodels_path)
         refrestraints = refmodels._restraints
         refrestraints = dict((r,(refrestraints[r][0],round(refrestraints[r][1],2),
                                  round(refrestraints[r][2],2))) for r in refrestraints)
@@ -493,7 +502,7 @@ class TestTadbit(unittest.TestCase):
                               round(restraints[r][2],2))) for r in restraints)
         self.assertEqual(refrestraints,restraints)
         if CHKTIME:
-            print "13", time() - t0
+            print("13", time() - t0)
 
 
     def test_14_3d_clustering(self):
@@ -504,19 +513,23 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels(PATH + "/models.pick")
+        if sys.version_info[0] < 3:
+            refmodels_path = PATH + "/models.pick"
+        else:
+            refmodels_path = PATH + "/models_py3.pick"
+        models = load_structuralmodels(refmodels_path)
         if find_executable("mcl"):
             models.cluster_models(method="mcl", fact=0.9, verbose=False,
                                   dcutoff=200)
-            self.assertTrue(5 <= len(models.clusters.keys()) <= 7)
+            self.assertTrue(5 <= len(list(models.clusters.keys())) <= 7)
         models.cluster_models(method="ward", verbose=False, dcutoff=200)
-        self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
+        self.assertTrue(2 <= len(list(models.clusters.keys())) <= 3)
         d = models.cluster_analysis_dendrogram()
         self.assertEqual(d["icoord"], [[5., 5., 15., 15.]])
         # align models
         m1, m2 = models.align_models(models=[1,2])
         nrmsd = (sum([((m1[0][i] - m2[0][i])**2 + (m1[1][i] - m2[1][i])**2 + (m1[2][i] - m2[2][i])**2)**.5
-                      for i in xrange(len(m1[0]))]) / (len(m1[0])))
+                      for i in range(len(m1[0]))]) / (len(m1[0])))
         self.assertTrue(nrmsd < 160)
         # fetching models
         models.define_best_models(5)
@@ -526,7 +539,7 @@ class TestTadbit(unittest.TestCase):
         m = models.fetch_model_by_rand_init("1", all_models=False)
         self.assertEqual(m, 8)
         if CHKTIME:
-            print "14", time() - t0
+            print("14", time() - t0)
 
 
     def test_15_3d_modelling(self):
@@ -537,11 +550,16 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels(PATH + "/models.pick")
+        if sys.version_info[0] < 3:
+            refmodels_path = PATH + "/models.pick"
+        else:
+            refmodels_path = PATH + "/models_py3.pick"
+        models = load_structuralmodels(refmodels_path)
         models.cluster_models(method="ward", verbose=False)
         # density
         models.density_plot(savedata="lala", plot=False)
-        lines = open("lala").readlines()
+        with open("lala") as f_lala:
+            lines = f_lala.readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i), 1) if i != "nan" else i for i in lines[1].split("\t")[:3]],
                          [1.0, "nan", "nan"])
@@ -567,7 +585,8 @@ class TestTadbit(unittest.TestCase):
         # consistency
         models.model_consistency(cutoffs=(50, 100, 150, 200), plot=False,
                                  savedata="lala")
-        lines = open("lala").readlines()
+        with open("lala") as f_lala:
+            lines = f_lala.readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/15, 0) for i in lines[1].split("\t")],
                          [0, 2, 2, 3, 4])
@@ -589,47 +608,52 @@ class TestTadbit(unittest.TestCase):
                          15)
         self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1,
                                                      plot=False)/200, 0), 8)
-        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
+        self.assertEqual(round(models.median_3d_dist(7, 10, models=list(range(5)),
                                                      plot=False), 0), 250)
         # accessibility
         models.accessibility(radius=75, nump=10, plot=False, savedata="model.acc")
-        vals = [l.split() for l in open("model.acc").readlines()[1:]]
+        with open("model.acc") as f_model_acc:
+            vals = [l.split() for l in f_model_acc.readlines()[1:]]
         self.assertEqual(vals[0][1:3], ["0.56", "0.993"])
         self.assertEqual(vals[20][1:3], ["1.0", "0.0"])
         # contact map
         models.contact_map(savedata="model.contacts")
-        vals = [l.split() for l in open("model.contacts").readlines()[1:]]
-        self.assertEqual(vals[0], ["0", "1", "1.0"])
-        self.assertEqual(vals[1], ["0", "2", "0.72"])
-        self.assertEqual(vals[192], ["14", "18", "0.12"])
+        with open("model.contacts") as f_model_contacts:
+            vals = [l.split() for l in f_model_contacts.readlines()[1:]]
+        self.assertAlmostEqual(float(vals[0][2]),1.0)
+        self.assertAlmostEqual(float(vals[1][2]),0.72)
+        self.assertAlmostEqual(float(vals[192][2]),0.12)
         # interactions
         models.interactions(plot=False, savedata="model.inter")
-        vals = [[float(i) for i in l.split()] for l in open("model.inter").readlines()[1:]]
+        with open("model.inter") as f_model_inter:
+            vals = [[float(i) for i in l.split()] for l in f_model_inter.readlines()[1:]]
         self.assertEqual(vals[2], [3.0, 4.68, 1.23, 3.78, 0.7, 4.65, 0.87, 3.92, 0.72, 4.74, 0.57])
         # walking angle
         models.walking_angle(savedata="model.walkang")
-        vals = [[round(float(i), 2) if i != "None" else i for i in l.split()] for l in open("model.walkang").readlines()[1:]]
+        with open("model.walkang") as f_model_walkang:
+            vals = [[round(float(i), 2) if i != "None" else i for i in l.split()]
+                    for l in f_model_walkang.readlines()[1:]]
         self.assertEqual(vals[17], [18.0, -45.42, 100.0, -9.78, 135.0],)
         self.assertEqual(vals[3],  [4.0, 124.97, 274.0, 2.05, 254.0],)
         self.assertEqual(vals[16], [17.0, -62.84, 201.0, -3.2, 77.0])
         self.assertEqual(vals[15], [16.0, -132.38, 286.0, -12.7, 124.0])
         # write cmm
         models.write_cmm(".", model_num=2)
-        models.write_cmm(".", models=range(5))
+        models.write_cmm(".", models=list(range(5)))
         models.write_cmm(".", cluster=2)
         # write xyz
         models.write_xyz(".", model_num=2)
-        models.write_xyz(".", models=range(5))
+        models.write_xyz(".", models=list(range(5)))
         models.write_xyz(".", cluster=2)
         # write json
         models.write_json("model.json", model_num=2)
-        models.write_json("model.json", models=range(5))
+        models.write_json("model.json", models=list(range(5)))
         models.write_json("model.json", cluster=2)
         # clean
         system("rm -f model.*")
         system("rm -rf lala*")
         if CHKTIME:
-            print "15", time() - t0
+            print("15", time() - t0)
 
 
     def test_16_models_stats(self):
@@ -638,7 +662,11 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        models = load_structuralmodels(PATH + "/models.pick")
+        if sys.version_info[0] < 3:
+            refmodels_path = PATH + "/models.pick"
+        else:
+            refmodels_path = PATH + "/models_py3.pick"
+        models = load_structuralmodels(refmodels_path)
         # write cmm
         models.write_cmm(".", model_num=2)
         model = load_impmodel_from_cmm("model.%s.cmm" % models[2]["rand_init"])
@@ -666,7 +694,7 @@ class TestTadbit(unittest.TestCase):
                         8  <= bypt[100][1] <= 38 and
                         8  <= bypt[100][2] <= 23)
         if CHKTIME:
-            print "16", time() - t0
+            print("16", time() - t0)
 
 
     def test_17_map_re_sites(self):
@@ -690,7 +718,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(frags["chr4"][10][5], 1017223)
         if CHKTIME:
             self.assertEqual(True, True)
-            print "17", time() - t0
+            print("17", time() - t0)
 
     def test_18_filter_reads(self):
         if ONLY and not "18" in ONLY:
@@ -714,7 +742,7 @@ class TestTadbit(unittest.TestCase):
                 try:
                     from pytadbit.parsers.sam_parser import parse_sam as parser
                 except ImportError:
-                    print "ERROR: PYSAM not found, skipping test\n"
+                    print("ERROR: PYSAM not found, skipping test\n")
                     continue
 
             parser(["test_read1.%s~" % (ali)], ["test_read2.%s~" % (ali)],
@@ -733,24 +761,25 @@ class TestTadbit(unittest.TestCase):
             self.assertEqual(masked[3]["reads"], 1000)
             self.assertEqual(masked[4]["reads"], 1000)
             if same_seed:
-                self.assertEqual(masked[5]["reads"], 1110)
-                self.assertEqual(masked[6]["reads"], 2332)
+                self.assertEqual(masked[5]["reads"], 1091)
+                self.assertEqual(masked[6]["reads"], 2230)
                 self.assertEqual(masked[7]["reads"], 0)
-                self.assertEqual(masked[8]["reads"], 141)
-                self.assertEqual(masked[10]["reads"], 1)
+                self.assertEqual(masked[8]["reads"], 100)
+                self.assertEqual(masked[10]["reads"], 5)
             else:
                 self.assertTrue (masked[5]["reads"] > 1000)
-            self.assertEqual(masked[9]["reads"], 1000)
+            self.assertEqual(masked[9]["reads"], 1001)
         apply_filter("lala-map~", "lala-map-filt~", masked, filters=[1],
                      reverse=True, verbose=False)
-        self.assertEqual(len([True for l in open("lala-map-filt~")
-                              if not l.startswith("#")]), 1000)
+        with open("lala-map-filt~") as f_lala_filt:
+            self.assertEqual(len([True for l in f_lala_filt
+                                  if not l.startswith("#")]), 1000)
         d = plot_iterative_mapping("lala1-map~", "lala2-map~")
         self.assertEqual(d[0][1], 6000)
 
         if CHKTIME:
             self.assertEqual(True, True)
-            print "18", time() - t0
+            print("18", time() - t0)
 
     def test_19_matrix_manip(self):
         if ONLY and not "19" in ONLY:
@@ -771,7 +800,7 @@ class TestTadbit(unittest.TestCase):
         #                  [-1.68, -2.08, 0.02, 2.76, -8.99, 0.0, 0.82, -6.8, 0.0])
 
         a, b = insert_sizes("lala-map~")
-        self.assertEqual([int(a),int(b)], [43, 1033])
+        self.assertEqual([int(a),int(b)], [47, 772])
 
         hic_data1 = read_matrix(PATH + "/20Kb/chrT/chrT_A.tsv", resolution=20000)
         hic_data2 = read_matrix(PATH + "/20Kb/chrT/chrT_B.tsv", resolution=20000)
@@ -793,7 +822,7 @@ class TestTadbit(unittest.TestCase):
         system("rm -rf lala*")
         if CHKTIME:
             self.assertEqual(True, True)
-            print "19", time() - t0
+            print("19", time() - t0)
 
     def test_20_tadbit_c(self):
         """
@@ -804,19 +833,19 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
 
-        print "\n\nC SIDE"
-        print "------"
+        print("\n\nC SIDE")
+        print("------")
         chdir(PATH + "/../src/test/")
         system("make clean")
         system("make")
         return_code = system("make test")
         chdir(PATH)
         if return_code != 0:
-            print "ERROR problem with C test"
+            print("ERROR problem with C test")
             self.assertEqual(True, False)
         if CHKTIME:
             self.assertEqual(True, True)
-            print "20", time() - t0
+            print("20", time() - t0)
 
 
 def generate_random_ali(ali="map"):
@@ -838,24 +867,24 @@ def generate_random_ali(ali="map"):
     nts = ("ATGC" * 100) +"N"
 
     # RANDOM GENOME GENERATION
-    genome = {}
-    for crm in xrange(1, num_crms + 1):
+    genome = OrderedDict()
+    for crm in range(1, num_crms + 1):
         crm_len = int(mean_crm_size * random())
         genome["chr" + str(crm)] = "".join([nts[int(401 * random())]
-                                            for _ in xrange(crm_len)])
+                                            for _ in range(crm_len)])
 
     out = open("test.fa~", "w")
-    for crm in xrange(1, num_crms + 1):
+    for crm in range(1, num_crms + 1):
         out.write(">chr%d\n" % crm)
         crm = "chr" + str(crm)
-        for p in xrange(0, len(genome[crm]), 60):
+        for p in range(0, len(genome[crm]), 60):
             out.write(genome[crm][p:p+60] + "\n")
     out.close()
 
     # RE FRAGMENTS
-    frags = {}
+    frags = OrderedDict()
     for crm in genome:
-        frags[crm] = {}
+        frags[crm] = OrderedDict()
         beg = 0
         for pos in finditer(re_seq, genome[crm]):
             end = pos.start() + 1 + enz_cut
@@ -889,10 +918,10 @@ def generate_random_ali(ali="map"):
     flags = ["+", "-"] if ali=="map" else [66 , 82 ]
 
     # SELF-CIRCLES
-    for i in xrange(selfcircle):
-        crm  = genome.keys()    [int(random() * len(genome))]
+    for i in range(selfcircle):
+        crm  = list(genome.keys())    [int(random() * len(genome))]
         while True:
-            frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+            frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
             if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
                 break
         while True:
@@ -918,10 +947,10 @@ def generate_random_ali(ali="map"):
         out2.write(read.format(**read2))
 
     # DANGLING-ENDS
-    for i in xrange(dangling):
-        crm  = genome.keys()    [int(random() * len(genome))]
+    for i in range(dangling):
+        crm  = list(genome.keys())    [int(random() * len(genome))]
         while True:
-            frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+            frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
             if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
                 break
         while True:
@@ -947,10 +976,10 @@ def generate_random_ali(ali="map"):
         out2.write(read.format(**read2))
 
     # ERRORS
-    for i in xrange(error):
-        crm  = genome.keys()    [int(random() * len(genome))]
+    for i in range(error):
+        crm  = list(genome.keys())    [int(random() * len(genome))]
         while True:
-            frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+            frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
             if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
                 break
         while True:
@@ -972,10 +1001,10 @@ def generate_random_ali(ali="map"):
         out2.write(read.format(**read2))
 
     # EXTRA-DANGLING-ENDS
-    for i in xrange(extradangling):
-        crm  = genome.keys()    [int(random() * len(genome))]
+    for i in range(extradangling):
+        crm  = list(genome.keys())    [int(random() * len(genome))]
         while True:
-            frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+            frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
             if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
                 break
         while True:
@@ -1012,11 +1041,11 @@ def generate_random_ali(ali="map"):
     # DUPPLICATES
     i = 0
     while i < duplicates * 2:
-        crm1  = genome.keys()    [int(random() * len(genome))]
-        crm2  = genome.keys()    [int(random() * len(genome))]
+        crm1  = list(genome.keys())    [int(random() * len(genome))]
+        crm2  = list(genome.keys())    [int(random() * len(genome))]
         while True:
-            frag1 = frags[crm1].keys()[int(random() * len(frags[crm1]))]
-            frag2 = frags[crm2].keys()[int(random() * len(frags[crm2]))]
+            frag1 = list(frags[crm1].keys())[int(random() * len(frags[crm1]))]
+            frag2 = list(frags[crm2].keys())[int(random() * len(frags[crm2]))]
             if frags[crm2][frag2][1] - frags[crm2][frag2][0] < 6:
                 continue
             if frags[crm1][frag1][1] - frags[crm1][frag1][0] < 6:
@@ -1067,7 +1096,7 @@ if __name__ == "__main__":
         from time import time
     else:
         CHKTIME = False
-
+        
     with catch_warnings():
         simplefilter("ignore")
         unittest.main()

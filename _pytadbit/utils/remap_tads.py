@@ -26,6 +26,7 @@ INSTALL:
     Nucleic Acids Research, 39(Database issue), D876-82. doi:10.1093/nar/gkq963
     
 """
+from __future__ import print_function
 
 
 
@@ -56,7 +57,7 @@ def liftover(coords, tmp_path, lft_path, chn_path):
                     chn_path + ' ' +
                     tmp_path + '/out ' +
                     tmp_path + '/out.log'
-                    ), shell =True, stdout=PIPE, stderr=PIPE).communicate()
+                    ), shell =True, stdout=PIPE, stderr=PIPE, universal_newlines=True).communicate()
     if (not 'Reading' in err) or (not 'Mapping' in err):
         raise Exception(err)
     founds = [[l.split()[0],
@@ -86,7 +87,7 @@ def remap_chr(crm_obj, crm, tmp, lft_path, chain_path,
         if wnt_exp:
             if not exp.name in wnt_exp:
                 continue
-        print exp
+        print(exp)
         coords = []
         res = exp.resolution
         for t in exp.tads:
@@ -100,15 +101,15 @@ def remap_chr(crm_obj, crm, tmp, lft_path, chain_path,
                 if crm2 not in genome[exp.name]:
                     genome[exp.name][crm2] = {'end': [],
                                              'score': []}
-                print ' -> crm{:<2}:{:>10} | crm{:<2}:{:>10}'.format(
+                print(' -> crm{:<2}:{:>10} | crm{:<2}:{:>10}'.format(
                     crm, int(exp.tads[t]['end']) * 100000,
-                    crm2, int(end / res + 0.5) * 100000)
+                    crm2, int(end / res + 0.5) * 100000))
                 genome[exp.name][crm2]['end'  ].append(float(int(end / res + 0.5)))
                 genome[exp.name][crm2]['score'].append(exp.tads[t]['score'])
                 found += 1
             except TypeError:
                 missed += 1
-    print 'missed: {}, found: {}'.format(missed, found)
+    print('missed: {}, found: {}'.format(missed, found))
     return genome
 
 
@@ -120,7 +121,7 @@ def reorder(genome):
             genome[exp][crm]['end']   = [genome[exp][crm]['end'  ][i] for i in order]
             genome[exp][crm]['score'] = [genome[exp][crm]['score'][i] for i in order]
             todel = []
-            for brk in xrange(1, len(genome[exp][crm]['end'])):
+            for brk in range(1, len(genome[exp][crm]['end'])):
                 if genome[exp][crm]['end'][brk] == genome[exp][crm]['end'][brk-1]:
                     todel.append(brk-1)
                     genome[exp][crm]['score'][brk] = max(
@@ -129,7 +130,7 @@ def reorder(genome):
                 genome[exp][crm]['end'].pop(brk)
                 genome[exp][crm]['score'].pop(brk)
             genome[exp][crm]['start'] = []
-            for brk in xrange(len(genome[exp][crm]['end']) + 1):
+            for brk in range(len(genome[exp][crm]['end']) + 1):
                 genome[exp][crm]['start'].append(genome[exp][crm]['end'][brk - 1] + 1 \
                                                  if brk > 0 else 0)
                     

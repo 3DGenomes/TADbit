@@ -5,7 +5,7 @@
 """
 from pytadbit.modelling.structuralmodel import StructuralModel
 from pytadbit.utils.extraviews      import tadbit_savefig
-from scipy.interpolate              import spline
+from scipy.interpolate              import interp1d
 from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
@@ -44,10 +44,11 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
                       ('index', 0), ('objfun', 0), ('radius', radius)))
     expr = compil(
         ' x="([0-9.-]+)" y="([0-9.-]+)" z="([0-9.-]+)".* radius="([0-9.]+)"')
-    for xxx, yyy, zzz, radius in findall(expr, open(f_name).read()):
-        model['x'].append(float(xxx))
-        model['y'].append(float(yyy))
-        model['z'].append(float(zzz))
+    with open(f_name) as f_open:
+        for xxx, yyy, zzz, radius in findall(expr, f_open.read()):
+            model['x'].append(float(xxx))
+            model['y'].append(float(yyy))
+            model['z'].append(float(zzz))
     if not model['radius']:
         model['radius'] = float(radius)
     return model
@@ -209,8 +210,8 @@ class IMPmodel(StructuralModel):
         nrjz = self['log_objfun'][1:]
         if smooth:
             xnew = linspace(0, len(nrjz), 10000)
-            nrjz_smooth = spline(range(len(nrjz)), nrjz, xnew,
-                                 order=3)
+            f_nrjz_smooth = interp1d(list(range(len(nrjz))), nrjz, kind='cubic')
+            nrjz_smooth = f_nrjz_smooth(xnew)
             axe.plot(xnew, nrjz_smooth, color='darkred')
         else:
             axe.plot(nrjz, color='darkred')

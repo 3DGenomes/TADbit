@@ -22,7 +22,7 @@ typedef union
     int64_t  si;
 } fi_t;
 
-static const uint64_t fastlog_exp_mask = 0x7ff0000000000000;
+// static const uint64_t fastlog_exp_mask = 0x7ff0000000000000;
 static const uint64_t fastlog_man_mask = 0x000fffffffffffff;
 
 

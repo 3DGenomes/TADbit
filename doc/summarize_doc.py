@@ -3,11 +3,15 @@
 
 
 """
+from __future__ import print_function
 
 import inspect
-from string import uppercase
 import re
-from sys import stderr
+from sys import stderr, version_info
+if (version_info > (3, 0)):
+    from string import ascii_uppercase as uppercase
+else:
+    from string import uppercase
 import pytadbit
 from pytadbit.utils   import fastq_utils
 from pytadbit.parsers import genome_parser, map_parser, bed_parser, sam_parser
@@ -31,7 +35,7 @@ def parse_doc_index(url_base='http://3dgenomes.github.io/TADbit/'):
     for elt in dom.cssselect('a'):
         if not elt.text or not '() ' in elt.text:
             continue
-        links[elt.text.split('()')[0]] = url_base + elt.values()[0]
+        links[elt.text.split('()')[0]] = url_base + list(elt.values())[0]
     return links
 
 
@@ -135,14 +139,14 @@ def main():
     nummodules = len(modules)
 
     # title
-    print '======================================='
-    print 'Summary of TADbit classes and functions'
-    print '=======================================\n'
+    print('=======================================')
+    print('Summary of TADbit classes and functions')
+    print('=======================================\n')
 
     # body
-    print ''
+    print('')
     for module in sorted(modules):
-        print print_doc(module, header=1)
+        print(print_doc(module, header=1))
 
         submodules = [m for m in all_members
                       if all_members[m]['son'].__module__ == module]
@@ -153,25 +157,25 @@ def main():
             if all_members[member]['dady'] in dadies or member in dadies:
                 continue
             if all_members[member]['son'].__name__[0] in uppercase:
-                print print_doc(all_members[member]['son'], header=2, indent=3)
+                print(print_doc(all_members[member]['son'], header=2, indent=3))
                 numclasses += 1
             else:
                 nfunctions += 1
-                print print_doc(all_members[member]['son'], header=3, indent=3)
+                print(print_doc(all_members[member]['son'], header=3, indent=3))
         for dady in sorted(dadies):
             numclasses += 1
-            print print_doc(all_members[dady]['son'], offset=9, header=2)
+            print(print_doc(all_members[dady]['son'], offset=9, header=2))
             for member in sorted(submodules):
                 if all_members[member]['dady'] != dady:
                     continue
                 nfunctions += 1
-                print print_doc(all_members[member]['son'], header=3,
-                                indent=6)
+                print(print_doc(all_members[member]['son'], header=3,
+                                indent=6))
 
     # footnotes
-    print ''
-    print '.. [#first] functions generating plots\n'
-    print '.. [#second] functions writing text files\n'
+    print('')
+    print('.. [#first] functions generating plots\n')
+    print('.. [#second] functions writing text files\n')
     stderr.write('Reporting %s modules, %s classes and %s functions\n' %(
         nummodules, numclasses, nfunctions))
 

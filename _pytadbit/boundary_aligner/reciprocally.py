@@ -3,7 +3,7 @@
 
 Aligner based on reciprocal closest hits for Topologically Associated Domains
 """
-
+from __future__ import print_function
 
 def find_closest(num, tads1, start=0):
     closest = 0
@@ -101,11 +101,11 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
         if closest != '-':
             adj += 1
     if verbose:
-        print '\n Alignment:'
-        print 'TADS 1: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
-                                   for x in align1])
-        print 'TADS 2: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
-                                   for x in align2])
+        print('\n Alignment:')
+        print('TADS 1: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
+                                   for x in align1]))
+        print('TADS 2: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
+                                   for x in align2]))
     diff = len(align1) - len(diffs)
     perc1 = 1 - float(diff) / len(tads1)
     perc2 = 1 - float(diff) / len(tads2)

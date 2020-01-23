@@ -6,7 +6,6 @@
 from pytadbit.boundary_aligner.globally     import needleman_wunsch
 from pytadbit.boundary_aligner.reciprocally import reciprocal
 
-
 def consensusize(ali1, ali2, passed):
     """
     Given two alignments returns a consensus alignment. Used for the generation
@@ -19,7 +18,7 @@ def consensusize(ali1, ali2, passed):
     :returns: consensus sequence corresponding to ali1 and ali2
     """
     consensus = []
-    for pos in xrange(len(ali1)):
+    for pos in range(len(ali1)):
         if ali1[pos] != ali2[pos]:
             try:
                 bound = (ali1[pos] * passed + ali2[pos]) / (1 + passed)
@@ -66,7 +65,7 @@ def align(sequences, method='reciprocal', **kwargs):
         scores = 0
         perc1 = 0
         perc2 = 0
-        for other in xrange(1, len(sequences)):
+        for other in range(1, len(sequences)):
             try:
                 ([align1, align2], score,
                  p1, p2) = aligner(consensus, dico[other]['seq'], **kwargs)
@@ -77,7 +76,7 @@ def align(sequences, method='reciprocal', **kwargs):
                                                   **kwargs)
             scores += score
             if len(consensus) != len(align1):
-                for pos in xrange(len(align1)):
+                for pos in range(len(align1)):
                     try:
                         if align1[pos] != '-':
                             continue
@@ -91,8 +90,8 @@ def align(sequences, method='reciprocal', **kwargs):
             aligneds.append(align2)
             consensus = consensusize(align1, align2, other)
 
-        sort_alis = [[] for _ in xrange(len(dico))]
-        for seq in xrange(len(dico)):
+        sort_alis = [[] for _ in range(len(dico))]
+        for seq in range(len(dico)):
             sort_alis[dico[seq]['sort']] = aligneds[seq][:]
         return (sort_alis, scores,
                 perc1 / (len(sequences) - 1.),

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from distutils.core import setup, Extension
 from os import path, system
 from re import sub
@@ -45,7 +46,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
+        v = input("%s [%s]" % (string,','.join(valid_values)))
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:
@@ -86,7 +87,7 @@ def main():
         print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
               '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
               ' just run "apt-get-install mcl".')
-        follow = raw_input('\n  You still have the option to follow with the ' +
+        follow = input('\n  You still have the option to follow with the ' +
                        'installation. Do you want to follow? [y/N]')
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
@@ -153,9 +154,11 @@ def main():
     git_revision = git_version = None
     try:
         git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
-                                  stderr=PIPE).communicate()
+                                  stderr=PIPE, universal_newlines=True).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
-                                stderr=PIPE).communicate()
+                                stderr=PIPE, universal_newlines=True).communicate()
+        git_revision = str(git_revision)
+        git_status = str(git_status)
         if err or err2:
             raise OSError('git not found')
         plus = git_status != ''

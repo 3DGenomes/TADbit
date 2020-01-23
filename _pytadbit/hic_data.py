@@ -2,13 +2,16 @@
 December 12, 2014.
 
 """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 import os
 from sys                            import stderr, modules
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
-from cPickle                        import HIGHEST_PROTOCOL, dump, load
+from pickle                         import HIGHEST_PROTOCOL, dump, load
 
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan, mean
@@ -34,6 +37,11 @@ try:
     from pytadbit.parsers.cooler_parser import cooler_file
 except ImportError:
     pass
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
@@ -69,7 +77,7 @@ class HiC_data(dict):
         if self.sections == {}:
             self.section_pos = {None: (0, self.__size)}
             self.sections = dict([((None, i), i)
-                                  for i in xrange(0, self.__size)])
+                                  for i in range(0, self.__size)])
 
     def _symmetricize(self):
         """
@@ -82,7 +90,7 @@ class HiC_data(dict):
         symmetric = True
         count  = 0
         for n in self:
-            i = n / self.__size
+            i = n // self.__size
             j = n % self.__size
             if i == j or self[i, j] == self[i, j] == 0:
                 continue
@@ -97,14 +105,14 @@ class HiC_data(dict):
         if symmetric:  # may not reach 10 values
             return
         if to_sum:
-            for n in self.keys()[:]:
-                i = n / self.__size
+            for n in list(self.keys())[:]:
+                i = n // self.__size
                 j = n % self.__size
                 if i != j:
                     self[j, i] = self[i, j] = self[j, i] + self[i, j]
         else:
-            for n in self.keys()[:]:
-                i = n / self.__size
+            for n in list(self.keys())[:]:
+                i = n // self.__size
                 j = n % self.__size
                 self[j, i] = self[i, j] = self[n]
 
@@ -143,12 +151,12 @@ class HiC_data(dict):
             row, col = row_col
             pos = row * self.__size + col
             if pos > self._size2:
-                print row, col, pos
+                print(row, col, pos)
                 raise IndexError(
                     'ERROR: row or column larger than %s' % self.__size)
             super(HiC_data, self).__setitem__(pos, val)
         except TypeError:
-            if row_col > self._size2:
+            if hasattr(self, '_size2') and row_col > self._size2:
                 raise IndexError(
                     'ERROR: position %d larger than %s^2' % (row_col,
                                                              self.__size))
@@ -163,8 +171,8 @@ class HiC_data(dict):
         values = []
         cols = []
         rows = []
-        for key, value in self.iteritems():
-            row, col = round(key / self.__size), key % self.__size
+        for key, value in self.items():
+            row, col = round(key // self.__size), key % self.__size
             values.append(float(value))
             cols.append(col)
             rows.append(row)
@@ -183,13 +191,13 @@ class HiC_data(dict):
         genome_seq = OrderedDict()
         size = 0
         for crm in  genome:
-            genome_seq[crm] = int(len(genome[crm])) / self.resolution + 1
+            genome_seq[crm] = int(len(genome[crm])) // self.resolution + 1
             size += genome_seq[crm]
         section_sizes = {}
         for crm in genome_seq:
             len_crm = genome_seq[crm]
             section_sizes[(crm,)] = len_crm
-            sections.extend([(crm, i) for i in xrange(len_crm)])
+            sections.extend([(crm, i) for i in range(len_crm)])
         dict_sec = dict([(j, i) for i, j in enumerate(sections)])
         self.chromosomes = genome_seq
         self.sections = dict_sec
@@ -219,13 +227,13 @@ class HiC_data(dict):
         resolution = 1 if binned else self.resolution
         for crm, length in  enumerate(lengths):
             cnam = 'chr' + str(crm) if not chr_names else chr_names[crm]
-            genome_seq[cnam] = int(length) / resolution + 1
+            genome_seq[cnam] = int(length) // resolution + 1
             size += genome_seq[cnam]
         section_sizes = {}
         for crm in genome_seq:
             len_crm = genome_seq[crm]
             section_sizes[(crm,)] = len_crm
-            sections.extend([(crm, i) for i in xrange(len_crm)])
+            sections.extend([(crm, i) for i in range(len_crm)])
         dict_sec = dict([(j, i) for i, j in enumerate(sections)])
         self.chromosomes = genome_seq
         self.sections = dict_sec
@@ -281,7 +289,7 @@ class HiC_data(dict):
         # defines columns to be skipped
         bads = set(self.bads.keys())
         for c in exclude:
-            bads.update(i for i in xrange(*self.section_pos[c]))
+            bads.update(i for i in range(*self.section_pos[c]))
         # diagonal
         if diagonal:
             valid = lambda x, y: True
@@ -293,7 +301,7 @@ class HiC_data(dict):
         else:
             transform = lambda x, y, z: x
         # compute ratio
-        for k, v in self.iteritems():
+        for k, v in self.items():
             i, j = divmod(k, self.__size)
             if bisect(sections, i) != bisect(sections, j):
                 continue
@@ -335,8 +343,8 @@ class HiC_data(dict):
                 self, draw_hist=draw_hist, silent=silent,
                 savefig=savefig, bads=self.bads))
         if not silent:
-            print 'Found %d of %d columns with poor signal' % (len(self.bads),
-                                                               len(self))
+            print('Found %d of %d columns with poor signal' % (len(self.bads),
+                                                               len(self)))
 
     def sum(self, bias=None, bads=None):
         """
@@ -352,13 +360,13 @@ class HiC_data(dict):
         norm_sum = 0
         bads = bads or self.bads
         if bias:
-            for k, v in self.iteritems():
+            for k, v in self.items():
                 i, j = divmod(k, N)
                 if i in bads or j in bads:
                     continue
                 norm_sum += v / (bias[i] * bias[j])
         else:
-            for k, v in self.iteritems():
+            for k, v in self.items():
                 i, j = divmod(k, N)
                 if i in bads or j in bads:
                     continue
@@ -391,13 +399,13 @@ class HiC_data(dict):
             bias = dict((b, bias[b]**0.5) for b in bias)
         if factor:
             if not silent:
-                print 'rescaling to factor %d' % factor
-                print '  - getting the sum of the matrix'
+                print('rescaling to factor %d' % factor)
+                print('  - getting the sum of the matrix')
             # get the sum on half of the matrix
             norm_sum = self.sum(bias)
             if not silent:
-                print '    => %.3f' % norm_sum
-                print '  - rescaling biases'
+                print('    => %.3f' % norm_sum)
+                print('  - rescaling biases')
             # divide biases
             target = (norm_sum / float(len(self) * len(self) * factor))**0.5
             bias = dict([(b, bias[b] * target) for b in bias])
@@ -410,7 +418,7 @@ class HiC_data(dict):
 
         :param fnam: path to output file
         """
-        out = open(fnam, 'w')
+        out = open(fnam, 'wb')
 
         dump({'biases'    : self.bias,
               'decay'     : self.expected,
@@ -425,7 +433,7 @@ class HiC_data(dict):
 
         :param fnam: path to input pickle file
         """
-        biases = load(open(fnam))
+        biases = load(open(fnam,'rb'))
         if biases['resolution'] != self.resolution:
             raise Exception(('Error: resolution in Pickle (%d) does not match '
                              'the one of this HiC_data object (%d)') % (
@@ -436,8 +444,8 @@ class HiC_data(dict):
 
     def get_as_tuple(self):
         return tuple([self[i, j]
-                      for j in xrange(len(self))
-                      for i in xrange(len(self))])
+                      for j in range(len(self))
+                      for i in range(len(self))])
 
     def write_coord_table(self, fname, focus=None, diagonal=True,
                           normalized=False, format='BED'):
@@ -469,7 +477,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:
@@ -492,10 +500,10 @@ class HiC_data(dict):
                                           normalized=normalized)
             pair_string = '%s\t%s\t%f\n' if normalized else '%s\t%s\t%d\n'
             for nrow, row in enumerate(rownam, 1):
-                line = iter_rows.next()
+                line = next(iter_rows)
                 iter_cols = iter(line)
                 for col in rownam[nrow:]:
-                    val = iter_cols.next()
+                    val = next(iter_cols)
                     if not val:
                         continue
                     out.write(pair_string % (row, col, val))
@@ -519,10 +527,10 @@ class HiC_data(dict):
             pair_string = '%s\t%s,%f\t%d\t.\n' if normalized else '%s\t%s,%d\t%d\t.\n'
             count = 1
             for nrow, row in enumerate(rownam, 1):
-                line = iter_rows.next()
+                line = next(iter_rows)
                 iter_cols = iter(line)
                 for col in colnam[nrow:]:
-                    val = iter_cols.next()
+                    val = next(iter_cols)
                     if not val:
                         continue
                     out.write(pair_string % (row, col, val, count))
@@ -542,28 +550,28 @@ class HiC_data(dict):
                             'you need to install h5py\n')
         if normalized and not self.bias:
             raise Exception('ERROR: data not normalized yet')
-        if not all(isinstance(val, int) for _, val in self.iteritems()):
+        if not all(isinstance(val, int) for _, val in self.items()):
             raise Exception('ERROR: raw hic data (integer values) is needed for cooler format')
         if self.chromosomes:
             if len(self.chromosomes) > 1:
                 sections = OrderedDict((key,val*self.resolution)
-                                       for key, val in self.chromosomes.iteritems())
+                                       for key, val in self.chromosomes.items())
             else: # maybe part of a matrix
                 sections = {next(iter(self.chromosomes)): self.__size*self.resolution}
         else: # maybe part of a matrix
             sections = {"Unknown": self.__size*self.resolution}
 
-        out = cooler_file(fname, self.resolution, sections, sections.keys())
+        out = cooler_file(fname, self.resolution, sections, list(sections.keys()))
         out.create_bins()
         out.prepare_matrix()
-        for key, value in self.iteritems():
+        for key, value in self.items():
             row, col = key // self.__size, key % self.__size
             if row > col: # only upper triangular
                 continue
             out.write_iter(0, row, col, value)
         out.close()
         if normalized:
-            weights = [self.bias[i] if not i in self.bads else 0. for i in xrange(self.__size)]
+            weights = [self.bias[i] if not i in self.bads else 0. for i in range(self.__size)]
             out.write_weights(weights, weights)
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
@@ -589,7 +597,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:
@@ -600,7 +608,7 @@ class HiC_data(dict):
             end1   = end2   = len(self)
         out = open(fname, 'w')
         out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                               for k in self.bads.keys()
+                                               for k in list(self.bads.keys())
                                                if start1 <= k <= end1])))
         rownam = ['%s\t%d-%d' % (k[0],
                                  k[1] * self.resolution + 1,
@@ -643,24 +651,24 @@ class HiC_data(dict):
         if normalized:
             if diagonal:
                 matrix = [[self[i, j] / self.bias[i] / self.bias[j]
-                           for i in xrange(start2, end2)]
-                          for j in xrange(start1, end1)]
+                           for i in range(start2, end2)]
+                          for j in range(start1, end1)]
             else:
                 matrix = [[self[i, j] / self.bias[i] / self.bias[j]
-                           for i in xrange(start2, end2)]
-                          for j in xrange(start1, end1)]
+                           for i in range(start2, end2)]
+                          for j in range(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(matrix)):
+                    for i in range(len(matrix)):
                         matrix[i][i] = 0
         else:
             if diagonal:
-                matrix = [[self[i, j] for i in xrange(start2, end2)]
-                          for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in range(start2, end2)]
+                          for j in range(start1, end1)]
             else:
-                matrix = [[self[i, j] for i in xrange(start2, end2)]
-                          for j in xrange(start1, end1)]
+                matrix = [[self[i, j] for i in range(start2, end2)]
+                          for j in range(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(len(matrix)):
+                    for i in range(len(matrix)):
                         matrix[i][i] = 1 if matrix[i][i] else 0
 
         if masked:
@@ -688,13 +696,13 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0].split(':')[0]]
                 start2, end2 = self.section_pos[focus[1].split(':')[0]]
                 if ':' in focus[0]:
                     pos = focus[0].split(':')[1]
                     try:
-                        pos1, pos2 = [int(p) / self.resolution
+                        pos1, pos2 = [int(p) // self.resolution
                                       for p in pos.split('-')]
                     except ValueError:
                         raise Exception('ERROR: should be in format "chr3:10000:20000"')
@@ -702,7 +710,7 @@ class HiC_data(dict):
                 if ':' in focus[1]:
                     pos = focus[0].split(':')[1]
                     try:
-                        pos1, pos2 = [int(p) / self.resolution
+                        pos1, pos2 = [int(p) // self.resolution
                                       for p in pos.split('-')]
                     except ValueError:
                         raise Exception('ERROR: should be in format "chr3:10000:20000"')
@@ -712,7 +720,7 @@ class HiC_data(dict):
                 if ':' in focus:
                     pos = focus.split(':')[1]
                     try:
-                        pos1, pos2 = [int(p) / self.resolution
+                        pos1, pos2 = [int(p) // self.resolution
                                       for p in pos.split('-')]
                     except ValueError:
                         raise Exception('ERROR: should be in format "chr3:10000:20000"')
@@ -793,7 +801,7 @@ class HiC_data(dict):
         """
         if not self.bads:
             if kwargs.get('verbose', False):
-                print 'Filtering bad columns %d' % 99
+                print('Filtering bad columns %d' % 99)
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
                                 by_mean=False, silent=True)
             if len(self.bads) == len(self):
@@ -802,11 +810,11 @@ class HiC_data(dict):
                      'filtering disabled')
         if not self.expected:
             if kwargs.get('verbose', False):
-                print 'Normalizing by expected values'
+                print('Normalizing by expected values')
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
             if kwargs.get('verbose', False):
-                print 'Normalizing by ICE (1 round)'
+                print('Normalizing by ICE (1 round)')
             self.normalize_hic(iterations=0,
                                silent=not kwargs.get('verbose', False))
         if savefig:
@@ -818,7 +826,7 @@ class HiC_data(dict):
         if suffix != '':
             suffix = '_' + suffix
         # parse bed file
-        if rich_in_A and isinstance(rich_in_A, str):
+        if rich_in_A and isinstance(rich_in_A, basestring):
             rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
 
         cmprts = {}
@@ -831,14 +839,14 @@ class HiC_data(dict):
             if crms and sec not in crms:
                 continue
             if kwargs.get('verbose', False):
-                print 'Processing chromosome', sec
+                print('Processing chromosome', sec)
             # get chromosomal matrix
             try:
                 matrix = [[(float(self[i,j]) / self.expected[sec][abs(j-i)]
                             / self.bias[i] / self.bias[j])
-                        for i in xrange(*self.section_pos[sec])
+                        for i in range(*self.section_pos[sec])
                         if not i in self.bads]
-                        for j in xrange(*self.section_pos[sec])
+                        for j in range(*self.section_pos[sec])
                         if not j in self.bads]
             except KeyError:
                 if sec in self.expected and not self.expected[sec]:
@@ -846,9 +854,9 @@ class HiC_data(dict):
                 else:
                     matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                                 / self.bias[i] / self.bias[j])
-                            for i in xrange(*self.section_pos[sec])
+                            for i in range(*self.section_pos[sec])
                             if not i in self.bads]
-                            for j in xrange(*self.section_pos[sec])
+                            for j in range(*self.section_pos[sec])
                             if not j in self.bads]
             if not matrix: # MT chromosome will fall there
                 warn('Chromosome %s is probably MT :)' % (sec))
@@ -856,8 +864,8 @@ class HiC_data(dict):
                 count += 1
                 continue
             # enforce symmetry
-            for i in xrange(len(matrix)):
-                for j in xrange(i+1, len(matrix)):
+            for i in range(len(matrix)):
+                for j in range(i+1, len(matrix)):
                     matrix[i][j] = matrix[j][i]
             # compute correlation coefficient
             try:
@@ -876,7 +884,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in self.bads.keys()
+                                                       for k in list(self.bads.keys())
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,
@@ -887,7 +895,7 @@ class HiC_data(dict):
                 length = self.section_pos[sec][1] - self.section_pos[sec][0]
                 empty = 'NaN\t' * (length - 1) + 'NaN\n'
                 badrows = 0
-                for row, posx in enumerate(xrange(self.section_pos[sec][0],
+                for row, posx in enumerate(range(self.section_pos[sec][0],
                                                   self.section_pos[sec][1])):
                     if posx in self.bads:
                         out.write(rownam.pop(0) + '\t' + empty)
@@ -895,7 +903,7 @@ class HiC_data(dict):
                         continue
                     vals = []
                     badcols = 0
-                    for col, posy in enumerate(xrange(self.section_pos[sec][0],
+                    for col, posy in enumerate(range(self.section_pos[sec][0],
                                                       self.section_pos[sec][1])):
                         if posy in self.bads:
                             vals.append('NaN')
@@ -917,7 +925,7 @@ class HiC_data(dict):
                 continue
             # define breakpoints, and store first EVs
             n_first = [list(evect[:, -i])
-                       for i in xrange(1, (max_ev + 1)
+                       for i in range(1, (max_ev + 1)
                                        if max_ev else len(matrix))]
             ev_num = (ev_index[count] - 1) if ev_index else 0
             breaks = [i for i, (a, b) in
@@ -934,7 +942,7 @@ class HiC_data(dict):
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
                  for b in bads]
             _ = [matrix[i].insert(b, float('nan'))
-                 for b in bads for i in xrange(len(n_first[0]))]
+                 for b in bads for i in range(len(n_first[0]))]
             for b in bads:  # they are sorted
                 for brk in breaks:
                     if brk['start'] >= b:
@@ -967,7 +975,7 @@ class HiC_data(dict):
                 richA_stats[sec] = r_stat
                 # switch sign and normalize
                 sign = 1 if r_stat > 0 else -1
-            for i in xrange(len(n_first)):
+            for i in range(len(n_first)):
                 n_first[i] = [sign * v for v in n_first[i]]
             # store it
             ev_nums[sec] = ev_num + 1
@@ -1013,7 +1021,7 @@ class HiC_data(dict):
 
         self.compartments = cmprts
         if savedata:
-            self.write_compartments(savedata, chroms=self.compartments.keys(),
+            self.write_compartments(savedata, chroms=list(self.compartments.keys()),
                                     ev_nums=ev_nums)
 
         if savedir:
@@ -1101,7 +1109,7 @@ class HiC_data(dict):
         """
         if not self.bads:
             if kwargs.get('verbose', False):
-                print 'Filtering bad columns %d' % 99
+                print('Filtering bad columns %d' % 99)
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
                                 by_mean=False, silent=True)
             if len(self.bads) == len(self):
@@ -1110,11 +1118,11 @@ class HiC_data(dict):
                      'filtering disabled')
         if not self.expected:
             if kwargs.get('verbose', False):
-                print 'Normalizing by expected values'
+                print('Normalizing by expected values')
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
             if kwargs.get('verbose', False):
-                print 'Normalizing by ICE (1 round)'
+                print('Normalizing by ICE (1 round)')
             self.normalize_hic(iterations=0,
                                silent=not kwargs.get('verbose', False))
         if savefig:
@@ -1136,20 +1144,20 @@ class HiC_data(dict):
             if crms and sec not in crms:
                 continue
             if kwargs.get('verbose', False):
-                print 'Processing chromosome', sec
+                print('Processing chromosome', sec)
             matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                        / self.bias[i] / self.bias[j])
-                      for i in xrange(*self.section_pos[sec])
+                      for i in range(*self.section_pos[sec])
                        if not i in self.bads]
-                     for j in xrange(*self.section_pos[sec])
+                     for j in range(*self.section_pos[sec])
                       if not j in self.bads]
             if not matrix: # MT chromosome will fall there
                 warn('Chromosome %s is probably MT :)' % (sec))
                 cmprts[sec] = []
                 count += 1
                 continue
-            for i in xrange(len(matrix)):
-                for j in xrange(i+1, len(matrix)):
+            for i in range(len(matrix)):
+                for j in range(i+1, len(matrix)):
                     matrix[i][j] = matrix[j][i]
             try:
                 matrix = [list(m) for m in corrcoef(matrix)]
@@ -1165,7 +1173,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in self.bads.keys()
+                                                       for k in list(self.bads.keys())
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,
@@ -1176,7 +1184,7 @@ class HiC_data(dict):
                 length = self.section_pos[sec][1] - self.section_pos[sec][0]
                 empty = 'NaN\t' * (length - 1) + 'NaN\n'
                 badrows = 0
-                for row, posx in enumerate(xrange(self.section_pos[sec][0],
+                for row, posx in enumerate(range(self.section_pos[sec][0],
                                                   self.section_pos[sec][1])):
                     if posx in self.bads:
                         out.write(rownam.pop(0) + '\t' + empty)
@@ -1184,7 +1192,7 @@ class HiC_data(dict):
                         continue
                     vals = []
                     badcols = 0
-                    for col, posy in enumerate(xrange(self.section_pos[sec][0],
+                    for col, posy in enumerate(range(self.section_pos[sec][0],
                                                       self.section_pos[sec][1])):
                         if posy in self.bads:
                             vals.append('NaN')
@@ -1203,7 +1211,7 @@ class HiC_data(dict):
                 count += 1
                 continue
             index = ev_index[count] if ev_index else 1
-            n_first = [list(evect[:, -i]) for i in xrange(1, max_ev + 1)]
+            n_first = [list(evect[:, -i]) for i in range(1, max_ev + 1)]
             for ev_num in range(index, max_ev + 1):
                 first = list(evect[:, -ev_num])
                 breaks = [i for i, (a, b) in
@@ -1241,7 +1249,7 @@ class HiC_data(dict):
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
                  for b in bads]
             _ = [matrix[i].insert(b, float('nan'))
-                 for b in bads for i in xrange(len(first))]
+                 for b in bads for i in range(len(first))]
             breaks = [i for i, (a, b) in
                       enumerate(zip(first[1:], first[:-1]))
                       if a * b < 0] + [len(first) - 1]
@@ -1267,15 +1275,15 @@ class HiC_data(dict):
                             verbose=kwargs.get('verbose', False),
                             n_clust=n_clust)
                         gammas[gamma] = scorett, tt, prop
-                    gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
+                    gamma = min(list(gammas.keys()), key=lambda k: gammas[k][0])
                     if gammas[gamma][0] - gammas[gamma][1] > 7:
-                        print (' WARNING: minimum showing very low '
+                        print( ' WARNING: minimum showing very low '
                                'intermeagling of A/B compartments, trying '
                                'with 3 clusters, for chromosome %s', sec)
                         gammas = {}
                         continue
                     if kwargs.get('verbose', False):
-                        print '   ====>  minimum:', gamma
+                        print('   ====>  minimum:', gamma)
                     break
                 _ = _cluster_ab_compartments(float(gamma)/100, matrix, breaks,
                                           cmprts[sec], rich_in_A, save=True,
@@ -1330,7 +1338,7 @@ class HiC_data(dict):
                 beg, end = self.section_pos[sec]
                 bads = [k - beg for k in self.bads if beg <= k <= end]
                 if kwargs.get('verbose', False):
-                    print 'Chromosome', sec
+                    print('Chromosome', sec)
                 # print 'CMPRTS before   ', sec, cmprts[sec]
                 n_states, breaks = _hmm_refine_compartments(
                     x[sec], models, bads, kwargs.get('verbose', False))
@@ -1386,7 +1394,7 @@ class HiC_data(dict):
                         comp['type'] = 'I'
         self.compartments = cmprts
         if savedata:
-            self.write_compartments(savedata, chroms=self.compartments.keys(),
+            self.write_compartments(savedata, chroms=list(self.compartments.keys()),
                                     ev_nums=ev_nums)
         return firsts
 
@@ -1404,7 +1412,7 @@ class HiC_data(dict):
             if rich_in_A:
                 beg1, end1 = cmprt['start'], cmprt['end'] + 1
                 sec_matrix = [rich_in_A.get(sec, {None: 0}).get(i, 0)
-                              for i in xrange(beg1, end1)
+                              for i in range(beg1, end1)
                               if not i in self.bads]
                 try:
                     cmprt['dens'] = float(sum(sec_matrix)) / len(sec_matrix)
@@ -1417,21 +1425,21 @@ class HiC_data(dict):
                                                                                           # len(self), len(self.expected))
                 if 'diagonal' in how:
                     sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
-                                  for i in xrange(beg1, end1) if not i in self.bads]
+                                  for i in range(beg1, end1) if not i in self.bads]
                 else: #if 'compartment' in how:
                     sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
-                                  for i in xrange(beg1, end1) if not i in self.bads
-                                  for j in xrange(beg1, end1) if not j in self.bads]
+                                  for i in range(beg1, end1) if not i in self.bads
+                                  for j in range(beg1, end1) if not j in self.bads]
                 if '/compartment' in how: # diagonal / compartment
                     sec_column = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
-                                  for i in xrange(beg1, end1) if not i in self.bads
-                                  for j in xrange(beg1, end1) if not j in self.bads]
+                                  for i in range(beg1, end1) if not i in self.bads
+                                  for j in range(beg1, end1) if not j in self.bads]
                 elif '/column' in how:
                     sec_column = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
-                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for i in range(beg1, end1) if not i in self.bads
                                   for j in range(beg, end)
                                   if not j in self.bads]
                 else:
@@ -1474,7 +1482,7 @@ class HiC_data(dict):
            to chromosome name will disappear in non default case)
         """
         out = open(savedata, 'w')
-        sections = chroms if chroms else self.compartments.keys()
+        sections = chroms if chroms else list(self.compartments.keys())
         if ev_nums:
             for sec in sections:
                 try:
@@ -1521,7 +1529,7 @@ class HiC_data(dict):
                     start1, end1, start2, end2 = focus
                     start1 -= 1
                     start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+            elif isinstance(focus, tuple) and isinstance(focus[0], basestring):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
             else:
@@ -1531,36 +1539,36 @@ class HiC_data(dict):
             start1 = start2 = 0
             end1   = end2   = siz
         if normalized:
-            for i in xrange(start2, end2):
+            for i in range(start2, end2):
                 # if bad column:
                 if i in self.bads:
-                    yield [0.0 for j in xrange(start1, end1)]
+                    yield [0.0 for j in range(start1, end1)]
                 # if we want the diagonal, or we don't but are looking at a
                 # region that is not symmetric
                 elif diagonal or start1 != start2:
                     yield [self[i, j] / self.bias[i] / self.bias[j]
-                           for j in xrange(start1, end1)]
+                           for j in range(start1, end1)]
                 # diagonal replaced by zeroes
                 else:
                     yield ([self[i, j] / self.bias[i] / self.bias[j]
-                            for j in xrange(start1, i)] +
+                            for j in range(start1, i)] +
                            [0.0] +
                            [self[i, j] / self.bias[i] / self.bias[j]
-                            for j in xrange(i + 1, end1)])
+                            for j in range(i + 1, end1)])
         else:
-            for i in xrange(start2, end2):
+            for i in range(start2, end2):
                 # if bad column:
                 if i in self.bads:
-                    yield [0 for j in xrange(start1, end1)]
+                    yield [0 for j in range(start1, end1)]
                 # if we want the diagonal, or we don't but are looking at a
                 # region that is not symmetric
                 elif diagonal or start1 != start2:
-                    yield [self[i, j] for j in xrange(start1, end1)]
+                    yield [self[i, j] for j in range(start1, end1)]
                 # diagonal replaced by zeroes
                 else:
-                    yield ([self[i, j] for j in xrange(start1, i)] +
+                    yield ([self[i, j] for j in range(start1, i)] +
                            [0] +
-                           [self[i, j] for j in xrange(i + 1, end1)])
+                           [self[i, j] for j in range(i + 1, end1)])
 
 
 def _hmm_refine_compartments(xsec, models, bads, verbose):
@@ -1571,15 +1579,15 @@ def _hmm_refine_compartments(xsec, models, bads, verbose):
         E, pi, T = models[n]
         probs = gaussian_prob(xsec, E)
         pathm, llm = best_path(probs, pi, T)
-        pathm = asarray(map(float, pathm))
+        pathm = asarray(list(map(float, pathm)))
         df = n**2 - n + n * 2 + n - 1
         len_seq = len(pathm)
         lrt = gammaincc((df - prevdf) / 2., (llm - prevll) / 2.)
         bic = -2 * llm + df * nplog(len_seq)
         aic = 2 * df - 2 * llm
         if verbose:
-            print 'Ll for %d states (%d df): %4.0f AIC: %4.0f BIC: %4.0f LRT=%f'% (
-                n, df, llm, aic, bic, lrt)
+            print('Ll for %d states (%d df): %4.0f AIC: %4.0f BIC: %4.0f LRT=%f'% (
+                n, df, llm, aic, bic, lrt))
         prevdf = df
         prevll = llm
         results[n] = {'AIC': aic,
@@ -1608,8 +1616,8 @@ def _training(x, n, verbose):
     define default emission transition and initial states, and train the hmm
     """
     pi = [0.5 - ((n - 2) * 0.05)**2 if i == 0 or i == n - 1 else ((n - 2)*0.05)**2*2 / (n - 2) for i in range(n)]
-    T = [[0.9 if i==j else 0.1/(n-1) for i in xrange(n)] for j in xrange(n)]
-    E =  asarray(zip(linspace(-1, 1, n), [1./n for _ in range(n)]))
+    T = [[0.9 if i==j else 0.1/(n-1) for i in range(n)] for j in range(n)]
+    E =  asarray(list(zip(linspace(-1, 1, n), [1./n for _ in range(n)])))
 
     # normalize values of the first eigenvector
     for c in x:
@@ -1617,7 +1625,7 @@ def _training(x, n, verbose):
         this_std  = std (x[c])
         x[c] = [v - this_mean for v in x[c]]
         x[c] = [v / this_std  for v in x[c]]
-    train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=1000)
+    train(pi, T, E, list(x.values()), verbose=verbose, threshold=1e-6, n_iter=1000)
     return E, pi, T
 
 def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
@@ -1628,17 +1636,17 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
     func = lambda x: -abs(x)**gamma / x
     funczero = lambda x: 0.0
     # calculate distance_matrix
-    dist_matrix = [[0 for _ in xrange(len(breaks))]
-                   for _ in xrange(len(breaks))]
+    dist_matrix = [[0 for _ in range(len(breaks))]
+                   for _ in range(len(breaks))]
     scores = {}
     for k, cmprt in enumerate(cmprtsec):
         beg1, end1 = cmprt['start'], cmprt['end'] + 1
         diff1 = end1 - beg1
         scores[(k,k)] = dist_matrix[k][k] = -1
-        for l in xrange(k + 1, len(cmprtsec)):
+        for l in range(k + 1, len(cmprtsec)):
             beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end'] + 1
-            val = nansum([matrix[i][j] for i in xrange(beg1, end1)
-                          for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
+            val = nansum([matrix[i][j] for i in range(beg1, end1)
+                          for j in range(beg2, end2)]) / (end2 - beg2) / diff1
             try:
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = func(val)
             except ZeroDivisionError:

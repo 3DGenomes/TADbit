@@ -5,6 +5,7 @@ information needed
  - path working directory with parsed reads
 
 """
+from __future__ import print_function
 
 from argparse                        import HelpFormatter
 from string                          import ascii_letters
@@ -54,31 +55,31 @@ def run(opts):
             del counts_multis
         else:
             # compute the intersection of the two read ends
-            print 'Getting intersection between read 1 and read 2'
+            print('Getting intersection between read 1 and read 2')
             count, multiples = get_intersection(fname1, fname2, reads,
                                                 compress=opts.compress_input)
 
         # compute insert size
-        print 'Get insert size...'
+        print('Get insert size...')
         hist_path = path.join(opts.workdir,
                               'histogram_fragment_sizes_%s.pdf' % param_hash)
         median, max_f, mad = fragment_size(
             reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
             savefig=hist_path)
 
-        print '  - median insert size =', median
-        print '  - double median absolution of insert size =', mad
-        print '  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f
+        print('  - median insert size =', median)
+        print('  - double median absolution of insert size =', mad)
+        print('  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f)
 
         max_mole = max_f # pseudo DEs
         min_dist = max_f + mad # random breaks
-        print ('   Using the maximum continuous fragment size'
+        print('   Using the maximum continuous fragment size'
                '(%d bp) to check '
-               'for pseudo-dangling ends') % max_mole
-        print ('   Using maximum continuous fragment size plus the MAD '
-               '(%d bp) to check for random breaks') % min_dist
+               'for pseudo-dangling ends' % max_mole)
+        print('   Using maximum continuous fragment size plus the MAD '
+               '(%d bp) to check for random breaks' % min_dist)
 
-        print "identify pairs to filter..."
+        print("identify pairs to filter...")
         masked = filter_reads(reads, max_molecule_length=max_mole,
                               over_represented=opts.over_represented,
                               max_frag_size=opts.max_frag_size,
@@ -99,7 +100,7 @@ def run(opts):
                     samtools=opts.samtools)
 
     finish_time = time.localtime()
-    print median, max_f, mad
+    print(median, max_f, mad)
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                outbam + '.bam', hist_path, median, max_f, mad, launch_time, finish_time)
@@ -181,7 +182,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                                     for k in sorted(multiples)]),
                    median, mad, max_f))
         except lite.IntegrityError:
-            print 'WARNING: already filtered'
+            print('WARNING: already filtered')
             if opts.force:
                 cur.execute(
                     'delete from INTERSECTION_OUTPUTs where PATHid = %d' % (
@@ -210,7 +211,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                        masked[f]['name'], masked[f]['reads'],
                        'True' if nf in opts.apply else 'False', jobid))
             except lite.IntegrityError:
-                print 'WARNING: already filtered'
+                print('WARNING: already filtered')
                 if opts.force:
                     cur.execute(
                         'delete from FILTER_OUTPUTs where PATHid = %d' % (
@@ -232,7 +233,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
             """ % (get_path_id(cur, mreads, opts.workdir),
                    'valid-pairs', n_valid_pairs, '', jobid))
         except lite.IntegrityError:
-            print 'WARNING: already filtered'
+            print('WARNING: already filtered')
             if opts.force:
                 cur.execute(
                     'delete from FILTER_OUTPUTs where PATHid = %d' % (
@@ -360,7 +361,7 @@ def populate_args(parser):
 
     filter_.add_argument('--apply', dest='apply', nargs='+',
                          type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                         choices = range(1, 11),
+                         choices = list(range(1, 11)),
                          help=("""[%(default)s] Use filters to define a set os valid pair of reads
                          e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" +
                                "correspond to: %s" % (', '.join(
@@ -452,7 +453,7 @@ def check_options(opts):
 
     # check resume
     if not path.exists(opts.workdir) and opts.resume:
-        print 'WARNING: can use output files, found, not resuming...'
+        print('WARNING: can use output files, found, not resuming...')
         opts.resume = False
 
     # sort filters

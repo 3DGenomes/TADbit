@@ -1,4 +1,6 @@
 
+from future import standard_library
+standard_library.install_aliases()
 from os import environ
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 
@@ -50,7 +52,7 @@ def get_dependencies_version(dico=False):
     try:
         from gem import executables
         out = Popen(executables['gem-mapper'], shell=True, stdout=PIPE,
-                    stderr=PIPE).communicate()
+                    stderr=PIPE, universal_newlines=True).communicate()
         versions['gem-mapper'] = out[1].split(' - ')[0].split('build ')[1]
     except:
         versions['gem-mapper'] = 'Not found'
@@ -66,7 +68,7 @@ def get_dependencies_version(dico=False):
         versions['matplotlib'] = 'Not found'
     try:
         mcl, _ = Popen(['mcl', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
+                         stderr=PIPE, universal_newlines=True).communicate()
         versions['MCL'] = mcl.split()[1]
     except:
         versions['MCL'] = 'Not found'
@@ -84,7 +86,7 @@ def get_dependencies_version(dico=False):
     #     versions['Chimera'] = 'Not found'
     try:
         uname, err = Popen(['uname', '-rom'], stdout=PIPE,
-                           stderr=PIPE).communicate()
+                           stderr=PIPE, universal_newlines=True).communicate()
         versions[' Machine'] = uname
     except:
         versions[' Machine'] = 'Not found'

@@ -3,6 +3,7 @@
 
 global aligner for Topologically Associated Domains
 """
+from __future__ import print_function
 from math import log
 
 
@@ -31,8 +32,8 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     dister = lambda x, y: log(1. / (abs(x - y) + 1))
     scores = _virgin_score(penalty, l_tads1, l_tads2)
     pen = penalty
-    for i in xrange(1, l_tads1):
-        for j in xrange(1, l_tads2):
+    for i in range(1, l_tads1):
+        for j in range(1, l_tads2):
             d_dist = dister(tads2[j], tads1[i])
             match  = d_dist + scores[i-1][j-1]
             insert = scores[i-1][j] + pen
@@ -50,7 +51,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     align2 = []
     i = l_tads1 -1
     j = l_tads2 -1
-    max_score = None
+    max_score = float('-inf')
     while i and j:
         score      = scores[i][j]
         if score > max_score:
@@ -80,7 +81,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
             j -= 1
         else:
             for scr in scores: 
-                print ' '.join(['%6s' % (round(y, 2)) for y in scr])
+                print(' '.join(['%6s' % (round(y, 2)) for y in scr]))
             raise Exception('Something  is failing and it is my fault...',
                             i, j, tads1[i], tads2[j])
     while i:
@@ -93,11 +94,11 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
         j -= 1
         
     if verbose:
-        print '\n Alignment:'
-        print 'TADS 1: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
-                                   for x in align1])
-        print 'TADS 2: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
-                                   for x in align2])
+        print('\n Alignment:')
+        print('TADS 1: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+                                   for x in align1]))
+        print('TADS 2: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+                                   for x in align2]))
     return [align1, align2], max_score
 
 
@@ -105,9 +106,9 @@ def _virgin_score(penalty, l_tads1, l_tads2):
     """
     creates empty matrix
     """
-    zeros    = [0.0 for _ in xrange(l_tads2)]
-    return [[penalty * j for j in xrange(l_tads2)]] + \
-           [[penalty * i] + zeros for i in xrange(1, l_tads1)]
+    zeros    = [0.0 for _ in range(l_tads2)]
+    return [[penalty * j for j in range(l_tads2)]] + \
+           [[penalty * i] + zeros for i in range(1, l_tads1)]
 
 
 def _equal(a, b, cut_off=1e-9):

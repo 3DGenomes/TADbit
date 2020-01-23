@@ -2,10 +2,13 @@
 26 Nov 2012
 
 """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from string                            import ascii_lowercase as letters
 from copy                              import deepcopy as copy
-from cPickle                           import load, dump
+from pickle                            import load, dump
 from random                            import random
 from math                              import sqrt
 from sys                               import stderr
@@ -16,12 +19,17 @@ from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
 from pytadbit.alignment                import Alignment, randomization_test
+from functools import reduce
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     stderr.write('matplotlib not found\n')
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def load_chromosome(in_f, fast=2):
     """
@@ -38,13 +46,14 @@ def load_chromosome(in_f, fast=2):
 
     TODO: remove first try/except type error... this is loading old experiments
     """
-    dico = load(open(in_f))
+    with open(in_f,'rb') as f_in_f:
+        dico = load(f_in_f)
     name = ''
     crm = Chromosome(dico['name'])
     try:
         exp_order = dico['experiment_order']
     except KeyError:
-        exp_order = dico['experiments'].keys()
+        exp_order = list(dico['experiments'].keys())
     for name in exp_order:
         xpr = Experiment(name, dico['experiments'][name]['resolution'],
                          no_warn=True)
@@ -83,9 +92,9 @@ def load_chromosome(in_f, fast=2):
         crm.species         = None
         crm.assembly        = None
         crm.description     = {}
-    if isinstance(dico['experiments'][name]['hi-c'], str) or fast != int(2):
+    if isinstance(dico['experiments'][name]['hi-c'], basestring) or fast != int(2):
         try:
-            dicp = load(open(in_f + '_hic'))
+            dicp = load(open(in_f + '_hic','rb'))
             for name in dico['experiments']:
                 crm.get_experiment(name).hic_data = dicp[name]['hi-c']
                 if fast != 1:
@@ -171,9 +180,8 @@ class Chromosome(object):
                  silent=False, **kw_descr):
         self.name             = name
         self.size             = self._given_size = self.r_size = chr_len
-        self.size             = ChromosomeSize(self.size)
         self.max_tad_size     = max_tad_size
-        self.r_size           = RelativeChromosomeSize(self.size)
+        self.r_size           = self.size
         self.forbidden        = {}  # only used for TAD alignment randomization
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
@@ -252,7 +260,7 @@ class Chromosome(object):
             end   = float(xpr.tads[pos]['end'])
             diff  = end - start
             if diff * xpr.resolution > self.max_tad_size:
-                forbidden += range(int(start), int(end+1))
+                forbidden += list(range(int(start), int(end+1)))
                 xpr.tads[pos]['score'] = -abs(xpr.tads[pos]['score'])
             else:
                 xpr.tads[pos]['score'] = abs(xpr.tads[pos]['score'])
@@ -266,7 +274,7 @@ class Chromosome(object):
             self._find_centromere(xpr)
         # add centromere as forbidden region:
         if self._centromere:
-            for pos in xrange(int(self._centromere[0]),
+            for pos in range(int(self._centromere[0]),
                               int(self._centromere[1])):
                 self.forbidden[pos] = 'Centromere'
         if not resized:
@@ -291,10 +299,10 @@ class Chromosome(object):
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
         """
         Save a Chromosome object to a file (it uses :py:func:`pickle.load` from
-        the :py:mod:`cPickle`). Once saved, the object can be loaded with
+        the :py:mod:`pickle`). Once saved, the object can be loaded with
         :func:`load_chromosome`.
 
-        :param out_f: path to the file where to store the :py:mod:`cPickle`
+        :param out_f: path to the file where to store the :py:mod:`pickle`
            object
         :param True fast: if True, skip Hi-C data and weights
         :param True divide: if True writes two pickles, one with what would
@@ -347,11 +355,11 @@ class Chromosome(object):
         dico['species']      = self.species
         dico['assembly']     = self.assembly
         dico['description']  = self.description
-        out = open(out_f, 'w')
+        out = open(out_f, 'wb')
         dump(dico, out)
         out.close()
         if not fast and divide:
-            out = open(out_f + '_hic', 'w')
+            out = open(out_f + '_hic', 'wb')
             dump(dicp, out)
             out.close()
 
@@ -417,7 +425,7 @@ class Chromosome(object):
         ali = Alignment(name, aligneds, xpers, consensus, score=score)
         self.alignment[name] = ali
         if verbose:
-            print self.alignment[name]
+            print(self.alignment[name])
         if not randomize:
             if get_score:
                 return ali, score, perc1, perc2
@@ -463,7 +471,7 @@ class Chromosome(object):
         """
         if not name:
             name = ''.join([letters[int(random() * len(letters))] \
-                            for _ in xrange(5)])
+                            for _ in range(5)])
             stderr.write('WARNING: No name provided, random name ' +
                          'generated: %s\n' % (name))
         if name in self.experiments:
@@ -540,7 +548,7 @@ class Chromosome(object):
             tmp = reduce(lambda x, y: x.__add__(y, silent=True), xprs)
             tmp.filter_columns(silent=kwargs.get('silent', False))
             remove = tuple([1 if i in tmp._zeros else 0
-                            for i in xrange(siz)])
+                            for i in range(siz)])
             result = tadbit(matrix,
                             remove=remove,
                             n_cpus=n_cpus, verbose=verbose,
@@ -552,14 +560,14 @@ class Chromosome(object):
             for other in xprs[1:]:
                 xpr._zeros = dict([(k, None) for k in
                                    set(xpr._zeros.keys()).intersection(
-                                       other._zeros.keys())])
+                                       list(other._zeros.keys()))])
             self.add_experiment(xpr)
             return
         for xpr in xprs:
             result = tadbit(
                 xpr.hic_data,
                 remove=tuple([1 if i in xpr._zeros else 0 for i in
-                              xrange(xpr.size)]),
+                              range(xpr.size)]),
                 n_cpus=n_cpus, verbose=verbose,
                 max_tad_size=max_tad_size,
                 no_heuristic=not heuristic, **kwargs)
@@ -575,13 +583,10 @@ class Chromosome(object):
         if not self._given_size:
             self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
                             self.size)
-            self.size   = ChromosomeSize(self.size)
         self._get_forbidden_region(xpr, resized=True)
 
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
-        self.r_size = RelativeChromosomeSize(self.size)
-
-
+        
     def tad_density_plot(self, name, axe=None, focus=None, extras=None,
                          normalized=True, savefig=None, shape='ellipse'):
         """
@@ -669,8 +674,8 @@ class Chromosome(object):
             scale = (8, 6)
         if notaxe and len(names) != 1:
             fig = plt.figure(figsize=(scale[0] * cols, scale[1] * rows))
-        for i in xrange(rows):
-            for j in xrange(cols):
+        for i in range(rows):
+            for j in range(cols):
                 if i * cols + j >= len(names):
                     break
                 if notaxe and len(names) != 1:
@@ -730,11 +735,11 @@ class Chromosome(object):
         beg, end = int(tad['start']), int(tad['end'])
         xpr = self.get_experiment(x_name)
         size = xpr.size
-        matrix = [[0 for _ in xrange(beg, end)]\
-                  for _ in xrange(beg, end)]
-        for i, tadi in enumerate(xrange(beg, end)):
+        matrix = [[0 for _ in range(beg, end)]\
+                  for _ in range(beg, end)]
+        for i, tadi in enumerate(range(beg, end)):
             tadi = tadi * size
-            for j, tadj in enumerate(xrange(beg, end)):
+            for j, tadj in enumerate(range(beg, end)):
                 if normed:
                     matrix[j][i] = xpr.norm[0][tadi + tadj]
                 else:
@@ -753,7 +758,7 @@ class Chromosome(object):
         """
         if not self.get_experiment(x_name).hic_data:
             raise Exception('No Hi-c data for %s experiment\n' % (x_name))
-        for name, ref in self.get_experiment(x_name).tads.iteritems():
+        for name, ref in self.get_experiment(x_name).tads.items():
             yield name, self.get_tad_hic(ref, x_name, normed=normed)
 
 
@@ -790,10 +795,10 @@ class Chromosome(object):
         # search for largest empty region of the chromosome
         best = (0, 0, 0)
         pos = 0
-        for pos, raw in enumerate(xrange(0, size * size, size)):
-            if sum([hic[i] for i in xrange(raw, raw + size)]) == 0 and not beg:
+        for pos, raw in enumerate(range(0, size * size, size)):
+            if sum([hic[i] for i in range(raw, raw + size)]) == 0 and not beg:
                 beg = float(pos)
-            if sum([hic[i] for i in xrange(raw, raw + size)]) != 0 and beg:
+            if sum([hic[i] for i in range(raw, raw + size)]) != 0 and beg:
                 end = float(pos)
                 if (end - beg) > best[0]:
                     best = ((end - beg), beg, end)
@@ -824,7 +829,7 @@ class Chromosome(object):
         else:
             self._centromere = [beg, end]
         # split TADs overlapping  with the centromere
-        if [True for t in tads.values() \
+        if [True for t in list(tads.values()) \
             if t['start'] < beg < t['end'] \
             and t['start'] < end < t['end']]:
             tad  = len(tads) + 1
@@ -854,7 +859,7 @@ class Chromosome(object):
                     tads[tad] = copy(tads[tad - 1 + plus])
                 tad -= 1
         # if tad includes centromere but starts in the same point
-        elif [True for t in tads.values() \
+        elif [True for t in list(tads.values()) \
               if t['start'] == beg and end < t['end']]:
             tad  = len(tads) + 1
             while tad > 1:
@@ -872,7 +877,7 @@ class Chromosome(object):
                     tads[tad] = copy(tads[tad - 1])
                 tad -= 1
         # if tad includes centromere but ends in the same point
-        elif [True for t in tads.values() \
+        elif [True for t in list(tads.values()) \
               if t['end'] == end and beg > t['start']]:
             tad  = len(tads) + 1
             plus = 0
@@ -990,23 +995,3 @@ class AlignmentDict(dict):
                 if nam == i:
                     return self[key]
             raise TypeError('Alignment %s not found\n' % i)
-
-
-class ChromosomeSize(int):
-    """
-    Simple class inheriting from integer designed to hold chromosome size in
-    base pairs
-    """
-    def __init__(self, thing):
-        super(ChromosomeSize, self).__init__(thing)
-
-
-class RelativeChromosomeSize(int):
-    """
-    Relative Chromosome size in base pairs. Equal to Chromosome size minus
-    forbidden regions (eg: the centromere)
-
-    Only used for TAD alignment randomization.
-    """
-    def __init__(self, thing):
-        super(RelativeChromosomeSize, self).__init__(thing)
