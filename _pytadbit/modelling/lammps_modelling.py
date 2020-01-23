@@ -439,7 +439,6 @@ def init_lammps_run(lmp, initial_conformation,
     # Sample thermodynamic info  (temperature, energy, pressure) #
     ##############################################################
     lmp.command("thermo %i" % CONFIG.thermo)
-    lmp.command("thermo_style   custom   step temp epair emol")
     
     ###############################
     # Stiffness term              #
@@ -765,7 +764,8 @@ def run_lammps(kseed, lammps_folder, run_time,
                keep_restart_out_dir2=None,
                restart_file=False,
                model_path=False, 
-               store_n_steps=10):
+               store_n_steps=10,
+               useColvars=False):
     """
     Generates one lammps model
     
@@ -832,6 +832,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param False model_path: path to/for pickle with finished model (name included)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
         restart_file != False
+    :param False useColvars: True if you want the restrains to be loaded from by colvars
     :returns: a LAMMPSModel object
 
     """
@@ -1029,20 +1030,38 @@ def run_lammps(kseed, lammps_folder, run_time,
             # Avoid to repeat calculations in case of restart
             if (doRestart == True) and (kincrease < restart_k_increase):
                 continue
-            generate_colvars_list(steering_pairs, kincrease+1)
 
-            # Adding the colvar option
-            #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
-            lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
+            if useColvars == True:
+                
+                generate_colvars_list(steering_pairs, kincrease+1)
 
-            if to_dump:
-                lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
-                lmp.command("thermo_modify norm no flush yes")
-                lmp.command("variable step equal step")
-                lmp.command("variable objfun equal f_4")
-                lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+                # Adding the colvar option
+                #print "fix 4 all colvars %s output %s" % (steering_pairs['colvar_output'],lammps_folder)
+                lmp.command("fix 4 all colvars %s output %sout" % (steering_pairs['colvar_output'],lammps_folder))
 
-            
+                if to_dump:
+                    # lmp.command("thermo_style   custom   step temp epair emol")
+                    lmp.command("thermo_style   custom   step temp epair emol pe ke etotal f_4")
+                    lmp.command("thermo_modify norm no flush yes")
+                    lmp.command("variable step equal step")
+                    lmp.command("variable objfun equal f_4")
+                    lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+
+            # will load the bonds directly into LAMMPS
+            else:
+                bond_list = generate_bond_list(steering_pairs)
+                for bond in bond_list:
+                    lmp.command(bond)
+
+                if to_dump:
+                    lmp.command("thermo_style   custom   step temp etotal")
+                    lmp.command("thermo_modify norm no flush yes")
+                    lmp.command("variable step equal step")
+                    lmp.command("variable objfun equal etotal")
+                    lmp.command('''fix 5 all print %s "${step} ${objfun}" file "%sobj_fun_from_time_point_%s_to_time_point_%s.txt" screen "no" title "#Timestep Objective_Function"''' % (steering_pairs['colvar_dump_freq'],lammps_folder,str(0), str(1)))
+
+
+
             #lmp.command("reset_timestep %i" % 0)
             resettime = 0
             runtime   = steering_pairs['timesteps_per_k']
@@ -1739,6 +1758,149 @@ harmonicWalls {
     outf.close()
         
     
+def generate_bond_list(steering_pairs):
+                            
+    """
+    Generates lammps bond commands
+    
+    :param dict steering_pairs: dictionary containing all the information to write down the
+      the input file for the colvars implementation
+   
+
+    """
+
+    # Getting the input
+    # The target_pairs could be also a list as the one in output of get_HiCbased_restraintsXXX
+    target_pairs                 = steering_pairs['colvar_input'] 
+    if 'kappa_vs_genomic_distance' in steering_pairs:
+        kappa_vs_genomic_distance    = steering_pairs['kappa_vs_genomic_distance']
+    if 'chrlength' in steering_pairs:
+        chrlength                    = steering_pairs['chrlength']
+    else:
+        chrlength                    = 0
+    if 'copies' in steering_pairs:
+        copies                       = steering_pairs['copies']
+    else:
+        copies                       = ['A']
+    kbin                         = 10000000
+    binsize                      = steering_pairs['binsize']
+    if 'percentage_enforced_contacts' in steering_pairs:
+        percentage_enforced_contacts = steering_pairs['perc_enfor_contacts']
+    else:
+        percentage_enforced_contacts = 100
+
+    # Here we extract from all the restraints only 
+    # a random sub-sample of percentage_enforced_contacts/100*totcolvars
+    rand_lines = []
+    i=0
+    j=0
+    if isinstance(target_pairs, str):    
+        totcolvars = linecount(target_pairs)
+        ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
+        
+        #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        rand_positions = sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sorted(rand_positions)
+    
+        tfp = open(target_pairs)
+        with open(target_pairs) as f:
+            for line in f:
+                line = line.strip()
+                if j >= ncolvars:
+                    break
+                if line.startswith('#'):
+                    continue
+             
+                cols_vals = line.split()
+                # Avoid to enforce restraints between the same bin
+                if cols_vals[1] == cols_vals[2]:
+                    continue
+            
+                if i == rand_positions[j]:
+                    rand_lines.append(line)
+                    j += 1
+                i += 1
+        tfp.close()
+    elif isinstance(target_pairs, HiCBasedRestraints):
+        
+        rand_lines = target_pairs.get_hicbased_restraints()
+        totcolvars = len(rand_lines)
+        ncolvars = int(totcolvars*(float(percentage_enforced_contacts)/100))
+        
+        #print "Number of enforced contacts = %i over %i" % (ncolvars,totcolvars)
+        rand_positions = sample(list(range(totcolvars)), ncolvars)
+        rand_positions = sorted(rand_positions)
+        
+        
+    else:
+        print "Unknown target_pairs"
+        return    
+    
+        
+    
+    #print rand_lines
+
+    seqdists = {}
+    poffset=0
+    outf = []  #### a list
+    for copy_nbr in copies:
+        i = 1
+        for line in rand_lines:
+            if isinstance(target_pairs, str):   
+                cols_vals = line.split()
+            else:
+                cols_vals = ['chr'] + line
+                
+            #print cols_vals
+            
+            if isinstance(target_pairs, HiCBasedRestraints) and cols_vals[3] != "Harmonic" and cols_vals[3] != "HarmonicLowerBound":
+                continue
+            
+            part1_start = int(cols_vals[1])*binsize
+            part1_end = (int(cols_vals[1])+1)*binsize
+            #print part1_start, part1_end
+
+            part2_start = int(cols_vals[2])*binsize
+            part2_end = (int(cols_vals[2])+1)*binsize
+            #print part2_start, part2_end
+
+            name = str(i)+copy_nbr  
+            seqdist = abs(part1_start-part2_start)
+            #print seqdist
+
+            region1 = cols_vals[0] + '_' + str(part1_start) + '_' + str(part1_end)
+            region2 = cols_vals[0] + '_' + str(part2_start) + '_' + str(part2_end)
+
+            particle1 = int(cols_vals[1]) + 1 + poffset
+            particle2 = int(cols_vals[2]) + 1 + poffset
+
+            seqdists[name] = seqdist
+
+            
+            if isinstance(target_pairs, HiCBasedRestraints):
+                # If the spring constant is zero we avoid to add the restraint!
+                if cols_vals[4] == 0.0:
+                    continue
+                 
+                centre                 = cols_vals[5]
+                kappa                  = cols_vals[4]*steering_pairs['k_factor']
+                 
+                bonType = None
+                if cols_vals[3] == "Harmonic":
+                    bonType = 'bond'
+                elif cols_vals[3] == "HarmonicLowerBound":
+                    bonType = 'lbond'
+
+                if bonType:
+                    outf.append('fix %s all restrain %s %d %d %f %f %f %f' %(
+                        name, bonType, particle1, particle2, kappa, kappa, 
+                        centre, centre))
+
+            
+            i += 1
+        poffset += chrlength
+
+    return outf
 
 ##########
 
