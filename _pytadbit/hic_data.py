@@ -557,7 +557,9 @@ class HiC_data(dict):
         out.create_bins()
         out.prepare_matrix()
         for key, value in self.iteritems():
-            row, col = round(key / self.__size), key % self.__size
+            row, col = key // self.__size, key % self.__size
+            if row > col: # only upper triangular
+                continue
             out.write_iter(0, row, col, value)
         out.close()
         if normalized:
