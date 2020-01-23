@@ -108,7 +108,7 @@ def run(opts):
 
     if opts.plot and not opts.force_plot:
         if opts.interactive:
-            max_size = 1500**2
+            max_size = 3500**2
         else:
             max_size = 5000**2
     else:
@@ -179,16 +179,23 @@ def run(opts):
                          'for matrices\n... skipping\n')
                     continue
                 raise
+
             b1, e1, b2, e2 = bin_coords
             b1, e1 = 0, e1 - b1
             b2, e2 = 0, e2 - b2
+
             if opts.row_names:
                 starts = [start1, start2]
                 ends = [end1, end2]
-                row_names = ((reg, p + 1 , p + opts.reso) for r, reg in enumerate(regions)
-                             for p in range(starts[r] if r < len(starts) and starts[r] else 0,
-                                            ends[r] if r < len(ends) and ends[r] else sections[reg],
-                                            opts.reso))
+                row_names = (
+                    (reg, p + 1 , p + opts.reso)
+                    for r, reg in enumerate(regions)
+                    for p in range(starts[r] if r < len(starts)
+                                   and starts[r] else 0,
+                                   ends[r] if r < len(ends)
+                                   and ends[r] else sections[reg],
+                                   opts.reso))
+
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
