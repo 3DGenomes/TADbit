@@ -45,10 +45,18 @@ def run(opts):
     if not opts.resume:
         mkdir(path.join(opts.workdir, '03_filtered_reads'))
 
-        # compute the intersection of the two read ends
-        print 'Getting intersection between read 1 and read 2'
-        count, multiples = get_intersection(fname1, fname2, reads,
-                                            compress=opts.compress_input)
+        if opts.fast_fragment:
+            reads = fname1
+            counts_multis = ['#' in line.split('\t')[0] for line in open(reads)]
+            count = len(counts_multis)
+            multiples = {}
+            multiples[1] = sum([count_mult for count_mult in counts_multis if count_mult])
+            del counts_multis
+        else:
+            # compute the intersection of the two read ends
+            print 'Getting intersection between read 1 and read 2'
+            count, multiples = get_intersection(fname1, fname2, reads,
+                                                compress=opts.compress_input)
 
         # compute insert size
         print 'Get insert size...'
@@ -160,13 +168,16 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
         add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
         try:
+            real_count = count
+            for mult in multiples:
+                real_count = real_count - multiples[mult] + multiples[mult]*((mult*(mult+1)) // 2)
             cur.execute("""
             insert into INTERSECTION_OUTPUTs
             (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
             values
             (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
-                   count, ' '.join(['%s:%d' % (k, multiples[k])
+                   real_count, ' '.join(['%s:%d' % (k, multiples[k])
                                     for k in sorted(multiples)]),
                    median, mad, max_f))
         except lite.IntegrityError:
@@ -235,8 +246,9 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                        'valid-pairs', n_valid_pairs, '', jobid))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
+        if not opts.fast_fragment:
+            print_db(cur, 'MAPPED_OUTPUTs')
+            print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
         print_db(cur, 'INTERSECTION_OUTPUTs')
         print_db(cur, 'FILTER_OUTPUTs')
@@ -262,8 +274,8 @@ def load_parameters_fromdb(opts):
         # get the JOBid of the parsing job
         if not opts.pathids:
             cur.execute("""
-            select distinct Id from PATHs
-            where Type = 'BED'
+            select distinct Id, Type from PATHs
+            where Type = 'BED' or Type = '2D_BED'
             """)
             pathids = cur.fetchall()
             if len(pathids) > 2:
@@ -271,21 +283,48 @@ def load_parameters_fromdb(opts):
                                 '(PATHids: %s), use "tadbit describe" and '
                                 'select corresponding PATHid with --pathids' % (
                                     ', '.join([str(j[0]) for j in pathids])))
+            if pathids[0][1] == '2D_BED':
+                opts.fast_fragment = True
+            if opts.fast_fragment and len(pathids) > 1:
+                raise Exception('ERROR: more than one possible input found'
+                                '(PATHids: %s), use "tadbit describe" and '
+                                'select corresponding PATHid with --pathids' % (
+                                    ', '.join([str(j[0]) for j in pathids])))
+
             pathids = [p[0] for p in pathids]
         else:
             pathids = opts.pathids
-        # fetch path to parsed BED files
-        cur.execute("""
-        select distinct Path from PATHs
-        where Id = %d or Id = %d
-        """ % (pathids[0], pathids[1]))
-        fname1, fname2 = [path.join(opts.workdir, e[0]) for e in cur.fetchall()]
-        if not path.exists(fname1):
-            if path.exists(fname1 + '.gz') and path.exists(fname2 + '.gz'):
-                fname1 += '.gz'
-                fname2 += '.gz'
-            else:
-                raise IOError('ERROR: unput file_handling does not exist')
+            if len(opts.pathids) < 2:
+                opts.fast_fragment = True
+        if opts.fast_fragment:
+            fname2 = None
+            # fetch path to intersected 2D BED file
+            cur.execute("""
+            select distinct Path, Type from PATHs
+            where Id = %d 
+            """ % (pathids[0]))
+            res_paths = cur.fetchall()
+            if not res_paths or res_paths[0][1] != '2D_BED':
+                raise Exception('No 2D BED file found with PATHid %d'%(pathids[0]))
+            fname1 = path.join(opts.workdir,res_paths[0][0])
+            if not path.exists(fname1):
+                if path.exists(fname1 + '.gz'):
+                    fname1 += '.gz'
+                else:
+                    raise IOError('ERROR: unput file_handling does not exist')
+        else:
+            # fetch path to parsed BED files
+            cur.execute("""
+            select distinct Path from PATHs
+            where Id = %d or Id = %d
+            """ % (pathids[0], pathids[1]))
+            fname1, fname2 = [path.join(opts.workdir, e[0]) for e in cur.fetchall()]
+            if not path.exists(fname1):
+                if path.exists(fname1 + '.gz') and path.exists(fname2 + '.gz'):
+                    fname1 += '.gz'
+                    fname2 += '.gz'
+                else:
+                    raise IOError('ERROR: unput file_handling does not exist')
 
     return fname1, fname2
 
@@ -372,8 +411,9 @@ def populate_args(parser):
                         action='store', default=None, nargs='+', type=int,
                         help='''Use as input data generated by a job under a given
                         pathids. Use tadbit describe to find out which.
-                        Needs one PATHid per read, first for read 1,
-                        second for read 2.''')
+                        To filter an intersected file produced with tadbit map 
+                        --fast_fragment only one PATHid is needed otherwise one
+                        per read is needed, first for read 1, second for read 2.''')
 
     glopts.add_argument('--compress_input', dest='compress_input',
                         action='store_true', default=False,
@@ -439,3 +479,5 @@ def check_options(opts):
             exit('WARNING: exact same job already computed, see JOBs table above')
         else:
             warn('WARNING: exact same job already computed, overwriting...')
+
+    opts.fast_fragment = False

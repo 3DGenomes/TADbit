@@ -141,8 +141,7 @@ def load_hic_data(opts, xnames):
                 xnorm[0][n] = xnorm[0][n] / factor
             crm.experiments[xnam].norm = xnorm
         if not xnorm:
-            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag,
-                                                 perc_zero=opts.perc_zeros,
+            crm.experiments[xnam].filter_columns(perc_zero=opts.perc_zeros,
                                                  min_count=int(opts.min_count))
             logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
@@ -472,8 +471,7 @@ def main():
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
-                               name + '_column_filtering.' + opts.fig_format),
-                           diagonal=not opts.nodiag)
+                               name + '_column_filtering.' + opts.fig_format))
     if (not opts.tad_only and "column filtering" in opts.analyze
         and not opts.analyze_only):
         out = open(os.path.join(opts.outdir, name ,
@@ -905,9 +903,6 @@ def get_options():
     glopts.add_argument('--norm', dest='norm', metavar="PATH", nargs='+',
                         type=str,
                         help='path to file(s) with normalizedHi-C data matrix.')
-    glopts.add_argument('--nodiag', dest='nodiag', action='store_true',
-                        help='''If the matrix does not contain self interacting
-                        bins (only zeroes in the diagonal)''')
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float,
                         help=('[%(default)s%%] maximum percentage of zeroes '
