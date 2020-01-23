@@ -345,7 +345,7 @@ class IMPoptimizer(object):
                             n_cpus=n_cpus, first=0,
                             values=self.values[i], container=self.container,
                             coords = self.coords,
-                            close_bins=self.close_bins, zeros=self.zeros,
+                            close_bins=self.close_bins, zeros=self.zeros[i],
                             use_HiC=use_HiC, use_confining_environment=use_confining_environment,
                             use_excluded_volume=use_excluded_volume,
                             single_particle_restraints=self.single_particle_restraints)
