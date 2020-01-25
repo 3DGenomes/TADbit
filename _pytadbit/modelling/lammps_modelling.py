@@ -222,8 +222,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                  remove_rstrn=remove_rstrn) for zs in zscores]
 
     run_time = 1000
-    ini_seed = randint(1,100000)
-
+    
     colvars = 'colvars.dat'
 
     steering_pairs = None
@@ -353,7 +352,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                     single_m['x'][i] *= sm_diameter
                     single_m['y'][i] *= sm_diameter
                     single_m['z'][i] *= sm_diameter
-
+                
                 lammps_model = LAMMPSmodel({ 'x'          : single_m['x'],
                                               'y'          : single_m['y'],
                                               'z'          : single_m['z'],
@@ -362,8 +361,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                                               'log_objfun' : single_m['log_objfun'],
                                               'radius'     : float(CONFIG.HiC['resolution'] * \
                                                                    CONFIG.HiC['scale'])/2,
-                                              'rand_init'  : str(ini_seed)})
-                # CHECK: ini_seed should be updated accoording to models inside each time point
+                                              'rand_init'  : str(sm_id+1+initial_seed)})
 
                 models[sm_id] = lammps_model
             for timepoint in xrange((len(HiCRestraints)-1)*timepoints):
