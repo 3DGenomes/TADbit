@@ -1891,7 +1891,7 @@ def generate_bond_list(steering_pairs):
 
                 if bonType:
                     outf.append('fix %s all restrain %s %d %d %f %f %f %f' %(
-                        name, bonType, particle1, particle2, kappa, kappa, 
+                        name, bonType, particle1, particle2, 0, kappa, 
                         centre, centre))
 
             
