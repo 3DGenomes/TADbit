@@ -54,10 +54,9 @@ def run(opts):
         opts.figsize = list(map(float, opts.figsize.split(',')))
 
     clean = True  # change for debug
-
     if opts.bam:
         mreads = path.realpath(opts.bam)
-        if not opts.biases and all(v !='raw' for v in opts.normalizations):
+        if not opts.biases and all(v != 'raw' for v in opts.normalizations):
             raise Exception('ERROR: external BAM input, should provide path to'
                             ' biases file.')
         biases = opts.biases
@@ -110,7 +109,7 @@ def run(opts):
 
     if opts.plot and not opts.force_plot:
         if opts.interactive:
-            max_size = 1500**2
+            max_size = 3500**2
         else:
             max_size = 5000**2
     else:
@@ -181,16 +180,23 @@ def run(opts):
                          'for matrices\n... skipping\n')
                     continue
                 raise
+
             b1, e1, b2, e2 = bin_coords
             b1, e1 = 0, e1 - b1
             b2, e2 = 0, e2 - b2
+
             if opts.row_names:
                 starts = [start1, start2]
                 ends = [end1, end2]
-                row_names = ((reg, p + 1 , p + opts.reso) for r, reg in enumerate(regions)
-                             for p in range(starts[r] if r < len(starts) and starts[r] else 0,
-                                            ends[r] if r < len(ends) and ends[r] else sections[reg],
-                                            opts.reso))
+                row_names = (
+                    (reg, p + 1 , p + opts.reso)
+                    for r, reg in enumerate(regions)
+                    for p in range(starts[r] if r < len(starts)
+                                   and starts[r] else 0,
+                                   ends[r] if r < len(ends)
+                                   and ends[r] else sections[reg],
+                                   opts.reso))
+
             if opts.matrix:
                 printime(' - Writing: %s' % norm)
                 fnam = '%s_%s_%s%s.mat' % (norm, name,
@@ -228,7 +234,8 @@ def run(opts):
                 matrix = ma.masked_array(matrix, m)
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s%s.%s' % (
-                    norm, name, nicer(opts.reso, sep=''),
+                    'nrm' if norm == 'norm' else norm[:3], name,
+                    nicer(opts.reso, sep=''),
                     ('_' + param_hash), '_tri' if opts.triangular else '',
                     opts.format)
                 out_plots[norm_string] = path.join(outdir, fnam)
@@ -478,7 +485,7 @@ def check_options(opts):
     except IOError:
         warn((""
               "\nWARNING:\n  new working directory created. It's ok... "
-              "but next time use TADbit from the beginning!! :)"))
+              "but next time use TADbit since the beginning!! :)"))
 
 
 def populate_args(parser):
@@ -545,7 +552,7 @@ def populate_args(parser):
 
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
-                        help='''Write text matrix in multiple columns (square). 
+                        help='''Write text matrix in multiple columns (square).
                         By defaults matrices are written in BED-like format (also
                         only way to get a raw matrix with all values including
                         the ones in masked columns).''')
@@ -557,7 +564,8 @@ def populate_args(parser):
 
     outopt.add_argument('--rownames', dest='row_names', action='store_true',
                         default=False,
-                        help='To store row names in the output text matrix.')
+                        help='''To store row names in the output text matrix.
+                        WARNING: when non-matrix, results in two extra columns''')
 
     pltopt.add_argument('--plot', dest='plot', action='store_true',
                         default=False,

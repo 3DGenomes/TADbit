@@ -85,6 +85,14 @@ def run(opts):
                                            tmpdir=path.join(opts.workdir, '00_merge'),
                                            ncpus=opts.cpus,
                                            filter_exclude=filter_exclude)
+
+        if opts.workdir1 and opts.workdir2:
+            masked1 = {'valid-pairs': {'count': 0}}
+            masked2 = {'valid-pairs': {'count': 0}}
+        else:
+            masked1 = {'valid-pairs': {'count': sum(hic_data1.values())}}
+            masked2 = {'valid-pairs': {'count': sum(hic_data2.values())}}
+
         decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
         eigen_corr_dat = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
@@ -114,6 +122,8 @@ def run(opts):
         decay_corr_fig = 'None'
         eigen_corr_dat = 'None'
         eigen_corr_fig = 'None'
+        valid_pairs1 = 0
+        valid_pairs2 = 0
 
         corr = eig_corr = 0
         bads = {}
@@ -123,31 +133,36 @@ def run(opts):
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s.bam' % (param_hash))
 
-    printime('  - Mergeing experiments')
-    system(samtools  + ' merge -@ %d %s %s %s' % (opts.cpus, outbam, mreads1, mreads2))
-    printime('  - Indexing new BAM file')
-    # check samtools version number and modify command line
-    version = LooseVersion([l.split()[1]
-                            for l in Popen(samtools, stderr=PIPE,
-                                           universal_newlines=True).communicate()[1].split('\n')
-                            if 'Version' in l][0])
-    if version >= LooseVersion('1.3.1'):
-        system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+    if not opts.skip_merge:
+        outbam = path.join(opts.workdir, '03_filtered_reads',
+                           'intersection_%s.bam' % (param_hash))
+        printime('  - Mergeing experiments')
+        system(samtools  + ' merge -@ %d %s %s %s' % (opts.cpus, outbam, mreads1, mreads2))
+        printime('  - Indexing new BAM file')
+        # check samtools version number and modify command line
+        version = LooseVersion([l.split()[1]
+                                for l in Popen(samtools, stderr=PIPE,
+                                               universal_newlines=True).communicate()[1].split('\n')
+                                if 'Version' in l][0])
+        if version >= LooseVersion('1.3.1'):
+            system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
+        else:
+            system(samtools  + ' index %s' % (outbam))
     else:
-        system(samtools  + ' index %s' % (outbam))
+        outbam = ''
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                 len(list(bads.keys())), ncols, scc, std, reprod,
                 eigen_corr_dat, eigen_corr_fig, outbam, corr, eig_corr,
-                biases1, biases2, launch_time, finish_time)
+                biases1, biases2, masked1, masked2, launch_time, finish_time)
     printime('\nDone.')
 
 
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                nbad_columns, ncolumns, scc, std, reprod,
                eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,
-               biases1, biases2, launch_time, finish_time):
+               biases1, biases2, masked1, masked2, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -241,7 +256,8 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         add_path(cur, opts.workdir2, 'WORKDIR2'   , jobid, opts.workdir)
         add_path(cur, mreads1      , 'EXT_HIC_BAM', jobid, opts.workdir)
         add_path(cur, mreads2      , 'EXT_HIC_BAM', jobid, opts.workdir)
-        add_path(cur, outbed       , 'HIC_BAM'    , jobid, opts.workdir)
+        if not opts.skip_merge:
+            add_path(cur, outbed   , 'HIC_BAM'    , jobid, opts.workdir)
 
         if opts.norm:
             add_path(cur, biases1      , 'BIASES'     , jobid, opts.workdir)
@@ -271,9 +287,10 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             w2path = cur.fetchall()[0][0]
         else:
             w2path = 0
-        cur.execute("select id from paths where path = '%s'" % (
-            path.relpath(outbed, opts.workdir)))
-        outbedid = cur.fetchall()[0][0]
+        if not opts.skip_merge:
+            cur.execute("select id from paths where path = '%s'" % (
+                path.relpath(outbed, opts.workdir)))
+            outbedid = cur.fetchall()[0][0]
         if not opts.skip_comparison:
             decay_corr = '-'.join(['%.1f' % (v)
                                    for v in corr[:10:2]]).replace('0.', '.')
@@ -281,12 +298,13 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                                    for v in eig_corr[:4]]).replace('0.', '.')
         else:
             decay_corr = eigen_corr = None
-        cur.execute("""
-        insert into MERGE_OUTPUTs
-        (Id  , JOBid, Wrkd1Path, Wrkd2Path, Bed1Path, Bed2Path, MergePath)
-        values
-        (NULL,    %d,        %d,        %d,       %d,       %d,        %d)
-        """ % (jobid,    w1path,    w2path,     bed1,     bed2,  outbedid))
+        if not opts.skip_merge:
+            cur.execute("""
+            insert into MERGE_OUTPUTs
+            (Id  , JOBid, Wrkd1Path, Wrkd2Path, Bed1Path, Bed2Path, MergePath)
+            values
+            (NULL,    %d,        %d,        %d,       %d,       %d,        %d)
+            """ % (jobid,    w1path,    w2path,     bed1,     bed2,  outbedid))
 
         if not opts.skip_comparison:
             cur.execute("""
@@ -296,7 +314,6 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             (NULL,    %d,        %d,           %d,         %d,     %f,  %f,      %f,       '%s',       '%s',        %d,        %d)
             """ % (jobid,  ncolumns, nbad_columns, opts.reso , reprod, scc,     std, decay_corr, eigen_corr,   biasid1,   biasid2))
 
-        masked1 = {'valid-pairs': {'count': 0}}
         if opts.workdir1:
             if 'tmpdb' in opts and opts.tmpdb:
                 # tmp file
@@ -317,7 +334,6 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                     masked1[name] = {'path': tmppath, 'count': count}
             if 'tmpdb' in opts and opts.tmpdb:
                 remove(dbfile1)
-        masked2 = {'valid-pairs': {'count': 0}}
         if opts.workdir2:
             if 'tmpdb' in opts and opts.tmpdb:
                 # tmp file
@@ -351,15 +367,20 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                     out.write(line)
                 add_path(cur, outmask, 'FILTER', jobid, opts.workdir)
             else:
-                outmask = outbed
-
+                if opts.skip_merge:
+                    outmask = 'NA'
+                else:
+                    outmask = outbed
+            try:
+                path_id = get_path_id(cur, outmask, opts.workdir)
+            except IndexError:
+                path_id = -1
             cur.execute("""
             insert into FILTER_OUTPUTs
             (Id  , PATHid, Name, Count, JOBid)
             values
             (NULL,     %d, '%s',  '%s',    %d)
-            """ % (get_path_id(cur, outmask, opts.workdir),
-                   f, masked1[f]['count'] + masked2[f]['count'], jobid))
+            """ % (path_id, f, masked1[f]['count'] + masked2[f]['count'], jobid))
 
         print_db(cur, 'PATHs')
         print_db(cur, 'JOBs')

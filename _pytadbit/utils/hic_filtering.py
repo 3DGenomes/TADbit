@@ -288,7 +288,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
     if verbose:
         print ('      -> defining window in number of bins to average values of\n'
                '         percentage of cis interactions')
-    nwins = min((1000, size / 10))
+    nwins = min((1000, size // 10))
     if nwins < 100:
         warn('WARNING: matrix probably too small to automatically filter out bins\n')
     win_size = 1
@@ -304,7 +304,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
         tmp_std = []
         tmp_med = []
         for k in range(int(size * beg), int(size * end),
-                        (int(size * end) - int(size * beg)) / nwins):
+                       (int(size * end) - int(size * beg)) // nwins):
             vals = sorted_prc[k:k + n]
             tmp_std.append(np.std(vals))
             tmp_med.append(np.median(vals))
@@ -411,7 +411,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
     # right
     cutoffR = None
     passed = 0
-    for cutoffR, (p, n) in enumerate(zip(errors_pos, errors_neg)[::-1]):
+    for cutoffR, (p, n) in enumerate(list(zip(errors_pos, errors_neg))[::-1]):
         cutoffR = size - cutoffR
         # print '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f' % (beg_pos, p, end_pos, beg_neg, n, end_neg)
         if (beg_pos < p < end_pos) and (beg_neg < n < end_neg):

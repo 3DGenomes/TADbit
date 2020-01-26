@@ -204,14 +204,17 @@ def _ascii_print_db(name, names, cols, rows, savedata):
 def _tsv_print_db(name, names, rows, savedata, append):
     if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
+        to_close = True
     else:
         out = savedata
+        to_close = False
     out.write('\t' + '\t'.join(names) + '\n')
     out.write(name)
     for row in rows:
         out.write('\t' + '\t'.join([str(v) for v in row]) + '\n')
     out.write('\n')
-    out.close()
+    if to_close:
+        out.close()
 
 
 def _rev_tsv_print_db(names, rows, savedata, append):

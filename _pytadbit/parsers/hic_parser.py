@@ -373,7 +373,6 @@ def _header_to_section(header, resolution):
     to create HiC_data objects. Also creates chromosomes, from the reads
     """
     sections = {}
-    sections = {}
     chromosomes = None
     if (isinstance(header, list)
         and isinstance(header[0], tuple)
