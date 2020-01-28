@@ -220,8 +220,10 @@ def _tsv_print_db(name, names, rows, savedata, append):
 def _rev_tsv_print_db(names, rows, savedata, append):
     if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
+        to_close = True
     else:
         out = savedata
+        to_close = False
     pos = names.index('Name')
     out.write('\t'.join([row[pos] for row in rows]) + '\n')
     for col in range(len(rows[pos])):
@@ -229,4 +231,5 @@ def _rev_tsv_print_db(names, rows, savedata, append):
             continue
         out.write('\t'.join([str(row[col]) for row in rows]) + '\n')
     out.write('\n')
-    out.close()
+    if to_close:
+        out.close()

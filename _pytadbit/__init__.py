@@ -38,7 +38,8 @@ def get_dependencies_version(dico=False):
             seed = IMP.kernel.random_number_generator()
         versions['IMP'] += ' (random seed indexed at 1 = %s)' % (seed)
     except ImportError:
-        versions['IMP'] = 'Not found'
+        pass
+        #  versions['IMP'] = 'Not found'
     try:
         import scipy
         versions['scipy'] = scipy.__version__
@@ -115,5 +116,5 @@ try:
     from pytadbit.modelling.impoptimizer import IMPoptimizer
 except ImportError:
     from warnings                  import warn
-    warn('IMP not found, check PYTHONPATH\n')
+    # warn('IMP not found, check PYTHONPATH\n')
 
