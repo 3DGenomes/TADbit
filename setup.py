@@ -5,6 +5,8 @@ from os import path, system
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
+from argparse import ArgumentParser
+import sys
 # import os
 # os.environ["CC"] = "g++"
 
@@ -28,7 +30,13 @@ TAGS = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     ]
 
+parser = ArgumentParser(usage="%(prog)s -f")
 
+parser.add_argument('-f', '--force', dest='force', action='store_true',
+                    default=False, help='bypass requirement prompts')
+
+opts, unknown = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + unknown
 
 def can_import(modname):
     'Test if a module can be imported '
@@ -60,21 +68,21 @@ PYTHON_DEPENDENCIES = [
     ["matplotlib", "Required fot displaying plots.", 0],
     ["IMP"       , "Required for 3D modeling.", 0]]
 
-
-print("Checking dependencies...")
 missing = False
-for mname, msg, ex in PYTHON_DEPENDENCIES:
-    if not can_import(mname):
-        print("  *", mname, "cannot be found in your python installation.")
-        print("   ->", msg)
-        if ex:
-            missing=True
-        else:
-            print ("\n  However, you can still install Tadbit and " +
-                   "try to fix it afterwards.")
-            if ask( "  -> Do you want to continue with the installation?",
-                    ["y", "n"]) == "n":
-                exit()
+if not opts.force:
+    print("Checking dependencies...")
+    for mname, msg, ex in PYTHON_DEPENDENCIES:
+        if not can_import(mname):
+            print("  *", mname, "cannot be found in your python installation.")
+            print("   ->", msg)
+            if ex:
+                missing=True
+            else:
+                print ("\n  However, you can still install Tadbit and " +
+                       "try to fix it afterwards.")
+                if ask( "  -> Do you want to continue with the installation?",
+                        ["y", "n"]) == "n":
+                    exit()
 
 if missing:
     exit("Essential dependencies missing, please review and install.\n")
@@ -82,7 +90,7 @@ if missing:
 
 def main():
     # check if MCL is installed
-    if not find_executable('mcl'):
+    if not opts.force and not find_executable('mcl'):
         print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
               '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
               ' just run "apt-get-install mcl".')
@@ -225,4 +233,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     exit(main())
