@@ -65,12 +65,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     ligep = {}
     tkw = dict(size=4, width=1.5)
     if fnam.endswith('.gz'):
-        fhandler = gopen(fnam)
+        fhandler = gopen(fnam,'rt')
     elif fnam.endswith('.dsrc'):
         proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE, universal_newlines=True)
         fhandler = proc.stdout
     else:
-        fhandler = open(fnam)
+        fhandler = open(fnam,'r')
     if len(r_enzs) == 1 and r_enzs[0] is None:
         if nreads:
             while True:
@@ -110,15 +110,15 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         site = {}
         fixe = {}
         for r_enz in r_enzs:
-            site[r_enz] = re.compile(r_sites[r_enz])
-            fixe[r_enz] = re.compile(d_sites[r_enz])
+            site[r_enz] = re.compile(r_sites[r_enz].replace("N","."))
+            fixe[r_enz] = re.compile(d_sites[r_enz].replace("N","."))
         # ligation sites should appear in lower case in the sequence
         lige = {}
         for k in l_sites:
             liges[k] = []  # initialize dico to store sites
             ligep[k] = 0   # initialize dico to store sites
             l_sites[k] = l_sites[k].lower()
-            lige[k] = re.compile(l_sites[k])
+            lige[k] = re.compile(l_sites[k].replace("n","."))
         while len(quals) <= nreads:
             try:
                 next(fhandler)
@@ -127,7 +127,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             seq = next(fhandler)
             # ligation sites replaced by lower case to ease the search
             for lig in list(l_sites.values()):
-                seq = seq.replace(lig.upper(), lig)
+                seq = re.sub(lig.upper().replace("N","."), lig, seq)
             for r_enz in r_enzs:
                 sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
                 # TODO: you cannot have a repaired/fixed site in the middle of
