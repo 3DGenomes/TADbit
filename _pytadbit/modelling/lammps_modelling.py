@@ -70,7 +70,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        timesteps_per_k=10000,keep_restart_out_dir=None,
                        kfactor=1, adaptation_step=False, cleanup=False,
                        hide_log=True, remove_rstrn=[], initial_seed=0,
-                       restart_path=False, store_n_steps=10):
+                       restart_path=False, store_n_steps=10,
+                       useColvars=False):
     """
     This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
@@ -171,6 +172,7 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
     :param False restart_path: path to files to restore LAMMPs session (binary)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
         restart_file != False
+    :param False useColvars: True if you want the restrains to be loaded by colvars
 
     :returns: a StructuralModels object
     """
@@ -296,7 +298,8 @@ def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                              confining_environment=container, timeout_job=timeout_job,
                              cleanup=cleanup, to_dump=int(timesteps_per_k/100.),
                              hide_log=hide_log, restart_path=restart_path,
-                             store_n_steps=store_n_steps)
+                             store_n_steps=store_n_steps,
+                             useColvars=useColvars)
 
     try:
         xpr = experiment
@@ -519,7 +522,8 @@ def lammps_simulate(lammps_folder, run_time,
                     to_dump=100000, pbc=False, timeout_job=3600,
                     hide_log=True,
                     restart_path=False,
-                    store_n_steps=10):
+                    store_n_steps=10,
+                    useColvars=False):
 
     """
     This function launches jobs to generate three-dimensional models in lammps
@@ -570,6 +574,7 @@ def lammps_simulate(lammps_folder, run_time,
     :param False restart_path: path to files to restore LAMMPs session (binary)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
         restart_file != False
+    :param False useColvars: True if you want the restrains to be loaded by colvars
 
     :returns: a StructuralModels object
 
@@ -701,7 +706,8 @@ def lammps_simulate(lammps_folder, run_time,
                                 keep_restart_out_dir2,
                                 restart_file,
                                 model_path,
-                                store_n_steps,), callback=collect_result)
+                                store_n_steps,
+                                useColvars,), callback=collect_result)
     #                         , timeout=timeout_job)
 
     pool.close()
@@ -830,7 +836,7 @@ def run_lammps(kseed, lammps_folder, run_time,
     :param False model_path: path to/for pickle with finished model (name included)
     :param 10 store_n_steps: Integer with number of steps to be saved if 
         restart_file != False
-    :param False useColvars: True if you want the restrains to be loaded from by colvars
+    :param False useColvars: True if you want the restrains to be loaded by colvars
     :returns: a LAMMPSModel object
 
     """
