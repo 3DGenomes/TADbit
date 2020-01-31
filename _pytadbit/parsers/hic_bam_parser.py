@@ -406,11 +406,24 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
 def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
              region2=None, start2=None, end2=None, nchunks=100,
-             tmpdir='.', verbose=True, normalize=False, max_size=None):
+             tmpdir='.', verbose=True, normalize=False, max_size=None,
+             chr_order=None):
 
     bamfile = AlignmentFile(inbam, 'rb')
-    sections = OrderedDict(list(zip(bamfile.references,
-                               [x // resolution + 1 for x in bamfile.lengths])))
+    bam_refs = bamfile.references
+    bam_lengths = bamfile.lengths
+    if chr_order:
+        bam_refs_idx = [bam_refs.index(chr_ord)
+                        for chr_ord in chr_order if chr_ord in bam_refs]
+        if not bam_refs_idx :
+            raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
+                Found %s in bam file \n''' % (' '.join(bam_refs)))
+        bam_refs = [bam_ref for bam_ref in [bam_refs[bam_ref_idx]
+                                              for bam_ref_idx in bam_refs_idx]]
+        bam_lengths = [bam_len for bam_len in [bam_lengths[bam_ref_idx]
+                                                 for bam_ref_idx in bam_refs_idx]]
+    sections = OrderedDict(list(zip(bam_refs,
+                               [x // resolution + 1 for x in bam_lengths])))
     # get chromosomes and genome sizes
     total = 0
     section_pos = dict()
@@ -429,7 +442,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     # define start, end position of region to grab
     start_bin1 = 0
     end_bin1   = len(bins) + 1
-    regions = bamfile.references
+    regions = bam_refs
     if region1:
         regions = [region1]
         if region2:
@@ -651,7 +664,7 @@ def get_matrix(inbam, resolution, biases=None,
                region1=None, start1=None, end1=None,
                region2=None, start2=None, end2=None, dico=None, clean=False,
                return_headers=False, tmpdir='.', normalization='raw', ncpus=8,
-               nchunks=100, verbose=False, max_size=None):
+               nchunks=100, verbose=False, max_size=None, chr_order=None):
     """
     Get matrix from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -684,6 +697,8 @@ def get_matrix(inbam, resolution, biases=None,
     :param 8 ncpus: number of cpus to use to read the BAM file
     :param True verbose: speak
     :param 100 nchunks: maximum number of chunks into which to cut the BAM
+    :param None max_size: maximum size of matrix to read
+    :param None chr_order: chromosome order
 
     :returns: dictionary with keys being tuples of the indexes of interacting
        bins: dico[(bin1, bin2)] = interactions
@@ -696,7 +711,8 @@ def get_matrix(inbam, resolution, biases=None,
         inbam, filter_exclude, resolution, ncpus=ncpus,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
-        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose, max_size=max_size)
+        tmpdir=tmpdir, nchunks=nchunks, verbose=verbose,
+        max_size=max_size, chr_order=chr_order)
 
     if region1:
         regions = [region1]

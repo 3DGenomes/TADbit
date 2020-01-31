@@ -152,8 +152,20 @@ def run(opts):
 
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
-        sections = OrderedDict(list(zip(bamfile.references,
-                                   [x for x in bamfile.lengths])))
+        bam_refs = bamfile.references
+        bam_lengths = bamfile.lengths
+        if opts.chr_name:
+            bam_refs_idx = [bam_refs.index(chr_ord)
+                            for chr_ord in opts.chr_name if chr_ord in bam_refs]
+            if not bam_refs_idx :
+                raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
+                    Found %s in bam file \n''' % (' '.join(bam_refs)))
+            bam_refs = [bam_ref for bam_ref in [bam_refs[bam_ref_idx]
+                                                  for bam_ref_idx in bam_refs_idx]]
+            bam_lengths = [bam_len for bam_len in [bam_lengths[bam_ref_idx]
+                                                     for bam_ref_idx in bam_refs_idx]]
+        sections = OrderedDict(list(zip(bam_refs,
+                                   [x for x in bam_lengths])))
         total = 0
         section_pos = OrderedDict()
         for crm in sections:
@@ -173,7 +185,8 @@ def run(opts):
                     tmpdir=tmpdir, ncpus=opts.cpus,
                     return_headers=True,
                     nchunks=opts.nchunks, verbose=not opts.quiet,
-                    clean=clean, max_size=max_size)
+                    clean=clean, max_size=max_size,
+                    chr_order=opts.chr_name)
             except NotImplementedError:
                 if norm == "raw&decay":
                     warn('WARNING: raw&decay normalization not implemented '
@@ -324,17 +337,17 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
                  ha='left' if xtick_rotation else 'center')
     else:
         vals = [0]
-        keys = ['']
+        keys = []
+        total = 0
         for crm in section_pos:
-            # TODO: xlabels not working
-            vals.append(section_pos[crm][0] / reso)
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
             keys.append(crm)
-        vals.append(section_pos[crm][1] / reso)
         axe1.set_yticks(vals)
         axe1.set_yticklabels('')
         axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
                          for i in range(len(vals) - 1)],
-                        minor=True)
+                         minor=True)
         axe1.set_yticklabels(keys, minor=True)
         for t in axe1.yaxis.get_minor_ticks():
             t.tick1line.set_visible(False)
@@ -347,8 +360,8 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
                         minor=True)
         axe1.set_xticklabels(keys, minor=True)
         for t in axe1.xaxis.get_minor_ticks():
-            t.tick1On = False
-            t.tick2On = False
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
         axe1.set_xlabel('Chromosomes')
         if not triangular:
             axe1.set_ylabel('Chromosomes')
@@ -549,6 +562,11 @@ def populate_args(parser):
                         If higher than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
+
+    glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
+                        default=None, type=str,
+                        help='''[fasta header] chromosome name(s). Order of chromosomes
+                        in the output matrices.''')
 
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,

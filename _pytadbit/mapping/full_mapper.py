@@ -77,7 +77,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         try:
             return pat.search(seq).start()
         except AttributeError:
-            return 'nan'
+            return float('inf')
 
     def find_patterns(seq, patterns):
         pos, pat = min((_inverse_find(seq, patterns[p]), p) for p in patterns)
@@ -120,7 +120,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         cnt += 1
         try:
             pos, (r_enz1, r_enz2) = find_patterns(seq, patterns)
-        except ValueError:
+        except OverflowError:
             if len(seq) == max_seq_len:
                 raise ValueError
             if len(seq) > min_seq_len:
