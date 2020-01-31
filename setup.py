@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+from setuptools.command.install import install
 from distutils.core import setup, Extension
 from os import path, system
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
+import sys
 # import os
 # os.environ["CC"] = "g++"
 
@@ -29,7 +30,58 @@ TAGS = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     ]
 
+from setuptools.command.install import install
 
+
+class InstallCommand(install):
+    user_options = install.user_options + [
+        ('bypasscheck', None, 'Bypass checks for optional requirements'),
+    ]
+
+    PYTHON_DEPENDENCIES = [
+        ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
+        ["scipy"     , "Required for clustering and interpolation.", 1],
+        ["matplotlib", "Required fot displaying plots.", 0],
+        ["IMP"       , "Required for 3D modeling.", 0]]
+
+    def initialize_options(self):
+        install.initialize_options(self)
+        self.bypasscheck = False
+
+    def finalize_options(self):
+        print("value of bypasscheck is", self.bypasscheck)
+        install.finalize_options(self)
+
+    def run(self):
+
+        missing = False
+        if not self.bypasscheck:
+            print("Checking dependencies...")
+            for mname, msg, ex in self.PYTHON_DEPENDENCIES:
+                if not can_import(mname):
+                    print("  *", mname, "cannot be found in your python installation.")
+                    print("   ->", msg)
+                    if ex:
+                        missing=True
+                    else:
+                        print ("\n  However, you can still install Tadbit and " +
+                               "try to fix it afterwards.")
+                        if ask( "  -> Do you want to continue with the installation?",
+                                ["y", "n"]) == "n":
+                            exit()
+        if missing:
+            exit("Essential dependencies missing, please review and install.\n")
+
+        # check if MCL is installed
+        if not self.bypasscheck and not find_executable('mcl'):
+            print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
+                  '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
+                  ' just run "apt-get-install mcl".')
+            follow = raw_input('\n  You still have the option to follow with the ' +
+                           'installation. Do you want to follow? [y/N]')
+            if follow.upper() != 'Y' :
+                exit('\n    Wise choice :)\n')
+        install.run(self)
 
 def can_import(modname):
     'Test if a module can be imported '
@@ -46,7 +98,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = input("%s [%s]" % (string,','.join(valid_values)))
+        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:
@@ -55,43 +107,8 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
 
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
-PYTHON_DEPENDENCIES = [
-    ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
-    ["scipy"     , "Required for clustering and interpolation.", 1],
-    ["matplotlib", "Required fot displaying plots.", 0],
-    ["IMP"       , "Required for 3D modeling.", 0]]
-
-
-print("Checking dependencies...")
-missing = False
-for mname, msg, ex in PYTHON_DEPENDENCIES:
-    if not can_import(mname):
-        print("  *", mname, "cannot be found in your python installation.")
-        print("   ->", msg)
-        if ex:
-            missing=True
-        else:
-            print ("\n  However, you can still install Tadbit and " +
-                   "try to fix it afterwards.")
-            if ask( "  -> Do you want to continue with the installation?",
-                    ["y", "n"]) == "n":
-                exit()
-
-if missing:
-    exit("Essential dependencies missing, please review and install.\n")
-
 
 def main():
-    # check if MCL is installed
-    if not find_executable('mcl'):
-        print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
-              '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
-              ' just run "apt-get-install mcl".')
-        follow = input('\n  You still have the option to follow with the ' +
-                       'installation. Do you want to follow? [y/N]')
-        if follow.upper() != 'Y' :
-            exit('\n    Wise choice :)\n')
-
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
@@ -154,11 +171,9 @@ def main():
     git_revision = git_version = None
     try:
         git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
-                                  stderr=PIPE, universal_newlines=True).communicate()
+                                  stderr=PIPE).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
-                                stderr=PIPE, universal_newlines=True).communicate()
-        git_revision = str(git_revision)
-        git_status = str(git_status)
+                                stderr=PIPE).communicate()
         if err or err2:
             raise OSError('git not found')
         plus = git_status != ''
@@ -223,9 +238,11 @@ def main():
         scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
                         'scripts/tadbit', 'scripts/normalize_oneD.R'],
         data_files   = [(path.expanduser('~'),
-                         ['extras/.bash_completion'])]
+                         ['extras/.bash_completion'])],
+        cmdclass     = {'install': InstallCommand}
     )
 
 
 if __name__ == '__main__':
+
     exit(main())
