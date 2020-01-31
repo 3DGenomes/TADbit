@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+from setuptools.command.install import install
 from distutils.core import setup, Extension
 from os import path, system
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
-from argparse import ArgumentParser
 import sys
 # import os
 # os.environ["CC"] = "g++"
@@ -30,13 +30,58 @@ TAGS = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     ]
 
-parser = ArgumentParser(usage="%(prog)s -f")
+from setuptools.command.install import install
 
-parser.add_argument('-f', '--force', dest='force', action='store_true',
-                    default=False, help='bypass requirement prompts')
 
-opts, unknown = parser.parse_known_args()
-sys.argv = [sys.argv[0]] + unknown
+class InstallCommand(install):
+    user_options = install.user_options + [
+        ('bypasscheck', None, 'Bypass checks for optional requirements'),
+    ]
+
+    PYTHON_DEPENDENCIES = [
+        ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
+        ["scipy"     , "Required for clustering and interpolation.", 1],
+        ["matplotlib", "Required fot displaying plots.", 0],
+        ["IMP"       , "Required for 3D modeling.", 0]]
+
+    def initialize_options(self):
+        install.initialize_options(self)
+        self.bypasscheck = False
+
+    def finalize_options(self):
+        print("value of bypasscheck is", self.bypasscheck)
+        install.finalize_options(self)
+
+    def run(self):
+
+        missing = False
+        if not self.bypasscheck:
+            print("Checking dependencies...")
+            for mname, msg, ex in self.PYTHON_DEPENDENCIES:
+                if not can_import(mname):
+                    print("  *", mname, "cannot be found in your python installation.")
+                    print("   ->", msg)
+                    if ex:
+                        missing=True
+                    else:
+                        print ("\n  However, you can still install Tadbit and " +
+                               "try to fix it afterwards.")
+                        if ask( "  -> Do you want to continue with the installation?",
+                                ["y", "n"]) == "n":
+                            exit()
+        if missing:
+            exit("Essential dependencies missing, please review and install.\n")
+
+        # check if MCL is installed
+        if not self.bypasscheck and not find_executable('mcl'):
+            print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
+                  '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
+                  ' just run "apt-get-install mcl".')
+            follow = raw_input('\n  You still have the option to follow with the ' +
+                           'installation. Do you want to follow? [y/N]')
+            if follow.upper() != 'Y' :
+                exit('\n    Wise choice :)\n')
+        install.run(self)
 
 def can_import(modname):
     'Test if a module can be imported '
@@ -62,43 +107,8 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
 
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
-PYTHON_DEPENDENCIES = [
-    ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
-    ["scipy"     , "Required for clustering and interpolation.", 1],
-    ["matplotlib", "Required fot displaying plots.", 0],
-    ["IMP"       , "Required for 3D modeling.", 0]]
-
-missing = False
-if not opts.force:
-    print("Checking dependencies...")
-    for mname, msg, ex in PYTHON_DEPENDENCIES:
-        if not can_import(mname):
-            print("  *", mname, "cannot be found in your python installation.")
-            print("   ->", msg)
-            if ex:
-                missing=True
-            else:
-                print ("\n  However, you can still install Tadbit and " +
-                       "try to fix it afterwards.")
-                if ask( "  -> Do you want to continue with the installation?",
-                        ["y", "n"]) == "n":
-                    exit()
-
-if missing:
-    exit("Essential dependencies missing, please review and install.\n")
-
 
 def main():
-    # check if MCL is installed
-    if not opts.force and not find_executable('mcl'):
-        print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
-              '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
-              ' just run "apt-get-install mcl".')
-        follow = raw_input('\n  You still have the option to follow with the ' +
-                       'installation. Do you want to follow? [y/N]')
-        if follow.upper() != 'Y' :
-            exit('\n    Wise choice :)\n')
-
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
@@ -228,7 +238,8 @@ def main():
         scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
                         'scripts/tadbit', 'scripts/normalize_oneD.R'],
         data_files   = [(path.expanduser('~'),
-                         ['extras/.bash_completion'])]
+                         ['extras/.bash_completion'])],
+        cmdclass     = {'install': InstallCommand}
     )
 
 
