@@ -125,7 +125,8 @@ class IMPoptimizer(object):
                         initial_conformation=None,
                         remove_rstrn=[], initial_seed=0,
                         keep_restart_out_dir=None,
-                        restart_path=False, store_n_steps=10):
+                        restart_path=False, store_n_steps=10,
+                        useColvars=False):
         """
         This function calculates the correlation between the models generated
         by IMP and the input data for the four main IMP parameters (scale,
@@ -173,6 +174,7 @@ class IMPoptimizer(object):
         :param False restart_path: path to files to restore LAMMPs session (binary)
         :param 10 store_n_steps: Integer with number of steps to be saved if 
             restart_file != False
+        :param False useColvars: True if you want the restrains to be loaded by colvars
 
         """
         if verbose:
@@ -363,7 +365,8 @@ class IMPoptimizer(object):
                                           cleanup=cleanup, initial_conformation='tadbit' if not initial_conformation \
                                             else initial_conformation,
                                           restart_path=restart_path, remove_rstrn=remove_rstrn,
-                                          initial_seed=initial_seed, store_n_steps=store_n_steps)
+                                          initial_seed=initial_seed, store_n_steps=store_n_steps,
+                                          useColvars=useColvars)
                     result = 0
                     matrices = tdm.get_contact_matrix(
                         #cutoff=[int(dc * self.resolution * float(scale)) for dc in dcutoff_arange])

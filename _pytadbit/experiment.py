@@ -845,7 +845,8 @@ class Experiment(object):
                      cleanup=True, single_particle_restraints=None, use_HiC=True,
                      start_seed=1, hide_log=True, remove_rstrn=[],
                      keep_restart_out_dir=None,
-                     restart_path=False, store_n_steps=10):
+                     restart_path=False, store_n_steps=10,
+                     useColvars=False):
         """
         Generates of three-dimensional models using IMP, for a given segment of
         chromosome.
@@ -933,6 +934,7 @@ class Experiment(object):
         :param False restart_path: path to files to restore LAMMPs session (binary)
         :param 10 store_n_steps: Integer with number of steps to be saved if 
                 restart_file != False
+        :param False useColvars: True if you want the restrains to be loaded by colvars
 
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
@@ -1004,7 +1006,8 @@ class Experiment(object):
                                       hide_log=hide_log, initial_seed=start_seed,
                                       remove_rstrn=remove_rstrn, restart_path=restart_path,
                                       keep_restart_out_dir=keep_restart_out_dir,
-                                      store_n_steps=store_n_steps
+                                      store_n_steps=store_n_steps,
+                                      useColvars=useColvars
                                       )
 
 
