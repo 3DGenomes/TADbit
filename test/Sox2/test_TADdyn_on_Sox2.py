@@ -45,7 +45,7 @@ for timepoint in xrange(len(nrm_files)):
     exp.filter_columns(silent=True, index=timepoint)
 
 # 2 - Produce the TADbit models at stage 0 (B cells) using the 
-optimizer = IMPoptimizer(exp, 1, 50, n_models=50, n_keep=50,  tool='imp', index=0, tmp_folder='./tmp/')
+optimizer = IMPoptimizer(exp, 1, 300, n_models=500, n_keep=100,  tool='imp', index=0, tmp_folder='./tmp/')
 optimizer.run_grid_search(n_cpus=16, lowfreq_range=(-3.0, 0.0, 1.0), upfreq_range=(0.0, 3.0, 1.0), maxdist_range=(150,400,50), verbose=1)
 optimizer.write_result('results.log')
 
@@ -55,7 +55,7 @@ optimizer.write_result('results.log')
 # upfreq=1.0
 # maxdist=6.0
 
-for nparticles in [50]:
+for nparticles in [300]:
 
     models = exp.model_region(1, nparticles, n_models=500, n_keep=100,
                               n_cpus=16, cleanup=False, hide_log=False,
@@ -66,7 +66,7 @@ for nparticles in [50]:
                                       'lowfreq': -1.0},
                               tool='lammps',
                               tmp_folder='./TADdyn_on_Sox2_test_%sparticles/' % nparticles,
-                              timeout_job=90000)
+                              timeout_job=90000, useColvars=True)
 
     models.save_models("TADdyn_on_Sox2_test_%sparticles.pickle" % nparticles)
 
