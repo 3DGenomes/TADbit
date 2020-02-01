@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 from setuptools.command.install import install
 from distutils.core import setup, Extension
 from os import path, system
@@ -29,9 +29,6 @@ TAGS = [
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Libraries :: Python Modules",
     ]
-
-from setuptools.command.install import install
-
 
 class InstallCommand(install):
     user_options = install.user_options + [
@@ -171,9 +168,9 @@ def main():
     git_revision = git_version = None
     try:
         git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
-                                  stderr=PIPE).communicate()
+                                  stderr=PIPE, universal_newlines=True).communicate()
         git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
-                                stderr=PIPE).communicate()
+                                stderr=PIPE, universal_newlines=True).communicate()
         if err or err2:
             raise OSError('git not found')
         plus = git_status != ''
@@ -235,8 +232,7 @@ def main():
         keywords     = ["testing"],
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
-        scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
-                        'scripts/tadbit', 'scripts/normalize_oneD.R'],
+        scripts      = ['scripts/tadbit', 'scripts/normalize_oneD.R'],
         data_files   = [(path.expanduser('~'),
                          ['extras/.bash_completion'])],
         cmdclass     = {'install': InstallCommand}
