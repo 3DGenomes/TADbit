@@ -1,5 +1,5 @@
 BootStrap: docker
-From:neurodebian:jessie
+From:neurodebian:buster
 
 %help
   minimal TADbit container
@@ -13,22 +13,32 @@ From:neurodebian:jessie
 %post
 
   # for R
-  echo "deb-src ftp://ftp.de.debian.org/debian/ jessie main contrib" >> /etc/apt/sources.list
+  echo "deb-src http://ftp.de.debian.org/debian/ buster main contrib" >> /etc/apt/sources.list
 
   apt-get update --fix-missing
 
-  apt-get -y build-dep libxml2-dev
-  apt-get -y build-dep libcurl4-gnutls-dev
-  apt-get -y install dirmngr libcurl4-gnutls-dev
+  apt install -y dirmngr apt-transport-https ca-certificates software-properties-common gnupg2 wget
+  apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian buster-cran35/'
 
-  # apt install utilities
-  apt-get update --fix-missing && \
+  apt-get update --fix-missing
+  apt-get -y install r-base r-cran-devtools
+  apt-get -y install libcurl4-gnutls-dev --no-install-recommends
+  apt-get -y install libxml2-dev libssl-dev --no-install-recommends
+
+  apt-get update --fix-mising && \
   apt-get install -y unzip build-essential wget bzip2 --no-install-recommends
+
+  #############################################################################
+  # dryhic
+  # R --slave -e 'install.packages("devtools", repos="http://cran.rstudio.com/")'
+  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'
+
 
   #############################################################################
   # conda
   echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-  wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+  wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
       -O $HOME/miniconda.sh
   /bin/bash $HOME/miniconda.sh -b -p /usr/local/anaconda
   rm $HOME/miniconda.sh
@@ -40,21 +50,24 @@ From:neurodebian:jessie
   conda info -a
 
   #############################################################################
-  # install python packages and R
+  # install python packages
   conda config --add channels salilab && conda config --add channels bioconda && \
-  conda config --add channels hargup/label/pypi && \
-  conda install -y -q imp scipy matplotlib jupyter mcl samtools sra-tools pysam pebble && \
-  conda install -y -q -c r r && \
-  conda install -y -q -c bioconda ucsc-bigWigToBedGraph
-  conda install -c bioconda ucsc-wigtobigwig
+  conda config --add channels hargup/label/pypi && conda config --add channels conda-forge
+  conda install -y -q imp
+  conda install -y -q future
+  conda install -y -q scipy
+  conda install -y -q numpy
+  conda install -y -q mcl
+  conda install -y -q matplotlib
+  conda install -y -q samtools
+  conda install -y -q pysam
+  conda install -y -q ucsc-bigWigToBedGraph
+  conda install -y -q ucsc-wigtobigwig
+  conda install -y -q gem3-mapper
+  conda install -y -q hisat2
   # to run jupyter the notebok has to be built and installed as writable (with sudo)
-  # conda install -y -q jupyter
+### conda install -y -q jupyter
   conda clean -y --all  && rm -rf /opt/conda/pkgs/*
-
-  #############################################################################
-  # dryhic
-  R --slave -e 'install.packages("devtools", repos="http://cran.rstudio.com/")'
-  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'
 
   #############################################################################
   # GEM
@@ -65,11 +78,14 @@ From:neurodebian:jessie
 
   #############################################################################
   # TADbit
-  wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/dev.zip && unzip dev.zip && \
-  cd TADbit-dev && python setup.py install && cd .. && rm -rf TADbit-dev dev.zip && \
-  apt-get remove -y --purge unzip build-essential && \
+  wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/py3.zip && unzip py3.zip && \
+  cd TADbit-py3 && yes | python setup.py install && cd .. && rm -rf TADbit-py3 py3.zip
+  
+############################################################################
+  # Clean
+  apt-get remove -y --purge unzip build-essential r-cran-devtools && \
   apt-get autoremove -y && \
-  apt-get autoclean -y && \
+  apt-get  autoclean -y && \
   rm -rf /var/lib/apt/lists/*
 
 %runscript
