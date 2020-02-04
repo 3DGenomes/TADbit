@@ -4,7 +4,7 @@
 from __future__ import print_function
 from builtins   import next
 
-from io       import open, TextIOWrapper
+from io       import open, TextIOWrapper, BufferedReader
 import ctypes
 import os
 import errno
@@ -77,16 +77,16 @@ def magic_open(filename, verbose=False, cpus=None):
                 if len(zhandler.NameToInfo) != 1:
                     raise NotImplementedError(
                         'Not exactly one file in this zip archieve.')
-                return TextIOWrapper(zhandler.open(list(zhandler.NameToInfo.keys())[0]))
+                return TextIOWrapper(BufferedReader(zhandler.open(list(zhandler.NameToInfo.keys())[0])))
             if is_binary_string(start_of_file) and start_of_file.startswith(b'\x42\x5a\x68'):
                 if verbose:
                     print('bz2')
                 fhandler.close()
-                return TextIOWrapper(bz2.BZ2File(filename))
+                return TextIOWrapper(BufferedReader(bz2.BZ2File(filename)))
             if is_binary_string(start_of_file) and start_of_file.startswith(b'\x1f\x8b\x08'):
                 if verbose:
                     print('gz')
-                return TextIOWrapper(gzip.GzipFile(fileobj=fhandler))
+                return TextIOWrapper(BufferedReader(gzip.GzipFile(fileobj=fhandler)))
         else:
             if verbose:
                 print('text')
