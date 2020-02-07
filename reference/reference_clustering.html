@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>TAD clustering &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -46,40 +45,36 @@
 <h1>TAD clustering<a class="headerlink" href="#tad-clustering" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.tad_clustering.tad_cmo.optimal_cmo">
-<code class="descclassname">pytadbit.tad_clustering.tad_cmo.</code><code class="descname">optimal_cmo</code><span class="sig-paren">(</span><em>hic1</em>, <em>hic2</em>, <em>num_v=None</em>, <em>max_num_v=None</em>, <em>verbose=False</em>, <em>method='frobenius'</em>, <em>long_nw=True</em>, <em>long_dist=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tad_clustering/tad_cmo.html#optimal_cmo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.tad_clustering.tad_cmo.</code><code class="sig-name descname">optimal_cmo</code><span class="sig-paren">(</span><em class="sig-param">hic1</em>, <em class="sig-param">hic2</em>, <em class="sig-param">num_v=None</em>, <em class="sig-param">max_num_v=None</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">method='frobenius'</em>, <em class="sig-param">long_nw=True</em>, <em class="sig-param">long_dist=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tad_clustering/tad_cmo.html#optimal_cmo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the optimal contact map overlap between 2 matrices</p>
-<dl class="docutils">
-<dt>TODO: make the selection of number of eigen vectors automatic or relying on</dt>
-<dd>the summed contribution (e.g. select the EVs that sum 80% of the info)</dd>
+<dl class="simple">
+<dt>TODO: make the selection of number of eigen vectors automatic or relying on</dt><dd><p>the summed contribution (e.g. select the EVs that sum 80% of the info)</p>
+</dd>
 </dl>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">penalty is defined as the minimum value of the pre-scoring matrix.</p>
+<p class="admonition-title">Note</p>
+<p>penalty is defined as the minimum value of the pre-scoring matrix.</p>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hic1</strong> – first matrix to align</li>
-<li><strong>hic2</strong> – second matrix to align</li>
-<li><strong>num_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – number of eigen vectors to consider, max is:
-max(min(len(hic1), len(hic2)))</li>
-<li><strong>max_num_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – maximum number of eigen vectors to consider.</li>
-<li><strong>method</strong> (<em>score</em>) – distance function to use as alignment score. if ‘score’
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hic1</strong> – first matrix to align</p></li>
+<li><p><strong>hic2</strong> – second matrix to align</p></li>
+<li><p><strong>num_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – number of eigen vectors to consider, max is:
+max(min(len(hic1), len(hic2)))</p></li>
+<li><p><strong>max_num_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – maximum number of eigen vectors to consider.</p></li>
+<li><p><strong>method</strong> (<em>score</em>) – distance function to use as alignment score. if ‘score’
 distance will be the result of the last value of the Needleman-Wunsch
 algorithm. If ‘frobenius’ a modification of the Frobenius distance will
-be used</li>
+be used</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">two lists, one per aligned matrix, plus a dict summarizing the
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>two lists, one per aligned matrix, plus a dict summarizing the
 goodness of the alignment with the distance between matrices, their 
 Spearman correlation Rho value and pvalue.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -123,13 +118,11 @@ Spearman correlation Rho value and pvalue.</p>
   <p class="topless"><a href="reference_parser.html"
                         title="next chapter">Parsers</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -156,8 +149,8 @@ Spearman correlation Rho value and pvalue.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

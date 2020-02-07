@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>pytadbit.mapping &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -36,15 +35,16 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.mapping</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">itertools</span>                    <span class="k">import</span> <span class="n">combinations</span>
-<span class="kn">from</span> <span class="nn">os</span>                           <span class="k">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">system</span>
-<span class="kn">from</span> <span class="nn">sys</span>                          <span class="k">import</span> <span class="n">stdout</span>
-<span class="kn">from</span> <span class="nn">collections</span>                  <span class="k">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">multiprocessing</span>              <span class="k">import</span> <span class="n">cpu_count</span>
-<span class="kn">from</span> <span class="nn">distutils.version</span>            <span class="k">import</span> <span class="n">LooseVersion</span>
-<span class="kn">from</span> <span class="nn">subprocess</span>                   <span class="k">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">itertools</span>                    <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">os</span>                           <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">system</span>
+<span class="kn">from</span> <span class="nn">sys</span>                          <span class="kn">import</span> <span class="n">stdout</span>
+<span class="kn">from</span> <span class="nn">collections</span>                  <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span>              <span class="kn">import</span> <span class="n">cpu_count</span>
+<span class="kn">from</span> <span class="nn">distutils.version</span>            <span class="kn">import</span> <span class="n">LooseVersion</span>
+<span class="kn">from</span> <span class="nn">subprocess</span>                   <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="k">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">which</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">which</span>
 
 
 <span class="k">def</span> <span class="nf">eq_reads</span><span class="p">(</span><span class="n">rd1</span><span class="p">,</span> <span class="n">rd2</span><span class="p">):</span>
@@ -105,15 +105,15 @@
     <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">chromosomes</span><span class="p">:</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# CRM </span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crm</span><span class="p">,</span> <span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]))</span>
     <span class="c1"># merge sort the two files</span>
-    <span class="n">read1</span> <span class="o">=</span> <span class="n">fh1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-    <span class="n">read2</span> <span class="o">=</span> <span class="n">fh2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">read1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh1</span><span class="p">)</span>
+    <span class="n">read2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh2</span><span class="p">)</span>
     <span class="n">nreads</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">greater</span><span class="p">(</span><span class="n">read2</span><span class="p">,</span> <span class="n">read1</span><span class="p">):</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
             <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">read1</span> <span class="o">=</span> <span class="n">fh1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                <span class="n">read1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh1</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
                 <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -122,7 +122,7 @@
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
             <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">read2</span> <span class="o">=</span> <span class="n">fh2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                <span class="n">read2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh2</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
                 <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -138,6 +138,7 @@
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">nreads</span></div>
 
+
 <span class="k">def</span> <span class="nf">merge_bams</span><span class="p">(</span><span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">,</span> <span class="n">outbam</span><span class="p">,</span> <span class="n">cpus</span> <span class="o">=</span> <span class="n">cpu_count</span><span class="p">(),</span> <span class="n">samtools</span> <span class="o">=</span> <span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge two bam files with samtools into one.</span>
@@ -148,20 +149,22 @@
 
     <span class="n">samtools</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">samtools</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;  - Mergeing experiments&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - Mergeing experiments&#39;</span><span class="p">)</span>
     <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; merge -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">outbam</span><span class="p">,</span> <span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;  - Indexing new BAM file&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - Indexing new BAM file&#39;</span><span class="p">)</span>
     <span class="c1"># check samtools version number and modify command line</span>
     <span class="n">version</span> <span class="o">=</span> <span class="n">LooseVersion</span><span class="p">([</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-                            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">Popen</span><span class="p">(</span><span class="n">samtools</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">Popen</span><span class="p">(</span><span class="n">samtools</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                                           <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                             <span class="k">if</span> <span class="s1">&#39;Version&#39;</span> <span class="ow">in</span> <span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="s1">&#39;1.3.1&#39;</span><span class="p">):</span>
         <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">outbam</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">outbam</span><span class="p">))</span>
 
-<div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../reference/reference_mapping.html#pytadbit.mapping.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../reference/reference_mapping.html#pytadbit.mapping.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merges the two files corresponding to each reads sides. Reads found in both</span>
 <span class="sd">       files are merged and written in an output file.</span>
@@ -182,6 +185,8 @@
 <span class="sd">       :func:`pytadbit.parsers.sam_parser.parse_sam`</span>
 <span class="sd">    :param out_path: path to an outfile. It will written in a similar format as</span>
 <span class="sd">       the inputs</span>
+<span class="sd">    :param False compress: compress (gzip) input files. This is done in the</span>
+<span class="sd">       background while next input files are parsed.</span>
 
 <span class="sd">    :returns: final number of pair of interacting fragments, and a dictionary with</span>
 <span class="sd">       the number of multiple contacts (keys of the dictionary being the number of</span>
@@ -190,21 +195,21 @@
 
     <span class="c1"># Get the headers of the two files</span>
     <span class="n">reads1</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fname1</span><span class="p">)</span>
-    <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">line1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads1</span><span class="p">)</span>
     <span class="n">header1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# CRM&#39;</span><span class="p">):</span>
             <span class="n">header1</span> <span class="o">+=</span> <span class="n">line1</span>
-        <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">line1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads1</span><span class="p">)</span>
     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">reads2</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fname2</span><span class="p">)</span>
-    <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads2</span><span class="p">)</span>
     <span class="n">header2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# CRM&#39;</span><span class="p">):</span>
             <span class="n">header2</span> <span class="o">+=</span> <span class="n">line2</span>
-        <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">line2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads2</span><span class="p">)</span>
     <span class="n">read2</span> <span class="o">=</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">header1</span> <span class="o">!=</span> <span class="n">header2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;seems to be mapped onover different chromosomes</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -220,12 +225,12 @@
             <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">CHROM_START</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="n">cum_pos</span>
             <span class="n">cum_pos</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
-    <span class="n">lchunk</span> <span class="o">=</span> <span class="n">cum_pos</span> <span class="o">/</span> <span class="n">nchunks</span>
-    <span class="n">buf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nchunks</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">lchunk</span> <span class="o">=</span> <span class="n">cum_pos</span> <span class="o">//</span> <span class="n">nchunks</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchunks</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
     <span class="c1"># prepare temporary directories</span>
     <span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">out_path</span> <span class="o">+</span> <span class="s1">&#39;_tmp_files&#39;</span>
     <span class="n">mkdir</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nchunks</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchunks</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;rep_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">))</span>
 
     <span class="c1"># iterate over reads in each of the two input files</span>
@@ -249,22 +254,22 @@
                     <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
                     <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 <span class="n">count_dots</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1000000</span><span class="p">):</span> <span class="c1"># iterate 1 million times, write to files</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000000</span><span class="p">):</span> <span class="c1"># iterate 1 million times, write to files</span>
                 <span class="c1"># same read id in both lianes, we store put the more upstream</span>
                 <span class="c1"># before and store them</span>
                 <span class="k">if</span> <span class="n">eq_reads</span><span class="p">(</span><span class="n">read1</span><span class="p">,</span> <span class="n">read2</span><span class="p">):</span>
                     <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">_process_lines</span><span class="p">(</span><span class="n">line1</span><span class="p">,</span> <span class="n">line2</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">multiples</span><span class="p">,</span> <span class="n">lchunk</span><span class="p">)</span>
-                    <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">line1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads1</span><span class="p">)</span>
                     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">line2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads2</span><span class="p">)</span>
                     <span class="n">read2</span> <span class="o">=</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="c1"># if first element of line1 is greater than the one of line2:</span>
                 <span class="k">elif</span> <span class="n">gt_reads</span><span class="p">(</span><span class="n">read1</span><span class="p">,</span> <span class="n">read2</span><span class="p">):</span>
-                    <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">line2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads2</span><span class="p">)</span>
                     <span class="n">read2</span> <span class="o">=</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">line1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reads1</span><span class="p">)</span>
                     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">write_to_files</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">,</span> <span class="n">nchunks</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
@@ -272,14 +277,19 @@
         <span class="n">reads2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">write_to_files</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">,</span> <span class="n">nchunks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Found </span><span class="si">%d</span><span class="s1"> pair of reads mapping uniquely&#39;</span> <span class="o">%</span> <span class="n">count</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Found </span><span class="si">%d</span><span class="s1"> pair of reads mapping uniquely&#39;</span> <span class="o">%</span> <span class="n">count</span><span class="p">)</span>
 
+    <span class="c1"># compression</span>
+    <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;compressing input files&#39;</span><span class="p">)</span>
+        <span class="n">procs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;gzip&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">])</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">)]</span>
     <span class="c1"># sort each tmp file according to first element (idx) and write them</span>
     <span class="c1"># to output file (without the idx)</span>
     <span class="c1"># sort also according to read 2 (to filter duplicates)</span>
     <span class="c1">#      and also according to strand</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;Sorting each temporary file by genomic coordinate&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Sorting each temporary file by genomic coordinate&#39;</span><span class="p">)</span>
 
     <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header1</span><span class="p">)</span>
@@ -287,15 +297,20 @@
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">    </span><span class="si">%4d</span><span class="s1">/</span><span class="si">%d</span><span class="s1"> sorted files&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)))</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span>
-                <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;rep_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)),</span>
-                          <span class="s1">&#39;tmp_</span><span class="si">%05d</span><span class="s1">.tsv&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="p">))],</span>
-            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">6</span><span class="p">]))]))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;rep_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)),</span>
+                            <span class="s1">&#39;tmp_</span><span class="si">%05d</span><span class="s1">.tsv&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="p">))</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">],</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">6</span><span class="p">]))]))</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
+    <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="n">procs</span><span class="p">:</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -rf &#39;</span> <span class="o">+</span> <span class="n">fname1</span><span class="p">)</span>
+        <span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -rf &#39;</span> <span class="o">+</span> <span class="n">fname2</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Removing temporary files...&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Removing temporary files...&#39;</span><span class="p">)</span>
     <span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -rf &#39;</span> <span class="o">+</span> <span class="n">tmp_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">count</span><span class="p">,</span> <span class="n">multiples</span></div>
 
@@ -314,7 +329,7 @@
 
 <span class="k">def</span> <span class="nf">write_to_files</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">,</span> <span class="n">nchunks</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">buf</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;rep_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)),</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;rep_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">nchunks</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)),</span>
                              <span class="s1">&#39;tmp_</span><span class="si">%05d</span><span class="s1">.tsv&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="p">),</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="n">b</span><span class="p">]))</span>
         <span class="k">if</span> <span class="n">buf</span><span class="p">[</span><span class="n">b</span><span class="p">]:</span> <span class="c1"># case the file was empty</span>
@@ -375,21 +390,21 @@
         <span class="k">if</span> <span class="n">contacts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">multiples</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">contacts</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">multiples</span><span class="p">[</span><span class="n">contacts</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">prod_cont</span> <span class="o">=</span> <span class="n">contacts</span> <span class="o">*</span> <span class="p">(</span><span class="n">contacts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)):</span>
+            <span class="n">prod_cont</span> <span class="o">=</span> <span class="n">contacts</span> <span class="o">*</span> <span class="p">(</span><span class="n">contacts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="mi">2</span><span class="p">)):</span>
                 <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span>
-                <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">/</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="s1">#</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">//</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="s1">#</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                     <span class="n">idx</span><span class="p">,</span> <span class="n">r1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">prod_cont</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
                     <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
         <span class="k">elif</span> <span class="n">contacts</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">/</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
+            <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">elts</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">//</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="n">elts1</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">elts2</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">/</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
+            <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elts1</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">elts2</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">//</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="n">line1</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">line2</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">))</span>
-        <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">/</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
+        <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">//</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
 </pre></div>
 
           </div>
@@ -410,13 +425,11 @@
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -438,8 +451,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

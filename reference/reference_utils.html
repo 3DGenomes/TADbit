@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Utilities &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -46,431 +45,371 @@
 <h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.get_dependencies_version">
-<code class="descclassname">pytadbit.</code><code class="descname">get_dependencies_version</code><span class="sig-paren">(</span><em>dico=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit.html#get_dependencies_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.get_dependencies_version" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.</code><code class="sig-name descname">get_dependencies_version</code><span class="sig-paren">(</span><em class="sig-param">dico=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit.html#get_dependencies_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.get_dependencies_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check versions of TADbit and all dependencies, as well and retrieves system
 info. May be used to ensure reproducibility.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string with description of versions installed</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string with description of versions installed</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.tadmaths.calinski_harabasz">
-<code class="descclassname">pytadbit.utils.tadmaths.</code><code class="descname">calinski_harabasz</code><span class="sig-paren">(</span><em>scores</em>, <em>clusters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/tadmaths.html#calinski_harabasz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.tadmaths.calinski_harabasz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implementation of the CH score <a class="reference internal" href="../biblio.html#calinskiharabasz1974" id="id1">[CalinskiHarabasz1974]</a>, that has shown to be
+<code class="sig-prename descclassname">pytadbit.utils.tadmaths.</code><code class="sig-name descname">calinski_harabasz</code><span class="sig-paren">(</span><em class="sig-param">scores</em>, <em class="sig-param">clusters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/tadmaths.html#calinski_harabasz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.tadmaths.calinski_harabasz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of the CH score <a class="reference internal" href="../biblio.html#calinskiharabasz1974" id="id1"><span>[CalinskiHarabasz1974]</span></a>, that has shown to be
 one the most accurate way to compare clustering methods
-<a class="reference internal" href="../biblio.html#milligancooper1985" id="id2">[MilliganCooper1985]</a> <a class="reference internal" href="../biblio.html#tibshirani2001" id="id3">[Tibshirani2001]</a>.</p>
+<a class="reference internal" href="../biblio.html#milligancooper1985" id="id2"><span>[MilliganCooper1985]</span></a> <a class="reference internal" href="../biblio.html#tibshirani2001" id="id3"><span>[Tibshirani2001]</span></a>.</p>
 <p>The CH score is:</p>
 <div class="math notranslate nohighlight">
 \[CH(k) = \frac{B(k) / (k-1)}{W(k)/(n - k)}\]</div>
 <p>Where <span class="math notranslate nohighlight">\(B(k)\)</span> and <span class="math notranslate nohighlight">\(W(k)\)</span> are the between and within cluster sums
 of squares, with <span class="math notranslate nohighlight">\(k\)</span> clusters, and <span class="math notranslate nohighlight">\(n\)</span> the total number of
 elements (models in this case).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>scores</strong> – a dict with, as keys, a tuple with a pair of models; and, as
-value, the distance between these models.</li>
-<li><strong>clusters</strong> – a dict with, as key, the cluster number, and as value a
-list of models</li>
-<li><strong>nmodels</strong> – total number of models</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scores</strong> – a dict with, as keys, a tuple with a pair of models; and, as
+value, the distance between these models.</p></li>
+<li><p><strong>clusters</strong> – a dict with, as key, the cluster number, and as value a
+list of models</p></li>
+<li><p><strong>nmodels</strong> – total number of models</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the CH score</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the CH score</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_3d_optimization_result">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_3d_optimization_result</code><span class="sig-paren">(</span><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_3d_optimization_result</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">axes=('scale'</em>, <em class="sig-param">'maxdist'</em>, <em class="sig-param">'upfreq'</em>, <em class="sig-param">'lowfreq')</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Displays a three dimensional scatter plot representing the result of the
 optimization.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> – 3D numpy array contating correlation values</li>
-<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) – tuple of axes to
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> – 3D numpy array contating correlation values</p></li>
+<li><p><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'upfreq'</em><em>,</em><em>'lowfreq'</em>) – tuple of axes to
 represent. The order will define which parameter will be placed on the
-w, z, y or x axe.</li>
+w, z, y or x axe.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_2d_optimization_result">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_2d_optimization_result</code><span class="sig-paren">(</span><em>result</em>, <em>axes=('scale'</em>, <em>'kbending'</em>, <em>'maxdist'</em>, <em>'lowfreq'</em>, <em>'upfreq')</em>, <em>dcutoff=None</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em>, <em>clim=None</em>, <em>cmap='inferno'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_2d_optimization_result</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">axes=('scale'</em>, <em class="sig-param">'kbending'</em>, <em class="sig-param">'maxdist'</em>, <em class="sig-param">'lowfreq'</em>, <em class="sig-param">'upfreq')</em>, <em class="sig-param">dcutoff=None</em>, <em class="sig-param">show_best=0</em>, <em class="sig-param">skip=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">clim=None</em>, <em class="sig-param">cmap='inferno'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization. In the optimization
 up to 5 parameters can be optimized: ‘scale’, ‘kbending’, ‘maxdist’, ‘lowfreq’, and ‘upfreq’.
 The maps will be divided in different pages depending on the ‘scale’ and ‘kbending’ values.
 In each page there will be different maps depending the ‘maxdist’ values.
 Each map has ‘upfreq’ values along the x-axes, and ‘lowfreq’ values along the y-axes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> – 3D numpy array contating the computed correlation values</li>
-<li><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'kbending'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'lowfreq'</em><em>,</em><em>'upfreq'</em>) – tuple of axes
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> – 3D numpy array contating the computed correlation values</p></li>
+<li><p><strong>axes</strong> (<em>'scale'</em><em>,</em><em>'kbending'</em><em>,</em><em>'maxdist'</em><em>,</em><em>'lowfreq'</em><em>,</em><em>'upfreq'</em>) – tuple of axes
 to represent. The order is important here. It will define which parameter
-will be placed respectively on the v, w, z, y, or x axes.</li>
-<li><strong>show_best</strong> (<em>0</em>) – number of best correlation value to highlight in the heatmaps.
-The best correlation is highlithed by default</li>
-<li><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a dict can be passed here in order to fix a given parameter value,
+will be placed respectively on the v, w, z, y, or x axes.</p></li>
+<li><p><strong>show_best</strong> (<em>0</em>) – number of best correlation value to highlight in the heatmaps.
+The best correlation is highlithed by default</p></li>
+<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a dict can be passed here in order to fix a given parameter value,
 e.g.: {‘scale’: 0.001, ‘kbending’: 30, ‘maxdist’: 500} will represent all the
 correlation values at fixed ‘scale’, ‘kbending’, and ‘maxdist’ values,
-respectively equal to 0.001, 30, and 500.</li>
-<li><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – The distance cutoff (dcutoff) used to compute the contact matrix
-in the models.</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the generated image.
+respectively equal to 0.001, 30, and 500.</p></li>
+<li><p><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The distance cutoff (dcutoff) used to compute the contact matrix
+in the models.</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the generated image.
 If None, the image will be displayed using matplotlib GUI. NOTE: the extension
-of the file name will automatically determine the desired format.</li>
-<li><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</li>
-<li><strong>cmap</strong> (<em>inferno</em>) – matplotlib colormap</li>
+of the file name will automatically determine the desired format.</p></li>
+<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</p></li>
+<li><p><strong>cmap</strong> (<em>inferno</em>) – matplotlib colormap</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.compare_models">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">compare_models</code><span class="sig-paren">(</span><em>sm1</em>, <em>sm2</em>, <em>cutoff=150</em>, <em>models1=None</em>, <em>cluster1=None</em>, <em>models2=None</em>, <em>cluster2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#compare_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.compare_models" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">compare_models</code><span class="sig-paren">(</span><em class="sig-param">sm1</em>, <em class="sig-param">sm2</em>, <em class="sig-param">cutoff=150</em>, <em class="sig-param">models1=None</em>, <em class="sig-param">cluster1=None</em>, <em class="sig-param">models2=None</em>, <em class="sig-param">cluster2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#compare_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.compare_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the difference of contact maps of two group of structural models.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>sm1</strong> – a StructuralModel</li>
-<li><strong>sm2</strong> – a StructuralModel</li>
-<li><strong>dcutoff</strong> (<em>150</em>) – distance threshold (nm) to determine if two
-particles are in contact</li>
-<li><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – if None (default) the contact map will be computed
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sm1</strong> – a StructuralModel</p></li>
+<li><p><strong>sm2</strong> – a StructuralModel</p></li>
+<li><p><strong>dcutoff</strong> (<em>150</em>) – distance threshold (nm) to determine if two
+particles are in contact</p></li>
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the contact map will be computed
 using all the models. A list of numbers corresponding to a given set
-of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – compute the contact map only for the models in the
-cluster number ‘cluster’</li>
+of models can be passed</p></li>
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the contact map only for the models in the
+cluster number ‘cluster’</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.color_residues">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">color_residues</code><span class="sig-paren">(</span><em>x</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">color_residues</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to color residues from blue to red.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of rgb tuples (red, green, blue), each between 0 and 1.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_coloring">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">tad_coloring</code><span class="sig-paren">(</span><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">tad_coloring</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">mstart=None</em>, <em class="sig-param">mend=None</em>, <em class="sig-param">tads=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TADs from blue to red (first to last TAD). TAD borders are displayed
 in scale of grey, from light to dark grey (again first to last border)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></p></li>
+<li><p><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_border_coloring">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">tad_border_coloring</code><span class="sig-paren">(</span><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_border_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">tad_border_coloring</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">mstart=None</em>, <em class="sig-param">mend=None</em>, <em class="sig-param">tads=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_border_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TAD borders from blue to red (bad to good score). TAD are displayed
 in scale of grey, from light to dark grey (first to last particle in the
 TAD)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – a given <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></p></li>
+<li><p><strong>tads</strong> – a dictionary of TADs, Experiments.tads can be directly passed</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_3d_model">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">plot_3d_model</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>label=False</em>, <em>axe=None</em>, <em>thin=False</em>, <em>savefig=None</em>, <em>show_axe=False</em>, <em>azimuth=-90</em>, <em>elevation=0.0</em>, <em>color='index'</em>, <em>smooth=0.001</em>, <em>particle_size=50</em>, <em>alpha_part=0.5</em>, <em>lw_main=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_3d_model</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">label=False</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">thin=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show_axe=False</em>, <em class="sig-param">azimuth=-90</em>, <em class="sig-param">elevation=0.0</em>, <em class="sig-param">color='index'</em>, <em class="sig-param">smooth=0.001</em>, <em class="sig-param">particle_size=50</em>, <em class="sig-param">alpha_part=0.5</em>, <em class="sig-param">lw_main=3</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
 using matplotlib</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> – a <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></li>
-<li><strong>label</strong> (<em>False</em>) – show labels</li>
-<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
-appearance</li>
-<li><strong>thin</strong> (<em>False</em>) – draw a thin black line instead of representing particles
-and edges</li>
-<li><strong>smooth</strong> (<em>0.001</em>) – connction between particles is smoothed according to
-the input condition</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – a <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></p></li>
+<li><p><strong>label</strong> (<em>False</em>) – show labels</p></li>
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+appearance</p></li>
+<li><p><strong>thin</strong> (<em>False</em>) – draw a thin black line instead of representing particles
+and edges</p></li>
+<li><p><strong>smooth</strong> (<em>0.001</em>) – connction between particles is smoothed according to
+the input condition</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
-of the file name will determine the desired format).</li>
-<li><strong>azimuth</strong> (<em>-90</em>) – angle to rotate camera along the y axis</li>
-<li><strong>elevation</strong> (<em>0</em>) – angle to rotate camera along the x axis</li>
-<li><strong>color</strong> (<em>'index'</em>) – <p>can be:</p>
+of the file name will determine the desired format).</p></li>
+<li><p><strong>azimuth</strong> (<em>-90</em>) – angle to rotate camera along the y axis</p></li>
+<li><p><strong>elevation</strong> (<em>0</em>) – angle to rotate camera along the x axis</p></li>
+<li><p><strong>color</strong> (<em>'index'</em>) – <p>can be:</p>
 <ul>
-<li><dl class="first docutils">
-<dt>a string as:</dt>
-<dd><ul class="first last">
-<li>’<strong>index</strong>’ to color particles according to their position in the
-model (<a class="reference internal" href="#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
-<li>’<strong>tad</strong>’ to color particles according to the TAD they belong to
-(<a class="reference internal" href="#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
-<li>’<strong>border</strong>’ to color particles marking borders. Color according to
+<li><dl class="simple">
+<dt>a string as:</dt><dd><ul>
+<li><p>’<strong>index</strong>’ to color particles according to their position in the
+model (<a class="reference internal" href="#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</p></li>
+<li><p>’<strong>tad</strong>’ to color particles according to the TAD they belong to
+(<a class="reference internal" href="#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</p></li>
+<li><p>’<strong>border</strong>’ to color particles marking borders. Color according to
 their score (<a class="reference internal" href="#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
-coloring function like.</li>
+coloring function like.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>a function, that takes as argument a model and any other parameter
-passed through the kwargs.</li>
-<li>a list of (r, g, b) tuples (as long as the number of particles).
-Each r, g, b between 0 and 1.</li>
+<li><p>a function, that takes as argument a model and any other parameter
+passed through the kwargs.</p></li>
+<li><p>a list of (r, g, b) tuples (as long as the number of particles).
+Each r, g, b between 0 and 1.</p></li>
 </ul>
-</li>
+</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.chimera_view">
-<code class="descclassname">pytadbit.utils.extraviews.</code><code class="descname">chimera_view</code><span class="sig-paren">(</span><em>cmm_files</em>, <em>chimera_bin='chimera'</em>, <em>chimera_cmd=None</em>, <em>savefig=None</em>, <em>center_of_mass=False</em>, <em>gyradius=False</em>, <em>align=True</em>, <em>grid=False</em>, <em>highlight='all'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#chimera_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.chimera_view" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">chimera_view</code><span class="sig-paren">(</span><em class="sig-param">cmm_files</em>, <em class="sig-param">chimera_bin='chimera'</em>, <em class="sig-param">chimera_cmd=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">center_of_mass=False</em>, <em class="sig-param">gyradius=False</em>, <em class="sig-param">align=True</em>, <em class="sig-param">grid=False</em>, <em class="sig-param">highlight='all'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#chimera_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.chimera_view" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a list of .cmm files with Chimera (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>)
 to view models.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cmm_files</strong> – list of .cmm files</li>
-<li><strong>chimera_bin</strong> (<em>'chimera'</em>) – path to chimera binary</li>
-<li><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – list of command lines for chimera</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save generated image</li>
-<li><strong>center_of_mass</strong> (<em>False</em>) – if True, draws the center of mass</li>
-<li><strong>gyradius</strong> (<em>False</em>) – increment the radius of the center of mass by the
-value of the radius of girations given.</li>
-<li><strong>align</strong> (<em>False</em>) – align models</li>
-<li><strong>grid</strong> (<em>False</em>) – tile models</li>
-<li><strong>higlight</strong> (<em>'all'</em>) – higlights a given model, or group of models.
-Can be either ‘all’, or a model number</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cmm_files</strong> – list of .cmm files</p></li>
+<li><p><strong>chimera_bin</strong> (<em>'chimera'</em>) – path to chimera binary</p></li>
+<li><p><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of command lines for chimera</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save generated image</p></li>
+<li><p><strong>center_of_mass</strong> (<em>False</em>) – if True, draws the center of mass</p></li>
+<li><p><strong>gyradius</strong> (<em>False</em>) – increment the radius of the center of mass by the
+value of the radius of girations given.</p></li>
+<li><p><strong>align</strong> (<em>False</em>) – align models</p></li>
+<li><p><strong>grid</strong> (<em>False</em>) – tile models</p></li>
+<li><p><strong>higlight</strong> (<em>'all'</em>) – higlights a given model, or group of models.
+Can be either ‘all’, or a model number</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
-<code class="descclassname">pytadbit.utils.hic_filtering.</code><code class="descname">hic_filtering_for_modelling</code><span class="sig-paren">(</span><em>matrx</em>, <em>silent=False</em>, <em>perc_zero=90</em>, <em>auto=True</em>, <em>min_count=None</em>, <em>draw_hist=False</em>, <em>savefig=None</em>, <em>diagonal=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.hic_filtering.</code><code class="sig-name descname">hic_filtering_for_modelling</code><span class="sig-paren">(</span><em class="sig-param">matrx</em>, <em class="sig-param">silent=False</em>, <em class="sig-param">perc_zero=90</em>, <em class="sig-param">auto=True</em>, <em class="sig-param">min_count=None</em>, <em class="sig-param">draw_hist=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">diagonal=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artifactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; and columns with NaN values (in this case NaN will be replaced
 by zero in the original Hi-C data matrix). Filtered out columns will be
 stored in the dictionary Experiment._zeros.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrx</strong> – Hi-C matrix of a given experiment</li>
-<li><strong>silent</strong> (<em>False</em>) – does not warn for removed columns</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrx</strong> – Hi-C matrix of a given experiment</p></li>
+<li><p><strong>silent</strong> (<em>False</em>) – does not warn for removed columns</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
-of the file name will determine the desired format).</li>
-<li><strong>diagonal</strong> (<em>True</em>) – remove row/columns with zero in the diagonal</li>
-<li><strong>perc_zero</strong> (<em>90</em>) – maximum percentage of cells with no interactions
-allowed.</li>
-<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
+of the file name will determine the desired format).</p></li>
+<li><p><strong>diagonal</strong> (<em>True</em>) – remove row/columns with zero in the diagonal</p></li>
+<li><p><strong>perc_zero</strong> (<em>90</em>) – maximum percentage of cells with no interactions
+allowed.</p></li>
+<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
-filtering… This option is slightly slower.</li>
-<li><strong>auto</strong> (<em>True</em>) – if False, only filters based on the given percentage
-zeros</li>
+filtering… This option is slightly slower.</p></li>
+<li><p><strong>auto</strong> (<em>True</em>) – if False, only filters based on the given percentage
+zeros</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the indexes of the columns not to be considered for the
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the indexes of the columns not to be considered for the
 calculation of the z-score</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.file_handling.magic_open">
-<code class="descclassname">pytadbit.utils.file_handling.</code><code class="descname">magic_open</code><span class="sig-paren">(</span><em>filename</em>, <em>verbose=False</em>, <em>cpus=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#magic_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.magic_open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.file_handling.</code><code class="sig-name descname">magic_open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">cpus=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#magic_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.magic_open" title="Permalink to this definition">¶</a></dt>
 <dd><p>To read uncompressed zip gzip bzip2 or tar.xx files</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – either a path to a file, or a file handler</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">opened file ready to be iterated</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – either a path to a file, or a file handler</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>opened file ready to be iterated</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.file_handling.get_free_space_mb">
-<code class="descclassname">pytadbit.utils.file_handling.</code><code class="descname">get_free_space_mb</code><span class="sig-paren">(</span><em>folder</em>, <em>div=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#get_free_space_mb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.get_free_space_mb" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.file_handling.</code><code class="sig-name descname">get_free_space_mb</code><span class="sig-paren">(</span><em class="sig-param">folder</em>, <em class="sig-param">div=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#get_free_space_mb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.get_free_space_mb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return folder/drive free space (in bytes)</p>
 <p>Based on stackoverflow answer: <a class="reference external" href="http://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python">http://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python</a></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>folder</strong> – folder/drive to measure</li>
-<li><strong>div</strong> (<em>2</em>) – divide the size by (div*1024) to get the size in Mb (3 is Gb…)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – folder/drive to measure</p></li>
+<li><p><strong>div</strong> (<em>2</em>) – divide the size by (div*1024) to get the size in Mb (3 is Gb…)</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">calc_eqv_rmsd</code><span class="sig-paren">(</span><em>models</em>, <em>beg</em>, <em>end</em>, <em>zeros</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">calc_eqv_rmsd</code><span class="sig-paren">(</span><em class="sig-param">models</em>, <em class="sig-param">beg</em>, <em class="sig-param">end</em>, <em class="sig-param">zeros</em>, <em class="sig-param">dcutoff=200</em>, <em class="sig-param">one=False</em>, <em class="sig-param">what='score'</em>, <em class="sig-param">normed=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the RMSD, dRMSD, the number of equivalent positions and a score
 combining these three measures. The measure are done between a group of
 models in a one against all manner.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>beg</strong> – start particle number of the region to compare</li>
-<li><strong>end</strong> – end particle number of the region to compare</li>
-<li><strong>zeros</strong> – list of True/False representing particles to skip</li>
-<li><strong>dcutoff</strong> (<em>200</em>) – distance in nanometer from which it is considered
-that two particles are separated.</li>
-<li><strong>fact</strong> (<em>0.75</em>) – Factor for equivalent positions</li>
-<li><strong>one</strong> (<em>False</em>) – if True assumes that only two models are passed, and
-returns the rmsd of their comparison</li>
-<li><strong>what</strong> (<em>'score'</em>) – values to return. Can be one of ‘score’, ‘rmsd’,
-‘drmsd’ or ‘eqv’</li>
-<li><strong>normed</strong> (<em>True</em>) – normalize result by maximum value (only applies to rmsd
-and drmsd)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beg</strong> – start particle number of the region to compare</p></li>
+<li><p><strong>end</strong> – end particle number of the region to compare</p></li>
+<li><p><strong>zeros</strong> – list of True/False representing particles to skip</p></li>
+<li><p><strong>dcutoff</strong> (<em>200</em>) – distance in nanometer from which it is considered
+that two particles are separated.</p></li>
+<li><p><strong>fact</strong> (<em>0.75</em>) – Factor for equivalent positions</p></li>
+<li><p><strong>one</strong> (<em>False</em>) – if True assumes that only two models are passed, and
+returns the rmsd of their comparison</p></li>
+<li><p><strong>what</strong> (<em>'score'</em>) – values to return. Can be one of ‘score’, ‘rmsd’,
+‘drmsd’ or ‘eqv’</p></li>
+<li><p><strong>normed</strong> (<em>True</em>) – normalize result by maximum value (only applies to rmsd
+and drmsd)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>a score of each pairwise comparison according to:</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a score of each pairwise comparison according to:</p>
 <div class="math notranslate nohighlight">
 \[score_i = eqvs_i \times \frac{dRMSD_i / max(dRMSD)}
                                 {RMSD_i / max(RMSD)}\]</div>
 <p>where <span class="math notranslate nohighlight">\(eqvs_i\)</span> is the number of equivalent position for the ith
 pairwise model comparison.</p>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.square_distance">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">square_distance</code><span class="sig-paren">(</span><em>part1</em>, <em>part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#square_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.square_distance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">square_distance</code><span class="sig-paren">(</span><em class="sig-param">part1</em>, <em class="sig-param">part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#square_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.square_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the square distance between two particles.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>part1</strong> – coordinate (dict format with x, y, z keys)</li>
-<li><strong>part2</strong> – coordinate (dict format with x, y, z keys)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part1</strong> – coordinate (dict format with x, y, z keys)</p></li>
+<li><p><strong>part2</strong> – coordinate (dict format with x, y, z keys)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">square distance between two points in space</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>square distance between two points in space</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.distance">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">distance</code><span class="sig-paren">(</span><em>part1</em>, <em>part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.distance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param">part1</em>, <em class="sig-param">part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the distance between two particles.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>part1</strong> – coordinate in list format (x, y, z)</li>
-<li><strong>part2</strong> – coordinate in list format (x, y, z)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part1</strong> – coordinate in list format (x, y, z)</p></li>
+<li><p><strong>part2</strong> – coordinate in list format (x, y, z)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">distance between two points in space</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>distance between two points in space</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.angle_between_3_points">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">angle_between_3_points</code><span class="sig-paren">(</span><em>point1</em>, <em>point2</em>, <em>point3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">angle_between_3_points</code><span class="sig-paren">(</span><em class="sig-param">point1</em>, <em class="sig-param">point2</em>, <em class="sig-param">point3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>      <span class="n">A</span>
@@ -491,60 +430,52 @@ pairwise model comparison.</p>
 <p>is given by the theorem of Al-Kashi:</p>
 <div class="math notranslate nohighlight">
 \[b^2 = a^2 + c^2 - 2ac\cos(g)\]</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>point1</strong> – list of 3 coordinate for x, y and z</li>
-<li><strong>point2</strong> – list of 3 coordinate for x, y and z</li>
-<li><strong>point3</strong> – list of 3 coordinate for x, y and z</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> – list of 3 coordinate for x, y and z</p></li>
+<li><p><strong>point2</strong> – list of 3 coordinate for x, y and z</p></li>
+<li><p><strong>point3</strong> – list of 3 coordinate for x, y and z</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">angle in radians</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>angle in radians</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.dihedral">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">dihedral</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>c</em>, <em>d</em>, <em>e</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">dihedral</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em>, <em class="sig-param">c</em>, <em class="sig-param">d</em>, <em class="sig-param">e</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates dihedral angle between 4 points in 3D (array with x,y,z)</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.generate_circle_points">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">generate_circle_points</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>u</em>, <em>v</em>, <em>w</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_circle_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_circle_points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">generate_circle_points</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">u</em>, <em class="sig-param">v</em>, <em class="sig-param">w</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_circle_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_circle_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns list of 3d coordinates of points on a circle using the
 Rodrigues rotation formula.</p>
 <p>see <em>Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions</em>
 for details</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – x coordinate of a point somewhere on the circle</li>
-<li><strong>y</strong> – y coordinate of a point somewhere on the circle</li>
-<li><strong>z</strong> – z coordinate of a point somewhere on the circle</li>
-<li><strong>a</strong> – x coordinate of the center</li>
-<li><strong>b</strong> – y coordinate of the center</li>
-<li><strong>c</strong> – z coordinate of the center</li>
-<li><strong>u</strong> – 1st element of a vector in the same plane as the circle</li>
-<li><strong>v</strong> – 2nd element of a vector in the same plane as the circle</li>
-<li><strong>w</strong> – 3rd element of a vector in the same plane as the circle</li>
-<li><strong>n</strong> – number of points in the circle</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate of a point somewhere on the circle</p></li>
+<li><p><strong>y</strong> – y coordinate of a point somewhere on the circle</p></li>
+<li><p><strong>z</strong> – z coordinate of a point somewhere on the circle</p></li>
+<li><p><strong>a</strong> – x coordinate of the center</p></li>
+<li><p><strong>b</strong> – y coordinate of the center</p></li>
+<li><p><strong>c</strong> – z coordinate of the center</p></li>
+<li><p><strong>u</strong> – 1st element of a vector in the same plane as the circle</p></li>
+<li><p><strong>v</strong> – 2nd element of a vector in the same plane as the circle</p></li>
+<li><p><strong>w</strong> – 3rd element of a vector in the same plane as the circle</p></li>
+<li><p><strong>n</strong> – number of points in the circle</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>TODO: try simplification for a=b=c=0 (and do the translation in the main</dt>
-<dd>function)</dd>
+</dd>
+</dl>
+<dl class="simple">
+<dt>TODO: try simplification for a=b=c=0 (and do the translation in the main</dt><dd><p>function)</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -589,13 +520,11 @@ for details</p>
   <p class="topless"><a href="../biblio.html"
                         title="next chapter">Bibliography</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -622,8 +551,8 @@ for details</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

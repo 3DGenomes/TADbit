@@ -1,10 +1,10 @@
-
 Installing TADbit on GNU/Linux
 ==============================
 
 .. contents::
 
-.. note::  at the moment the installation has been tested under Ubuntu-linux, Centos 7 and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
+.. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
+
 
 **TADbit requires python2 >= 2.6 as well as several dependencies that
 are listed below.**
@@ -15,19 +15,17 @@ Dependencies
 Conda
 ~~~~~
 
-The installation of TADbit under a conda environment is the recommended.
-
 Conda (http://conda.pydata.org/docs/index.html) is a package manager,
 mainly hosting python programs, that is very useful when no root access
 is available and the softwares have complicated dependencies.
 
-To install it (**in case you don't already have it**) just download the
+To install it (**in case you don’t already have it**) just download the
 installer from http://conda.pydata.org/miniconda.html
 
 .. code:: bash
 
     %%bash
-    
+
     wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
 
 
@@ -45,7 +43,7 @@ Alternatively you can also use this oneliner:
 .. code:: bash
 
     %%bash
-    
+
     bash miniconda.sh -b -p $HOME/miniconda2
 
 
@@ -95,15 +93,6 @@ Alternatively you can also use this oneliner:
     Python 2.7.15 :: Anaconda, Inc.
 
 
-Add path to ``miniconda2`` folder in your ``PATH``, either by adding a
-line in your .bashrc file:
-
-.. code:: bash
-
-    %%bash
-    
-    echo export PATH=\"$HOME/miniconda2/bin:\$PATH\" >> $HOME/.bashrc
-
 Python libraries
 ~~~~~~~~~~~~~~~~
 
@@ -111,35 +100,35 @@ Python libraries
 
 ::
 
-    apt-get install python-scipy
-    apt-get install python-numpy
+   apt-get install python-scipy
+   apt-get install python-numpy
 
 Optional packages (but **highly** recommended):
 
 ::
 
-    apt-get install python-matplotlib
+   apt-get install python-matplotlib
 
 .. note:: **Alternative install**, you can install *python-setuptools*
-and use easy\_install to get these packages (e.g.
-"``easy_install scipy``\ ").
+    and use easy_install to get these packages (e.g.
+    “``easy_install scipy``”).
 
 With conda you can install most of the needed dependencies:
 
 .. code:: bash
 
     %%bash
-    
+
     ## required
     conda install -y -q scipy                                      # scientific computing in python
     conda install -y -q numpy                                      # scientific computing in python
     conda install -y -q matplotlib                                 # to plot
     conda install -y -q -c https://conda.anaconda.org/bcbio pysam  # to deal with SAM/BAM files
-    
+
     ## optional
     conda install -y -q jupyter                                    # this notebook :)
     conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment
-
+    conda install -y -q -c bioconda h5py                           # to work with cooler format
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
@@ -151,13 +140,13 @@ Since version 2.5 IMP is available in several repositories, like Ubuntu
 
 ::
 
-    sudo apt-get install imp
+   sudo apt-get install imp
 
 or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
 
 ::
 
-    conda install -c https://conda.anaconda.org/salilab imp
+   conda install -c https://conda.anaconda.org/salilab imp
 
 These options may be easier than the source compilation.
 
@@ -175,40 +164,32 @@ machines it can be automatically installed with:
 
 ::
 
-    sudo apt-get install mcl
-    
-or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
+   sudo apt-get install mcl
+
+or in anaconda http://conda.pydata.org/docs/intro.html
 
 ::
 
-    conda install -y -q -c bioconda mcl
+   conda install -y -q -c bioconda mcl
 
 *Note: if the MCL executable is not found by TADbit, an alternative
 clustering method will be used. Nevertheless we strongly recommend to
 use MCL.*
 
-Chimera - visualization
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Chimera is a program used for visualization and analysis of molecular
-structures. It is used in TADbit to visualize the generated 3D models.
-Chimera is available at: http://www.cgl.ucsf.edu/chimera/
-
-*This software is only needed for the visualization of 3D models from
-inside TADbit.*
-
 GEM Mapper
-~~~~~~~~~~
+----------
 
-To install GEM, go to the download page:
+The default mapper in TADbit is GEM, but bowtie2 and hisat2 are also supported.
+
+To install GEM version 2, go to the download page:
 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/
 and download the ``i3`` version (the other version is for older
-computers, and you usually won't have to use it).
+computers, and you usually won’t have to use it).
 
 .. code:: bash
 
     %%bash
-    
+
     wget -nv -O GEM.tbz2 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2/download
 
 
@@ -216,13 +197,22 @@ computers, and you usually won't have to use it).
 
     2019-01-15 14:12:09 URL:https://netcologne.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2 [33847526/33847526] -> "GEM.tbz2" [1]
 
+GEM version 3, bowtie2 and hisat2 are available in bioconda.
+
+.. code:: bash
+
+    %%bash
+
+    conda -y -q -c bioconda gem3-mapper
+    conda -y -q -c bioconda bowtie2
+    conda -y -q -c bioconda hisat2
 
 Uncompress the archive:
 
 .. code:: bash
 
     %%bash
-    
+
     tar -xjvf GEM.tbz2
 
 
@@ -264,13 +254,13 @@ And copy the needed binaries to somewhere in your PATH, like:
 .. code:: bash
 
     %%bash
-    
+
     rm -f GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/LICENCE
 
 .. code:: bash
 
     %%bash
-    
+
     cp GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/* ~/miniconda2/bin/
 
 Cleanup
@@ -278,62 +268,60 @@ Cleanup
 .. code:: bash
 
     %%bash
-    
+
     rm -rf GEM-binaries-Linux-x86_64-core_i3-20121106-022124
     rm -f GEM.tbz2
 
-TADbit supports also `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/index.shtml>`__ mapper
-
 DryHiC for oneD normalization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
-If you want to use oneD normalization install dryhic from: https://github.com/qenvio/dryhic
+Install dryhic from: https://github.com/qenvio/dryhic
 
 From an R console type:
 
 ::
 
-    install.packages("devtools")
+   install.packages("devtools")
 
-    devtools::install_github("qenvio/dryhic")
+   devtools::install_github("qenvio/dryhic")
 
 **Or** execute this cell:
 
 .. code:: bash
 
     %%bash
-    
+
     R -e '
     install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic")'
 
 
 .. ansi-block::
 
-    
+
     R version 3.4.2 (2017-09-28) -- "Short Summer"
     Copyright (C) 2017 The R Foundation for Statistical Computing
     Platform: x86_64-pc-linux-gnu (64-bit)
-    
+
     R is free software and comes with ABSOLUTELY NO WARRANTY.
     You are welcome to redistribute it under certain conditions.
     Type 'license()' or 'licence()' for distribution details.
-    
+
       Natural language support but running in an English locale
-    
+
     R is a collaborative project with many contributors.
     Type 'contributors()' for more information and
     'citation()' on how to cite R or R packages in publications.
-    
+
     Type 'demo()' for some demos, 'help()' for on-line help, or
     'help.start()' for an HTML browser interface to help.
     Type 'q()' to quit R.
-    
+
     > install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic", force=TRUE)
     gfortran   -fpic  -g -O2 -fstack-protector-strong  -c fwdb.f -o fwdb.o
     gfortran   -fpic  -g -O2 -fstack-protector-strong  -c viterbi.f -o viterbi.o
     gcc -std=gnu99 -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o dryhic.so fwdb.o viterbi.o -lgfortran -lm -lquadmath -L/usr/lib/R/lib -lR
-    > 
-    > 
+    >
+    >
 
 
 .. ansi-block::
@@ -344,7 +332,7 @@ From an R console type:
     Content type 'application/x-gzip' length 486446 bytes (475 KB)
     ==================================================
     downloaded 475 KB
-    
+
     * installing *source* package ‘devtools’ ...
     ** package ‘devtools’ successfully unpacked and MD5 sums checked
     ** R
@@ -356,7 +344,7 @@ From an R console type:
     ** installing vignettes
     ** testing if installed package can be loaded
     * DONE (devtools)
-    
+
     The downloaded source packages are in
     	‘/tmp/Rtmp1j1AUG/downloaded_packages’
     Downloading GitHub repo qenvio/dryhic@master
@@ -364,8 +352,8 @@ From an R console type:
     Installing dryhic
     '/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
       CMD INSTALL '/tmp/Rtmp1j1AUG/devtools6acf4c30139e/qenvio-dryhic-764e0f0'  \
-      --library='/home/fransua/R/x86_64-pc-linux-gnu-library/3.4' --install-tests 
-    
+      --library='/home/fransua/R/x86_64-pc-linux-gnu-library/3.4' --install-tests
+
     * installing *source* package ‘dryhic’ ...
     ** libs
     installing to /home/fransua/R/x86_64-pc-linux-gnu-library/3.4/dryhic/libs
@@ -380,11 +368,11 @@ From an R console type:
 
 
 DSRC FASTQ compressor
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
-DSRC is a FASTQ compressor, it's not a mandatory requirement, but the size
-of their compressed files is significantly smaller than using gunzip (>30%), 
-and, more importantly, the access to them can be parallelized, and is much
+DSRC is a FASTQ compressor, it’s not needed, but we use it as the size
+of the files is significantly smaller than using gunzip (>30%), and,
+more importantly, the access to them can be parallelized, and is much
 faster than any other alternative.
 
 It can be downloaded from https://github.com/lrog/dsrc
@@ -392,7 +380,7 @@ It can be downloaded from https://github.com/lrog/dsrc
 .. code:: bash
 
     %%bash
-    
+
     wget -nv http://sun.aei.polsl.pl/dsrc/download/2.0rc/dsrc
 
 
@@ -404,16 +392,26 @@ It can be downloaded from https://github.com/lrog/dsrc
 .. code:: bash
 
     %%bash
-    
+
     chmod +x dsrc
 
-And the needed binaries to somewhere in your PATH, like:
+And copy to somewhere in your PATH, like:
 
 .. code:: bash
 
     %%bash
-    
+
     mv dsrc ~/miniconda2/bin/
+
+Chimera - visualization
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Chimera is a program used for visualization and analysis of molecular
+structures. It is used in TADbit to visualize the generated 3D models.
+Chimera is available at: http://www.cgl.ucsf.edu/chimera/
+
+*This software is only needed for the visualization of 3D models from
+inside TADbit.*
 
 LiftOver
 ~~~~~~~~
@@ -435,10 +433,10 @@ downloaded, unpacked and installed as:
 
 ::
 
-    wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
-    unzip tadbit.zip
-    cd tadbit-master
-    sudo python setup.py install
+   wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
+   unzip tadbit.zip
+   cd tadbit-master
+   sudo python setup.py install
 
 .. note:: IMP not found problem
 	  If you are under **debian/Ubuntu machines**, and you have
@@ -450,7 +448,7 @@ downloaded, unpacked and installed as:
 
 ::
 
-    sudo PYTHONPATH=$PYTHONPATH python setup.py install
+   sudo PYTHONPATH=$PYTHONPATH python setup.py install
 
 Finally, run the test script to check that the installation completed
 successfully.
@@ -459,5 +457,5 @@ To do so, move to the test directory and run:
 
 ::
 
-    cd test
-    python test_all.py
+   cd test
+   python test_all.py

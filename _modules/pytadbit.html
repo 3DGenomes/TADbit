@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>pytadbit &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -36,10 +35,12 @@
             
   <h1>Source code for pytadbit</h1><div class="highlight"><pre>
 <span></span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">environ</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">CalledProcessError</span>
+<span class="kn">from</span> <span class="nn">future</span> <span class="kn">import</span> <span class="n">standard_library</span>
+<span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">CalledProcessError</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="k">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="kn">import</span> <span class="n">__version__</span>
 
 <span class="c1"># ## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib</span>
 <span class="c1"># if not &quot;DISPLAY&quot; in environ:</span>
@@ -80,14 +81,14 @@
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">gem</span> <span class="k">import</span> <span class="n">commands</span>
+        <span class="kn">from</span> <span class="nn">gem</span> <span class="kn">import</span> <span class="n">commands</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gemtools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commands</span><span class="o">.</span><span class="n">__VERSION__</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gemtools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">gem</span> <span class="k">import</span> <span class="n">executables</span>
+        <span class="kn">from</span> <span class="nn">gem</span> <span class="kn">import</span> <span class="n">executables</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">executables</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">],</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
-                    <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+                    <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; - &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;build &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
@@ -103,7 +104,7 @@
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">mcl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;mcl&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
-                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mcl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
@@ -121,7 +122,7 @@
     <span class="c1">#     versions[&#39;Chimera&#39;] = &#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">uname</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;uname&#39;</span><span class="p">,</span> <span class="s1">&#39;-rom&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
-                           <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+                           <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uname</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s1">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
@@ -133,23 +134,23 @@
                           <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span></div>
 
 
-<span class="kn">from</span> <span class="nn">pytadbit.hic_data</span>                   <span class="k">import</span> <span class="n">HiC_data</span>
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span>                     <span class="k">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>                 <span class="k">import</span> <span class="n">Chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.experiment</span>                 <span class="k">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>                 <span class="k">import</span> <span class="n">load_chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodels</span> <span class="k">import</span> <span class="n">StructuralModels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodels</span> <span class="k">import</span> <span class="n">load_structuralmodels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="k">import</span> <span class="n">load_hic_data_from_reads</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
-<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="k">import</span> <span class="n">load_impmodel_from_cmm</span>
-<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="k">import</span> <span class="n">load_impmodel_from_xyz</span>
-<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="k">import</span> <span class="n">IMPmodel</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="k">import</span> <span class="n">read_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.hic_data</span>                   <span class="kn">import</span> <span class="n">HiC_data</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span>                     <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>                 <span class="kn">import</span> <span class="n">Chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.experiment</span>                 <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>                 <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="kn">import</span> <span class="n">load_hic_data_from_reads</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
+<span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>         <span class="kn">import</span> <span class="n">IMPmodel</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="kn">import</span> <span class="n">read_matrix</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.modelling.impoptimizer</span> <span class="k">import</span> <span class="n">IMPoptimizer</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.modelling.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">warnings</span>                  <span class="k">import</span> <span class="n">warn</span>
+    <span class="kn">from</span> <span class="nn">warnings</span>                  <span class="kn">import</span> <span class="n">warn</span>
     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
 </pre></div>
@@ -172,13 +173,11 @@
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -199,8 +198,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

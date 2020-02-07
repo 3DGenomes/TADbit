@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>HiC_data class &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +15,9 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TAD detection functions" href="reference_tadbit.html" />
+    <link rel="prev" title="Experiment class" href="reference_experiment.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -24,7 +25,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="reference_tadbit.html" title="TAD detection functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_experiment.html" title="Experiment class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -36,110 +44,93 @@
   <div class="section" id="hic-data-class">
 <h1>HiC_data class<a class="headerlink" href="#hic-data-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="pytadbit.parsers.hic_parser.HiC_data">
-<em class="property">class </em><code class="descclassname">pytadbit.parsers.hic_parser.</code><code class="descname">HiC_data</code><span class="sig-paren">(</span><em>items</em>, <em>size</em>, <em>chromosomes=None</em>, <em>dict_sec=None</em>, <em>resolution=1</em>, <em>masked=None</em>, <em>symmetricized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data">
+<em class="property">class </em><code class="sig-prename descclassname">pytadbit.hic_data.</code><code class="sig-name descname">HiC_data</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">size</em>, <em class="sig-param">chromosomes=None</em>, <em class="sig-param">dict_sec=None</em>, <em class="sig-param">resolution=1</em>, <em class="sig-param">masked=None</em>, <em class="sig-param">symmetricized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>This may also hold the print/write-to-file matrix functions</p>
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.add_sections">
-<code class="descname">add_sections</code><span class="sig-paren">(</span><em>lengths</em>, <em>chr_names=None</em>, <em>binned=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.add_sections" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.add_sections">
+<code class="sig-name descname">add_sections</code><span class="sig-paren">(</span><em class="sig-param">lengths</em>, <em class="sig-param">chr_names=None</em>, <em class="sig-param">binned=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add genomic coordinate to HiC_data object by getting them from a FASTA
 file containing chromosome sequences. Orders matters.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lengths</strong> – list of chromosome lengths</li>
-<li><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – list of corresponding chromosome names.</li>
-<li><strong>binned</strong> (<em>False</em>) – if True, lengths will not be divided by resolution</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lengths</strong> – list of chromosome lengths</p></li>
+<li><p><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of corresponding chromosome names.</p></li>
+<li><p><strong>binned</strong> (<em>False</em>) – if True, lengths will not be divided by resolution</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta">
-<code class="descname">add_sections_from_fasta</code><span class="sig-paren">(</span><em>fasta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections_from_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.add_sections_from_fasta">
+<code class="sig-name descname">add_sections_from_fasta</code><span class="sig-paren">(</span><em class="sig-param">fasta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections_from_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections_from_fasta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add genomic coordinate to HiC_data object by getting them from a FASTA
 file containing chromosome sequences</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fasta</strong> – path to a FASTA file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fasta</strong> – path to a FASTA file</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">
-<code class="descname">cis_trans_ratio</code><span class="sig-paren">(</span><em>normalized=False</em>, <em>exclude=None</em>, <em>diagonal=True</em>, <em>equals=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.cis_trans_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.cis_trans_ratio">
+<code class="sig-name descname">cis_trans_ratio</code><span class="sig-paren">(</span><em class="sig-param">normalized=False</em>, <em class="sig-param">exclude=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">equals=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.cis_trans_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Counts the number of interactions occurring within chromosomes (cis) with
 respect to the total number of interactions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>normalized</strong> (<em>False</em>) – used normalized data</li>
-<li><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – exclude a given list of chromosome from the
-ratio (may want to exclude translocated chromosomes)</li>
-<li><strong>diagonal</strong> (<em>False</em>) – replace values in the diagonal by 0 or 1</li>
-<li><strong>equals</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – can pass a function that would decide if 2 chromosomes
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>normalized</strong> (<em>False</em>) – used normalized data</p></li>
+<li><p><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – exclude a given list of chromosome from the
+ratio (may want to exclude translocated chromosomes)</p></li>
+<li><p><strong>diagonal</strong> (<em>False</em>) – replace values in the diagonal by 0 or 1</p></li>
+<li><p><strong>equals</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – can pass a function that would decide if 2 chromosomes
 have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
 consider chr2L and chr2R as being the same chromosome. WARNING: only
-working on consecutive chromosomes.</li>
+working on consecutive chromosomes.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the ratio of cis interactions over the total number of
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the ratio of cis interactions over the total number of
 interactions. This number is expected to be between at least 40-60%
 in Human classic dilution Hi-C with HindIII as restriction enzyme.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.filter_columns">
-<code class="descname">filter_columns</code><span class="sig-paren">(</span><em>draw_hist=False</em>, <em>savefig=None</em>, <em>perc_zero=75</em>, <em>by_mean=True</em>, <em>min_count=None</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.filter_columns" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.filter_columns">
+<code class="sig-name descname">filter_columns</code><span class="sig-paren">(</span><em class="sig-param">draw_hist=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">perc_zero=99</em>, <em class="sig-param">by_mean=True</em>, <em class="sig-param">min_count=None</em>, <em class="sig-param">silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.filter_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artifactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
-counts; columns passing through a cell with no interaction in the
-diagonal; and columns with NaN values (in this case NaN will be replaced
-by zero in the original Hi-C data matrix). Filtered out columns will be
+counts. Filtered out columns will be
 stored in the dictionary Experiment._zeros.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>draw_hist</strong> (<em>False</em>) – shows the distribution of mean values by column
-the polynomial fit, and the cut applied.</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>draw_hist</strong> (<em>False</em>) – shows the distribution of mean values by column
+the polynomial fit, and the cut applied.</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
-of the file name will determine the desired format).</li>
-<li><strong>perc_zero</strong> (<em>75</em>) – maximum percentage of cells with no interactions
-allowed.</li>
-<li><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
+of the file name will determine the desired format).</p></li>
+<li><p><strong>perc_zero</strong> (<em>75</em>) – maximum percentage of cells with no interactions
+allowed.</p></li>
+<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
-filtering… This option is slightly slower.</li>
-<li><strong>by_mean</strong> (<em>True</em>) – filter columns by mean column value using
-<code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.hic_filtering.filter_by_mean()</span></code> function</li>
+filtering… This option is slightly slower.</p></li>
+<li><p><strong>by_mean</strong> (<em>True</em>) – filter columns by mean column value using
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.hic_filtering.filter_by_mean()</span></code> function</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.find_compartments">
-<code class="descname">find_compartments</code><span class="sig-paren">(</span><em>crms=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>savecorr=None</em>, <em>show=False</em>, <em>suffix=''</em>, <em>ev_index=None</em>, <em>rich_in_A=None</em>, <em>format='png'</em>, <em>savedir=None</em>, <em>max_ev=3</em>, <em>show_compartment_labels=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.find_compartments">
+<code class="sig-name descname">find_compartments</code><span class="sig-paren">(</span><em class="sig-param">crms=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">savecorr=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">ev_index=None</em>, <em class="sig-param">rich_in_A=None</em>, <em class="sig-param">format='png'</em>, <em class="sig-param">savedir=None</em>, <em class="sig-param">max_ev=3</em>, <em class="sig-param">show_compartment_labels=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for A/B compartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
@@ -148,80 +139,73 @@ eigenvector is used to identify compartments. Changes in sign marking
 boundaries between compartments.
 Result is stored as a dictionary of compartment boundaries, keys being
 chromosome names.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>perc_zero</strong> (<em>99</em>) – to filter bad columns</li>
-<li><strong>signal_to_noise</strong> (<em>0.05</em>) – to calculate expected interaction counts,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>perc_zero</strong> (<em>99</em>) – to filter bad columns</p></li>
+<li><p><strong>signal_to_noise</strong> (<em>0.05</em>) – to calculate expected interaction counts,
 if not enough reads are observed at a given distance the observations
 of the distance+1 are summed. a signal to noise ratio of &lt; 0.05
-corresponds to &gt; 400 reads.</li>
-<li><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – only runs these given list of chromosomes</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a directory to store matrices with
+corresponds to &gt; 400 reads.</p></li>
+<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store matrices with
 compartment predictions, one image per chromosome, stored under
-‘chromosome-name_EV1.png’.</li>
-<li><strong>format</strong> (<em>png</em>) – in which to save the figures.</li>
-<li><strong>show</strong> (<em>False</em>) – show the plot</li>
-<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a new file to store compartment
-predictions, one file only.</li>
-<li><strong>savedir</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a directory to store coordinates of each
+‘chromosome-name_EV1.png’.</p></li>
+<li><p><strong>format</strong> (<em>png</em>) – in which to save the figures.</p></li>
+<li><p><strong>show</strong> (<em>False</em>) – show the plot</p></li>
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a new file to store compartment
+predictions, one file only.</p></li>
+<li><p><strong>savedir</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store coordinates of each
 eigenvector, one per chromosome. Each file contains one eigenvector
 per column, the first one being the one used as reference. This
 eigenvector is also rotated according to the prediction if a
-<cite>rich_in_A</cite> array was given.</li>
-<li><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a directory where to save correlation
-matrices of each chromosome</li>
-<li><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
-and vmax=’auto’ to color according to the absolute maximum found).</li>
-<li><strong>vmax</strong> (<em>1</em>) – for the color scale of the plotted map (use vmin=’auto’,
-and vmax=’auto’ to color according to the absolute maximum found).</li>
-<li><strong>yield_ev1</strong> (<em>False</em>) – if True yields one list per chromosome with the
-first eigenvector used to compute compartments.</li>
-<li><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</li>
-<li><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</li>
-<li><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a list of number referring to the index of the
+<cite>rich_in_A</cite> array was given.</p></li>
+<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory where to save correlation
+matrices of each chromosome</p></li>
+<li><p><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
+and vmax=’auto’ to color according to the absolute maximum found).</p></li>
+<li><p><strong>vmax</strong> (<em>1</em>) – for the color scale of the plotted map (use vmin=’auto’,
+and vmax=’auto’ to color according to the absolute maximum found).</p></li>
+<li><p><strong>yield_ev1</strong> (<em>False</em>) – if True yields one list per chromosome with the
+first eigenvector used to compute compartments.</p></li>
+<li><p><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</p></li>
+<li><p><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</p></li>
+<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of number referring to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
 if asking for only one chromosome the list should be only of one
-element.</li>
-<li><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – by default compartments are identified using mean
+element.</p></li>
+<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
 less). However this measure is not very accurate. Using this
 parameter a path to a BED or BED-Graph file with a list of genes or
 active epigenetic marks can be passed, and used instead of the mean
-interactions.</li>
-<li><strong>show_compartment_labels</strong> (<em>False</em>) – if True draw A and B compartment blocks.</li>
+interactions.</p></li>
+<li><p><strong>show_compartment_labels</strong> (<em>False</em>) – if True draw A and B compartment blocks.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>TODO: this is really slow…</p>
-<dl class="docutils">
-<dt>Notes: building the distance matrix using the amount of interactions</dt>
-<dd>instead of the mean correlation, gives generally worse results.</dd>
+</dd>
 </dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1- a dictionary with the N (max_ev) first
+<p>TODO: this is really slow…</p>
+<dl class="simple">
+<dt>Notes: building the distance matrix using the amount of interactions</dt><dd><p>instead of the mean correlation, gives generally worse results.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>1- a dictionary with the N (max_ev) first
 eigenvectors in the form:
 {Chromosome_name: (Eigenvalue: [Eigenvector])}
 Sign of the eigenvectors are changed in order to match the
 prediction of A/B compartments (positive is A).
 2- a dictionary of statistics of enrichment for A compartments
-(Spearman rho).</td>
-</tr>
-</tbody>
-</table>
+(Spearman rho).</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.find_compartments_beta">
-<code class="descname">find_compartments_beta</code><span class="sig-paren">(</span><em>crms=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>savecorr=None</em>, <em>show=False</em>, <em>suffix=''</em>, <em>how=''</em>, <em>label_compartments='hmm'</em>, <em>log=None</em>, <em>max_mean_size=10000</em>, <em>ev_index=None</em>, <em>rich_in_A=None</em>, <em>max_ev=3</em>, <em>show_compartment_labels=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.find_compartments_beta" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.find_compartments_beta">
+<code class="sig-name descname">find_compartments_beta</code><span class="sig-paren">(</span><em class="sig-param">crms=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">savecorr=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">how=''</em>, <em class="sig-param">label_compartments='hmm'</em>, <em class="sig-param">log=None</em>, <em class="sig-param">max_mean_size=10000</em>, <em class="sig-param">ev_index=None</em>, <em class="sig-param">rich_in_A=None</em>, <em class="sig-param">max_ev=3</em>, <em class="sig-param">show_compartment_labels=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for A/B compartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
@@ -230,291 +214,259 @@ eigenvector is used to identify compartments. Changes in sign marking
 boundaries between compartments.
 Result is stored as a dictionary of compartment boundaries, keys being
 chromosome names.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>perc_zero</strong> (<em>99</em>) – to filter bad columns</li>
-<li><strong>signal_to_noise</strong> (<em>0.05</em>) – to calculate expected interaction counts,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>perc_zero</strong> (<em>99</em>) – to filter bad columns</p></li>
+<li><p><strong>signal_to_noise</strong> (<em>0.05</em>) – to calculate expected interaction counts,
 if not enough reads are observed at a given distance the observations
 of the distance+1 are summed. a signal to noise ratio of &lt; 0.05
-corresponds to &gt; 400 reads.</li>
-<li><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – only runs these given list of chromosomes</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a directory to store matrices with
+corresponds to &gt; 400 reads.</p></li>
+<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store matrices with
 compartment predictions, one image per chromosome, stored under
-‘chromosome-name.png’.</li>
-<li><strong>show</strong> (<em>False</em>) – show the plot</li>
-<li><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a new file to store compartment
-predictions, one file only.</li>
-<li><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a directory where to save correlation
-matrices of each chromosome</li>
-<li><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
-and vmax=’auto’ to color according to the absolute maximum found).</li>
-<li><strong>vmax</strong> (<em>1</em>) – for the color scale of the plotted map (use vmin=’auto’,
-and vmax=’auto’ to color according to the absolute maximum found).</li>
-<li><strong>yield_ev1</strong> (<em>False</em>) – if True yields one list per chromosome with the
-first eigenvector used to compute compartments.</li>
-<li><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</li>
-<li><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</li>
-<li><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a list of number referring to the index of the
+‘chromosome-name.png’.</p></li>
+<li><p><strong>show</strong> (<em>False</em>) – show the plot</p></li>
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a new file to store compartment
+predictions, one file only.</p></li>
+<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory where to save correlation
+matrices of each chromosome</p></li>
+<li><p><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
+and vmax=’auto’ to color according to the absolute maximum found).</p></li>
+<li><p><strong>vmax</strong> (<em>1</em>) – for the color scale of the plotted map (use vmin=’auto’,
+and vmax=’auto’ to color according to the absolute maximum found).</p></li>
+<li><p><strong>yield_ev1</strong> (<em>False</em>) – if True yields one list per chromosome with the
+first eigenvector used to compute compartments.</p></li>
+<li><p><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</p></li>
+<li><p><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</p></li>
+<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of number referring to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
 if asking for only one chromosome the list should be only of one
-element.</li>
-<li><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – by default compartments are identified using mean
+element.</p></li>
+<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
 less). However this measure is not very accurate. Using this
 parameter a path to a BED or BED-Graph file with a list of genes or
 active epigenetic marks can be passed, and used instead of the mean
-interactions.</li>
-<li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a folder where to save log of the assignment
-of A/B compartments</li>
-<li><strong>label_compartments</strong> (<em>hmm</em>) – label compartments into A/B categories,
+interactions.</p></li>
+<li><p><strong>log</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a folder where to save log of the assignment
+of A/B compartments</p></li>
+<li><p><strong>label_compartments</strong> (<em>hmm</em>) – label compartments into A/B categories,
 otherwise just find borders (faster). Can be either hmm (default), or
-cluster.</li>
-<li><strong>how</strong> (<em>'ratio'</em>) – ratio divide by column, subratio divide by
-compartment, diagonal only uses diagonal</li>
-<li><strong>False'show_compartment_labels'</strong> – if True draw A and B compartment blocks.</li>
+cluster.</p></li>
+<li><p><strong>how</strong> (<em>'ratio'</em>) – ratio divide by column, subratio divide by
+compartment, diagonal only uses diagonal</p></li>
+<li><p><strong>False'show_compartment_labels'</strong> – if True draw A and B compartment blocks.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>TODO: this is really slow…</p>
-<dl class="docutils">
-<dt>Notes: building the distance matrix using the amount of interactions</dt>
-<dd>instead of the mean correlation, gives generally worse results.</dd>
+</dd>
 </dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary with the N (max_ev) first eigen vectors used to define
-compartment borders for each chromosome (keys are chromosome names)</td>
-</tr>
-</tbody>
-</table>
+<p>TODO: this is really slow…</p>
+<dl class="simple">
+<dt>Notes: building the distance matrix using the amount of interactions</dt><dd><p>instead of the mean correlation, gives generally worse results.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dictionary with the N (max_ev) first eigen vectors used to define
+compartment borders for each chromosome (keys are chromosome names)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr">
-<code class="descname">get_hic_data_as_csr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_hic_data_as_csr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.get_hic_data_as_csr">
+<code class="sig-name descname">get_hic_data_as_csr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_hic_data_as_csr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_hic_data_as_csr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">scipy sparse matrix in Compressed Sparse Row format</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>scipy sparse matrix in Compressed Sparse Row format</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.get_matrix">
-<code class="descname">get_matrix</code><span class="sig-paren">(</span><em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em>, <em>masked=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.get_matrix" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.get_matrix">
+<code class="sig-name descname">get_matrix</code><span class="sig-paren">(</span><em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">masked=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a matrix.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
-region</li>
-<li><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by ones, or zeroes
-if normalized</li>
-<li><strong>normalized</strong> (<em>False</em>) – get normalized data</li>
-<li><strong>masked</strong> (<em>False</em>) – return masked arrays using the definition of bad
-columns</li>
+region</p></li>
+<li><p><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by ones, or zeroes
+if normalized</p></li>
+<li><p><strong>normalized</strong> (<em>False</em>) – get normalized data</p></li>
+<li><p><strong>masked</strong> (<em>False</em>) – return masked arrays using the definition of bad
+columns</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrix (a list of lists of values)</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matrix (a list of lists of values)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.load_biases">
-<code class="descname">load_biases</code><span class="sig-paren">(</span><em>fnam</em>, <em>protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.load_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.load_biases" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.load_biases">
+<code class="sig-name descname">load_biases</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.load_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.load_biases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load biases, decay and bad columns from pickle file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fnam</strong> – path to input pickle file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fnam</strong> – path to input pickle file</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.normalize_hic">
-<code class="descname">normalize_hic</code><span class="sig-paren">(</span><em>iterations=0</em>, <em>max_dev=0.1</em>, <em>silent=False</em>, <em>sqrt=False</em>, <em>factor=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.normalize_hic">
+<code class="sig-name descname">normalize_hic</code><span class="sig-paren">(</span><em class="sig-param">iterations=0</em>, <em class="sig-param">max_dev=0.1</em>, <em class="sig-param">silent=False</em>, <em class="sig-param">sqrt=False</em>, <em class="sig-param">factor=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data.</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
 the calculated weight.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>iteration</strong> (<em>0</em>) – number of iterations</li>
-<li><strong>max_dev</strong> (<em>0.1</em>) – iterative process stops when the maximum deviation
-between the sum of row is equal to this number (0.1 means 10%)</li>
-<li><strong>silent</strong> (<em>False</em>) – does not warn when overwriting weights</li>
-<li><strong>sqrt</strong> (<em>False</em>) – uses the square root of the computed biases</li>
-<li><strong>factor</strong> (<em>1</em>) – final mean number of normalized interactions wanted
-per cell (excludes filtered, or bad, out columns)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iteration</strong> (<em>0</em>) – number of iterations</p></li>
+<li><p><strong>max_dev</strong> (<em>0.1</em>) – iterative process stops when the maximum deviation
+between the sum of row is equal to this number (0.1 means 10%)</p></li>
+<li><p><strong>silent</strong> (<em>False</em>) – does not warn when overwriting weights</p></li>
+<li><p><strong>sqrt</strong> (<em>False</em>) – uses the square root of the computed biases</p></li>
+<li><p><strong>factor</strong> (<em>1</em>) – final mean number of normalized interactions wanted
+per cell (excludes filtered, or bad, out columns)</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.save_biases">
-<code class="descname">save_biases</code><span class="sig-paren">(</span><em>fnam</em>, <em>protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.save_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.save_biases" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.save_biases">
+<code class="sig-name descname">save_biases</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.save_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.save_biases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save biases, decay and bad columns in pickle format (to be loaded by
 the function load_hic_data_from_bam)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fnam</strong> – path to output file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fnam</strong> – path to output file</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.sum">
-<code class="descname">sum</code><span class="sig-paren">(</span><em>bias=None</em>, <em>bads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.sum" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.sum">
+<code class="sig-name descname">sum</code><span class="sig-paren">(</span><em class="sig-param">bias=None</em>, <em class="sig-param">bads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum Hi-C data matrix
 WARNING: parameters are not meant to be used by external users</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">Params None bias:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">expects a dictionary of biases to use normalized matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Params None bads:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">extends computed bad columns</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the sum of the Hi-C matrix skipping bad columns</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.write_compartments">
-<code class="descname">write_compartments</code><span class="sig-paren">(</span><em>savedata</em>, <em>chroms=None</em>, <em>ev_nums=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.write_compartments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write compartments to a file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>savedata</strong> – path to a file.</li>
-<li><strong>chroms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – write only the given list of chromosomes (default
-all chromosomes are written, note that the first column corresponding
-to chromosome name will disappear in non default case)</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.write_coord_table">
-<code class="descname">write_coord_table</code><span class="sig-paren">(</span><em>fname</em>, <em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em>, <em>format='BED'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_coord_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.write_coord_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>writes a coordinate table to a file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
-window of data (start, starting at 1, and both start and end are
-inclusive). Alternatively a chromosome name can be input or a tuple
-of chromosome name, in order to retrieve a specific inter-chromosomal
-region</li>
-<li><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</li>
-<li><strong>normalized</strong> (<em>False</em>) – get normalized data</li>
-<li><strong>format</strong> (<em>BED</em>) – <dl class="docutils">
-<dt>either “BED”</dt>
-<dd>chr1        111             222             chr2:333-444,55         1       .
-chr2        333             444             chr1:111-222,55         2       .</dd>
-<dt>or “long-range” format:</dt>
-<dd>chr1:111-222        chr2:333-444            55
-chr2:333-444        chr1:111-222            55</dd>
+<dl class="field-list simple">
+<dt class="field-odd">Params None bias</dt>
+<dd class="field-odd"><p>expects a dictionary of biases to use normalized matrix</p>
+</dd>
+<dt class="field-even">Params None bads</dt>
+<dd class="field-even"><p>extends computed bad columns</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the sum of the Hi-C matrix skipping bad columns</p>
+</dd>
 </dl>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.write_matrix">
-<code class="descname">write_matrix</code><span class="sig-paren">(</span><em>fname</em>, <em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.write_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>writes the matrix to a file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<dt id="pytadbit.hic_data.HiC_data.write_compartments">
+<code class="sig-name descname">write_compartments</code><span class="sig-paren">(</span><em class="sig-param">savedata</em>, <em class="sig-param">chroms=None</em>, <em class="sig-param">ev_nums=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_compartments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write compartments to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savedata</strong> – path to a file.</p></li>
+<li><p><strong>chroms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – write only the given list of chromosomes (default
+all chromosomes are written, note that the first column corresponding
+to chromosome name will disappear in non default case)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.hic_data.HiC_data.write_cooler">
+<code class="sig-name descname">write_cooler</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_cooler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_cooler" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the hic_data to a cooler file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>normalized</strong> (<em>False</em>) – get normalized data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.hic_data.HiC_data.write_coord_table">
+<code class="sig-name descname">write_coord_table</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">format='BED'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_coord_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_coord_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes a coordinate table to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
-region</li>
-<li><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</li>
-<li><strong>normalized</strong> (<em>False</em>) – get normalized data</li>
+region</p></li>
+<li><p><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</p></li>
+<li><p><strong>normalized</strong> (<em>False</em>) – get normalized data</p></li>
+<li><p><strong>format</strong> (<em>BED</em>) – <dl class="simple">
+<dt>either “BED”</dt><dd><p>chr1        111             222             chr2:333-444,55         1       .
+chr2        333             444             chr1:111-222,55         2       .</p>
+</dd>
+<dt>or “long-range” format:</dt><dd><p>chr1:111-222        chr2:333-444            55
+chr2:333-444        chr1:111-222            55</p>
+</dd>
+</dl>
+</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.parsers.hic_parser.HiC_data.yield_matrix">
-<code class="descname">yield_matrix</code><span class="sig-paren">(</span><em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.yield_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.yield_matrix" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.hic_data.HiC_data.write_matrix">
+<code class="sig-name descname">write_matrix</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the matrix to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+window of data (start, starting at 1, and both start and end are
+inclusive). Alternatively a chromosome name can be input or a tuple
+of chromosome name, in order to retrieve a specific inter-chromosomal
+region</p></li>
+<li><p><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</p></li>
+<li><p><strong>normalized</strong> (<em>False</em>) – get normalized data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.hic_data.HiC_data.yield_matrix">
+<code class="sig-name descname">yield_matrix</code><span class="sig-paren">(</span><em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.yield_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.yield_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yields a matrix line by line.
 Bad row/columns are returned as null row/columns.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
-region</li>
-<li><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</li>
-<li><strong>normalized</strong> (<em>False</em>) – get normalized data</li>
+region</p></li>
+<li><p><strong>diagonal</strong> (<em>True</em>) – if False, diagonal is replaced by zeroes</p></li>
+<li><p><strong>normalized</strong> (<em>False</em>) – get normalized data</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first last">matrix line by line (a line being a list of values)</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p>matrix line by line (a line being a list of values)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -531,22 +483,41 @@ region</li>
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
             </a></p>
 <h3><a href="../index.html">Table of Contents</a></h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="index.html">Reference Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">HiC_data class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impoptimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_impmodel.html">IMPmodel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_modelling_structuralmodels.html">StructuralModels class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_experiment.html"
+                        title="previous chapter">Experiment class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_tadbit.html"
+                        title="next chapter">TAD detection functions</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -561,13 +532,20 @@ region</li>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="reference_tadbit.html" title="TAD detection functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_experiment.html" title="Experiment class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
