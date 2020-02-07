@@ -2,7 +2,7 @@
 12 nov. 2014
 """
 
-from warnings                             import warn
+from warnings                             import warn, catch_warnings, simplefilter
 from os                                   import SEEK_END
 from subprocess                           import Popen, PIPE
 from itertools                            import zip_longest
@@ -186,7 +186,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     axb.set_ylabel('Number of "N" per position')
     try: # no Ns found (yes... it happens)
         axb.set_yscale('log')
-        axb.set_ylim((0, axb.get_ylim()[1] * 1000))
+        with catch_warnings():
+            simplefilter("ignore")
+            axb.set_ylim((0, axb.get_ylim()[1] * 1000))
     except ValueError:
         axb.set_yscale('linear')
     ax.set_ylim((0, ax.get_ylim()[1]))

@@ -189,7 +189,6 @@ class Experiment(object):
         self.size            = None
         self.tads            = {}
         self.norm            = None
-        self.bias            = None
         self._normalization  = None
         self._filtered_cols  = False
         self._zeros          = {}
@@ -700,8 +699,7 @@ class Experiment(object):
             tads[tad]['height'] = height
 
 
-    def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
-                      rowsums=None):
+    def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -734,13 +732,12 @@ class Experiment(object):
         if self.norm and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        self.bias = iterative(self.hic_data[0], iterations=iterations,
-                              max_dev=max_dev, bads=self._zeros,
-                              verbose=not silent)
+        self.hic_data[0].normalize_hic(iterations=iterations,max_dev=max_dev,
+                                       silent=silent)
         self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
-                                self.bias[i] /
-                                self.bias[j] * size)
-                               for i in self.bias for j in self.bias], size)]
+                                self.hic_data[0].bias[i] /
+                                self.hic_data[0].bias[j] * size)
+                               for i in self.hic_data[0].bias for j in self.hic_data[0].bias], size)]
         # no need to use lists, tuples use less memory
         if factor:
             self._normalization = 'visibility_factor:' + str(factor)

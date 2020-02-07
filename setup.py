@@ -161,51 +161,7 @@ def main():
     # UPDATE version number
     version_full = open(path.join(PATH, '_pytadbit', '_version.py')
                         ).readlines()[0].split('=')[1]
-    version_full = version_full.strip().replace('"', '')
-    version      = '.'.join(version_full.split('.')[:-1])
-    revision     = version_full.split('.')[-1]
-    # try to use git to check if version number matches
-    git_revision = git_version = None
-    try:
-        git_revision, err = Popen(['git', 'describe', '--tags'], stdout=PIPE,
-                                  stderr=PIPE, universal_newlines=True).communicate()
-        git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
-                                stderr=PIPE, universal_newlines=True).communicate()
-        if err or err2:
-            raise OSError('git not found')
-        plus = git_status != ''
-        if plus:
-            print('\n\nFOUND changes:\n' + git_status + '.')
-        git_version  = git_revision.split('-')[0].strip()
-        try:
-            git_revision = str(int(git_revision.split('-')[1]) + plus)
-        except IndexError:
-            git_revision = str(1)
-    except OSError:
-        git_revision = revision
-        git_version  = version
-    else:
-        if err:
-            git_revision = revision
-            git_version  = version
-    # update version number and write it to _version.py and README files
-    revision = git_revision
-    version  = git_version
-    version_full = '.'.join([version, revision])
-    out = open(path.join(PATH, '_pytadbit', '_version.py'), 'w')
-    out.write('__version__ = "%s"' % version_full)
-    out.close()
-    lines = []
-    for line in open(path.join(PATH, 'README.rst')):
-        if line.startswith('| Current version: '):
-            old_v = sub('.*Current version: ([^ ]+ +).*', '\\1', line).strip('\n')
-            line = sub('Current version: [^ ]+ +',
-                       ('Current version: ' + version_full +
-                        ' ' * (len(old_v) - len(version_full))), line)
-        lines.append(line.rstrip())
-    out = open(path.join(PATH, 'README.rst'), 'w')
-    out.write('\n'.join(lines))
-    out.close()
+    version_full = version_full.strip().replace('"', '').replace('v','')
 
     setup(
         name         = 'TADbit',

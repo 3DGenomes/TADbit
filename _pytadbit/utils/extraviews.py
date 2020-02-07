@@ -793,7 +793,7 @@ def plot_2d_optimization_result(result,
                     cbar_location="right",
                     cbar_mode="single",
                     # cbar_size="%s%%" % (20./ width),
-                    cbar_pad="15%",
+                    cbar_pad="30%",
     )
     cell = ncols
     used = []
@@ -836,19 +836,20 @@ def plot_2d_optimization_result(result,
 
             cell += 1
 
-        rect = patches.Rectangle((len(xax)-.5, -0.5), 1.5, len(yax),
+        rect = patches.Rectangle((len(xax)-.5, -0.5), 2.5, len(yax),
                                  facecolor='grey', alpha=0.5)
         # Define the rectangles for
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
-        grid[cell-1].text(len(xax) + 0.4, len(yax) / 2.,
+        grid[cell-1].text(len(xax) + 1.0, len(yax) / 2.,
                           str(my_round(vax[row[0]], 3)) + '\n' +
-                          str(my_round(wax[row[1]], 3)),
+                          str(my_round(wax[row[1]], 3)) + '\n' +
+                          str(my_round(dcutoff, 3)),
                           {'ha':'center', 'va':'center'},
                           rotation=90, size=8)
 
     grid[cell-1].text(len(xax) - 0.2, len(yax) + 1.2,
-                      axes[0] + '\n' + axes[1],
+                      axes[0] + '\n' + axes[1] + '\ndcutoff',
                       {'ha':'left', 'va':'center'},
                       rotation=90, size=8)
 
@@ -873,15 +874,8 @@ def plot_2d_optimization_result(result,
     grid.cbar_axes[0].set_ylabel('Correlation value', size=9)
     grid.cbar_axes[0].tick_params(labelsize=9)
 
-    # Setting title of the genearal title of the grid of heatmaps
-    dcutoffs = [str(d) for d in dcutoff if dcutoff] if dcutoff else ['Default']
-    # TODO: FIXME
-    # title = 'Optimal IMP parameters\n'
-    # title += 'Best: %s=%%s, %s=%%s, %s=%%s\n%s=%%s, %s=%%s %s=%%s' % (
-    #     axes[0], axes[1], axes[2], axes[3], axes[4], 'dcutoff')
-    # heatmap.suptitle(title % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
-    #                                dcutoffs),
-    #                  size=12)
+    title = 'Optimal IMP parameters\n'
+    heatmap.suptitle(title, size=12)
 
     #plt.tight_layout()
     if savefig:
@@ -1299,7 +1293,7 @@ def add_subplot_axes(ax,rect,axisbg='w'):
 
 def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
                     transform=np.log2, rescale_zeros=True, figsize=None,
-                    **kwargs):
+                    tad_def=None, **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
 
@@ -1309,6 +1303,8 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
     :param None figsize: tuple with the width and heigth of the wanted
        image (default is (16, 10) for triangular and (16, 14) for square
        matrices)
+    :param None tad_def: dictionary with tad definition to include in
+       the plot
     :param kwargs: extra parameters for the imshow function of matplotlib
 
     :returns: two axes object, the first corresponding to the matrix,
@@ -1408,5 +1404,27 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
                         labelpad=20 if 'vmin' in kwargs and 'vmax' in kwargs
                         else 10)
         axe2.set_xlabel('Count')
+    if tad_def:
+        pwidth = 1
+        for i, tad in tad_def.items():
+            nwidth = float(abs(tad['score'])) / 4
+            t_start = int(tad['start']) - 0.5
+            t_end   = int(tad['end']) + 0.5
+            if not triangular:
+                axe1.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+                axe1.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+                axe1.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+                axe1.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            else:
+                pol1 = plt.Polygon([(t_start,0),
+                                   (t_start+(t_end-t_start)/2,(t_end-t_start)),
+                                   (t_end,0)], ls="--", lw=nwidth, fill=False)
+                axe1.add_patch(pol1)
+            if tad['score'] < 0:
+                for j in range(0, int(t_end) - int(t_start), 2):
+                    axe1.plot((t_start    , t_start + j),
+                             (t_end   - j, t_end      ), color='k')
+                    axe1.plot((t_end      , t_end   - j),
+                             (t_start + j, t_start    ), color='k')
 
     return axe1, axe2

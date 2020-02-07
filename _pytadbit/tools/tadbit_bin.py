@@ -31,6 +31,7 @@ from pytadbit.mapping.filter         import MASKED
 from pytadbit.utils.file_handling    import mkdir
 from pytadbit.parsers.hic_bam_parser import filters_to_bin, printime
 from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
+from pytadbit.parsers.tad_parser     import parse_tads
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
@@ -145,7 +146,8 @@ def run(opts):
                     stdout.write('\n')
     else:
         if not opts.quiet:
-            stdout.write('\nExtraction of full genome\n')
+            stdout.write('\nExtraction of %s genome\n'
+                         %('partial' if opts.chr_name else 'full'))
 
     out_files = {}
     out_plots = {}
@@ -264,11 +266,22 @@ def run(opts):
                                    if k in regions)
                 transform = (log2 if opts.transform == 'log2' else
                              log if opts.transform == 'log' else lambda x: x)
+                tads=None
+                if opts.tad_def and not region2:
+                    tads, _ = parse_tads(opts.tad_def)
+                    if start1:
+                        tads = dict([(t, tads[t]) for t in tads
+                             if  (int(tads[t]['start']) >= start1 // opts.reso
+                                   and int(tads[t]['end']) <= end1 // opts.reso)])
+                        for tad in tads:
+                            tads[tad]['start'] -= start1 // opts.reso
+                            tads[tad]['end'] -= start1 // opts.reso
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,
                     vmin=vmin, vmax=vmax, cmap=opts.cmap,
                     figsize=opts.figsize, transform=transform,
-                    bad_color=opts.bad_color if norm != 'raw' else None)
+                    bad_color=opts.bad_color if norm != 'raw' else None,
+                    tad_def=tads)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
                 _format_axes(ax1, start1, end1, start2, end2, opts.reso,
@@ -290,7 +303,8 @@ def run(opts):
             region2=region2, start2=start2, end2=end2,
             tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
             nchunks=opts.nchunks, verbose=not opts.quiet,
-            extra=param_hash, cooler=opts.cooler, clean=clean))
+            extra=param_hash, cooler=opts.cooler, clean=clean,
+            chr_order=opts.chr_name))
 
     if clean:
         printime('Cleaning')
@@ -642,6 +656,11 @@ def populate_args(parser):
                         help='''Range, in log2 scale of the color scale.
                         default for triangular matrices: --figsize=16,10
                         and for square matrices:  --figsize=16,14''')
+
+    pltopt.add_argument('--tad_def', dest='tad_def', action='store',
+                        default=None,
+                        help='''tsv file with tad definition, columns:
+                        #    start    end    score    density''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to

@@ -477,12 +477,14 @@ def run(opts):
                     optimizer.upfreq_range   = [i for i in opts.upfreq]
                     optimizer.dcutoff_range  = [i for i in opts.dcutoff]
                     optimizer.results = dict((
-                        (float(s),0.0,float(m),float(l), float(u), str(int(d))),
+                        (float(s),0.0,float(m),float(l), float(u), float(d)),
                         results[(m,u,l,d,s)]['corr'])
                                              for m,u,l,d,s in results)
                     optimizer.plot_2d(show_best=20,
-                                savefig="%s/optimal_params.%s" % (
-                                    outdir, opts.fig_format))
+                                savefig="%s/optimal_params_%s.%s" % (
+                                    outdir,''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]),
+                                    opts.fig_format))
                 logging.info('\n optimization done')
 
         if opts.model:
