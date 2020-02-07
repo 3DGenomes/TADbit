@@ -1,4 +1,3 @@
-
 Load mapped read-ends and generate a matrix
 ===========================================
 
@@ -16,7 +15,7 @@ for the fragment-based and iterative mapping strategies.
 Extract uniquely mapped reads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     # replicate and enzyme used
     cell = 'mouse_B'  # or mouse_PSC
@@ -28,11 +27,11 @@ Extract uniquely mapped reads
 Load genomic sequence to map restriction sites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.genome_parser import parse_fasta
 
-.. code:: ipython2
+.. code:: ipython3
 
     genome_seq = parse_fasta('genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa')
 
@@ -42,17 +41,17 @@ Load genomic sequence to map restriction sites
     Loading cached genome
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.map_parser import parse_map
 
 Iterative mapping results
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In case we haven't stored the location of each of the reads we could
+In case we haven’t stored the location of each of the reads we could
 load them as follow:
 
-.. code:: ipython2
+.. code:: ipython3
 
     maps1 = [('results/iterativ/{0}_{1}/01_mapping/mapped_{0}_{1}_r1/'
               '{0}_{1}_1.fastq_full_1-{2}.map').format(cell, rep, i) 
@@ -66,11 +65,11 @@ Load all reads, and check if they are uniquely mapped. The Result is
 stored in two separate tab-separated-values (tsv) files that will
 contain the essential information of each read-end
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! mkdir -p results/iterativ/$cell\_$rep/02_parsing
 
-.. code:: ipython2
+.. code:: ipython3
 
     parse_map(maps1, maps2,
               'results/iterativ/{0}_{1}/02_parsing/reads1_{0}_{1}.tsv'.format(cell, rep),
@@ -117,7 +116,7 @@ contain the essential information of each read-end
 
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import plot_iterative_mapping
     
@@ -136,11 +135,11 @@ contain the essential information of each read-end
 Fragment-based mapping results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! mkdir -p results/fragment/$cell\_$rep/02_parsing
 
-.. code:: ipython2
+.. code:: ipython3
 
     maps1 = [('results/fragment/{0}_{1}/01_mapping/mapped_{0}_{1}_r1/'
               '{0}_{1}_1.fastq_full_1-end.map').format(cell, rep),
@@ -152,7 +151,7 @@ Fragment-based mapping results
              ('results/fragment/{0}_{1}/01_mapping/mapped_{0}_{1}_r2/'
               '{0}_{1}_2.fastq_frag_1-end.map').format(cell, rep)]
 
-.. code:: ipython2
+.. code:: ipython3
 
     parse_map(maps1, maps2,
               'results/fragment/{0}_{1}/02_parsing/reads1_{0}_{1}.tsv'.format(cell, rep), 
@@ -181,16 +180,16 @@ Fragment-based mapping results
 .. ansi-block::
 
     ({0: {1: 64750569, 2: 25664719}, 1: {1: 61548041, 2: 26467447}},
-     {0: {0: 74098430, 1: 8157782, 2: 431}, 1: {0: 71100363, 1: 8456843, 2: 479}})
+     {0: {1: 8157782, 0: 74098430, 2: 431}, 1: {0: 71100363, 1: 8456843, 2: 479}})
 
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     reads1 = 'results/fragment/{0}_{1}/02_parsing/reads1_{0}_{1}.tsv'.format(cell, rep)
     reads2 = 'results/fragment/{0}_{1}/02_parsing/reads2_{0}_{1}.tsv'.format(cell, rep)
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import plot_iterative_mapping
     
@@ -203,25 +202,25 @@ Fragment-based mapping results
 .. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_21_0.png
 
 
-*Note: From now on we are going to focus only on the results of the
-**fragment based mapping**.*
+*Note: From now on we are going to focus only on the results of
+the*\ **fragment based mapping**\ *.*
 
 Keep only uniquely mapped reads pairs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping import get_intersection
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! mkdir -p results/fragment/$cell\_$rep/03_filtering
 
-.. code:: ipython2
+.. code:: ipython3
 
     reads = 'results/fragment/{0}_{1}/03_filtering/reads12_{0}_{1}.tsv'.format(cell, rep)
 
-.. code:: ipython2
+.. code:: ipython3
 
     get_intersection(reads1, reads2, reads, verbose=True)
 
@@ -249,14 +248,29 @@ Keep only uniquely mapped reads pairs
 Quality check of the Hi-C experiment
 ====================================
 
-Interaction count vs. genomic separation!
+Interaction count vs. genomic separation!
 -----------------------------------------
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import plot_distance_vs_interactions
     
     plot_distance_vs_interactions(reads, resolution=100000, max_diff=1000, show=True)
+
+
+
+.. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_30_0.png
+
+
+
+
+.. ansi-block::
+
+    ((-0.8597345093043444, 7.77896435141178, -0.9993659328855855),
+     (-1.1357021175965485, 8.287957073239085, -0.9982246432365471),
+     (-0.7085449034953684, 6.662855682899386, -0.8479147001712137))
+
+
 
 According to the fractal globule model \ `(Mirny,
 2011) <#cite-Mirny2011>`__ the slope between 700 kb and 10 Mb should be
@@ -273,32 +287,34 @@ constant, and in very few occasions we may observe line crossings.
 
 Differences in the slopes observed between chromosomes or conditions
 relates to gains or losses of close or long range interactions \ `(Kojic
-et al. 2018) <#cite-Kojic2018>`__.
+et al. 2018) <#cite-Kojic2018>`__.
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit import load_hic_data_from_reads
+    from matplotlib import pyplot as plt
+    import numpy as np
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data = load_hic_data_from_reads(reads, resolution=100000)
 
-.. code:: ipython2
+.. code:: ipython3
 
     min_diff  = 1
     max_diff  = 200
 
-.. code:: ipython2
+.. code:: ipython3
 
     plt.figure(figsize=(12, 12))
     for cnum, c in enumerate(hic_data.chromosomes):
         if c in ['chrY','chrMT']:
             continue
         dist_intr = []
-        for diff in xrange(min_diff, min((max_diff, 1 + hic_data.chromosomes[c]))):
+        for diff in range(min_diff, min((max_diff, 1 + hic_data.chromosomes[c]))):
             beg, end = hic_data.section_pos[c]
             dist_intr.append([])
-            for i in xrange(beg, end - diff):
+            for i in range(beg, end - diff):
                 dist_intr[-1].append(hic_data[i, i + diff])
         mean_intrp = []
         for d in dist_intr:
@@ -309,7 +325,7 @@ et al. 2018) <#cite-Kojic2018>`__.
         xp, yp = range(min_diff, max_diff), mean_intrp
         x = []
         y = []
-        for k in xrange(len(xp)):
+        for k in range(len(xp)):
             if yp[k]:
                 x.append(xp[k])
                 y.append(yp[k])
@@ -331,10 +347,10 @@ et al. 2018) <#cite-Kojic2018>`__.
 .. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_37_0.png
 
 
-*Note: these **decay are computed on the raw data**, and although the
-slopes may not change dramatically, it is a **good practice to repeate
-this analysis and interpret the results also once the data are
-normalized**.*
+*Note: these*\ **decay are computed on the raw data**\ *, and although
+the slopes may not change dramatically, it is a*\ **good practice to
+repeate this analysis and interpret the results also once the data are
+normalized**\ *.*
 
 Coverage per bin
 ----------------
@@ -347,11 +363,11 @@ cut-sites along the genome can cause heterogeneity. In the following
 sections, we will discuss how to correct for these sources of
 heterogeneity.
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import plot_genomic_distribution
 
-.. code:: ipython2
+.. code:: ipython3
 
     plot_genomic_distribution(reads, resolution=500000, ylim=(0, 100000), show=True)
     plt.tight_layout()
@@ -364,7 +380,7 @@ heterogeneity.
 
 .. ansi-block::
 
-    <Figure size 900x900 with 0 Axes>
+    <Figure size 432x288 with 0 Axes>
 
 
 First Hi-C map
@@ -385,29 +401,23 @@ and on the right part:
 -  The first 3 eigenvectors of the interaction matrix are shown on top
    of the matrix itself.
 
-***Note**: The first 3 eigenvectors of the interaction matrix highlight
-the principal structural features of the matrix. In the raw matrix shown
-here, we can see, for instance, that here the maxima of the first
-eigenvector seem to be correlated with the presence of low-coverage
-bins.*
+**Note**\ *: The first 3 eigenvectors of the interaction matrix
+highlight the principal structural features of the matrix. In the raw
+matrix shown here, we can see, for instance, that here the maxima of the
+first eigenvector seem to be correlated with the presence of
+low-coverage bins.*
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_map(reads, resolution=1000000, show=True, cmap='viridis')
 
 
-.. ansi-block::
 
-    /home/fransua/.miniconda2/lib/python2.7/site-packages/matplotlib/axes/_axes.py:6571: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
-      warnings.warn("The 'normed' kwarg is deprecated, and has been "
-
-
-
-.. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_46_1.png
+.. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_46_0.png
 
 
 Insert size
@@ -416,11 +426,11 @@ Insert size
 From the reads that are mapped in a single RE fragment we can infer the
 average insert size:
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import insert_sizes
 
-.. code:: ipython2
+.. code:: ipython3
 
     insert_sizes(reads, show=True, nreads=1000000)
 
@@ -439,7 +449,7 @@ average insert size:
 
 The median size of the sequenced DNA fragments is thus 187 nt.
 
-***Note**: This distribution is usually peaked at smaller values than
+**Note**\ *: This distribution is usually peaked at smaller values than
 the one measured experimentally (with a Bioanalyzer for example). This
 difference is due in part to the fact that, here, we are only measuring
 dangling-ends that may be, on average, shorter than other reads.*
@@ -452,11 +462,11 @@ sequenced fragment. If we set the parameter ``valid-pairs`` to
 ``False``, we will look only at the interactions captured within RE
 fragments (similarly to the ``insert_sizes`` function above):
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import  plot_strand_bias_by_distance
 
-.. code:: ipython2
+.. code:: ipython3
 
     plot_strand_bias_by_distance(reads, valid_pairs=False, full_step=None, nreads=20000000)
 
@@ -472,13 +482,20 @@ Having a look at the minimum distance from which the orientation of the
 mapped read-ends is even, is also useful for the interpretation of the
 results and for the definition of filters.
 
-.. code:: ipython2
+.. code:: ipython3
 
     plot_strand_bias_by_distance(reads, nreads=20000000)
 
 
+.. ansi-block::
 
-.. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_58_0.png
+    /home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/mapping/analyze.py:1638: UserWarning: Attempted to set non-positive bottom ylim on a log-scaled axis.
+    Invalid limit will be ignored.
+      axRb.set_ylim(0, max(sum_dirs) * 1.1)
+
+
+
+.. image:: ../nbpictures//tutorial_5-Parsing_mapped_reads_58_1.png
 
 
 We can see that when the distance between the mapped read-ends is larger

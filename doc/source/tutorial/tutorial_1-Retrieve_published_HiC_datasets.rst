@@ -1,9 +1,8 @@
-
 Retrieve HiC dataset from NCBI
 ==============================
 
 We will use data from \ `(Stadhouders R, Vidal E, Serra F, Di Stefano B
-et al. 2018) <#cite-ralph>`__, which comes from mouse cells where Hi-C
+et al. 2018) <#cite-ralph>`__, which comes from mouse cells where Hi-C
 experiment where conducted in different states during highly-efficient
 somatic cell reprogramming.
 
@@ -121,7 +120,7 @@ Cleanup
 References
 ~~~~~~~~~~
 
-[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
+[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
 *Transcription factors orchestrate dynamic interplay between genome
 topology and gene regulation during cell reprogramming*.
 

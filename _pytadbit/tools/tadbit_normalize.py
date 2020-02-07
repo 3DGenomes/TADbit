@@ -142,9 +142,6 @@ def run(opts):
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
         extra_bads=opts.badcols, biases_path=opts.biases_path)
 
-    bad_col_image = path.join(outdir, 'filtered_bins_%s_%s.png' % (
-        nicer(opts.reso).replace(' ', ''), param_hash))
-
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
                                 'interactions_vs_genomic-coords.png_%s_%s.png' % (
                                     opts.reso, param_hash))
@@ -175,8 +172,8 @@ def run(opts):
     finish_time = time.localtime()
 
     try:
-        save_to_db(opts, bias_file, mreads, bad_col_image,
-                   len(badcol), len(biases), raw_cisprc, norm_cisprc,
+        save_to_db(opts, bias_file, mreads, len(badcol),
+                   len(biases), raw_cisprc, norm_cisprc,
                    inter_vs_gcoord, a2, opts.filter,
                    launch_time, finish_time)
     except:
@@ -190,7 +187,7 @@ def run(opts):
 
 
 
-def save_to_db(opts, bias_file, mreads, bad_col_image,
+def save_to_db(opts, bias_file, mreads,
                nbad_columns, ncolumns, raw_cisprc, norm_cisprc,
                inter_vs_gcoord, a2, bam_filter,
                launch_time, finish_time):
@@ -261,7 +258,6 @@ def save_to_db(opts, bias_file, mreads, bad_col_image,
             pass
         jobid = get_jobid(cur)
         add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
-        add_path(cur, bad_col_image   , 'FIGURE'     , jobid, opts.workdir)
         add_path(cur, inter_vs_gcoord , 'FIGURE'     , jobid, opts.workdir)
         if opts.bam:
             add_path(cur, path.realpath(opts.bam), 'EXT_2D_BAM' , jobid, opts.workdir)

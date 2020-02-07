@@ -41,13 +41,15 @@ def is_cooler(fname, resolution=None):
         pass
     return False
 
-def parse_cooler(fname, resolution=None, normalized=False):
+def parse_cooler(fname, resolution=None, normalized=False,
+                 raw_values = False):
     """
     Read matrix stored in cooler
 
     :param f: an iterable (typically an open file).
     :param None resolution: matrix resolution.
     :param False normalized: whether to apply weights
+    :param False raw_values: return separated raw and weights
 
     :returns: An iterator to be converted in dictionary, matrix size, raw_names
        as list of tuples (chr, pos), dictionary of masked bins, and boolean
@@ -62,10 +64,23 @@ def parse_cooler(fname, resolution=None, normalized=False):
         chrom = root_grp["chroms"]["name"].value
         idregion = dict(list(zip(list(range(len(chrom))), [reg for reg in chrom])))
 
-        chrom = [str(idregion[c]) for c in root_grp["bins"]["chrom"]]
-        starts = ['%d-%d'%(c+1,c+int(resolution)) for c in root_grp["bins"]["start"]]
-        header = [(chromi, starti) for chromi, starti in zip(chrom, starts)]
-        size = len(header)
+        try:
+            chrom = [idregion[c].decode() for c in root_grp["bins"]["chrom"]]
+        except (UnicodeDecodeError, AttributeError):
+            chrom = [str(idregion[c]) for c in root_grp["bins"]["chrom"]]
+
+        if raw_values:
+            starts = root_grp["bins"]["start"]
+            header = OrderedDict()
+            for chromi, starti in zip(chrom, starts):
+                header[chromi] = starti // resolution + 1
+            size = 0
+            for chromi in header:
+                size += header[chromi] 
+        else:
+            starts = ['%d-%d'%(c+1,c+int(resolution)) for c in root_grp["bins"]["start"]]
+            header = [(chromi, starti) for chromi, starti in zip(chrom, starts)]
+            size = len(header)
         masked = {}
         if normalized and "weight" in root_grp["bins"]:
             weights = root_grp["bins"]["weight"].value
@@ -75,10 +90,16 @@ def parse_cooler(fname, resolution=None, normalized=False):
         bin2_id = root_grp["pixels"]["bin2_id"].value
         counti = root_grp["pixels"]["count"].value
         num = int if not normalized else float
-        items = [(int(row) + int(col) * size, num(val)*weights[row]*weights[col])
+        if raw_values:
+            items = [(int(row) + int(col) * size, num(val))
                  for row, col, val in zip(bin1_id, bin2_id, counti)]
-
-    return items, size, header, masked, False
+        else:
+            items = [(int(row) + int(col) * size, num(val)*weights[row]*weights[col])
+                     for row, col, val in zip(bin1_id, bin2_id, counti)]
+    if raw_values:
+        return items, weights, size, header
+    else:
+        return items, size, header, masked, False
 
 class cooler_file(object):
     """
@@ -133,7 +154,7 @@ class cooler_file(object):
         self.startj = 0
         self.startk = 0
         self.verbose = verbose
-
+    
     def create_bins(self):
         """
         Write bins to cooler file.

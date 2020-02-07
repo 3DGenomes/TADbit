@@ -1,10 +1,9 @@
-
 Iterative vs fragment-based mapping
 ===================================
 
 Iterative mapping first proposed by \ `(Imakaev et al.,
 2012) <#cite-Imakaev2012a>`__, allows to map usually a high number of
-reads. However other methodologies, less "brute-force" can be used to
+reads. However other methodologies, less “brute-force” can be used to
 take into account the chimeric nature of the Hi-C reads.
 
 A simple alternative is to allow split mapping.
@@ -16,7 +15,7 @@ the longest part of the read \ `(Wingett et al.,
 
 Finally, an intermediate approach, *fragment-based*, consists in mapping
 full length reads first, and than splitting unmapped reads at the
-ligation sites \ `(Serra et al. 2017) <#cite-Serra2017>`__.
+ligation sites \ `(Serra et al. 2017) <#cite-Serra2017>`__.
 
 .. figure:: ../nbpictures/mapping.png
    :alt: mapping strategies
@@ -26,8 +25,8 @@ ligation sites \ `(Serra et al. 2017) <#cite-Serra2017>`__.
 Advantages of iterative mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  It's the only solution when no restriction enzyme has been used (i.e.
-   micro-C)
+-  It’s the only solution when no restriction enzyme has been used
+   (i.e. micro-C)
 -  Can be faster when few windows (2 or 3) are used
 
 Advantages of fragment-based mapping
@@ -37,10 +36,10 @@ Advantages of fragment-based mapping
 -  Safer: mapped reads are generally larger than 25-30 nm (the largest
    window used in iterative mapping). Less reads are mapped, but the
    difference is usually canceled or reversed when looking for
-   "valid-pairs".
+   “valid-pairs”.
 
-*Note:* We use **GEM2** \ `(Marco-Sola et al.
-2012) <#cite-Marco-Sola2012>`__, performance are very similar to
+*Note:* We use **GEM2** \ `(Marco-Sola et
+al. 2012) <#cite-Marco-Sola2012>`__, performance are very similar to
 Bowtie2, and in some cases slightly better.
 
 *For now TADbit is only compatible with GEM2.*
@@ -82,7 +81,7 @@ cores)
 .. code:: ipython2
 
     # for the first side of the reads
-    full_mapping(gem_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
+    full_mapping(mapper_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
                  out_map_dir='results/iterativ/{0}_{1}/01_mapping/mapped_{0}_{1}_r1/'.format(cell, rep),
                  fastq_path='FASTQs/%s_%s_1.fastq.dsrc' % (cell,rep),
                  frag_map=False,  clean=True, nthreads=8,
@@ -92,13 +91,74 @@ cores)
 
 .. ansi-block::
 
+    Falling to gem v2
     Preparing FASTQ file
       - conversion to MAP format
       - trimming reads 1-25
     Mapping reads in window 1-25...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_PSC_rep1/01_mapping/mapped_mouse_PSC_rep1_r1_tmp/mouse_PSC_rep1_1.fastq_khgGNE
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_PSC_rep1/01_mapping/mapped_mouse_PSC_rep1_r1_tmp/mouse_PSC_rep1_1.fastq_khgGNE -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_PSC_rep1/01_mapping/mapped_mouse_PSC_rep1_r1_tmp/mouse_PSC_rep1_1.fastq_khgGNE_full_1-25
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0 -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0_full_1-25
     Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0_full_1-25.map
+    Preparing MAP file
+      - trimming reads 1-35
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_ykwumkm0_filt_1-25.map
+    Mapping reads in window 1-35...
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w_full_1-35
+    Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w_full_1-35.map
+    Preparing MAP file
+      - trimming reads 1-45
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_tl8e369w_filt_1-35.map
+    Mapping reads in window 1-45...
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c_full_1-45
+    Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c_full_1-45.map
+    Preparing MAP file
+      - trimming reads 1-55
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_b2f70c6c_filt_1-45.map
+    Mapping reads in window 1-55...
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x_full_1-55
+    Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x_full_1-55.map
+    Preparing MAP file
+      - trimming reads 1-65
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_8s4i1t2x_filt_1-55.map
+    Mapping reads in window 1-65...
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r_full_1-65
+    Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r_full_1-65.map
+    Preparing MAP file
+      - trimming reads 1-75
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_z7_u_z8r_filt_1-65.map
+    Mapping reads in window 1-75...
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_x2jlvlfc
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_x2jlvlfc -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_x2jlvlfc_full_1-75
+    Parsing result...
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_x2jlvlfc
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_x2jlvlfc_full_1-75.map
+
+
+
+
+.. ansi-block::
+
+    ['results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-25.map',
+     'results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-35.map',
+     'results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-45.map',
+     'results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-55.map',
+     'results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-65.map',
+     'results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1/mouse_B_rep1_1.fastq_full_1-75.map']
+
 
 
 And for the second side of the read-end:
@@ -106,7 +166,7 @@ And for the second side of the read-end:
 .. code:: ipython2
 
     # for the second side of the reads
-    full_mapping(gem_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
+    full_mapping(mapper_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
                  out_map_dir='results/iterativ/{0}_{1}/01_mapping/mapped_{0}_{1}_r2/'.format(cell, rep),
                  fastq_path='FASTQs/%s_%s_2.fastq.dsrc' % (cell,rep),
                  frag_map=False,  clean=True, nthreads=8,
@@ -116,60 +176,61 @@ And for the second side of the read-end:
 
 .. ansi-block::
 
+    Falling to gem v2
     Preparing FASTQ file
       - conversion to MAP format
       - trimming reads 1-25
     Mapping reads in window 1-25...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK_full_1-25
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy_full_1-25
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK_full_1-25.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy_full_1-25.map
     Preparing MAP file
       - trimming reads 1-35
-       x removing original input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rErDYK_filt_1-25.map
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_rmy8hyfy_filt_1-25.map
     Mapping reads in window 1-35...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR_full_1-35
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf_full_1-35
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR_full_1-35.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf_full_1-35.map
     Preparing MAP file
       - trimming reads 1-45
-       x removing original input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_14i9tR_filt_1-35.map
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_c_1jtbzf_filt_1-35.map
     Mapping reads in window 1-45...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg_full_1-45
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y_full_1-45
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg_full_1-45.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y_full_1-45.map
     Preparing MAP file
       - trimming reads 1-55
-       x removing original input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_xiEdeg_filt_1-45.map
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_32glg28y_filt_1-45.map
     Mapping reads in window 1-55...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI_full_1-55
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z_full_1-55
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI_full_1-55.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z_full_1-55.map
     Preparing MAP file
       - trimming reads 1-65
-       x removing original input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_EYDFyI_filt_1-55.map
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5zno958z_filt_1-55.map
     Mapping reads in window 1-65...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw_full_1-65
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w_full_1-65
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw_full_1-65.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w_full_1-65.map
     Preparing MAP file
       - trimming reads 1-75
-       x removing original input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_pe6yQw_filt_1-65.map
+       x removing original input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_fy1wrc5w_filt_1-65.map
     Mapping reads in window 1-75...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_MkfcZ5
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_MkfcZ5 -o /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_MkfcZ5_full_1-75
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5nluhgp3
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5nluhgp3 -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5nluhgp3_full_1-75
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_MkfcZ5
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_MkfcZ5_full_1-75.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5nluhgp3
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/iterativ/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_5nluhgp3_full_1-75.map
 
 
 
@@ -190,31 +251,31 @@ Fragment-based mapping
 
 The fragment-based mapping strategy works in 2 steps: 1. The read-ends
 are mapped entirely, assuming that no ligation occurred in them. 2. For
-unmapped read-ends, the function searches for a ligation site (e.g. in
+unmapped read-ends, the function searches for a ligation site (e.g. in
 the case of MboI this would correspond to ``GATCGATC`` and in the case
 of HindIII to ``AAGCTAGCTT``). The read-end is split accordingly
 replacing the ligation site by two RE sites:
 
 ::
 
-                            read-end-part-one---AAGCTAGCTT----read-end-part-two
-         will be split in:
-                            read-end-part-one---AAGCTT
-         and:
-                                                    AAGCTT----read-end-part-two
+                           read-end-part-one---AAGCTAGCTT----read-end-part-two
+        will be split in:
+                           read-end-part-one---AAGCTT
+        and:
+                                                   AAGCTT----read-end-part-two
 
-*Note: **if no ligation site is found**, step two will be repeated using
-digested RE site as split point (``AAGCT`` in the case of HindIII). This
-is done in order to be protected against sequencing errors. When this
-path is followed the digested RE site is removed, but not replaced. **If
-digested RE sites are not found either, the read will be classified as
-unmapped**.*
+*Note:*\ **if no ligation site is found**\ *, step two will be repeated
+using digested RE site as split point (``AAGCT`` in the case of
+HindIII). This is done in order to be protected against sequencing
+errors. When this path is followed the digested RE site is removed, but
+not replaced.*\ **If digested RE sites are not found either, the read
+will be classified as unmapped**\ *.*
 
-*Note: **both mapping strategies can be combined**, for example defining
-the windows as previously (iterative mapping), but also give a RE name*
-``r_enz=MboI`` *and setting* ``frag_map=True`` *like this if a read has
-not been mapped in any window, TADbit will also try to apply the
-fragment-based strategy.*
+*Note:*\ **both mapping strategies can be combined**\ *, for example
+defining the windows as previously (iterative mapping), but also give a
+RE name* ``r_enz=MboI`` *and setting* ``frag_map=True`` *like this if a
+read has not been mapped in any window, TADbit will also try to apply
+the fragment-based strategy.*
 
 .. code:: ipython2
 
@@ -224,7 +285,7 @@ fragment-based strategy.*
 .. code:: ipython2
 
     # for the first side of the reads 
-    full_mapping(gem_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
+    full_mapping(mapper_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
                  out_map_dir='results/fragment/{0}_{1}/01_mapping/mapped_{0}_{1}_r1/'.format(cell, rep),
                  fastq_path='FASTQs/%s_%s_1.fastq.dsrc' % (cell, rep),
                  r_enz='MboI', frag_map=True, clean=True, nthreads=8, 
@@ -233,26 +294,27 @@ fragment-based strategy.*
 
 .. ansi-block::
 
+    Falling to gem v2
     Preparing FASTQ file
       - conversion to MAP format
     Mapping reads in window 1-end...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN -o /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN_full_1-end
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt_full_1-end
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN_full_1-end.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt_full_1-end.map
       - splitting into restriction enzyme (RE) fragments using ligation sites
       - ligation sites are replaced by RE sites to match the reference genome
         * enzymes: MboI & MboI, ligation site: GATCGATC, RE site: GATC & GATC
     Preparing MAP file
-       x removing pre-GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN_filt_1-end.map
+       x removing pre-GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt_filt_1-end.map
     Mapping fragments of remaining reads...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_lYQC9s
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_lYQC9s -o /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_lYQC9s_frag_1-end
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_nr1qdda0
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_nr1qdda0 -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_nr1qdda0_frag_1-end
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_lYQC9s
-       x removing failed to map /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_Q50vCN_fail.map
-       x removing tmp mapped /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_lYQC9s_frag_1-end.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_nr1qdda0
+       x removing failed to map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_5v2g4zmt_fail.map
+       x removing tmp mapped /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r1_tmp/mouse_B_rep1_1.fastq_nr1qdda0_frag_1-end.map
 
 
 
@@ -267,7 +329,7 @@ fragment-based strategy.*
 .. code:: ipython2
 
     # for the second side of the reads
-    full_mapping(gem_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
+    full_mapping(mapper_index_path='genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem',
                  out_map_dir='results/fragment/{0}_{1}/01_mapping/mapped_{0}_{1}_r2/'.format(cell, rep),
                  fastq_path='FASTQs/%s_%s_2.fastq.dsrc' % (cell, rep),
                  r_enz='MboI', frag_map=True, clean=True, nthreads=8, 
@@ -276,26 +338,27 @@ fragment-based strategy.*
 
 .. ansi-block::
 
+    Falling to gem v2
     Preparing FASTQ file
       - conversion to MAP format
     Mapping reads in window 1-end...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj -o /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj_full_1-end
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf_full_1-end
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj
-       x removing map /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj_full_1-end.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf
+       x removing map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf_full_1-end.map
       - splitting into restriction enzyme (RE) fragments using ligation sites
       - ligation sites are replaced by RE sites to match the reference genome
         * enzymes: MboI & MboI, ligation site: GATCGATC, RE site: GATC & GATC
     Preparing MAP file
-       x removing pre-GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj_filt_1-end.map
+       x removing pre-GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf_filt_1-end.map
     Mapping fragments of remaining reads...
-    TO GEM /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_V5kpMT
-    /home/dcastillo/miniconda2/bin/gem-mapper -I /scratch/workspace/MethodsMolBiol/Notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_V5kpMT -o /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_V5kpMT_frag_1-end
+    TO GEM 2 /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_nwh4n8ws
+    /home/dcastillo/miniconda2/envs/py3_tadbit/bin/gem-mapper -I /scratch/results/test_data/tadbit_tutorial/py2/notebooks/genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6_contigs.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_nwh4n8ws -o /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_nwh4n8ws_frag_1-end
     Parsing result...
-       x removing GEM input /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_V5kpMT
-       x removing failed to map /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_aAwRcj_fail.map
-       x removing tmp mapped /scratch/workspace/MethodsMolBiol/Notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_V5kpMT_frag_1-end.map
+       x removing GEM input /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_nwh4n8ws
+       x removing failed to map /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_smlsrvuf_fail.map
+       x removing tmp mapped /scratch/results/test_data/tadbit_tutorial/py2/notebooks/results/fragment/mouse_B_rep1/01_mapping/mapped_mouse_B_rep1_r2_tmp/mouse_B_rep1_2.fastq_nwh4n8ws_frag_1-end.map
 
 
 

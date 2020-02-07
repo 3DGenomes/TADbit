@@ -1,4 +1,4 @@
-.. currentmodule:: pytadbit.parsers.hic_parser
+.. currentmodule:: pytadbit.hic_data
 
 HiC_data class
 ==============
@@ -6,4 +6,3 @@ HiC_data class
 .. autoclass:: HiC_data
    :members:
    :no-undoc-members:
-

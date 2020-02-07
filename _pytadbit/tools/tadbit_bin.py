@@ -31,6 +31,7 @@ from pytadbit.mapping.filter         import MASKED
 from pytadbit.utils.file_handling    import mkdir
 from pytadbit.parsers.hic_bam_parser import filters_to_bin, printime
 from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
+from pytadbit.parsers.tad_parser     import parse_tads
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
@@ -145,15 +146,28 @@ def run(opts):
                     stdout.write('\n')
     else:
         if not opts.quiet:
-            stdout.write('\nExtraction of full genome\n')
+            stdout.write('\nExtraction of %s genome\n'
+                         %('partial' if opts.chr_name else 'full'))
 
     out_files = {}
     out_plots = {}
 
     if opts.matrix or opts.plot:
         bamfile = AlignmentFile(mreads, 'rb')
-        sections = OrderedDict(list(zip(bamfile.references,
-                                   [x for x in bamfile.lengths])))
+        bam_refs = bamfile.references
+        bam_lengths = bamfile.lengths
+        if opts.chr_name:
+            bam_refs_idx = [bam_refs.index(chr_ord)
+                            for chr_ord in opts.chr_name if chr_ord in bam_refs]
+            if not bam_refs_idx :
+                raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
+                    Found %s in bam file \n''' % (' '.join(bam_refs)))
+            bam_refs = [bam_ref for bam_ref in [bam_refs[bam_ref_idx]
+                                                  for bam_ref_idx in bam_refs_idx]]
+            bam_lengths = [bam_len for bam_len in [bam_lengths[bam_ref_idx]
+                                                     for bam_ref_idx in bam_refs_idx]]
+        sections = OrderedDict(list(zip(bam_refs,
+                                   [x for x in bam_lengths])))
         total = 0
         section_pos = OrderedDict()
         for crm in sections:
@@ -173,7 +187,8 @@ def run(opts):
                     tmpdir=tmpdir, ncpus=opts.cpus,
                     return_headers=True,
                     nchunks=opts.nchunks, verbose=not opts.quiet,
-                    clean=clean, max_size=max_size)
+                    clean=clean, max_size=max_size,
+                    chr_order=opts.chr_name)
             except NotImplementedError:
                 if norm == "raw&decay":
                     warn('WARNING: raw&decay normalization not implemented '
@@ -251,11 +266,22 @@ def run(opts):
                                    if k in regions)
                 transform = (log2 if opts.transform == 'log2' else
                              log if opts.transform == 'log' else lambda x: x)
+                tads=None
+                if opts.tad_def and not region2:
+                    tads, _ = parse_tads(opts.tad_def)
+                    if start1:
+                        tads = dict([(t, tads[t]) for t in tads
+                             if  (int(tads[t]['start']) >= start1 // opts.reso
+                                   and int(tads[t]['end']) <= end1 // opts.reso)])
+                        for tad in tads:
+                            tads[tad]['start'] -= start1 // opts.reso
+                            tads[tad]['end'] -= start1 // opts.reso
                 ax1, _ = plot_HiC_matrix(
                     matrix, triangular=opts.triangular,
                     vmin=vmin, vmax=vmax, cmap=opts.cmap,
                     figsize=opts.figsize, transform=transform,
-                    bad_color=opts.bad_color if norm != 'raw' else None)
+                    bad_color=opts.bad_color if norm != 'raw' else None,
+                    tad_def=tads)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
                 _format_axes(ax1, start1, end1, start2, end2, opts.reso,
@@ -277,7 +303,8 @@ def run(opts):
             region2=region2, start2=start2, end2=end2,
             tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
             nchunks=opts.nchunks, verbose=not opts.quiet,
-            extra=param_hash, cooler=opts.cooler, clean=clean))
+            extra=param_hash, cooler=opts.cooler, clean=clean,
+            chr_order=opts.chr_name))
 
     if clean:
         printime('Cleaning')
@@ -324,17 +351,17 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
                  ha='left' if xtick_rotation else 'center')
     else:
         vals = [0]
-        keys = ['']
+        keys = []
+        total = 0
         for crm in section_pos:
-            # TODO: xlabels not working
-            vals.append(section_pos[crm][0] / reso)
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
             keys.append(crm)
-        vals.append(section_pos[crm][1] / reso)
         axe1.set_yticks(vals)
         axe1.set_yticklabels('')
         axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
                          for i in range(len(vals) - 1)],
-                        minor=True)
+                         minor=True)
         axe1.set_yticklabels(keys, minor=True)
         for t in axe1.yaxis.get_minor_ticks():
             t.tick1line.set_visible(False)
@@ -347,8 +374,8 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
                         minor=True)
         axe1.set_xticklabels(keys, minor=True)
         for t in axe1.xaxis.get_minor_ticks():
-            t.tick1On = False
-            t.tick2On = False
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
         axe1.set_xlabel('Chromosomes')
         if not triangular:
             axe1.set_ylabel('Chromosomes')
@@ -550,6 +577,11 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
+                        default=None, type=str,
+                        help='''[fasta header] chromosome name(s). Order of chromosomes
+                        in the output matrices.''')
+
     outopt.add_argument('--matrix', dest='matrix', action='store_true',
                         default=False,
                         help='''Write text matrix in multiple columns (square).
@@ -624,6 +656,11 @@ def populate_args(parser):
                         help='''Range, in log2 scale of the color scale.
                         default for triangular matrices: --figsize=16,10
                         and for square matrices:  --figsize=16,14''')
+
+    pltopt.add_argument('--tad_def', dest='tad_def', action='store',
+                        default=None,
+                        help='''tsv file with tad definition, columns:
+                        #    start    end    score    density''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to

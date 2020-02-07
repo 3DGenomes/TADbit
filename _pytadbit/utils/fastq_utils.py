@@ -2,17 +2,18 @@
 12 nov. 2014
 """
 
-from warnings                             import warn
-from gzip                                 import open as gopen
+from warnings                             import warn, catch_warnings, simplefilter
 from os                                   import SEEK_END
 from subprocess                           import Popen, PIPE
 from itertools                            import zip_longest
 import re
 
+from collections                          import OrderedDict
 from numpy                                import nanstd, nanmean, linspace, nansum
 
+from pytadbit.utils.file_handling         import magic_open
 from pytadbit.utils.extraviews            import tadbit_savefig
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, iupac2regex
 from pytadbit.mapping.restriction_enzymes import religateds, repaired
 
 try:
@@ -61,16 +62,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     henes = []
     sites = {}
     fixes = {}
-    liges = {}
+    liges = OrderedDict()
     ligep = {}
     tkw = dict(size=4, width=1.5)
-    if fnam.endswith('.gz'):
-        fhandler = gopen(fnam)
-    elif fnam.endswith('.dsrc'):
-        proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE, universal_newlines=True)
-        fhandler = proc.stdout
-    else:
-        fhandler = open(fnam)
+    fhandler = magic_open(fnam)
     if len(r_enzs) == 1 and r_enzs[0] is None:
         if nreads:
             while True:
@@ -107,11 +102,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             sites[r_enz] = []  # initialize dico to store undigested sites
             fixes[r_enz] = []  # initialize dico to store digested sites
         l_sites = religateds(r_enzs)
+        l_sites = OrderedDict((k,iupac2regex(l_sites[k])) for k in l_sites)
         site = {}
         fixe = {}
         for r_enz in r_enzs:
-            site[r_enz] = re.compile(r_sites[r_enz])
-            fixe[r_enz] = re.compile(d_sites[r_enz])
+            site[r_enz] = re.compile(iupac2regex(r_sites[r_enz]))
+            fixe[r_enz] = re.compile(iupac2regex(d_sites[r_enz]))
         # ligation sites should appear in lower case in the sequence
         lige = {}
         for k in l_sites:
@@ -119,6 +115,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             ligep[k] = 0   # initialize dico to store sites
             l_sites[k] = l_sites[k].lower()
             lige[k] = re.compile(l_sites[k])
+        callback = lambda pat: pat.group(0).lower()
         while len(quals) <= nreads:
             try:
                 next(fhandler)
@@ -127,7 +124,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             seq = next(fhandler)
             # ligation sites replaced by lower case to ease the search
             for lig in list(l_sites.values()):
-                seq = seq.replace(lig.upper(), lig)
+                seq = re.sub(lig.upper(), callback, seq)
             for r_enz in r_enzs:
                 sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
                 # TODO: you cannot have a repaired/fixed site in the middle of
@@ -135,7 +132,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 fixes[r_enz].extend([m.start() for m in fixe[r_enz].finditer(seq)])
             for k in lige:  # for each paired of cut-site
                 liges[k].extend([m.start() for m in lige[k].finditer(seq)])
-                ligep[k] += l_sites[k] in seq
+                if lige[k].search(seq):
+                    ligep[k] += 1
             # store the number of Ns found in the sequences
             if 'N' in seq:
                 henes.extend([i for i, s in enumerate(seq) if s == 'N'])
@@ -188,7 +186,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     axb.set_ylabel('Number of "N" per position')
     try: # no Ns found (yes... it happens)
         axb.set_yscale('log')
-        axb.set_ylim((0, axb.get_ylim()[1] * 1000))
+        with catch_warnings():
+            simplefilter("ignore")
+            axb.set_ylim((0, axb.get_ylim()[1] * 1000))
     except ValueError:
         axb.set_yscale('linear')
     ax.set_ylim((0, ax.get_ylim()[1]))

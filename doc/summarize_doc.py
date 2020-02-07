@@ -89,8 +89,8 @@ def print_doc(member, header=1, indent=3, offset=45):
         indent=0
         out = (' ' * indent) + title + ' class\n'
         out += (' ' * indent) + ('+' * (6 + len(title))) + '\n'
-        out += ' ' * (offset / 2)
-        out += ('\n' + ' ' * (offset / 2)).join(
+        out += ' ' * (offset // 2)
+        out += ('\n' + ' ' * (offset // 2)).join(
             [line.strip() for line in dochead.split('\n')])
         return out + '\n'
     elif header == 3:
@@ -98,7 +98,7 @@ def print_doc(member, header=1, indent=3, offset=45):
             title = '`%s <%s>`_' % (member.__name__, LINKS[member.__name__])
         else:
             title = member.__name__
-        args = inspect.getargspec(member).args
+        args = inspect.getfullargspec(member).args
         extra = []
         if 'savefig' in args or 'axe' in args:
             extra.append('[#first]_')

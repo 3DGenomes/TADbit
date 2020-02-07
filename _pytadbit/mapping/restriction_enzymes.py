@@ -8,6 +8,7 @@ from __future__ import print_function
 from re import compile
 from warnings import warn
 
+from collections import OrderedDict
 from scipy.stats import binom_test
 
 from pytadbit.utils.file_handling import magic_open
@@ -220,7 +221,7 @@ def religateds(r_enzs):
     returns the resulting list of all possible sequences after religation of two
     digested and repaired ends.
     """
-    ligations = {}
+    ligations = OrderedDict()
     for r_enz1 in r_enzs:
         for r_enz2 in r_enzs:
             site1 = RESTRICTION_ENZYMES[r_enz1]
