@@ -26,7 +26,8 @@ try:
     from pytadbit.modelling.impoptimizer  import IMPoptimizer
     from pytadbit.modelling.imp_modelling import generate_3d_models
 except ImportError:
-    stderr.write('IMP not found, check PYTHONPATH\n')
+    pass
+    # stderr.write('IMP not found, check PYTHONPATH\n')
 
 try:
     import matplotlib.pyplot as plt
