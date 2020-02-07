@@ -22,18 +22,19 @@ From:neurodebian:buster
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian buster-cran35/'
 
   apt-get update --fix-missing
+  apt-get -y install unzip build-essential wget bzip2 libxml2-dev libssl-dev libcurl4-gnutls-dev --no-install-recommends
+  
   apt-get -y install r-base r-cran-devtools
-  apt-get -y install libcurl4-gnutls-dev --no-install-recommends
-  apt-get -y install libxml2-dev libssl-dev --no-install-recommends
-
-  apt-get update --fix-mising && \
-  apt-get install -y unzip build-essential wget bzip2 --no-install-recommends
 
   #############################################################################
-  # dryhic
-  # R --slave -e 'install.packages("devtools", repos="http://cran.rstudio.com/")'
-  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'
+  # DSRC
+  wget --quiet --no-check-certificate https://github.com/refresh-bio/DSRC/releases/download/v2.0.2/dsrc-linux-x64-static.tar.gz &&\
+  tar xzvf dsrc-linux-x64-static.tar.gz &&\
+  mv bin/dsrc /usr/local/bin && rm -f dsrc-linux-x64-static.tar.gz && chmod +x /usr/local/bin/dsrc
 
+  #############################################################################
+  # dryhic / oneD
+  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'
 
   #############################################################################
   # conda
@@ -81,7 +82,7 @@ From:neurodebian:buster
   wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/py3.zip && unzip py3.zip && \
   cd TADbit-py3 && yes | python setup.py install && cd .. && rm -rf TADbit-py3 py3.zip
   
-############################################################################
+  ############################################################################
   # Clean
   apt-get remove -y --purge unzip build-essential r-cran-devtools && \
   apt-get autoremove -y && \
