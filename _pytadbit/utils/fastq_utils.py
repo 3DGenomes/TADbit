@@ -133,7 +133,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 # TODO: you cannot have a repaired/fixed site in the middle of
                 # the sequence, this could be only checked at the beginning
                 fixes[r_enz].extend([m.start() for m in fixe[r_enz].finditer(seq)])
-            for k  in lige:  # for each paired of cut-site
+            for k in lige:  # for each paired of cut-site
                 liges[k].extend([m.start() for m in lige[k].finditer(seq)])
                 ligep[k] += l_sites[k] in seq
             # store the number of Ns found in the sequences

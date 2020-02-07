@@ -102,10 +102,10 @@ def run(opts):
         # resize chomosomes
         for c in refs:
             if not c in mappability:
-                mappability[c] = [float('nan')] * (len(refs) / opts.reso + 1)
-            if len(mappability[c]) < len(refs) / opts.reso + 1:
+                mappability[c] = [float('nan')] * (len(refs) // opts.reso + 1)
+            if len(mappability[c]) < len(refs) // opts.reso + 1:
                 mappability[c] += [float('nan')] * (
-                    (len(refs) / opts.reso + 1) - len(mappability[c]))
+                    (len(refs) // opts.reso + 1) - len(mappability[c]))
         # concatenates
         mappability = reduce(lambda x, y: x + y,
                              (mappability.get(c, []) for c in refs))

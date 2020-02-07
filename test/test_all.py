@@ -61,7 +61,7 @@ class TestTadbit(unittest.TestCase):
     """
     def setUp(self):
         simplefilter('ignore')
-        
+
     def test_01_tadbit(self):
 
         print('PYTHON SIDE')
@@ -488,7 +488,7 @@ class TestTadbit(unittest.TestCase):
         model = min([(k, dev[(k, nmd)] )
                      for k in range(nmd)], key=lambda x: x[1])[0]
         self.assertEqual(centroid["rand_init"], models[model]["rand_init"])
-        
+
         if sys.version_info[0] < 3:
             refmodels_path = PATH + "/models.pick"
         else:
@@ -1096,7 +1096,7 @@ if __name__ == "__main__":
         from time import time
     else:
         CHKTIME = False
-        
+
     with catch_warnings():
         simplefilter("ignore")
         unittest.main()
