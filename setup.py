@@ -10,6 +10,9 @@ import sys
 # import os
 # os.environ["CC"] = "g++"
 
+# Py3/Py2 compatibility
+raw_input = input
+
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 TAGS = [
