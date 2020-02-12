@@ -5,6 +5,7 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
 from os                          import path, system, remove
 from string                      import ascii_letters
@@ -35,7 +36,7 @@ def run(opts):
         if opts.new_workdir:
             new_workdir = path.abspath(opts.new_workdir)
             update_wordir_path(cur, new_workdir)
-            print 'Updated working directory to %s' % (new_workdir)
+            print('Updated working directory to %s' % (new_workdir))
             return
 
         # get PATHids corresponding to JOBid:
@@ -47,7 +48,7 @@ def run(opts):
 
         # delete files and directories
         if opts.delete:
-            print 'deleting %d files' % len(paths)
+            print('deleting %d files' % len(paths))
             for _, lpath, typ in paths:
                 if typ in protected_types or typ.startswith('EXT_'):
                     continue
@@ -55,13 +56,13 @@ def run(opts):
                 if not path.realpath(path.join(opts.workdir, lpath)).startswith(
                         path.realpath(opts.workdir)):
                     continue
-                print '  x ' + path.join(opts.workdir, lpath)
+                print('  x ' + path.join(opts.workdir, lpath))
                 system('rm -rf ' + path.join(opts.workdir, lpath))
 
         # remove entry
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in [t[0] for t in cur.fetchall()]:
-            print 'cleaning table: %s' % table
+            print('cleaning table: %s' % table)
             for jobid in opts.jobids:
                 if table.lower() == 'jobs':
                     col = 'Id'
@@ -81,7 +82,7 @@ def run(opts):
             count = cur.fetchall()[0][0]
             if count == 0:
                 cur.execute("drop table %s" % table)
-                print ' * dropped table %s' % table
+                print(' * dropped table %s' % table)
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)

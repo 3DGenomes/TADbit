@@ -7,7 +7,7 @@ class gzopen(object):
       f = open(fname)
       magic_number = f.read(2)
       f.seek(0)
-      if magic_number == '\x1f\x8b':
+      if magic_number == b'\x1f\x8b':
          self.f = gzip.GzipFile(fileobj=f)
       else:
          self.f = f
@@ -22,5 +22,7 @@ class gzopen(object):
       return self
    def __getattr__(self, name):
       return getattr(self.f, name)
+   def __next__(self):
+       return next(self.f)
    def __iter__(self):
       return iter(self.f)

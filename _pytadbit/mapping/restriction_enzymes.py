@@ -3,14 +3,20 @@
 
 Definition and mapping of restriction enymes
 """
+from __future__ import print_function
 
 from re import compile
 from warnings import warn
 
+from collections import OrderedDict
 from scipy.stats import binom_test
 
 from pytadbit.utils.file_handling import magic_open
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def iupac2regex(restring):
     """
@@ -33,9 +39,9 @@ def iupac2regex(restring):
 def count_re_fragments(fnam):
     frag_count = {}
     fhandler = open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     while line.startswith('#'):
-        line = fhandler.next()
+        line = next(fhandler)
     try:
         while True:
             _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split('\t')
@@ -47,9 +53,10 @@ def count_re_fragments(fnam):
                 frag_count[(cr2, rs2)] += 1
             except KeyError:
                 frag_count[(cr2, rs2)] = 1
-            line = fhandler.next()
+            line = next(fhandler)
     except StopIteration:
         pass
+    fhandler.close()
     return frag_count
 
 
@@ -77,7 +84,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
        chromosome
     """
     warn('WARNING: not reviewed since multiple-cut branch, and the use of regexpinstead of index')
-    if isinstance(enzyme_name, str):
+    if isinstance(enzyme_name, basestring):
         enzyme_names = [enzyme_name]
     elif isinstance(enzyme_name, list):
         enzyme_names = enzyme_name
@@ -214,7 +221,7 @@ def religateds(r_enzs):
     returns the resulting list of all possible sequences after religation of two
     digested and repaired ends.
     """
-    ligations = {}
+    ligations = OrderedDict()
     for r_enz1 in r_enzs:
         for r_enz2 in r_enzs:
             site1 = RESTRICTION_ENZYMES[r_enz1]
@@ -250,10 +257,10 @@ def identify_re(fnam, nreads=100000):
 
     fh = magic_open(fnam)
     for _ in range(nreads):
-        _ = fh.next()
-        s = fh.next()[:14]
-        _ = fh.next()
-        _ = fh.next()
+        _ = next(fh)
+        s = next(fh)[:14]
+        _ = next(fh)
+        _ = next(fh)
         for pat in pats:
             m = pats[pat]['re'].match(s)
             if m and m.start() == 0:

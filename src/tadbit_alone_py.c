@@ -5,6 +5,25 @@
 #include "Python.h"
 #include "tadbit_alone.c"
 
+#if PY_MAJOR_VERSION >= 3
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          static struct PyModuleDef moduledef = { \
+            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
+          ob = PyModule_Create(&moduledef);
+  #define PyInt_FromLong               PyLong_FromLong
+  #define PyInt_AsLong                 PyLong_AsLong
+  #define PyInt_AS_LONG                PyLong_AS_LONG
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          ob = Py_InitModule3(name, methods, doc);
+#endif
+
 /* The module doc string */
 PyDoc_STRVAR(tadbitalone_py__doc__,
 "here is a wrapper to tadbit function");
@@ -28,10 +47,10 @@ static PyObject *_tadbitalone_wrapper (PyObject *self, PyObject *args){
   int n;
   int m;
   int n_threads;
-  const int verbose;
-  const int max_tad_size;
-  const int nbks;
-  const int do_not_use_heuristic;
+  const int verbose = 0;
+  const int max_tad_size = 0;
+  const int nbks = 0;
+  const int do_not_use_heuristic = 0;
   /* output */
   tadbit_alone_output *seg = (tadbit_alone_output *) malloc(sizeof(tadbit_alone_output));
 
@@ -158,14 +177,15 @@ static PyMethodDef tadbitalone_py_methods[] = {
 	{NULL, NULL}      /* sentinel */
 };
 
-/* When Python imports a C module named 'X' it loads the module */
-/* then looks for a method named "init"+X and calls it.  Hence */
-/* for the module "mandelbrot" the initialization function is */
-/* across operating systems and between C and C++ compilers */
-PyMODINIT_FUNC
-inittadbitalone_py(void)
-{
-	/* There have been several InitModule functions over time */
-	Py_InitModule3("tadbitalone_py", tadbitalone_py_methods,
-                   tadbitalone_py__doc__);
+MOD_INIT(tadbitalone_py) {
+
+	PyObject *m;
+
+	MOD_DEF(m, "tadbitalone_py", tadbitalone_py__doc__,
+			tadbitalone_py_methods)
+	if (m == NULL)
+		return MOD_ERROR_VAL;
+
+	return MOD_SUCCESS_VAL(m);
+
 }

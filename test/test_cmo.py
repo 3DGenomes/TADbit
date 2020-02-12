@@ -3,11 +3,14 @@
 
 
 """
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from random import random
 from copy import deepcopy
 from numpy import array, log2
 from scipy.interpolate import interp1d
-from cPickle import load
+from pickle import load
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 from matplotlib import pyplot as plt
 # from scipy.stats import zscore
@@ -34,8 +37,8 @@ def generate_1_interaction(diag=False):
 
 def generate_interaction(size):
     rnd_inter = {}
-    for i in xrange(size):
-        for j in xrange(i, size):
+    for i in range(size):
+        for j in range(i, size):
             if i == j:
                 rnd_inter[(i, j)] = float(DISTRD(random()))
                 continue
@@ -61,15 +64,15 @@ def generate_random_contacts(size=None, tad1=None, prob=0.5,
     if tad1:
         size1 = size2 = size = len(tad1)
         contacts1 = {}
-        for i in xrange(len(tad1)):
-            for j in xrange(len(tad1)):
+        for i in range(len(tad1)):
+            for j in range(len(tad1)):
                 contacts1[(i, j)] = tad1[i][j]
     else:
         contacts1 = generate_interaction(size1)
     contacts2 = deepcopy(contacts1)
     # randomly change some contacts
-    for i in xrange(size1):
-        for j in xrange(i, size1):
+    for i in range(size1):
+        for j in range(i, size1):
             if random() < prob:
                 contacts2[(i, j)] = generate_1_interaction(i==j)
                 contacts2[(j, i)] = contacts2[(i, j)]
@@ -81,52 +84,52 @@ def generate_random_contacts(size=None, tad1=None, prob=0.5,
         rnd = random()
         my_j = int(random()*size2)
         if rnd < p_insert:
-            for _ in xrange(ext):
+            for _ in range(ext):
                 indels.append(my_j + 1)
                 size2 += 1
                 for i, d in enumerate(indels):
                     if abs(d) > (my_j + 1):
                         indels[i] = (d + 1) if d > 0 else -(abs(d) + 1)
-                for i in xrange(size2 - 2, -1, -1):
-                    for j in xrange(size2 - 2, i - 1, -1):
+                for i in range(size2 - 2, -1, -1):
+                    for j in range(size2 - 2, i - 1, -1):
                         if i >= my_j and j >= my_j:
                             contacts2[(i + 1, j + 1)] = contacts2[(j, i)]
                         if j >= my_j:
                             contacts2[(i, j + 1)]     = contacts2[(j, i)]
                     if i == my_j:
                         contacts2[(i, j + 1)]     = contacts2[(j, i)]
-                for i in xrange(size2):
-                    for j in xrange(i, size2):
+                for i in range(size2):
+                    for j in range(i, size2):
                         contacts2[(j, i)] = contacts2[(i, j)]
-                for i in xrange(size2):
+                for i in range(size2):
                     contacts2[(i, my_j)] = generate_1_interaction(i==my_j)
                     contacts2[(my_j, i)] = contacts2[(i, my_j)]
         elif rnd > 1 - p_delete and size2 > ext:
             my_j = min(my_j, size2 - ext)
-            for _ in xrange(ext):
+            for _ in range(ext):
                 size2 -= 1
                 indels.append(-(my_j + 1))
                 for i, d in enumerate(indels):
                     if abs(d) > (my_j + 1):
                         indels[i] = d - 1  if d > 0 else -(abs(d) - 1)
-                for i in xrange(size2):
-                    for j in xrange(i, size2):
+                for i in range(size2):
+                    for j in range(i, size2):
                         if i >= my_j and i >= my_j:
                             contacts2[(i, j)] = contacts2[(i + 1, j + 1)]
                         elif j >= my_j:
                             contacts2[(i, j)] = contacts2[(i , j + 1)]
-                for i in xrange(size2):
-                    for j in xrange(i + 1, size2):
+                for i in range(size2):
+                    for j in range(i + 1, size2):
                         contacts2[(j, i)] = contacts2[(i, j)]
-                for i in xrange(size2):
+                for i in range(size2):
                     del(contacts2[(i, size2)])
                     del(contacts2[(size2, i)])
                 del(contacts2[(size2, size2)])
         else:
             continue
         changes += 1
-    print 'inserted/deleted', [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
-                               for i in indels]
+    print('inserted/deleted', [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
+                               for i in indels])
     for i in range(size1):
         if not (i, i) in contacts1:
             contacts1[(i, i)] = generate_1_interaction(True)
@@ -136,16 +139,16 @@ def generate_random_contacts(size=None, tad1=None, prob=0.5,
     tad1 = contact2matrix(contacts1, size1)
     tad2 = contact2matrix(contacts2, size2)
     if verbose:
-        print '\t'.join(['\033[0;31m{}\033[0m'.format(i) for i in range(len(tad1))])# + '\n'
-        for t in tad1: print '\t'.join(['{:.1f}'.format(i) for i in t])# + '\n'
-        print '-'*20
-        print '\t'.join(['\033[0;31m{}\033[0m'.format(i) for i in range(len(tad2))])# + '\n'
-        for t in tad2: print '\t'.join(['{:.1f}'.format(i) for i in t])# + '\n'
+        print('\t'.join(['\033[0;31m{}\033[0m'.format(i) for i in range(len(tad1))]))# + '\n'
+        for t in tad1: print('\t'.join(['{:.1f}'.format(i) for i in t]))# + '\n'
+        print('-'*20)
+        print('\t'.join(['\033[0;31m{}\033[0m'.format(i) for i in range(len(tad2))]))# + '\n'
+        for t in tad2: print('\t'.join(['{:.1f}'.format(i) for i in t]))# + '\n'
     return tad1, tad2, indels#, contacts1, contacts2
 
 
 def contact2matrix(contacts, size):
-    matrix = [[0  for _ in xrange(size)] for _ in xrange(size)]
+    matrix = [[0  for _ in range(size)] for _ in range(size)]
     for i, j in contacts:
         try:
             matrix[i][j] = contacts[(i, j)]
@@ -157,7 +160,7 @@ def contact2matrix(contacts, size):
 
 def merge_tads(tad1, tad2, ali):
     ali1, ali2, _ = deepcopy(ali)
-    for i in xrange(max(ali1[0], ali2[0]) - 1, -1, -1):
+    for i in range(max(ali1[0], ali2[0]) - 1, -1, -1):
         if ali[0][0]:
             ali1.insert(0, i)
             ali2.insert(0, '-')
@@ -165,24 +168,24 @@ def merge_tads(tad1, tad2, ali):
             ali1.insert(0, '-')
             ali2.insert(0, i)
     size = len(ali1)
-    matrix1 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    matrix2 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    matrixm = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
-    for i in xrange(size):
+    matrix1 = [[0.1 for _ in range(size)] for _ in range(size)]
+    matrix2 = [[0.1 for _ in range(size)] for _ in range(size)]
+    matrixm = [[0.1 for _ in range(size)] for _ in range(size)]
+    for i in range(size):
         if ali1[i] == '-' or ali2[i] == '-':
-            matrixm[i] = [float('nan') for _ in xrange(size)]
+            matrixm[i] = [float('nan') for _ in range(size)]
             if ali1[i] == '-':
-                matrix1[i]  = [float('nan') for _ in xrange(size)]
+                matrix1[i]  = [float('nan') for _ in range(size)]
                 matrix2[i]  = [tad2[ali2[i]][ali2[j]] \
                                if ali2[j] != '-' else float('nan')\
-                               for j in xrange(size)]
+                               for j in range(size)]
             elif ali2[i] == '-':
-                matrix2[i]  = [float('nan') for _ in xrange(size)]
+                matrix2[i]  = [float('nan') for _ in range(size)]
                 matrix1[i]  = [tad1[ali1[i]][ali1[j]] \
                                if ali1[j] != '-' else float('nan')\
-                               for j in xrange(size)]
+                               for j in range(size)]
             continue
-        for j in xrange(size):
+        for j in range(size):
             if ali1[j] == '-' or ali2[j] == '-':
                 matrixm[i][j] = float('nan')
                 if ali1[j] == '-':
@@ -204,7 +207,7 @@ def to_binary(exp, method='bin'):
     exp.normalize_hic(method='bytot')
     hic = exp.hic_data[0][:]
     nhic = [(float(hic[i]) / exp.wght[0][i]) if exp.wght[0][i] else 0.0 \
-            for i in xrange(exp.size**2)]
+            for i in range(exp.size**2)]
     zscore(nhic, exp.size)
     if method == 'trin':
         return [1 if z.__str__() == 'nan' \
@@ -220,8 +223,8 @@ def to_binary(exp, method='bin'):
             
 
 def get_original(size, indels, verbose=False):
-    align1 = range(size)
-    align2 = range(size)
+    align1 = list(range(size))
+    align2 = list(range(size))
     for i in sorted(indels, key=abs):
         if i > 0:
             i -= 1
@@ -242,7 +245,7 @@ def get_original(size, indels, verbose=False):
             except ValueError:
                 j = align2.count('-') + i
             align2.insert(j, '-')
-        for i in xrange(min(len(align1), len(align2))):
+        for i in range(min(len(align1), len(align2))):
             if align1[i] == align2[i] == '-':
                 align1.pop(i)
                 align2.pop(i)
@@ -250,18 +253,18 @@ def get_original(size, indels, verbose=False):
     align1 = align1[:min(len(align1), len(align2))]
     align2 = align2[:min(len(align1), len(align2))]
     if verbose:
-        print 'TADS 1: ' + '|'.join(['{:>4}'.format(a if a != '-' else '---') for a in align1])
-        print 'TADS 2: ' + '|'.join(['{:>4}'.format(a if a != '-' else '---') for a in align2])
+        print('TADS 1: ' + '|'.join(['{:>4}'.format(a if a != '-' else '---') for a in align1]))
+        print('TADS 2: ' + '|'.join(['{:>4}'.format(a if a != '-' else '---') for a in align2]))
     return align1, align2
 
 
 def print_ali(ali1, ali2, align1, align2):
-    colsc = zip(ali1, ali2)
-    colsr = zip(align1, align2)
+    colsc = list(zip(ali1, ali2))
+    colsr = list(zip(align1, align2))
     real = ['\033[0;32m' if col in colsr else '' for col in colsc]
     end = ['\033[0m' if col in colsr else '' for col in colsc]
-    print 'TADS 1: ' + '|'.join([real[i] + '{:>4}'.format(a if a != '-' else '---') + end[i] for i, a in enumerate(ali1)])
-    print 'TADS 2: ' + '|'.join([real[i] + '{:>4}'.format(a if a != '-' else '---') + end[i] for i, a in enumerate(ali2)])
+    print('TADS 1: ' + '|'.join([real[i] + '{:>4}'.format(a if a != '-' else '---') + end[i] for i, a in enumerate(ali1)]))
+    print('TADS 2: ' + '|'.join([real[i] + '{:>4}'.format(a if a != '-' else '---') + end[i] for i, a in enumerate(ali2)]))
     return float(real.count('\033[0;32m'))/len(colsc)
     
 
@@ -283,7 +286,7 @@ def main():
                'binary frob'    : []}
     pool = mu.Pool(4)
     jobs = {}
-    for II in xrange(10):
+    for II in range(10):
         
         size   = len(tad1m) if use_real else 21
         ext    = 1 + int(random()*4)
@@ -333,11 +336,11 @@ def main():
     pool.close()
     pool.join()
     
-    for II in xrange(10):
-        print II, '=' * 80
+    for II in range(10):
+        print(II, '=' * 80)
         indels = jobs[II][0]
-        print 'inserted/deleted', II, [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
-                                       for i in indels]
+        print('inserted/deleted', II, [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
+                                       for i in indels])
         align1, align2 = get_original(size, indels, verbose=True)
         del(jobs[II][0])
         #aliF1, aliF2, aliF3, aliF4 = [jobs[II][j].get() for j in jobs[II]]
@@ -366,7 +369,7 @@ def main():
         #                    long_dist=False, method='frobenius', verbose=True)
         # results['nw-sam frob-sam'].append(align1==aliF[0] and align2==aliF[1])
     for r in results:
-        print r, sum(results[r]), '/', len(results[r])
+        print(r, sum(results[r]), '/', len(results[r]))
 
 
     matrix1, matrix2, matrixF = merge_tads(tad1, tad2, aliF)
@@ -383,9 +386,9 @@ def main():
     plt.title('Merged Frobenius')
     plt.subplot(2, 2, 4)
     diff = len(tad1) - len(tad2)
-    for i in xrange(len(tad2)):
+    for i in range(len(tad2)):
         tad2[i] += [0.]*diff
-    for i in xrange(diff):
+    for i in range(diff):
         tad2.append([0.]*len(tad1))
     plt.imshow(log2(tad2), origin='lower', interpolation="nearest")
     plt.title('Changed Matrix')
@@ -416,4 +419,4 @@ if __name__ == "__main__":
     exit(main())
 
 for p, pp in enumerate(pp1):
-    print 
+    print() 

@@ -1,4 +1,6 @@
 
+from future import standard_library
+standard_library.install_aliases()
 from os import environ
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 
@@ -36,7 +38,8 @@ def get_dependencies_version(dico=False):
             seed = IMP.kernel.random_number_generator()
         versions['IMP'] += ' (random seed indexed at 1 = %s)' % (seed)
     except ImportError:
-        versions['IMP'] = 'Not found'
+        pass
+        #  versions['IMP'] = 'Not found'
     try:
         import scipy
         versions['scipy'] = scipy.__version__
@@ -50,7 +53,7 @@ def get_dependencies_version(dico=False):
     try:
         from gem import executables
         out = Popen(executables['gem-mapper'], shell=True, stdout=PIPE,
-                    stderr=PIPE).communicate()
+                    stderr=PIPE, universal_newlines=True).communicate()
         versions['gem-mapper'] = out[1].split(' - ')[0].split('build ')[1]
     except:
         versions['gem-mapper'] = 'Not found'
@@ -66,7 +69,7 @@ def get_dependencies_version(dico=False):
         versions['matplotlib'] = 'Not found'
     try:
         mcl, _ = Popen(['mcl', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
+                         stderr=PIPE, universal_newlines=True).communicate()
         versions['MCL'] = mcl.split()[1]
     except:
         versions['MCL'] = 'Not found'
@@ -84,7 +87,7 @@ def get_dependencies_version(dico=False):
     #     versions['Chimera'] = 'Not found'
     try:
         uname, err = Popen(['uname', '-rom'], stdout=PIPE,
-                           stderr=PIPE).communicate()
+                           stderr=PIPE, universal_newlines=True).communicate()
         versions[' Machine'] = uname
     except:
         versions[' Machine'] = 'Not found'
@@ -113,5 +116,5 @@ try:
     from pytadbit.modelling.impoptimizer import IMPoptimizer
 except ImportError:
     from warnings                  import warn
-    warn('IMP not found, check PYTHONPATH\n')
+    # warn('IMP not found, check PYTHONPATH\n')
 

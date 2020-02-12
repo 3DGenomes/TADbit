@@ -17,6 +17,7 @@ mapping strategy
  - mapper
 
 """
+from __future__ import print_function
 
 from os                                   import path, remove, system
 from string                               import ascii_letters
@@ -24,7 +25,7 @@ from random                               import random
 from shutil                               import copyfile
 from multiprocessing                      import cpu_count
 from subprocess                           import PIPE, STDOUT, Popen
-from cPickle                              import load, UnpicklingError
+from pickle                               import load, UnpicklingError
 from argparse                             import HelpFormatter
 from traceback                            import print_exc
 import logging
@@ -79,9 +80,9 @@ def run(opts):
         mkdir(path.join(opts.workdir, '03_filtered_reads'))
         logging.info('parsing genomic sequence')
         try:
-            # allows the use of cPickle genome to make it faster
-            genome_seq = load(open(opts.genome[0]))
-        except UnpicklingError:
+            # allows the use of pickle genome to make it faster
+            genome_seq = load(open(opts.genome[0],'rb'))
+        except (UnpicklingError, KeyError):
             genome_seq = parse_fasta(opts.genome)
 
         logging.info('mapping %s and %s to %s', opts.fastq, opts.fastq2, opts.workdir)
@@ -171,11 +172,11 @@ def check_options(opts):
         opts.gem_version = None
         try:
             out, _ = Popen([opts.mapper_binary,'--version'], stdout=PIPE,
-                             stderr=STDOUT).communicate()
+                             stderr=STDOUT, universal_newlines=True).communicate()
             opts.gem_version = int(out[1])
         except ValueError as e:
             opts.gem_version = 2
-            print 'Falling to gem v2'
+            print('Falling to gem v2')
 
     if opts.fast_fragment:
         if opts.gem_version < 3:
@@ -189,13 +190,13 @@ def check_options(opts):
                                             'the genome parameter.')
     # check RE name
     if opts.renz == ['CHECK']:
-        print '\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq)
+        print('\nSearching for most probable restriction enzyme in file: %s' % (opts.fastq))
         try:
             pat, enz, pv = identify_re(opts.fastq, nreads=100000)
-            print ' -> Most probable digested site: %s (pv: %f)' % (pat, pv)
-            print ' -> Enzymes matching: %s' % (', '.join(enz))
+            print(' -> Most probable digested site: %s (pv: %f)' % (pat, pv))
+            print(' -> Enzymes matching: %s' % (', '.join(enz)))
         except ValueError:
-            print ' -> Nothing found...'
+            print(' -> Nothing found...')
         exit()
     for n, renz in enumerate(opts.renz):
         if renz == 'NONE':
@@ -249,16 +250,16 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
+        print('Writing log to ' + path.join(opts.workdir, 'process.log'))
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
-                            filemode='aw')
+                            filemode='a+')
     except IOError:
         logging.basicConfig(level=logging.DEBUG,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log2'),
-                            filemode='aw')
+                            filemode='a+')
 
     # to display log on stdout also
     logging.getLogger().addHandler(logging.StreamHandler())

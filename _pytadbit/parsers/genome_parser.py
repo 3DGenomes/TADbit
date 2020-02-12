@@ -3,6 +3,7 @@
 
 convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
+from __future__ import print_function
 
 from collections import OrderedDict
 import multiprocessing as mu
@@ -10,6 +11,12 @@ from os import path
 import re
 
 from pytadbit.utils.file_handling import magic_open
+from functools import reduce
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
                 verbose=True, save_cache=True, reload_cache=False, only_length=False):
@@ -31,7 +38,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
     :returns: a sorted dictionary with chromosome names as keys, and sequences
        as values (sequence in upper case)
     """
-    if isinstance(f_names, str):
+    if isinstance(f_names, basestring):
         f_names = [f_names]
 
     if len(f_names) == 1:
@@ -40,19 +47,20 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
         fname = path.join(path.commonprefix(f_names), 'genome.TADbit')
     if path.exists(fname) and not reload_cache:
         if verbose:
-            print 'Loading cached genome'
+            print('Loading cached genome')
         genome_seq = OrderedDict()
-        for line in open(fname):
-            if line.startswith('>'):
-                c = line[1:].strip()
-            else:
-                if only_length:
-                    genome_seq[c] = len(line.strip())
+        with open(fname) as f_open:
+            for line in f_open:
+                if line.startswith('>'):
+                    c = line[1:].strip()
                 else:
-                    genome_seq[c] = line.strip()
+                    if only_length:
+                        genome_seq[c] = len(line.strip())
+                    else:
+                        genome_seq[c] = line.strip()
         return genome_seq
 
-    if isinstance(chr_names, str):
+    if isinstance(chr_names, basestring):
         chr_names = [chr_names]
 
     if chr_filter:
@@ -69,60 +77,62 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
     if len(f_names) == 1:
         header = None
         seq = []
-        for line in magic_open(f_names[0]):
-            if line.startswith('>'):
-                if header:
-                    genome_seq[header] = ''.join(seq).upper()
-                header = line[1:].split()[0]
-                if bad_chrom(header) or not chr_regexp.match(header):
-                    header = 'UNWANTED'
-                elif not chr_names:
-                    if verbose:
-                        print 'Parsing %s' % (header)
-                else:
-                    header = chr_names.pop(0)
-                    if verbose:
-                        print 'Parsing %s as %s' % (line[1:].rstrip(), header)
-                seq = []
-                continue
-            seq.append(line.rstrip())
-        if only_length:
-            genome_seq[header] = len(seq)
-        else:
-            genome_seq[header] = ''.join(seq).upper()
-        if 'UNWANTED' in genome_seq:
-            del(genome_seq['UNWANTED'])
+        with magic_open(f_names[0]) as fhandler:
+            for line in fhandler:
+                if line.startswith('>'):
+                    if header:
+                        genome_seq[header] = ''.join(seq).upper()
+                    header = line[1:].split()[0]
+                    if bad_chrom(header) or not chr_regexp.match(header):
+                        header = 'UNWANTED'
+                    elif not chr_names:
+                        if verbose:
+                            print('Parsing %s' % (header))
+                    else:
+                        header = chr_names.pop(0)
+                        if verbose:
+                            print('Parsing %s as %s' % (line[1:].rstrip(),
+                                                        header))
+                    seq = []
+                    continue
+                seq.append(line.rstrip())
+            if only_length:
+                genome_seq[header] = len(seq)
+            else:
+                genome_seq[header] = ''.join(seq).upper()
+            if 'UNWANTED' in genome_seq:
+                del(genome_seq['UNWANTED'])
     else:
         for fnam in f_names:
-            fhandler = magic_open(fnam)
-            try:
-                while True:
-                    if not chr_names:
-                        header = fhandler.next()
-                        if header.startswith('>'):
-                            header = header[1:].split()[0]
-                            if bad_chrom(header) or not chr_regexp.match(header):
+            with magic_open(f_nam) as fhandler:
+                try:
+                    while True:
+                        if not chr_names:
+                            header = next(fhandler)
+                            if header.startswith('>'):
+                                header = header[1:].split()[0]
+                                if bad_chrom(header) or not chr_regexp.match(header):
+                                    header = 'UNWANTED'
+                                genome_seq[header] = ''
+                                break
+                        else:
+                            _ = next(fhandler)
+                            header = chr_names.pop(0)
+                            if bad_chrom(header):
                                 header = 'UNWANTED'
                             genome_seq[header] = ''
                             break
-                    else:
-                        _ = fhandler.next()
-                        header = chr_names.pop(0)
-                        if bad_chrom(header):
-                            header = 'UNWANTED'
-                        genome_seq[header] = ''
-                        break
-            except StopIteration:
-                raise Exception('No crocodiles found, is it fasta?')
-            if only_length:
-                genome_seq[header] = sum(len(l.rstrip()) for l in fhandler)
-            else:
-                genome_seq[header] = ''.join([l.rstrip() for l in fhandler]).upper()
+                except StopIteration:
+                    raise Exception('No crocodiles found, is it fasta?')
+                if only_length:
+                    genome_seq[header] = sum(len(l.rstrip()) for l in fhandler)
+                else:
+                    genome_seq[header] = ''.join([l.rstrip() for l in fhandler]).upper()
         if 'UNWANTED' in genome_seq:
             del(genome_seq['UNWANTED'])
     if save_cache and not only_length:
         if verbose:
-            print 'saving genome in cache'
+            print('saving genome in cache')
         if len(f_names) == 1:
             fname = f_names[0] + '_genome.TADbit'
         else:
@@ -146,7 +156,7 @@ def get_gc_content(genome, resolution, chromosomes=None, n_cpus=None, by_chrom=F
        chromosomes)
     :param False by_chrom: if False returns a unique list for the full genome
     """
-    chromosomes = chromosomes if chromosomes else genome.keys()
+    chromosomes = chromosomes if chromosomes else list(genome.keys())
     if not n_cpus:
         n_cpus = mu.cpu_count()
     pool = mu.Pool(n_cpus)
@@ -165,7 +175,7 @@ def get_gc_content(genome, resolution, chromosomes=None, n_cpus=None, by_chrom=F
 
 def _get_chr_gc_list(chrom, resolution):
     gc_content = []
-    for pos in xrange(0, len(chrom), resolution):
+    for pos in range(0, len(chrom), resolution):
         seq = chrom[pos:pos + resolution]
         try:
             gc_content.append(float(seq.count('G') + seq.count('C')) /
@@ -177,7 +187,7 @@ def _get_chr_gc_list(chrom, resolution):
 
 def _get_chr_gc_dico(chrom, reso):
     gc_content = {}
-    for pos in xrange(0, len(chrom), reso):
+    for pos in range(0, len(chrom), reso):
         seq = chrom[pos:pos + reso]
         try:
             gc_content[pos  /reso] = (float(seq.count('G') + seq.count('C')) /

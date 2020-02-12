@@ -7,10 +7,11 @@ Reference Guide
 
 .. toctree::
    :maxdepth: 3
-   
+
    reference_mapping
    reference_chromosome
    reference_experiment
+   reference_hic_data
    reference_tadbit
    reference_clustering
    reference_parser

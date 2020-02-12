@@ -1,3 +1,4 @@
+from __future__ import print_function
 from itertools                    import combinations
 from os                           import path, system
 from sys                          import stdout
@@ -67,15 +68,15 @@ def merge_2d_beds(path1, path2, outpath):
     for crm in chromosomes:
         out.write('# CRM %s\t%s\n' % (crm, chromosomes[crm]))
     # merge sort the two files
-    read1 = fh1.next()
-    read2 = fh2.next()
+    read1 = next(fh1)
+    read2 = next(fh2)
     nreads = 0
     while True:
         if greater(read2, read1):
             out.write(read1)
             nreads += 1
             try:
-                read1 = fh1.next()
+                read1 = next(fh1)
             except StopIteration:
                 out.write(read2)
                 nreads += 1
@@ -84,7 +85,7 @@ def merge_2d_beds(path1, path2, outpath):
             out.write(read2)
             nreads += 1
             try:
-                read2 = fh2.next()
+                read2 = next(fh2)
             except StopIteration:
                 out.write(read1)
                 nreads += 1
@@ -117,7 +118,8 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
         print('  - Indexing new BAM file')
     # check samtools version number and modify command line
     version = LooseVersion([l.split()[1]
-                            for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                            for l in Popen(samtools, stderr=PIPE,
+                                           universal_newlines=True).communicate()[1].split('\n')
                             if 'Version' in l][0])
     if version >= LooseVersion('1.3.1'):
         system(samtools  + ' index -@ %d %s' % (cpus, outbam))
@@ -156,21 +158,21 @@ def get_intersection(fname1, fname2, out_path, verbose=False, compress=False):
 
     # Get the headers of the two files
     reads1 = magic_open(fname1)
-    line1 = reads1.next()
+    line1 = next(reads1)
     header1 = ''
     while line1.startswith('#'):
         if line1.startswith('# CRM'):
             header1 += line1
-        line1 = reads1.next()
+        line1 = next(reads1)
     read1 = line1.split('\t', 1)[0]
 
     reads2 = magic_open(fname2)
-    line2 = reads2.next()
+    line2 = next(reads2)
     header2 = ''
     while line2.startswith('#'):
         if line2.startswith('# CRM'):
             header2 += line2
-        line2 = reads2.next()
+        line2 = next(reads2)
     read2 = line2.split('\t', 1)[0]
     if header1 != header2:
         raise Exception('seems to be mapped onover different chromosomes\n')
@@ -221,16 +223,16 @@ def get_intersection(fname1, fname2, out_path, verbose=False, compress=False):
                 if eq_reads(read1, read2):
                     count += 1
                     _process_lines(line1, line2, buf, multiples, lchunk)
-                    line1 = reads1.next()
+                    line1 = next(reads1)
                     read1 = line1.split('\t', 1)[0]
-                    line2 = reads2.next()
+                    line2 = next(reads2)
                     read2 = line2.split('\t', 1)[0]
                 # if first element of line1 is greater than the one of line2:
                 elif gt_reads(read1, read2):
-                    line2 = reads2.next()
+                    line2 = next(reads2)
                     read2 = line2.split('\t', 1)[0]
                 else:
-                    line1 = reads1.next()
+                    line1 = next(reads1)
                     read1 = line1.split('\t', 1)[0]
             write_to_files(buf, tmp_dir, nchunks)
     except StopIteration:
@@ -258,11 +260,11 @@ def get_intersection(fname1, fname2, out_path, verbose=False, compress=False):
         if verbose:
             stdout.write('\r    %4d/%d sorted files' % (b + 1, len(buf)))
             stdout.flush()
-        out.write(''.join(['\t'.join(l[1:]) for l in sorted(
-            [l.split('\t') for l in open(
-                path.join(tmp_dir, 'rep_%03d' % (b // int(nchunks**0.5)),
-                          'tmp_%05d.tsv' % b))],
-            key=lambda x: (x[0], x[8], x[9], x[6]))]))
+        with open(path.join(tmp_dir, 'rep_%03d' % (b // int(nchunks**0.5)),
+                            'tmp_%05d.tsv' % b)) as f_tmp:
+            out.write(''.join(['\t'.join(l[1:]) for l in sorted(
+                [l.split('\t') for l in f_tmp],
+                key=lambda x: (x[0], x[8], x[9], x[6]))]))
     out.close()
 
     if compress:
@@ -352,16 +354,16 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
             multiples.setdefault(contacts, 0)
             multiples[contacts] += 1
             prod_cont = contacts * (contacts + 1) // 2
-            for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
+            for i, (r1, r2) in enumerate(combinations(list(elts.values()), 2)):
                 r1, r2, idx = _loc_reads(r1, r2)
                 buf[idx // lchunk].append('%d\t%s#%d/%d\t%s\t%s' % (
                     idx, r1[0], i + 1, prod_cont, '\t'.join(r1[1:]),
                     '\t'.join(r2[1:])))
         elif contacts == 1:
-            r1, r2, idx = _loc_reads(elts.values()[0], elts.values()[1])
+            r1, r2, idx = _loc_reads(list(elts.values())[0], list(elts.values())[1])
             buf[idx // lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
         else:
-            r1, r2, idx = _loc_reads(elts1.values()[0], elts2.values()[0])
+            r1, r2, idx = _loc_reads(list(elts1.values())[0], list(elts2.values())[0])
             buf[idx // lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
     else:
         r1, r2, idx = _loc_reads(line1.strip().split('\t'), line2.strip().split('\t'))

@@ -152,10 +152,10 @@ float** populateMap(int size, float** xyz) {
 
   return tmpxyz;
 
-  for (int i=0; i<size; i++) {
-    delete[] tmpxyz[i];
-  }
-  delete[] tmpxyz;
+//  for (int i=0; i<size; i++) {
+//    delete[] tmpxyz[i];
+//  }
+//  delete[] tmpxyz;
 
 }
 

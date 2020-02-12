@@ -9,7 +9,7 @@ from math import log, exp
 
 
 def arange(beg, end, step):
-    return [beg + i * step for i in xrange(int(abs(beg-end)/step+.5))]
+    return [beg + i * step for i in range(int(abs(beg-end)/step+.5))]
 
 
 def ascii_plot (ydata, xdata=None, logscale=False, pch='o', title='plot',
@@ -57,7 +57,7 @@ Y
 
     """
     if not xdata:
-        xdata = range(1, len(ydata)+1)
+        xdata = list(range(1, len(ydata)+1))
     yydata = []
     logf = log if logscale else lambda x: x
     expf = exp if logscale else lambda x: x
@@ -89,7 +89,7 @@ Y
             graph += ' ' * 7 + '|'
         pos = 0
         for x1, x2 in x_arange:
-            for i in xrange(pos, len(yydata)):
+            for i in range(pos, len(yydata)):
                 if (y1 < yydata[i] <= y2 and
                     x1 < xdata[i]  <= x2):
                     graph += pch
@@ -100,15 +100,15 @@ Y
     graph += '\n'
     if logscale:
         graph += ' 1/inf ' + ''.join(
-            ['+' if not x%10 else '-' for x in xrange(width+1)]) + '\n'
+            ['+' if not x%10 else '-' for x in range(width+1)]) + '\n'
     else:
         graph += '     0 ' + ''.join(
-            ['+' if not x%10 else '-' for x in xrange(width+1)]) + '\n'
+            ['+' if not x%10 else '-' for x in range(width+1)]) + '\n'
         
     val = 7 - max([len('{0:.0f}'.format(y)) for _, y in x_arange])
     form = '{' + ':<7.{}f'.format(val) + '}  '
     graph += ' '*7 + ''.join(
-        [form.format(float(sum(x_arange[x])/2)) for x in xrange(0,width,10)]
+        [form.format(float(sum(x_arange[x])/2)) for x in range(0,width,10)]
     ) + ('' if width % 10 else form.format(float(sum(x_arange[-1])/2)))+ '\n\n'
     graph += ' ' * 7 + '{0:^{1}}'.format(xlabel, width)
     return graph

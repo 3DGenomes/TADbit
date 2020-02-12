@@ -1,11 +1,16 @@
 """
 some utils relative to sqlite
 """
+from __future__ import print_function
 import sqlite3 as lite
 from os.path import abspath, relpath, join, exists
 from hashlib import md5
 from sys import stdout
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def digest_parameters(opts, get_md5=True, extra=None):
     """
@@ -16,20 +21,15 @@ def digest_parameters(opts, get_md5=True, extra=None):
     """
     extra = extra or []
     if get_md5:
-        # print 'MD5', ' '.join(
-        #     ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-        #      for k, v in sorted(opts.__dict__.iteritems())
-        #      if k not in ['force', 'workdir', 'func', 'tmp',
-        #                   'skip', 'keep_tmp', 'tmpdb'] + extra])
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-             for k, v in sorted(opts.__dict__.iteritems())
+             for k, v in sorted(opts.__dict__.items())
              if k not in ['force', 'workdir', 'func', 'tmp',
-                          'skip', 'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
+                          'skip', 'keep_tmp', 'tmpdb'] + extra]).encode('utf-8')).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-         for k, v in opts.__dict__.iteritems()
+         for k, v in opts.__dict__.items()
          if k not in ['fastq', 'index', 'renz', 'iterative', 'workdir',
                       'skip', 'func', 'tmp', 'keep_tmp'] + extra and v is not None])
     parameters = parameters.replace("'", "")
@@ -52,7 +52,7 @@ def delete_entries(cur, table, col, val):
     try:
         cur.execute("delete from %s where %s.%s = %d" % (
             table, table, col, val))
-        print ' - deleted %d elements with %s = %s' % (len(elts), col, val)
+        print(' - deleted %d elements with %s = %s' % (len(elts), col, val))
     except lite.OperationalError:
         pass
 
@@ -144,7 +144,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             ','.join(map(str, jobids))))
     elif kwargs:
         filterstr = ' AND '.join("%s='%s'" % (k, 'NULL' if v == 'None' else v)
-                                 for k, v in kwargs.iteritems())
+                                 for k, v in kwargs.items())
         try:
             cur.execute("select %s from %s where %s" % (
                 ','.join(columns), name, filterstr))
@@ -158,7 +158,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
             for vals in rows]
     if not rows:
         return
-    if isinstance(no_print, str):
+    if isinstance(no_print, basestring):
         no_print = [no_print]
     for nop in no_print:
         if nop.lower() in columns:
@@ -179,7 +179,7 @@ def print_db(cur, name, no_print='', jobids=None, savedata=None, append=False,
 
 
 def _ascii_print_db(name, names, cols, rows, savedata):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'w')
         to_close = True
     else:
@@ -202,7 +202,7 @@ def _ascii_print_db(name, names, cols, rows, savedata):
 
 
 def _tsv_print_db(name, names, rows, savedata, append):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
         to_close = True
     else:
@@ -218,15 +218,18 @@ def _tsv_print_db(name, names, rows, savedata, append):
 
 
 def _rev_tsv_print_db(names, rows, savedata, append):
-    if isinstance(savedata, str):
+    if isinstance(savedata, basestring):
         out = open(savedata, 'a' if append else 'w')
+        to_close = True
     else:
         out = savedata
+        to_close = False
     pos = names.index('Name')
     out.write('\t'.join([row[pos] for row in rows]) + '\n')
-    for col in xrange(len(rows[pos])):
+    for col in range(len(rows[pos])):
         if col == pos:
             continue
         out.write('\t'.join([str(row[col]) for row in rows]) + '\n')
     out.write('\n')
-    out.close()
+    if to_close:
+        out.close()

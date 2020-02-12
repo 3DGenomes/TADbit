@@ -46,7 +46,7 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
 
     :returns: persistence length
     """
-    for _ in xrange(1, jmax):
+    for _ in range(1, jmax):
         contour_guess = contour / guess
         expcx = np.exp(-contour_guess) - 1
         # function
@@ -76,9 +76,9 @@ class Interpolate(object):
                 y_list = y_list[:-1]
         if any(y - x <= 0 for x, y in zip(x_list, x_list[1:])):
             raise ValueError("x must be in strictly ascending")
-        x_list = self.x_list = map(float, x_list)
-        y_list = self.y_list = map(float, y_list)
-        intervals = zip(x_list, x_list[1:], y_list, y_list[1:])
+        x_list = self.x_list = list(map(float, x_list))
+        y_list = self.y_list = list(map(float, y_list))
+        intervals = list(zip(x_list, x_list[1:], y_list, y_list[1:]))
         self.slopes = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
 
     def __call__(self, x):
@@ -87,12 +87,13 @@ class Interpolate(object):
 
 
 def transform(val):
-    return np.log10(val)
+    with np.errstate(divide='ignore'):
+        return np.log10(val)
 
 
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
-    minv = float(min([v for v in values.values() if v])) / 2
+    minv = float(min([v for v in list(values.values()) if v])) / 2
     # if minv > 1:
     #     warn('WARNING: probable problem with normalization, check.\n')
     #     minv /= 2  # TODO: something better
@@ -164,8 +165,8 @@ def zscore(values):
     """
     # get the log trasnform values
     nozero_log(values)
-    mean_v = np.mean(values.values())
-    std_v  = np.std (values.values())
+    mean_v = np.mean(list(values.values()))
+    std_v  = np.std (list(values.values()))
     # replace values by z-score
     for i in values:
         values[i] = (values[i] - mean_v) / std_v
