@@ -3,6 +3,7 @@
 
 manual test
 """
+from __future__ import print_function
 
 from pytadbit import tadbit, batch_tadbit
 from sys import argv
@@ -18,7 +19,7 @@ def get_matrix(f_name):
             nums.append([float(v) for v in values[1:]])
         except ValueError:
             continue
-    return matrix(zip(*nums))
+    return matrix(list(zip(*nums)))
 
 
 def main():
@@ -30,8 +31,8 @@ def main():
     chrom = get_matrix(chrom)
 
     out = tadbit(chrom, verbose=True, heuristic=True)
-    print ('{:>6} '    * len(out[0])).format(*out[0])
-    print ('{:>6.1f} ' * len(out[1])).format(*out[1])
+    print(('{:>6} '    * len(out[0])).format(*out[0]))
+    print(('{:>6.1f} ' * len(out[1])).format(*out[1]))
 
     plt.imshow(log2(chrom.T), origin='lower')
     plt.vlines(out[0], 0, chrom.shape[0])
@@ -40,8 +41,8 @@ def main():
 
     chrom_path = 'chrT/'
     out_batch = batch_tadbit(chrom_path, n_cpus=1, heuristic=True)
-    print ('{:>6} '    * len(out_batch[0])).format(*out_batch[0])
-    print ('{:>6.1f} ' * len(out_batch[1])).format(*out_batch[1])
+    print(('{:>6} '    * len(out_batch[0])).format(*out_batch[0]))
+    print(('{:>6.1f} ' * len(out_batch[1])).format(*out_batch[1]))
 
     plt.imshow(log2(chrom.T), origin='lower')
     plt.vlines(out[0], 0, chrom.shape[0])

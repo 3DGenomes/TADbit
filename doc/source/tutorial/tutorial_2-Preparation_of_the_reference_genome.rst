@@ -1,4 +1,3 @@
-
 Preparation of the reference genome
 ===================================
 
@@ -8,30 +7,30 @@ methodology is perfectly valid. However in order to decrease the
 probability of having mapping errors, adding all unassembled contigs may
 help:
 
-    For variant discovery, RNA-seq and ChIP-seq, it is recommended to
-    use the entire primary assembly, including assembled chromosomes AND
-    unlocalized/unplaced contigs, for the purpose of read mapping. Not
-    including unlocalized and unplaced contigs potentially leads to more
-    mapping errors.
+   For variant discovery, RNA-seq and ChIP-seq, it is recommended to use
+   the entire primary assembly, including assembled chromosomes AND
+   unlocalized/unplaced contigs, for the purpose of read mapping. Not
+   including unlocalized and unplaced contigs potentially leads to more
+   mapping errors.
 
-    *from: http://lh3lh3.users.sourceforge.net/humanref.shtml*
+   *from: http://lh3lh3.users.sourceforge.net/humanref.shtml*
 
 We are thus going to download full chromosomes and unassembled contigs.
 From these sequences we are then going to create two reference genomes:
-- one "classic" reference genome with only assembled chromosomes, used
+- one “classic” reference genome with only assembled chromosomes, used
 to compute statistics on the genome (GC content, number of restriction
 sites or mappability) - one that would contain all chromosomes and
 unassembled contigs, used exclusively for mapping.
 
-*Mus musculus*'s reference genome sequence
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*Mus musculus*\ ’s reference genome sequence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We search for the most recent reference genome corresponding to Mouse
 (https://www.ncbi.nlm.nih.gov/genome?term=mus%20musculus).
 
 From there we obtain these identifiers:
 
-.. code:: ipython2
+.. code:: ipython3
 
     species  = 'Mus_musculus'
     taxid    = '10090'
@@ -47,16 +46,16 @@ Download from the NCBI
 List of chromosomes/contigs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython2
+.. code:: ipython3
 
     sumurl = ('ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{0}/{1}/{2}/{3}/{4}_{5}/'
-              '{4}_{5}_assembly_report.txt').format(genbank[:3], genbank[4:7], genbank[7:10], 
+              '{4}_{5}_assembly_report.txt').format(genbank[:3], genbank[4:7], genbank[7:10],
                                                     genbank[10:13], genbank, assembly)
-    
+
     crmurl = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi'
               '?db=nuccore&id=%s&rettype=fasta&retmode=text')
 
-.. code:: ipython2
+.. code:: ipython3
 
     print sumurl
 
@@ -66,37 +65,37 @@ List of chromosomes/contigs
     ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.26_GRCm38.p6/GCF_000001635.26_GRCm38.p6_assembly_report.txt
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! wget -q $sumurl -O chromosome_list.txt
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! head chromosome_list.txt
 
 
 .. ansi-block::
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # Assembly name:  GRCm38.p6
+    # Description:    Genome Reference Consortium Mouse Build 38 patch release 6 (GRCm38.p6)
+    # Organism name:  Mus musculus (house mouse)
+    # Infraspecific name:  strain=C57BL/6J
+    # Taxid:          10090
+    # BioProject:     PRJNA20689
+    # Submitter:      Genome Reference Consortium
+    # Date:           2017-9-15
+    # Assembly type:  haploid-with-alt-loci
+    # Release type:   patch
 
 
 Sequences of each chromosome/contig
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     import os
 
-.. code:: ipython2
+.. code:: ipython3
 
     dirname = 'genome'
     ! mkdir -p {dirname}
@@ -104,7 +103,7 @@ Sequences of each chromosome/contig
 For each contig/chromosome download the corresponding FASTA file from
 NCBI
 
-.. code:: ipython2
+.. code:: ipython3
 
     contig = []
     for line in open('chromosome_list.txt'):
@@ -116,7 +115,7 @@ NCBI
         else:
             name = 'chr%s_%s.fasta' % (assigned_molecule, seq_name.replace('/', '-'))
         contig.append(name)
-    
+
         outfile = os.path.join(dirname, name)
         if os.path.exists(outfile) and os.path.getsize(outfile) > 10:
             continue
@@ -135,16 +134,16 @@ NCBI
 Concatenate all contigs/chromosomes into single files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     def write_to_fasta(line):
         contig_file.write(line)
-    
+
     def write_to_fastas(line):
         contig_file.write(line)
         simple_file.write(line)
 
-.. code:: ipython2
+.. code:: ipython3
 
     os.system('mkdir -p {}/{}-{}'.format(dirname, species, assembly))
 
@@ -157,11 +156,11 @@ Concatenate all contigs/chromosomes into single files
 
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     contig_file = open('{0}/{1}-{2}/{1}-{2}_contigs.fa'.format(dirname, species, assembly),'w')
     simple_file = open('{0}/{1}-{2}/{1}-{2}.fa'.format(dirname, species, assembly),'w')
-    
+
     for molecule in contig:
         fh = open('{0}/{1}'.format(dirname, molecule))
         oline = '>%s\n' % (molecule.replace('.fasta', ''))
@@ -179,14 +178,14 @@ Concatenate all contigs/chromosomes into single files
 
 Remove all the other files (with single chromosome/contig)
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! rm -f {dirname}/*.fasta
 
 Creation of an index file for GEM mapper
 ----------------------------------------
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! gem-indexer -T 8 -i {dirname}/{species}-{assembly}/{species}-{assembly}_contigs.fa -o {dirname}/{species}-{assembly}/{species}-{assembly}_contigs
 
@@ -217,22 +216,22 @@ Compute mappability values needed for bias specific normalizations
 In this case we can use the FASTA of the genome whithout contigs and
 follow these step:
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! gem-indexer -i {dirname}/{species}-{assembly}/{species}-{assembly}.fa \
        -o {dirname}/{species}-{assembly}/{species}-{assembly} -T 8
-    
+
     ! gem-mappability -I {dirname}/{species}-{assembly}/{species}-{assembly}.gem -l 50 \
        -o {dirname}/{species}-{assembly}/{species}-{assembly}.50mer -T 8
-    
+
     ! gem-2-wig -I {dirname}/{species}-{assembly}/{species}-{assembly}.gem \
        -i {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.mappability \
        -o {dirname}/{species}-{assembly}/{species}-{assembly}.50mer
-    
+
     ! wigToBigWig {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.wig \
        {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.sizes \
        {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.bw
-    
+
     ! bigWigToBedGraph {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.bw  \
        {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.bedGraph
 
@@ -263,7 +262,6 @@ follow these step:
     ************************************************************************
     Sat Jan 12 13:01:12 2019 -- Loading index (likely to take long)... done.
     Sat Jan 12 13:01:23 2019 -- Starting (2647560565 positions to go)...
-    Sat Jan 12 18:36:34 2019 -- Pos=70.6% Done=1958248739(74%) Uniq=79.9%9%%%%%Pos=1.01% Done=218406036(8.25%) Uniq=9.74%Pos=1.81% Done=248796621(9.4%) Uniq=15.7%Pos=2.25% Done=263468826(9.95%) Uniq=18.6%Pos=2.26% Done=263625126(9.96%) Uniq=18.7%Pos=2.47% Done=270271292(10.2%) Uniq=20%Pos=2.67% Done=276275609(10.4%) Uniq=21.3% 12 13:27:10 2019 -- Pos=3.18% Done=291757822(11%) Uniq=24.1%Pos=4.35% Done=327462213(12.4%) Uniq=29.1% 12 14:08:03 2019 -- Pos=10.6% Done=496486782(18.8%) Uniq=48.2% 12 14:19:01 2019 -- Pos=12.9% Done=556078649(21%) Uniq=52.6%Pos=13% Done=557520928(21.1%) Uniq=52.7%Pos=13.3% Done=566507363(21.4%) Uniq=53.4%Pos=14.1% Done=586327353(22.1%) Uniq=54.3% 12 14:35:44 2019 -- Pos=16.2% Done=639147470(24.1%) Uniq=56.9%Pos=16.9% Done=655461253(24.8%) Uniq=57.7% 12 14:40:36 2019 -- Pos=17.2% Done=662932614(25%) Uniq=58.1% 12 14:40:37 2019 -- Pos=17.2% Done=662994581(25%) Uniq=58.1%Pos=17.2% Done=663086915(25%) Uniq=58.1%Pos=17.3% Done=665932815(25.2%) Uniq=58.2%Pos=17.6% Done=673114787(25.4%) Uniq=58.4% 12 14:43:23 2019 -- Pos=17.7% Done=676926063(25.6%) Uniq=58.6%Pos=18.5% Done=697509819(26.3%) Uniq=59.6%Pos=18.6% Done=698103069(26.4%) Uniq=59.6%Pos=19.2% Done=712635433(26.9%) Uniq=60.3% 12 14:52:45 2019 -- Pos=19.8% Done=728240083(27.5%) Uniq=61% 12 14:54:35 2019 -- Pos=20.1% Done=736257012(27.8%) Uniq=61.2% 12 14:55:18 2019 -- Pos=20.3% Done=740097758(28%) Uniq=61.4%Pos=21% Done=756804027(28.6%) Uniq=62%Pos=21.3% Done=764025673(28.9%) Uniq=62.3%Pos=23.3% Done=812933566(30.7%) Uniq=63.8%Pos=23.7% Done=824333009(31.1%) Uniq=64.3%Pos=25.5% Done=867869089(32.8%) Uniq=65.5%Pos=26.7% Done=897356445(33.9%) Uniq=66.1%Pos=29.1% Done=956057848(36.1%) Uniq=67.7%Pos=29.1% Done=956510085(36.1%) Uniq=67.6%Pos=29.8% Done=973764802(36.8%) Uniq=68.1%Pos=31.1% Done=1007091100(38%) Uniq=68.9%Pos=31.3% Done=1011094886(38.2%) Uniq=69% 12 15:46:49 2019 -- Pos=31.3% Done=1011152798(38.2%) Uniq=69%Pos=32.2% Done=1032159756(39%) Uniq=69.5% 12 15:52:51 2019 -- Pos=32.6% Done=1042022795(39.4%) Uniq=69.7% 12 15:54:27 2019 -- Pos=32.9% Done=1049868065(39.7%) Uniq=69.9%Pos=34.3% Done=1083216202(40.9%) Uniq=70.5%Pos=34.4% Done=1085213644(41%) Uniq=70.5% 12 16:01:43 2019 -- Pos=34.5% Done=1087793267(41.1%) Uniq=70.6% 12 16:02:21 2019 -- Pos=34.6% Done=1091854316(41.2%) Uniq=70.7%Pos=35% Done=1100066275(41.6%) Uniq=70.9%Pos=35.3% Done=1107558838(41.8%) Uniq=71.1%Pos=35.4% Done=1109908809(41.9%) Uniq=71.1% 12 16:05:57 2019 -- Pos=35.5% Done=1113842876(42.1%) Uniq=71.2%Pos=35.7% Done=1118655412(42.3%) Uniq=71.3%Pos=36.2% Done=1130020310(42.7%) Uniq=71.4%Pos=36.3% Done=1132275721(42.8%) Uniq=71.4%Pos=36.4% Done=1135852676(42.9%) Uniq=71.5%Pos=36.5% Done=1137008185(42.9%) Uniq=71.5%Pos=36.6% Done=1140544383(43.1%) Uniq=71.6%Pos=37.6% Done=1161712500(43.9%) Uniq=71.4% 12 16:16:44 2019 -- Pos=37.7% Done=1165231491(44%) Uniq=71.4%Pos=38.2% Done=1175315364(44.4%) Uniq=71.4%Pos=38.6% Done=1185745990(44.8%) Uniq=71.5%Pos=38.8% Done=1190650288(45%) Uniq=71.6% 12 16:22:20 2019 -- Pos=38.9% Done=1192597395(45%) Uniq=71.6%Pos=38.9% Done=1192733660(45.1%) Uniq=71.6%Pos=38.9% Done=1194041248(45.1%) Uniq=71.6%Pos=39.2% Done=1200129865(45.3%) Uniq=71.7%Pos=39.6% Done=1210531114(45.7%) Uniq=71.9%Pos=40.3% Done=1226597493(46.3%) Uniq=72.2%Pos=40.3% Done=1227230676(46.4%) Uniq=72.2%Pos=40.6% Done=1233160357(46.6%) Uniq=72.3%Pos=40.6% Done=1233477354(46.6%) Uniq=72.3% 12 16:29:50 2019 -- Pos=40.6% Done=1234346487(46.6%) Uniq=72.3%Pos=40.6% Done=1234670246(46.6%) Uniq=72.3%Pos=40.8% Done=1238221060(46.8%) Uniq=72.4% 12 16:31:23 2019 -- Pos=40.9% Done=1242199453(46.9%) Uniq=72.5%Pos=41% Done=1243334025(47%) Uniq=72.5% 12 16:34:09 2019 -- Pos=41.7% Done=1260357566(47.6%) Uniq=72.8%Pos=41.8% Done=1263797304(47.7%) Uniq=72.9%Pos=41.9% Done=1266663633(47.8%) Uniq=72.9%Pos=42.2% Done=1274159087(48.1%) Uniq=73% 12 16:36:23 2019 -- Pos=42.2% Done=1274316768(48.1%) Uniq=73%Pos=42.5% Done=1282279049(48.4%) Uniq=73.2%Pos=43.2% Done=1297275311(49%) Uniq=73.3%Pos=43.7% Done=1311200618(49.5%) Uniq=73.6%Pos=44.1% Done=1320126372(49.9%) Uniq=73.7%Pos=44.3% Done=1323089841(50%) Uniq=73.8%Pos=44.5% Done=1329283262(50.2%) Uniq=73.8%Pos=44.6% Done=1331556300(50.3%) Uniq=73.9%Pos=44.7% Done=1333548798(50.4%) Uniq=73.9%Pos=44.8% Done=1335604448(50.4%) Uniq=73.9%Pos=45.2% Done=1345158159(50.8%) Uniq=74.1%Pos=45.7% Done=1358894699(51.3%) Uniq=74.3%Pos=45.9% Done=1361634196(51.4%) Uniq=74.3% 12 16:52:54 2019 -- Pos=46% Done=1365095583(51.6%) Uniq=74.4%Pos=47.1% Done=1392288414(52.6%) Uniq=74.8%Pos=47.2% Done=1394490530(52.7%) Uniq=74.8%Pos=47.5% Done=1401998386(53%) Uniq=74.9%Pos=47.6% Done=1403219797(53%) Uniq=74.9% 12 17:02:09 2019 -- Pos=48% Done=1414538194(53.4%) Uniq=75.1%Pos=48.7% Done=1431137135(54.1%) Uniq=75.3%Pos=48.8% Done=1432121017(54.1%) Uniq=75.3%Pos=49% Done=1439392015(54.4%) Uniq=75.4%Pos=49.7% Done=1454815543(54.9%) Uniq=75.7%Pos=50% Done=1462423784(55.2%) Uniq=75.8%Pos=50.3% Done=1470546701(55.5%) Uniq=75.8% 12 17:11:54 2019 -- Pos=50.5% Done=1474303143(55.7%) Uniq=75.9%Pos=51% Done=1486804920(56.2%) Uniq=76.1%Pos=51.1% Done=1489886633(56.3%) Uniq=76.1%Pos=51.5% Done=1500250073(56.7%) Uniq=76.2% 12 17:16:26 2019 -- Pos=51.6% Done=1501766350(56.7%) Uniq=76.2%Pos=52.3% Done=1517869884(57.3%) Uniq=76.4%Pos=52.8% Done=1529262720(57.8%) Uniq=76.6%Pos=53.6% Done=1548337180(58.5%) Uniq=76.8%Pos=53.9% Done=1555652827(58.8%) Uniq=76.9%Pos=54.1% Done=1561752113(59%) Uniq=76.9% 12 17:28:19 2019 -- Pos=54.2% Done=1564899726(59.1%) Uniq=77%Pos=54.3% Done=1565343755(59.1%) Uniq=77%Pos=54.6% Done=1573216971(59.4%) Uniq=77% 12 17:29:53 2019 -- Pos=54.6% Done=1574089218(59.5%) Uniq=77.1% 12 17:31:18 2019 -- Pos=55% Done=1583099060(59.8%) Uniq=77.2%Pos=55.4% Done=1593216486(60.2%) Uniq=77.3%Pos=55.9% Done=1606337152(60.7%) Uniq=77.4%Pos=56.1% Done=1609808539(60.8%) Uniq=77.5% 12 17:35:55 2019 -- Pos=56.1% Done=1609862112(60.8%) Uniq=77.5% 12 17:42:27 2019 -- Pos=57.5% Done=1642858287(62.1%) Uniq=77.8%Pos=57.5% Done=1643121726(62.1%) Uniq=77.8%Pos=57.5% Done=1644007927(62.1%) Uniq=77.8%Pos=58% Done=1656404952(62.6%) Uniq=77.9% 12 17:45:23 2019 -- Pos=58.2% Done=1660423084(62.7%) Uniq=78%Pos=58.4% Done=1666069286(62.9%) Uniq=78%Pos=58.8% Done=1675581823(63.3%) Uniq=78.2% 12 17:49:23 2019 -- Pos=59.2% Done=1685412790(63.7%) Uniq=78.3%Pos=59.5% Done=1693653319(64%) Uniq=78.3%Pos=60.2% Done=1709214429(64.6%) Uniq=78.5%Pos=60.7% Done=1722756903(65.1%) Uniq=78.7%Pos=61.1% Done=1732331764(65.4%) Uniq=78.7%Pos=61.3% Done=1736515659(65.6%) Uniq=78.8%Pos=62.2% Done=1759278288(66.4%) Uniq=78.8% 12 18:06:17 2019 -- Pos=63.2% Done=1782560137(67.3%) Uniq=79%Pos=63.3% Done=1785027294(67.4%) Uniq=79%Pos=63.8% Done=1795924461(67.8%) Uniq=79.1%Pos=63.9% Done=1799047188(68%) Uniq=79.1%Pos=63.9% Done=1799216528(68%) Uniq=79.1%Pos=65.1% Done=1827177837(69%) Uniq=79.3% 12 18:15:27 2019 -- Pos=65.4% Done=1835549918(69.3%) Uniq=79.4%Pos=65.9% Done=1846126749(69.7%) Uniq=79.4%Pos=66.4% Done=1859131312(70.2%) Uniq=79.5%Pos=66.4% Done=1859670264(70.2%) Uniq=79.5%Pos=66.6% Done=1864236016(70.4%) Uniq=79.5% 12 18:20:29 2019 -- Pos=66.6% Done=1864538064(70.4%) Uniq=79.5%Pos=66.9% Done=1870206871(70.6%) Uniq=79.6% 12 18:21:32 2019 -- Pos=66.9% Done=1871698423(70.7%) Uniq=79.6%Pos=67.1% Done=1875120143(70.8%) Uniq=79.6%Pos=67.2% Done=1877997202(70.9%) Uniq=79.6%Pos=67.2% Done=1878269502(70.9%) Uniq=79.7%Pos=67.6% Done=1887010143(71.3%) Uniq=79.6%Pos=67.7% Done=1889944239(71.4%) Uniq=79.6%Pos=67.9% Done=1894198380(71.5%) Uniq=79.7% 12 18:26:30 2019 -- Pos=68.1% Done=1899871149(71.8%) Uniq=79.7%Pos=68.4% Done=1905362368(72%) Uniq=79.7%Pos=69% Done=1920184966(72.5%) Uniq=79.9%Pos=69.2% Done=1925805126(72.7%) Uniq=79.9%Pos=69.2% Done=1925834743(72.7%) Uniq=79.9%Pos=69.2% Done=1926179506(72.8%) Uniq=79.9%Pos=69.3% Done=1928790007(72.9%) Uniq=79.9%Pos=69.4% Done=1931196834(72.9%) Uniq=80%Pos=69.5% Done=1933456741(73%) Uniq=80%Pos=69.5% Done=1933876410(73%) Uniq=80%Pos=69.8% Done=1940867480(73.3%) Uniq=79.8%Pos=70% Done=1943951816(73.4%) Uniq=79.8%Pos=70.2% Done=1949902159(73.6%) Uniq=79.9%Pos=70.2% Done=1950034273(73.7%) Uniq=79.9%Pos=70.3% Done=1951546353(73.7%) Uniq=79.9% 12 18:35:44 2019 -- Pos=70.3% Done=1952490966(73.7%) Uniq=79.9%Pos=70.6% Done=1958207268(74%) Uniq=79.9%Sat Jan 12 20:33:43 2019 -- Pos=99.4% Done=2646872857(100%) Uniq=80.3%%s=70.6% Done=1959719004(74%) Uniq=80%Pos=70.7% Done=1961694822(74.1%) Uniq=80%Pos=70.9% Done=1967604934(74.3%) Uniq=80%Pos=71.2% Done=1974525088(74.6%) Uniq=79.9%Pos=71.3% Done=1974972286(74.6%) Uniq=79.9% 12 18:39:35 2019 -- Pos=71.3% Done=1976759614(74.7%) Uniq=80%Pos=71.4% Done=1977595226(74.7%) Uniq=80%Pos=71.4% Done=1978715396(74.7%) Uniq=79.9%Pos=71.5% Done=1979887820(74.8%) Uniq=79.9%Pos=71.6% Done=1982403833(74.9%) Uniq=80%Pos=71.7% Done=1985897278(75%) Uniq=80%Pos=72.2% Done=1996685945(75.4%) Uniq=80.1%Pos=72.2% Done=1996942152(75.4%) Uniq=80.1%Pos=72.2% Done=1998072312(75.5%) Uniq=80.1%Pos=72.4% Done=2001445562(75.6%) Uniq=80.1%Pos=72.4% Done=2002188372(75.6%) Uniq=80.1%Pos=72.5% Done=2005506492(75.7%) Uniq=80.1%Pos=72.5% Done=2006019757(75.8%) Uniq=80.1%Pos=72.8% Done=2012280596(76%) Uniq=80.2%Pos=72.9% Done=2013673384(76.1%) Uniq=80.2%Pos=73.1% Done=2019490614(76.3%) Uniq=80.2%Pos=73.3% Done=2023910709(76.4%) Uniq=80.3%Pos=73.6% Done=2030700632(76.7%) Uniq=80.3%Pos=73.8% Done=2034361559(76.8%) Uniq=80.3%Pos=74.1% Done=2042470991(77.1%) Uniq=80.4%Pos=74.5% Done=2051204004(77.5%) Uniq=80.5%Pos=74.9% Done=2060026135(77.8%) Uniq=80.5%Pos=74.9% Done=2060237589(77.8%) Uniq=80.5%Pos=75% Done=2062038184(77.9%) Uniq=80.6%Pos=75% Done=2062602058(77.9%) Uniq=80.6%Pos=75.1% Done=2065986247(78%) Uniq=80.6%Pos=75.2% Done=2067330704(78.1%) Uniq=80.6%Pos=75.2% Done=2068228038(78.1%) Uniq=80.6%Pos=75.3% Done=2070295893(78.2%) Uniq=80.6%Pos=75.7% Done=2080333393(78.6%) Uniq=80.7%Pos=76.1% Done=2088639870(78.9%) Uniq=80.7% 12 19:00:23 2019 -- Pos=76.2% Done=2090500386(79%) Uniq=80.8%Pos=76.3% Done=2093775541(79.1%) Uniq=80.8%Pos=76.3% Done=2094319021(79.1%) Uniq=80.8%Pos=76.3% Done=2094588474(79.1%) Uniq=80.8%Pos=76.6% Done=2100115538(79.3%) Uniq=80.8%Pos=76.6% Done=2100885189(79.4%) Uniq=80.8%Pos=76.6% Done=2101971885(79.4%) Uniq=80.8%Pos=76.6% Done=2102015589(79.4%) Uniq=80.8% Jan 12 19:02:40 2019 -- Pos=76.7% Done=2104395732(79.5%) Uniq=80.9%Pos=76.9% Done=2108324137(79.6%) Uniq=80.9%Pos=77.1% Done=2112676445(79.8%) Uniq=80.9%Pos=77.4% Done=2120614755(80.1%) Uniq=81%Pos=77.5% Done=2122921824(80.2%) Uniq=81%Pos=77.7% Done=2127825701(80.4%) Uniq=81%Pos=77.7% Done=2128154697(80.4%) Uniq=81% 12 19:06:26 2019 -- Pos=77.7% Done=2129166946(80.4%) Uniq=81%Pos=78% Done=2135759524(80.7%) Uniq=81.1%Pos=78.2% Done=2140909782(80.9%) Uniq=81.1%Pos=78.2% Done=2140995816(80.9%) Uniq=81.1%Pos=78.2% Done=2141235549(80.9%) Uniq=81.1%Pos=78.2% Done=2141274201(80.9%) Uniq=81.1%Pos=78.5% Done=2146413313(81.1%) Uniq=81.1%Pos=78.5% Done=2147993533(81.1%) Uniq=81.2%Pos=78.6% Done=2149948452(81.2%) Uniq=81.2%Pos=78.9% Done=2156347825(81.4%) Uniq=81.2%Pos=78.9% Done=2157928846(81.5%) Uniq=81.2%Pos=79% Done=2159776896(81.6%) Uniq=81.2%Pos=79.1% Done=2161427090(81.6%) Uniq=81.2%Pos=79.4% Done=2168554089(81.9%) Uniq=81.3%Pos=79.4% Done=2170233929(82%) Uniq=81.3%Pos=79.5% Done=2171948457(82%) Uniq=81.3%Pos=79.7% Done=2176656525(82.2%) Uniq=81.3%Pos=79.8% Done=2177852038(82.3%) Uniq=81.4%Pos=80% Done=2183259873(82.5%) Uniq=81.4%Pos=80.1% Done=2184869735(82.5%) Uniq=81.4% 12 19:17:03 2019 -- Pos=80.3% Done=2189979212(82.7%) Uniq=81.4%Pos=80.3% Done=2190734677(82.7%) Uniq=81.4%Pos=81.4% Done=2215182864(83.7%) Uniq=81.6%Pos=81.5% Done=2219001585(83.8%) Uniq=81.6%Pos=81.5% Done=2219132688(83.8%) Uniq=81.6% 12 19:22:32 2019 -- Pos=81.7% Done=2223004456(84%) Uniq=81.6%Pos=81.7% Done=2224615857(84%) Uniq=81.6%Pos=82.2% Done=2236418353(84.5%) Uniq=81.6%Pos=82.4% Done=2239910226(84.6%) Uniq=81.6%Pos=82.6% Done=2244093004(84.8%) Uniq=81.7%Pos=82.7% Done=2246565721(84.9%) Uniq=81.7%Pos=82.7% Done=2246783960(84.9%) Uniq=81.7%Pos=83% Done=2253960803(85.1%) Uniq=81.7%Pos=83.2% Done=2258180897(85.3%) Uniq=81.7%Pos=83.2% Done=2259167462(85.3%) Uniq=81.7%Pos=83.5% Done=2265464290(85.6%) Uniq=81.8% 12 19:32:42 2019 -- Pos=84% Done=2277688893(86%) Uniq=81.8%Pos=84.3% Done=2285025312(86.3%) Uniq=81.9%Pos=84.3% Done=2286580226(86.4%) Uniq=81.9%Pos=84.7% Done=2296367990(86.7%) Uniq=82%Pos=85.5% Done=2314686138(87.4%) Uniq=82.1%Pos=85.6% Done=2315220128(87.4%) Uniq=82.1%Pos=85.9% Done=2322172070(87.7%) Uniq=82.1%Pos=86% Done=2326739936(87.9%) Uniq=82.1%Pos=86.1% Done=2328548748(88%) Uniq=82.1%Pos=86.1% Done=2328848056(88%) Uniq=82.1% 12 19:42:17 2019 -- Pos=86.2% Done=2331080816(88%) Uniq=82.2%Pos=86.2% Done=2331155724(88%) Uniq=82.2%Pos=86.3% Done=2331875815(88.1%) Uniq=82.2%Pos=86.6% Done=2340021840(88.4%) Uniq=82.2%Pos=86.8% Done=2344599437(88.6%) Uniq=82.2%Pos=87% Done=2349705548(88.7%) Uniq=82.3%Pos=87.1% Done=2351361250(88.8%) Uniq=82.3%Pos=87.1% Done=2352999360(88.9%) Uniq=82.3%Pos=87.4% Done=2358589856(89.1%) Uniq=82.3% 12 19:47:12 2019 -- Pos=87.5% Done=2361715228(89.2%) Uniq=82.3%Pos=87.6% Done=2365070308(89.3%) Uniq=82.4%Pos=87.7% Done=2365970342(89.4%) Uniq=82.4%Pos=87.7% Done=2367336396(89.4%) Uniq=82.4%Pos=88.2% Done=2379097284(89.9%) Uniq=82.4%Pos=88.2% Done=2379806891(89.9%) Uniq=82.5%Pos=88.2% Done=2379976690(89.9%) Uniq=82.5%Pos=88.7% Done=2390852190(90.3%) Uniq=82.5%Pos=88.9% Done=2394167627(90.4%) Uniq=82.5% 12 19:53:33 2019 -- Pos=89% Done=2398270384(90.6%) Uniq=82.5%Pos=89.1% Done=2400699017(90.7%) Uniq=82.5%Pos=89.4% Done=2408024945(91%) Uniq=82.6%Pos=89.6% Done=2411522999(91.1%) Uniq=82.6%Pos=89.7% Done=2413782730(91.2%) Uniq=82.6%Pos=89.8% Done=2416868515(91.3%) Uniq=82.6%Pos=89.9% Done=2420426517(91.4%) Uniq=82.6%Pos=90.2% Done=2427484877(91.7%) Uniq=82.7% 12 19:58:43 2019 -- Pos=90.4% Done=2431535917(91.8%) Uniq=82.7%Pos=90.4% Done=2432847831(91.9%) Uniq=82.7%Pos=90.5% Done=2433376027(91.9%) Uniq=82.7%Pos=90.5% Done=2437160669(92.1%) Uniq=82.6%2921724(92.3%) Uniq=82.6%Pos=90.8% Done=2443185320(92.3%) Uniq=82.6%5176578(92.4%) Uniq=82.6%019 -- Pos=91.2% Done=2452059153(92.6%) Uniq=82.7%Pos=91.3% Done=2456039212(92.8%) Uniq=82.6%Pos=91.4% Done=2458041197(92.8%) Uniq=82.5%Pos=91.6% Done=2458325610(92.9%) Uniq=82.5%Pos=91.6% Done=2458328085(92.9%) Uniq=82.5%Pos=92.1% Done=2468962214(93.3%) Uniq=82.5%Pos=92.1% Done=2469568743(93.3%) Uniq=82.5%Pos=92.2% Done=2470853460(93.3%) Uniq=82.5%Pos=92.3% Done=2473444675(93.4%) Uniq=82.5%Pos=92.4% Done=2474880377(93.5%) Uniq=82.5%Pos=92.4% Done=2476253377(93.5%) Uniq=82.5%Pos=92.7% Done=2482797163(93.8%) Uniq=82.5%Pos=92.8% Done=2483134553(93.8%) Uniq=82.5%Pos=93% Done=2487559441(94%) Uniq=82.5%Pos=93% Done=2489047714(94%) Uniq=82.5%Pos=93.1% Done=2491893446(94.1%) Uniq=82.5%Pos=93.2% Done=2492153179(94.1%) Uniq=82.5%Pos=93.2% Done=2493474237(94.2%) Uniq=82.5%Pos=93.2% Done=2493606504(94.2%) Uniq=82.5%Pos=93.8% Done=2506942288(94.7%) Uniq=82.6%Pos=94.1% Done=2512391348(94.9%) Uniq=82.6%Pos=94.1% Done=2513855037(94.9%) Uniq=82.6%Pos=94.2% Done=2514531745(95%) Uniq=82.6% 12 20:17:05 2019 -- Pos=94.3% Done=2516619704(95.1%) Uniq=82.6%Pos=94.3% Done=2518074083(95.1%) Uniq=82.6% 12 20:19:35 2019 -- Pos=94.7% Done=2526617096(95.4%) Uniq=82.7%Pos=95% Done=2538065044(95.9%) Uniq=82.4%Pos=95.5% Done=2547888273(96.2%) Uniq=82.5% 12 20:23:29 2019 -- Pos=95.5% Done=2549142174(96.3%) Uniq=82.5% 12 20:24:02 2019 -- Pos=95.7% Done=2552419951(96.4%) Uniq=82.5%Pos=95.9% Done=2557566599(96.6%) Uniq=82.4%Pos=96% Done=2559143710(96.7%) Uniq=82.5%Pos=96% Done=2560238850(96.7%) Uniq=82.5%Pos=96.5% Done=2569905239(97.1%) Uniq=82.5%Pos=96.5% Done=2570016956(97.1%) Uniq=82.5%Pos=96.7% Done=2575103817(97.3%) Uniq=82.5%Pos=96.7% Done=2576365002(97.3%) Uniq=82.5%Pos=97.1% Done=2635495455(99.5%) Uniq=80.7%Pos=97.6% Done=2643228087(99.8%) Uniq=80.4%Pos=97.7% Done=2643473209(99.8%) Uniq=80.4%Pos=97.7% Done=2643516232(99.8%) Uniq=80.4%Pos=97.7% Done=2644031365(99.9%) Uniq=80.4%Pos=98.1% Done=2644723756(99.9%) Uniq=80.4%Pos=98.1% Done=2644748932(99.9%) Uniq=80.4%Pos=98.1% Done=2644887138(99.9%) Uniq=80.4%Pos=98.2% Done=2645106477(99.9%) Uniq=80.4% 12 20:33:00 2019 -- Pos=98.2% Done=2645124609(99.9%) Uniq=80.4%Pos=98.6% Done=2646123294(99.9%) Uniq=80.4%Pos=98.7% Done=2646306152(100%) Uniq=80.4%Pos=98.8% Done=2646584817(100%) Uniq=80.3%Pos=98.8% Done=2646593159(100%) Uniq=80.3%Pos=98.8% Done=2646604488(100%) Uniq=80.3%Pos=98.9% Done=2646615780(100%) Uniq=80.3%Pos=99.4% Done=2646872360(100%) Uniq=80.3%Sat Jan 12 20:34:17 2019 -- ...done. Done=2647550675(100%) Uniq=80.3%%Pos=99.5% Done=2646951969(100%) Uniq=80.3%[KSat Jan 12 20:33:50 2019 -- Pos=99.6% Done=2647010860(100%) Uniq=80.3%Pos=99.8% Done=2647192463(100%) Uniq=80.3%Pos=99.8% Done=2647216681(100%) Uniq=80.3% 12 20:34:06 2019 -- Pos=99.9% Done=2647298651(100%) Uniq=80.3%
     Sat Jan 12 20:34:17 2019 -- Writing frequencies to disk...
     Sat Jan 12 20:34:27 2019 -- ...done.
     Welcome to GEM-2-wig build 1.423 (beta) - (2013/04/01 01:02:13 GMT)
@@ -283,7 +281,7 @@ follow these step:
 Cleanup
 ~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! rm -f {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.mappability
     ! rm -f {dirname}/{species}-{assembly}/{species}-{assembly}.50mer.wig

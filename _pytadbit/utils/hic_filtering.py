@@ -1,6 +1,7 @@
 """
 06 Aug 2013
 """
+from __future__ import print_function
 
 from warnings                  import warn
 from sys                       import stderr
@@ -16,8 +17,8 @@ except ImportError:
 
 
 def get_r2 (fun, X, Y, *args):
-    sstot = sum([(Y[i]-np.mean(Y))**2 for i in xrange(len(Y))])
-    sserr = sum([(Y[i] - fun(X[i], *args))**2 for i in xrange(len(Y))])
+    sstot = sum([(Y[i]-np.mean(Y))**2 for i in range(len(Y))])
+    sserr = sum([(Y[i] - fun(X[i], *args))**2 for i in range(len(Y))])
     return 1 - sserr/sstot
 
 
@@ -32,8 +33,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
     # get sum of columns
     cols = []
     size = len(matrx)
-    for c in sorted([[matrx.get(i+j*size, 0) for j in xrange(size) if not j in bads]
-                     for i in xrange(size) if not i in bads], key=sum):
+    for c in sorted([[matrx.get(i+j*size, 0) for j in range(size) if not j in bads]
+                     for i in range(size) if not i in bads], key=sum):
         cols.append(sum(c))
     cols = np.array(cols)
     if draw_hist:
@@ -44,7 +45,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
         warn('WARNING: no columns to filter out')
         return bads
     # mad = np.median([abs(median - c ) for c in cols])
-    best =(None, None, None, None)
+    best =(float('-inf'), float('-inf'), float('-inf'), float('-inf'))
     # bin the sum of columns
     xmin = min(cols)
     xmax = max(cols)
@@ -53,7 +54,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
     x = [sum(hist == i) for i in range(1, nbins + 1)]
     if draw_hist:
         hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-    xp = range(0, int(cols[-1]))
+    xp = list(range(0, int(cols[-1])))
     # check if the binning is correct
     # we want at list half of the bins with some data
     try:
@@ -69,7 +70,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
             if draw_hist:
                 plt.clf()
                 hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-            xp = range(0, int(cols[-1]))
+            xp = list(range(0, int(cols[-1])))
             if cnt > 10000:
                 raise ValueError
         # find best polynomial fit in a given range
@@ -138,8 +139,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
                     plt.show()
             # label as bad the columns with sums lower than the root
             for i, col in enumerate([[matrx.get(i+j*size, 0)
-                                      for j in xrange(size)]
-                                     for i in xrange(size)]):
+                                      for j in range(size)]
+                                     for i in range(size)]):
                 if sum(col) < root:
                     bads[i] = sum(col)
             # now stored in Experiment._zeros, used for getting more accurate z-scores
@@ -184,9 +185,9 @@ def filter_by_zero_count(matrx, perc_zero, min_count=None, silent=True):
     bads = {}
     size = len(matrx)
     if min_count is None:
-        cols = [size for i in xrange(size)]
+        cols = [size for i in range(size)]
         for k in matrx:
-            cols[k / size] -= 1
+            cols[k // size] -= 1
         min_val = int(size * float(perc_zero) / 100)
     else:
         if matrx.symmetricized:
@@ -194,9 +195,9 @@ def filter_by_zero_count(matrx, perc_zero, min_count=None, silent=True):
                          'symmetricized and contains twice as many '
                          'interactions as the original\n')
             min_count *= 2
-        cols = [0 for i in xrange(size)]
-        for k, v in matrx.iteritems(): # linear representation of the matrix
-            cols[k / size] += v
+        cols = [0 for i in range(size)]
+        for k, v in matrx.items(): # linear representation of the matrix
+            cols[k // size] += v
         min_val = size - min_count
     if min_count is None:
         check = lambda x: x > min_val
@@ -254,12 +255,12 @@ def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
                                    savefig=savefig, bads=bads))
     # also removes rows or columns containing a NaN
     has_nans = False
-    for i in xrange(len(matrx)):
+    for i in range(len(matrx)):
         if matrx.get(i + i * len(matrx), 0) == 0 and diagonal:
             if not i in bads:
                 bads[i] = None
         elif repr(sum([matrx.get(i + j * len(matrx), 0)
-                       for j in xrange(len(matrx))])) == 'nan':
+                       for j in range(len(matrx))])) == 'nan':
             has_nans = True
             if not i in bads:
                 bads[i] = None
@@ -287,7 +288,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
     if verbose:
         print ('      -> defining window in number of bins to average values of\n'
                '         percentage of cis interactions')
-    nwins = min((1000, size / 10))
+    nwins = min((1000, size // 10))
     if nwins < 100:
         warn('WARNING: matrix probably too small to automatically filter out bins\n')
     win_size = 1
@@ -302,12 +303,12 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
 
         tmp_std = []
         tmp_med = []
-        for k in xrange(int(size * beg), int(size * end),
-                        (int(size * end) - int(size * beg)) / nwins):
+        for k in range(int(size * beg), int(size * end),
+                       (int(size * end) - int(size * beg)) // nwins):
             vals = sorted_prc[k:k + n]
             tmp_std.append(np.std(vals))
             tmp_med.append(np.median(vals))
-        med_mid = np.median([tmp_med[i] for i in xrange(nwins)])
+        med_mid = np.median([tmp_med[i] for i in range(nwins)])
         results = [m - s < med_mid < m + s
                    for m, s in zip(tmp_med, tmp_std)]
 
@@ -323,7 +324,7 @@ def _best_window_size(sorted_prc, size, beg, end, verbose=False):
             count = 0
 
     if verbose:
-        print '        * first window size with stable median of cis-percentage: %d' % (win_size)
+        print('        * first window size with stable median of cis-percentage: %d' % (win_size))
     return win_size
 
 
@@ -352,7 +353,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
     :returns: dictionary of bins to be filtered out (with either too low or too
        high counts of interactions).
     """
-    sorted_sum, indices = zip(*sorted((cisprc[i][1], i) for i in cisprc))
+    sorted_sum, indices = list(zip(*sorted((cisprc[i][1], i) for i in cisprc)))
 
     sorted_prc = [float(cisprc[i][0]) / cisprc[i][1] for i in indices]
 
@@ -363,7 +364,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
     # define confidance bands, compute median plus/minus one standard deviation
     errors_pos = []
     errors_neg = []
-    for k in xrange(0, size, 1):
+    for k in range(0, size, 1):
         vals = sorted_prc[k:k+win_size]
         std = np.std(vals)
         med = np.median(vals)
@@ -410,7 +411,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
     # right
     cutoffR = None
     passed = 0
-    for cutoffR, (p, n) in enumerate(zip(errors_pos, errors_neg)[::-1]):
+    for cutoffR, (p, n) in enumerate(list(zip(errors_pos, errors_neg))[::-1]):
         cutoffR = size - cutoffR
         # print '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f' % (beg_pos, p, end_pos, beg_neg, n, end_neg)
         if (beg_pos < p < end_pos) and (beg_neg < n < end_neg):
@@ -439,17 +440,17 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         max_count = sorted_sum[-1] + 1
 
     if verbose:
-        print '        * Lower cutoff applied until bin number: %d' % (cutoffL)
-        print '        * too few  interactions defined as less than %9d interactions' % (
-            min_count)
-        print '        * Upper cutoff applied until bin number: %d' % (cutoffR)
-        print '        * too much interactions defined as more than %9d interactions' % (
-            max_count)
+        print('        * Lower cutoff applied until bin number: %d' % (cutoffL))
+        print('        * too few  interactions defined as less than %9d interactions' % (
+            min_count))
+        print('        * Upper cutoff applied until bin number: %d' % (cutoffR))
+        print('        * too much interactions defined as more than %9d interactions' % (
+            max_count))
 
     # plot
     if savefig:
         if verbose:
-            print '      -> Making plot...'
+            print('      -> Making plot...')
         fig = plt.figure(figsize=(20,11))
         ax1 = fig.add_subplot(111)
         plt.subplots_adjust(left=0.25, bottom=0.2)
@@ -459,18 +460,18 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
             '.', color='grey', alpha=0.2,
             label='cis interactions ratio by bin', zorder=1)
         line2 = ax1.plot(
-            range(0, len(indices), 20),
+            list(range(0, len(indices), 20)),
             [sum(float(cisprc.get(j, [0, 0])[0]) / cisprc.get(j, [1, 1])[1]
                  for j in indices[k:k+win_size]) / win_size
-             for k in xrange(0, len(indices), 20)],
+             for k in range(0, len(indices), 20)],
             '.', color='k', alpha=0.3,
             label='cis interactions ratio by %d bin' % win_size, zorder=1)
 
-        for k, (p, n) in enumerate(zip(errors_pos[::size / 100], errors_neg[::size / 100])):
-            ax1.vlines(k * (size / 100), (p + n) / 2, p, color='red', alpha=0.6)
-            ax1.vlines(k * (size / 100), n, (p + n) / 2, color='blue', alpha=0.6)
-        ax1.plot(range(0, size, size / 100), errors_neg[::size/100], 'b^', mec='blue', alpha=0.5)
-        ax1.plot(range(0, size, size / 100), errors_pos[::size/100], 'rv', mec='red', alpha=0.5)
+        for k, (p, n) in enumerate(zip(errors_pos[::size // 100], errors_neg[::size // 100])):
+            ax1.vlines(k * (size // 100), (p + n) // 2, p, color='red', alpha=0.6)
+            ax1.vlines(k * (size // 100), n, (p + n) // 2, color='blue', alpha=0.6)
+        ax1.plot(list(range(0, size, size // 100)), errors_neg[::size//100], 'b^', mec='blue', alpha=0.5)
+        ax1.plot(list(range(0, size, size // 100)), errors_pos[::size//100], 'rv', mec='red', alpha=0.5)
 
         ax1.fill_between([0, size], beg_pos, end_pos, color='red', alpha=0.3, zorder=2)
         ax1.text(-size/15., (end_pos + beg_pos) / 2, 'Confidance band for\nupper stddev of median',
@@ -499,11 +500,11 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
 
         ax3 = fig.add_subplot(111, frameon=False)
         ax3.xaxis.tick_top()
-        ax3.set_xticks(range(100), minor=True)
-        ax3.set_xticks(range(0, 100, 5), minor=False)
+        ax3.set_xticks(list(range(100)), minor=True)
+        ax3.set_xticks(list(range(0, 100, 5)), minor=False)
         ax3.set_yticks([])
         ax3.set_xticklabels([])
-        for p in xrange(5, 100, 5):
+        for p in range(5, 100, 5):
             ax3.text(p, 99, '%d%%' % p, va='top', ha='left', size=9)
         ax3.tick_params(direction='in', axis='x', which='both')
         ax3.set_xlim(0, 100)
@@ -526,7 +527,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
     countL = 0
     countZ = 0
     countU = 0
-    for c in xrange(size):
+    for c in range(size):
         if cisprc.get(c, [0, 0])[1] < min_count:
             badcol[c] = cisprc.get(c, [0, 0])[1]
             countL += 1
@@ -535,7 +536,7 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         elif cisprc[c][1] > max_count:  # don't need get here, already cought in previous condition
             badcol[c] = cisprc.get(c, [0, 0])[1]
             countU += 1
-    print '     => %d BAD bins (%d/%d/%d null/low/high counts) of %d (%.1f%%)' % (
-        len(badcol), countZ, countL, countU, size, float(len(badcol)) / size * 100)
+    print('     => %d BAD bins (%d/%d/%d null/low/high counts) of %d (%.1f%%)' % (
+        len(badcol), countZ, countL, countU, size, float(len(badcol)) / size * 100))
 
     return badcol

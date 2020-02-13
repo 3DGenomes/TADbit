@@ -9,6 +9,7 @@ chromosome in an other species, this script needs to be used over whole genomes.
 WARNING: Ensembl REST server is beta and only provides for latest genome builts
 WARNING: needs internet :)
 """
+from __future__ import print_function
 
 import httplib2, sys, re, os
 import json
@@ -59,7 +60,7 @@ def load_genome(genome_path, res=None, verbose=False):
             if crm in ref_genome:
                 raise Exception('More than 1 TADbit chromosome file found\n')
             if verbose:
-                print '  Chromosome:', crm
+                print('  Chromosome:', crm)
             ref_genome[crm] = load_chromosome(crm_pik)
     # check resolution
     resolutions = [] if not res else [res]
@@ -152,10 +153,10 @@ def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
                 end = int(re.findall('greater than ([0-9]+) for ',
                                      jsonel)[0])
                 return end
-        except Exception, e:
-            print str(e)
-            print content
-            print "Invalid response: ", resp.status
+        except Exception as e:
+            print(str(e))
+            print(content)
+            print("Invalid response: ", resp.status)
         raise Exception
 
     return get_best_alignment_coord(json.loads(content))
@@ -200,10 +201,10 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
                 end = int(re.findall('greater than ([0-9]+) for ',
                                      jsonel)[0])
                 return end
-        except Exception, e:
-            print str(e)
-            print content
-            print "Invalid response: ", resp.status
+        except Exception as e:
+            print(str(e))
+            print(content)
+            print("Invalid response: ", resp.status)
         raise Exception(jsonel)
     try:
         map_list = json.loads(content)['mappings']
@@ -252,10 +253,10 @@ def map_tad(tad, crm, resolution, from_species, synteny=True, mapping=True,
                             trace[crm][tad['end']]['syntenic at'] = {
                                 'chr': None, 'start':None, 'end': None}
                     break
-            except Exception, e:
+            except Exception as e:
                 errors += 1
                 # print e.message
-                print '\n... reconnecting (mapping)...'
+                print('\n... reconnecting (mapping)...')
                 # print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 HTTP = httplib2.Http(".cache")
@@ -282,15 +283,15 @@ def map_tad(tad, crm, resolution, from_species, synteny=True, mapping=True,
                             trace[ori_crm][tad['end']]['syntenic at'] = {
                                 'chr': None, 'start':None, 'end': None}
                     break
-            except Exception, e:
+            except Exception as e:
                 errors += 1
                 # print str(e)
-                print '\n... reconnecting (synteny)...'
+                print('\n... reconnecting (synteny)...')
                 if errors == 2 and beg > resolution:
-                    print 'extending region left'
+                    print('extending region left')
                     beg -= resolution
                 if errors == 4:
-                    print 'extending region right'
+                    print('extending region right')
                     beg += resolution
                     end += resolution
                 # print ' ' * ((i%50) + 9 + (i%50)/10),
@@ -312,7 +313,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
     log = []
     crm_name = crm.name.replace('chr', '').replace('crm', '')
     for exp in crm.experiments:
-        print '      Experiment %10s (%s TADs)' % (exp.name, len(exp.tads))
+        print('      Experiment %10s (%s TADs)' % (exp.name, len(exp.tads)))
         sys.stdout.write('         ')
         connections = 0 # variable to avoid reaching the limit of 6 connection
                         # per second allowed by Ensembl.
@@ -367,7 +368,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                 sys.stdout.flush()
             else:
                 sys.stdout.flush()
-        print ''
+        print('')
     if log:
         log.sort(key=lambda x: int(x.split(':')[1].split('-')[0]))
         sys.stdout.write('              '+'\n              '.join(log))
@@ -406,16 +407,16 @@ def remap_genome(genome, original_assembly, target_assembly,
 
     new_genome = {}
     for crm in genome:
-        print '\n   Chromosome:', crm
+        print('\n   Chromosome:', crm)
         # remap and syntenic region
         if original_assembly:
             if target_assembly:
-                print '\n     remapping from %s to %s:' % (
-                    original_assembly, target_assembly)
+                print('\n     remapping from %s to %s:' % (
+                    original_assembly, target_assembly))
             if target_species:
-                print '        and searching syntenic regions from %s to %s' %(
+                print('        and searching syntenic regions from %s to %s' %(
                     original_species.capitalize().replace('_', ' '),
-                    target_species.capitalize().replace('_', ' '))
+                    target_species.capitalize().replace('_', ' ')))
             convert_chromosome(genome[crm], new_genome, original_species,
                                from_map=original_assembly,
                                to_map=target_assembly,
@@ -469,7 +470,7 @@ def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./
                         if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
                             continue
                     except KeyError:
-                        print ('Not found:', crm, exp.tads[tad]['end'],
+                        print('Not found:', crm, exp.tads[tad]['end'],
                                trace[crm][exp.tads[tad]['end']])
                         continue
                     new_tads[tadcnt] = exp.tads[tad]

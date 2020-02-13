@@ -5,6 +5,7 @@ information needed
  - path working directory with parsed reads
 
 """
+from __future__ import print_function
 from argparse                        import HelpFormatter
 from os                              import path, remove, system
 from string                          import ascii_letters
@@ -103,7 +104,7 @@ def run(opts):
             hic_data1, hic_data2, normalized=opts.norm,
             remove_bad_columns=True, savefig=decay_corr_fig,
             savedata=decay_corr_dat, get_bads=True)
-        print '         - correlation score (SCC): %.4f (+- %.7f)' % (scc, std)
+        print('         - correlation score (SCC): %.4f (+- %.7f)' % (scc, std))
         printime('    => correlation between eigenvectors')
         eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                           remove_bad_columns=True, nvect=6,
@@ -113,7 +114,7 @@ def run(opts):
         printime('    => reproducibility score')
         reprod = get_reproducibility(hic_data1, hic_data2, num_evec=20, normalized=opts.norm,
                                      verbose=False, remove_bad_columns=True)
-        print '         - reproducibility score: %.4f' % (reprod)
+        print('         - reproducibility score: %.4f' % (reprod))
         ncols = len(hic_data1)
     else:
         ncols = 0
@@ -128,6 +129,8 @@ def run(opts):
 
     # merge inputs
     mkdir(path.join(opts.workdir, '03_filtered_reads'))
+    outbam = path.join(opts.workdir, '03_filtered_reads',
+                       'intersection_%s.bam' % (param_hash))
 
     if not opts.skip_merge:
         outbam = path.join(opts.workdir, '03_filtered_reads',
@@ -137,7 +140,8 @@ def run(opts):
         printime('  - Indexing new BAM file')
         # check samtools version number and modify command line
         version = LooseVersion([l.split()[1]
-                                for l in Popen(samtools, stderr=PIPE).communicate()[1].split('\n')
+                                for l in Popen(samtools, stderr=PIPE,
+                                               universal_newlines=True).communicate()[1].split('\n')
                                 if 'Version' in l][0])
         if version >= LooseVersion('1.3.1'):
             system(samtools  + ' index -@ %d %s' % (opts.cpus, outbam))
@@ -148,7 +152,7 @@ def run(opts):
 
     finish_time = time.localtime()
     save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
-                len(bads.keys()), ncols, scc, std, reprod,
+                len(list(bads.keys())), ncols, scc, std, reprod,
                 eigen_corr_dat, eigen_corr_fig, outbam, corr, eig_corr,
                 biases1, biases2, masked1, masked2, launch_time, finish_time)
     printime('\nDone.')
@@ -329,7 +333,6 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                     masked1[name] = {'path': tmppath, 'count': count}
             if 'tmpdb' in opts and opts.tmpdb:
                 remove(dbfile1)
-
         if opts.workdir2:
             if 'tmpdb' in opts and opts.tmpdb:
                 # tmp file
@@ -400,7 +403,7 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
         dbfile = tmpdb
     else:
         dbfile = path.join(workdir, 'trace.db')
-    print dbfile
+    print(dbfile)
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
@@ -590,7 +593,7 @@ def populate_args(parser):
 
     glopts.add_argument('--filter', dest='filter', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 9, 10],
-                        choices = range(1, 11),
+                        choices = list(range(1, 11)),
                         help=("""[%(default)s] Use filters to define a set os
                         valid pair of reads e.g.:
                         '--apply 1 2 3 4 8 9 10'. Where these numbers""" +

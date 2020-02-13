@@ -5,7 +5,10 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from argparse                         import HelpFormatter
 from os                               import path, remove, system, rename, makedirs
 from string                           import ascii_letters
@@ -14,7 +17,7 @@ from random                           import random
 from shutil                           import copyfile
 from itertools                        import product
 from warnings                         import warn
-from cPickle                          import dump
+from pickle                           import dump, HIGHEST_PROTOCOL
 from hashlib                          import md5
 from functools                        import partial
 from multiprocessing                  import cpu_count, TimeoutError, Pool
@@ -38,6 +41,10 @@ from pytadbit.utils.sqlite_utils      import digest_parameters
 from pytadbit                         import get_dependencies_version
 from pytadbit.parsers.hic_parser      import read_matrix
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
@@ -66,11 +73,11 @@ def abortable_worker(func, *args, **kwargs):
         out = res.get(timeout)  # Wait timeout seconds for func to complete.
         return out
     except TimeoutError:
-        print "Model took more than %s seconds to complete ... canceling" % str(timeout)
+        print("Model took more than %s seconds to complete ... canceling" % str(timeout))
         p.terminate()
         raise
     except:
-        print "Unknown error with process"
+        print("Unknown error with process")
         p.terminate()
         raise
 
@@ -78,15 +85,15 @@ def convert_from_unicode(data):
     if isinstance(data, basestring):
         return str(data)
     if isinstance(data, collections.Mapping):
-        return dict(map(convert_from_unicode, data.iteritems()))
+        return dict(list(map(convert_from_unicode, iter(data.items()))))
     if isinstance(data, collections.Iterable):
-        return type(data)(map(convert_from_unicode, data))
+        return type(data)(list(map(convert_from_unicode, data)))
     return data
 
 def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
-    zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg)])
+    zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
     nloci = opts.end - opts.beg
     if exp.norm and exp.norm[0].chromosomes:
         coords = []
@@ -94,7 +101,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         chrs = []
         chrom_offset_start = opts.beg
         chrom_offset_end = 0
-        for k, v in exp.norm[0].chromosomes.iteritems():
+        for k, v in exp.norm[0].chromosomes.items():
             tot += v
             if opts.beg > tot:
                 chrom_offset_start = opts.beg - tot
@@ -127,7 +134,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
     n_last = n_jobs*opts.nmodels_per_job - opts.nmodels
     paramsfile = path.join(dirname,'_tmp_common_params.pickle')
-    tmp_params = open(paramsfile, 'w')
+    tmp_params = open(paramsfile, 'wb')
     dump(exp, tmp_params)
     dump(zscores, tmp_params)
     dump(zeros, tmp_params)
@@ -136,8 +143,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     dump(optpar, tmp_params)
     dump(coords, tmp_params)
     tmp_params.close()
-    tmp_params.close()
-    for n_job in xrange(n_jobs):
+    for n_job in range(n_jobs):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
@@ -146,11 +152,11 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
         tmp.write('''
-from cPickle import load, dump
+from pickle import load, dump
 from os                               import path
 from pytadbit.modelling.imp_modelling import generate_3d_models
 
-params_file = open("%s")
+params_file = open("%s","rb")
 exp = load(params_file)
 zscores = load(params_file)
 zeros = load(params_file)
@@ -187,7 +193,8 @@ def run_distributed_job(job_dir, script_cmd , script_args):
     with open(logname, 'a') as f:
         f.write('Log %s\n' % job_dir)
         f.flush()
-        subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f)
+        subprocess.Popen([script_cmd, script_args, scriptname], stdout = f, stderr = f,
+                         universal_newlines=True)
     f.close()
     results_file = path.join(job_dir,'results.models')
     failed_flag = path.join(job_dir,'failed.flag')
@@ -208,7 +215,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
         pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
-        for n_job in xrange(n_jobs):
+        for n_job in range(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
             if job_file_handler:
                 scriptname = path.join(job_dir,'_tmp_optim.py')
@@ -223,7 +230,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
             return None, None
 
         models = None
-        for n_job in xrange(n_jobs):
+        for n_job in range(n_jobs):
             try:
                 job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
                 results_file = path.join(job_dir,'results.models')
@@ -267,11 +274,11 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
     num=1
     results_corr = {}
     cuts = dict([(d, int(d * opts.reso * float(s))) for d in opts.dcutoff])
-    for d, cut in sorted(cuts.iteritems()):
+    for d, cut in sorted(cuts.items()):
         try:
             result = models.correlate_with_real_data(
                 cutoff=cut)[0]
-        except Exception, e:
+        except Exception as e:
             logging.info('  SKIPPING correlation: %s' % e)
             result = 0
         name = tuple(map(my_round, (m, u, l, d, s)))
@@ -290,7 +297,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         out.write('\n'.join(['%s\t%s\t%s\t%.1f\t%.3f' % (
             harm, p1, p2, dist, kforce)
                              for (p1, p2), (harm, dist, kforce)
-                             in models._restraints.iteritems()]) + '\n')
+                             in models._restraints.items()]) + '\n')
         out.close()
 
     return results_corr, modelsfile
@@ -307,7 +314,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
             "Optimization", "UpFreq", "LowFreq", "MaxDist",
             "scale", "cutoff", "| Correlation"))
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
-        m, u, l, s = map(my_round, (m, u, l, s))
+        m, u, l, s = list(map(my_round, (m, u, l, s)))
         muls = tuple((m, u, l, s))
         cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
@@ -316,10 +323,10 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
             prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
 
     # get the best combination
-    best = ({'corr': None}, [None, None, None, None, None])
+    best = ({'corr': 0}, [0, 0, 0, 0, 0])
     results = {}
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
-        m, u, l, s = map(my_round, (m, u, l, s))
+        m, u, l, s = list(map(my_round, (m, u, l, s)))
         muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler, 
                             script_cmd = script_cmd, script_args = script_args, verbose=verbose)
         if muls_results:
@@ -414,6 +421,9 @@ def run(opts):
                                 opts.crm if opts.crm else 'all',
                                 (opts.beg + 1) if opts.beg is not None else '',
                                 opts.end if opts.end else ''))
+        if path.exists(outdir):
+            logging.info ('     o WARNING: reusing existing folder, \
+                                    please check if you need to remove')
         mkdir(outdir)
 
         if opts.crm:
@@ -467,12 +477,14 @@ def run(opts):
                     optimizer.upfreq_range   = [i for i in opts.upfreq]
                     optimizer.dcutoff_range  = [i for i in opts.dcutoff]
                     optimizer.results = dict((
-                        (float(s),0.0,float(m),float(l), float(u), str(int(d))),
+                        (float(s),0.0,float(m),float(l), float(u), float(d)),
                         results[(m,u,l,d,s)]['corr'])
                                              for m,u,l,d,s in results)
                     optimizer.plot_2d(show_best=20,
-                                savefig="%s/optimal_params.%s" % (
-                                    outdir, opts.fig_format))
+                                savefig="%s/optimal_params_%s.%s" % (
+                                    outdir,''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]),
+                                    opts.fig_format))
                 logging.info('\n optimization done')
 
         if opts.model:
@@ -500,8 +512,8 @@ def run(opts):
 
     if opts.analyze and not opts.job_list:
         outdir, _ = load_models_path_fromdb(opts)
-        batch_job_hash, opts.crm, beg_end = map(str,(outdir.split('/')[-1]).split('_'))
-        opts.beg,opts.end = map(int,beg_end.split('-'))
+        batch_job_hash, opts.crm, beg_end = list(map(str,(outdir.split('/')[-1]).split('_')))
+        opts.beg,opts.end = list(map(int,beg_end.split('-')))
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
         outdir = path.join(opts.workdir,outdir)
@@ -675,7 +687,7 @@ def run(opts):
             # Calculate a consistency plot for all models in cluster #1
             logging.info("\tGetting consistency data...")
             models.model_consistency(
-                cluster=1, cutoffs=range(50, dcutoff + 50, 50),
+                cluster=1, cutoffs=list(range(50, dcutoff + 50, 50)),
                 savefig =path.join(outdir, batch_job_hash + '_consistency.' + opts.fig_format),
                 savedata=path.join(outdir, batch_job_hash + '_consistency.dat'))
 
@@ -841,8 +853,8 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                 batch_job_hash))
             optimid = cur.fetchall()[0][0]
             for m, u, l, d, s in results:
-                optpar_md5 = md5('%s%s%s%s%s' %
-                                 (m, u, l, d, s)).hexdigest()[:12]
+                optpar_md5 = md5(('%s%s%s%s%s' %
+                                 (m, u, l, d, s)).encode('utf-8')).hexdigest()[:12]
                 cur.execute(("SELECT Id from MODELs where "
                              "OPTPAR_md5='%s' and REGIONid='%s'") % (
                                  optpar_md5, optimid))
@@ -1061,8 +1073,8 @@ def populate_args(parser):
     #########################################
     # OUTPUT
     analyz.add_argument('--analyze_list', dest='analyze_list', nargs='+',
-                        choices=range(len(actions)), type=int,
-                        default=range(1, len(actions)), metavar='INT',
+                        choices=list(range(len(actions))), type=int,
+                        default=list(range(1, len(actions))), metavar='INT',
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
                         %s''' % (' '.join([str(i) for i in range(
@@ -1111,7 +1123,7 @@ def check_options(opts):
     # turn options into lists
     def _load_range(range_str, num=float):
         try:
-            beg, end, step = map(num, range_str[0].split(':'))
+            beg, end, step = list(map(num, range_str[0].split(':')))
             return tuple([round(x,2) for x in arange(beg, end + step / 2, step)])
         except (AttributeError, ValueError):
             return tuple([round(num(v),2) for v in range_str])
@@ -1268,7 +1280,7 @@ def load_hic_data(opts):
             if opts.crm not in hic.chromosomes:
                 raise Exception('ERROR: chromosome %s not in input matrix(%s).' % (opts.crm,
                                                     ','.join([h for h in hic.chromosomes])))
-            hic_bads = {k: v for k, v in hic.bads.items() if k >= opts.beg and k < opts.end}
+            hic_bads = {k: v for k, v in list(hic.bads.items()) if k >= opts.beg and k < opts.end}
             hic = hic.get_matrix(focus=(opts.beg+1,opts.end))
             opts.offset = opts.beg
         else:
@@ -1285,7 +1297,7 @@ def load_hic_data(opts):
         crm.experiments[0].norm[0].bads = hic_bads
         crm.experiments[0]._zeros = hic_bads
         crm.experiments[0]._filtered_cols = True
-    except Exception, e:
+    except Exception as e:
         #logging.info( str(e))
         warn('WARNING: failed to load data as TADbit standardized matrix\n')
         if opts.matrix_beg is None:

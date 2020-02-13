@@ -1,4 +1,3 @@
-
 Compartments and TADs detection
 ===============================
 
@@ -11,21 +10,21 @@ percentage of bases that are either guanine or cytosine on a DNA strand
 correlates directly with gene density and is a good measure to identify
 open and close chromatine.
 
-***Note**: Compartments are detected on the full genome matrix.*
+**Note**\ *: Compartments are detected on the full genome matrix.*
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.hic_parser import load_hic_data_from_bam
     from pytadbit.parsers.genome_parser import get_gc_content, parse_fasta
-    from cPickle import load
+    from pickle import load
 
-.. code:: ipython2
+.. code:: ipython3
 
     reso = 200000
     base_path = 'results/fragment/{0}_both/03_filtering/valid_reads12_{0}.bam'
     bias_path = 'results/fragment/{0}_both/04_normalizing/biases_{0}_both_{1}kb.biases'
 
-.. code:: ipython2
+.. code:: ipython3
 
     rich_in_A = get_gc_content(parse_fasta('genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa'), 
                                by_chrom=True ,resolution=reso, n_cpus=8)
@@ -42,46 +41,46 @@ Compartments
 Mouse B cells
 ~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     cell   = 'mouse_B'
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data = load_hic_data_from_bam(base_path.format(cell),
                                       resolution=reso,
-                                      biases=bias_path.format(cell, reso / 1000),
+                                      biases=bias_path.format(cell, reso // 1000),
                                       ncpus=8)
 
 
 .. ansi-block::
 
     
-      (Matrix size 13641x13641)                                                    [2018-10-11 11:30:12]
+      (Matrix size 13641x13641)                                                    [2020-02-06 12:04:07]
     
-      - Parsing BAM (122 chunks)                                                   [2018-10-11 11:30:12]
+      - Parsing BAM (122 chunks)                                                   [2020-02-06 12:04:08]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
     
-      - Getting matrices                                                           [2018-10-11 11:33:14]
+      - Getting matrices                                                           [2020-02-06 12:06:28]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
     
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! mkdir -p results/fragment/$cell\_both/05_segmenting
 
-.. code:: ipython2
+.. code:: ipython3
 
-    crm = 'chr3'
+    chrname = 'chr3'
     corr = hic_data.find_compartments(show_compartment_labels=True,
-            show=True, crms=[crm], vmin='auto', vmax='auto', rich_in_A=rich_in_A, 
-            savedata='results/fragment/{0}_both/05_segmenting/compartments_{1}_{2}.tsv'.format(cell, crm, reso),
-            savedir='results/fragment/{0}_both/05_segmenting/eigenvectors_{1}_{2}'.format(cell, crm, reso))
+            show=True, crms=[chrname], vmin='auto', vmax='auto', rich_in_A=rich_in_A, 
+            savedata='results/fragment/{0}_both/05_segmenting/compartments_{1}_{2}.tsv'.format(cell, chrname, reso),
+            savedir='results/fragment/{0}_both/05_segmenting/eigenvectors_{1}_{2}'.format(cell, chrname, reso))
 
 
 
@@ -91,46 +90,46 @@ Mouse B cells
 Mouse iPS cells
 ~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     cell   = 'mouse_PSC'
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data = load_hic_data_from_bam(base_path.format(cell),
                                       resolution=reso,
-                                      biases=bias_path.format(cell, reso / 1000),
+                                      biases=bias_path.format(cell, reso // 1000),
                                       ncpus=8)
 
 
 .. ansi-block::
 
     
-      (Matrix size 13641x13641)                                                    [2018-10-11 11:43:44]
+      (Matrix size 13641x13641)                                                    [2020-02-06 12:20:31]
     
-      - Parsing BAM (122 chunks)                                                   [2018-10-11 11:43:45]
+      - Parsing BAM (122 chunks)                                                   [2020-02-06 12:20:32]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
     
-      - Getting matrices                                                           [2018-10-11 11:48:20]
+      - Getting matrices                                                           [2020-02-06 12:22:08]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
     
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! mkdir -p results/fragment/$cell\_both/05_segmenting
 
-.. code:: ipython2
+.. code:: ipython3
 
-    crm = 'chr3'
+    chrname = 'chr3'
     corr = hic_data.find_compartments(show_compartment_labels=True,
-            show=True, crms=[crm], vmin='auto', vmax='auto', rich_in_A=rich_in_A,
-            savedata='results/fragment/{0}_both/05_segmenting/compartments_{1}_{2}.tsv'.format(cell, crm, reso),
-            savedir='results/fragment/{0}_both/05_segmenting/eigenvectors_{1}_{2}'.format(cell, crm, reso))
+            show=True, crms=[chrname], vmin='auto', vmax='auto', rich_in_A=rich_in_A,
+            savedata='results/fragment/{0}_both/05_segmenting/compartments_{1}_{2}.tsv'.format(cell, chrname, reso),
+            savedir='results/fragment/{0}_both/05_segmenting/eigenvectors_{1}_{2}'.format(cell, chrname, reso))
 
 
 
@@ -143,7 +142,7 @@ Compare
 The assignments of the compartments for the two cell types are stored in
 two different files:
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! head -n 20 results/fragment/mouse_B_both/05_segmenting/compartments_chr3_200000.tsv
 
@@ -172,7 +171,7 @@ two different files:
     chr3	179	181	0.61	A
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! head -n 20 results/fragment/mouse_PSC_both/05_segmenting/compartments_chr3_200000.tsv
 
@@ -204,7 +203,7 @@ two different files:
 In another folder, we also saved the coordinates of each computed
 eigenvector:
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! ls -lh results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000
 
@@ -212,19 +211,19 @@ eigenvector:
 .. ansi-block::
 
     total 52K
-    -rw-r--r-- 1 systemd-network users 49K oct 11 11:43 chr3_EigVect1.tsv
+    -rw-r--r-- 1 dcastillo dcastillo 49K Feb  6 12:08 chr3_EigVect1.tsv
 
 
-***Note**: In this file the first line shows the eigenvector index with
-it's corresponding eigenvalue (the first column should always be the one
-you selected, even if it is not the first eigenvector).*
+**Note**\ *: In this file the first line shows the eigenvector index
+with it’s corresponding eigenvalue (the first column should always be
+the one you selected, even if it is not the first eigenvector).*
 
 Then there are the coordinates of the eigenvectors. In the first column,
 the coordinates correspond to the assignment of the A and B
 compartments, positive values for A compartments and negative values for
 B compartments.
 
-.. code:: ipython2
+.. code:: ipython3
 
     ! head -n 20 results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv
 
@@ -247,19 +246,21 @@ B compartments.
     nan	nan	nan
     nan	nan	nan
     nan	nan	nan
-    -0.047058774338678624	-0.0008416946845418646	0.041851430073603285
-    -0.04570124930041133	-0.00491013140668968	0.038322756862219455
-    -0.045914264537434225	-0.002039448345766831	0.03596787271950662
-    -0.04485768885458887	-0.003962351416821032	0.0423027589274437
+    -0.04705877433867864	0.0008416946845418325	-0.0418514300736033
+    -0.04570124930041132	0.004910131406689665	-0.03832275686221951
+    -0.04591426453743422	0.002039448345766754	-0.035967872719506695
+    -0.044857688854588844	0.003962351416820969	-0.04230275892744377
 
 
 Load eigenvectors coordinates from files:
 
-.. code:: ipython2
+.. code:: ipython3
 
+    from builtins   import next
+    
     fh = open('results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv')
     
-    header = fh.next()
+    header = next(fh)
     
     ev1_B = []
     for line in fh:
@@ -268,7 +269,7 @@ Load eigenvectors coordinates from files:
         
     fh = open('results/fragment/mouse_PSC_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv')
     
-    header = fh.next()
+    header = next(fh)
     
     ev1_PSC = []
     for line in fh:
@@ -284,11 +285,11 @@ Spot changes in activity
 
 Plot the difference between each eigenvector along chromosome
 
-.. code:: ipython2
+.. code:: ipython3
 
     from matplotlib import pyplot as plt
 
-.. code:: ipython2
+.. code:: ipython3
 
     plt.figure(figsize=(12, 2))
     plt.text(10, 0.07, 'More active in B cell')
@@ -308,7 +309,7 @@ Plot the difference between each eigenvector along chromosome
 Correlate eigenvectors
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     plt.figure(figsize=(6, 6))
     for i in range(len(ev1_B)):
@@ -342,12 +343,12 @@ borders at 100kbp resolution.
 
    <img src="../nbpictures/TAD_calling_resolution.png"> -->
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit import Chromosome
     from pytadbit.parsers.hic_parser import load_hic_data_from_bam
 
-.. code:: ipython2
+.. code:: ipython3
 
     base_path = 'results/fragment/{0}_both/03_filtering/valid_reads12_{0}.bam'
     bias_path = 'results/fragment/{0}_both/04_normalizing/biases_{0}_both_{1}kb.biases'
@@ -357,52 +358,53 @@ borders at 100kbp resolution.
     cel1 = 'mouse_B'
     cel2 = 'mouse_PSC'
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data1 = load_hic_data_from_bam(base_path.format(cel1),
                                        resolution=reso,
                                        region='chr3',
-                                       biases=bias_path.format(cel1, reso / 1000),
+                                       biases=bias_path.format(cel1, reso // 1000),
                                        ncpus=8)
     hic_data2 = load_hic_data_from_bam(base_path.format(cel2),
                                        resolution=reso,
                                        region='chr3',
-                                       biases=bias_path.format(cel2, reso / 1000),
+                                       biases=bias_path.format(cel2, reso // 1000),
                                        ncpus=8)
 
 
 .. ansi-block::
 
     
-      (Matrix size 1601x1601)                                                      [2018-10-17 00:42:22]
+      (Matrix size 1601x1601)                                                      [2020-02-06 12:36:22]
     
-      - Parsing BAM (101 chunks)                                                   [2018-10-17 00:42:22]
+      - Parsing BAM (101 chunks)                                                   [2020-02-06 12:36:24]
          .......... .......... .......... .......... ..........     50/101
          .......... .......... .......... .......... ..........    100/101
          .                                                         101/101
     
-      - Getting matrices                                                           [2018-10-17 00:42:31]
+      - Getting matrices                                                           [2020-02-06 12:36:28]
          .......... .......... .......... .......... ..........     50/101
          .......... .......... .......... .......... ..........    100/101
          .                                                         101/101
     
     
-      (Matrix size 1601x1601)                                                      [2018-10-17 00:42:42]
+      (Matrix size 1601x1601)                                                      [2020-02-06 12:36:54]
     
-      - Parsing BAM (101 chunks)                                                   [2018-10-17 00:42:42]
+      - Parsing BAM (101 chunks)                                                   [2020-02-06 12:36:55]
          .......... .......... .......... .......... ..........     50/101
          .......... .......... .......... .......... ..........    100/101
          .                                                         101/101
     
-      - Getting matrices                                                           [2018-10-17 00:42:51]
+      - Getting matrices                                                           [2020-02-06 12:36:59]
          .......... .......... .......... .......... ..........     50/101
          .......... .......... .......... .......... ..........    100/101
          .                                                         101/101
     
 
 
-.. code:: ipython2
+.. code:: ipython3
 
+    chrname = 'chr3'
     crm = Chromosome(chrname)
     crm.add_experiment('mouse_B',  
                        hic_data=[hic_data1.get_matrix(focus='chr3')],
@@ -413,7 +415,7 @@ borders at 100kbp resolution.
                        norm_data=[hic_data2.get_matrix(focus='chr3',normalized=True)],
                        resolution=reso)
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.visualize([('mouse_B', 'mouse_PSC')])
 
@@ -434,11 +436,11 @@ chromosome under BIC-penalized likelihood. The model assumes that counts
 have a Poisson distribution and that the expected value of the counts
 decreases like a power-law with the linear distance on the chromosome.
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.find_tad(['mouse_B', 'mouse_PSC'], n_cpus=8)
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.visualize([('mouse_B', 'mouse_PSC')], normalized=True, paint_tads=True)
 
@@ -447,7 +449,7 @@ decreases like a power-law with the linear distance on the chromosome.
 .. image:: ../nbpictures//tutorial_8-Compartments_and_TADs_detection_44_0.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.visualize([('mouse_B', 'mouse_PSC')], normalized=True, paint_tads=True, focus=(300, 360))
 
@@ -456,12 +458,12 @@ decreases like a power-law with the linear distance on the chromosome.
 .. image:: ../nbpictures//tutorial_8-Compartments_and_TADs_detection_45_0.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     B = crm.experiments['mouse_B']
     PSC = crm.experiments['mouse_PSC']
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.experiments
 
@@ -486,11 +488,11 @@ algorithm provides a measure (from 0 to 10) of confidence on the
 accuracy of the border detection
 (https://www.ncbi.nlm.nih.gov/pubmed/26704975).
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.find_tad(['mouse_B', 'mouse_PSC'], n_cpus=8, use_topdom=True)
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.visualize([('mouse_B', 'mouse_PSC')], normalized=True, paint_tads=True)
 
@@ -499,7 +501,7 @@ accuracy of the border detection
 .. image:: ../nbpictures//tutorial_8-Compartments_and_TADs_detection_51_0.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.visualize([('mouse_B', 'mouse_PSC')], normalized=True, paint_tads=True, focus=(300, 360))
 
@@ -511,19 +513,19 @@ accuracy of the border detection
 Insulation score
 ~~~~~~~~~~~~~~~~
 
-Insulation score (Crane et al. 2015 https://doi.org/10.1038/nature14450)
+Insulation score (Crane et al. 2015 https://doi.org/10.1038/nature14450)
 can be used to build an insulation profile of the genome and, with a
 simple transformation, to identify TAD borders.
 
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.tadbit import insulation_score, insulation_to_borders
 
 First we need to normalize the matrices by visibility and by decay:
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data1.normalize_hic()
     hic_data1.normalize_expected()
@@ -557,11 +559,11 @@ in insulation around a given bin. Should be around 100 kb (in out case
 we define it as 200 kb as we are working at 100 kb resolution, and
 working with only one bin is a bit to little)
 
-.. code:: ipython2
+.. code:: ipython3
 
     wsize = (1, 4)
 
-.. code:: ipython2
+.. code:: ipython3
 
     insc1, delta1 = insulation_score(hic_data1, [wsize], resolution=100000, normalize=True, delta=2)
     insc2, delta2 = insulation_score(hic_data2, [wsize], resolution=100000, normalize=True, delta=2)
@@ -573,10 +575,16 @@ working with only one bin is a bit to little)
      - computing insulation in band 1-4
 
 
+.. ansi-block::
+
+    /home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/numpy/core/fromnumeric.py:3335: RuntimeWarning: Mean of empty slice.
+      out=out, **kwargs)
+
+
 Once defined the insulation score and the values of delta can be used to
 search for borders.
 
-.. code:: ipython2
+.. code:: ipython3
 
     borders1 = insulation_to_borders(insc1[wsize], delta1[wsize], min_strength=0.1)
     borders2 = insulation_to_borders(insc2[wsize], delta2[wsize], min_strength=0.1)
@@ -584,7 +592,7 @@ search for borders.
 Currently the representation is not available in TADbit as for the other
 methods, but we can easily plot it:
 
-.. code:: ipython2
+.. code:: ipython3
 
     plt.figure(figsize=(10, 4))
     
@@ -626,7 +634,7 @@ Comparison of TAD borders
 The TAD borders can be aligned, using a simple reciprocal best hit
 strategy:
 
-.. code:: ipython2
+.. code:: ipython3
 
     ali = crm.align_experiments(['mouse_B', 'mouse_PSC'], max_dist=reso)
 
@@ -634,7 +642,7 @@ In the plots below, each arc represents a TAD. Between two consecutive
 arcs the triangle mark the border. This triangle is colored depending on
 the confidence of the TAD border call.
 
-.. code:: ipython2
+.. code:: ipython3
 
     ali.draw(ymax=3)
 
@@ -643,7 +651,7 @@ the confidence of the TAD border call.
 .. image:: ../nbpictures//tutorial_8-Compartments_and_TADs_detection_70_0.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     ali.draw(focus=(1, 350), ymax=3)
 
@@ -660,20 +668,20 @@ the TAD borders between two experiments, we can compare the overlap
 between our experiments with the overlap of simulated random
 distributions of TAD borders.
 
-.. code:: ipython2
+.. code:: ipython3
 
     ali, stats = crm.align_experiments(['mouse_B', 'mouse_PSC'], randomize=True)
 
-.. code:: ipython2
+.. code:: ipython3
 
-    print ali
+    print(ali)
 
 
 .. ansi-block::
 
     Alignment shown in 100 Kb (2 experiments) (scores: [34m0[0m [34m1[0m [34m2[0m [36m3[0m [0m4[0m [1m5[0m [33m6[0m [33m7[0m [35m8[0m [35m9[0m [31m10[0m)
-      mouse_B:|    [31m30[0m|    [31m73[0m|    [0m78[0m|    [31m85[0m|    [31m90[0m|   [31m104[0m| ---- |   [35m141[0m| ---- |   [0m146[0m|   [0m153[0m|   [0m158[0m|   [31m163[0m|   [35m179[0m|   [35m192[0m|   [0m197[0m|   [31m205[0m| ---- | ---- |   [31m227[0m| ---- |   [31m270[0m| ---- |   [31m290[0m| ---- |   [31m305[0m|   [31m312[0m|   [33m317[0m|   [31m323[0m|   [31m328[0m| ---- | ---- |   [31m356[0m| ---- |   [35m368[0m|   [35m375[0m|   [31m382[0m|   [31m389[0m|   [1m403[0m| ---- |   [33m408[0m|   [31m418[0m| ---- | ---- | ---- |   [31m512[0m|   [31m535[0m|   [31m548[0m|   [31m553[0m| ---- |   [31m576[0m| ---- |   [31m590[0m|   [31m608[0m|   [31m625[0m|   [33m653[0m|   [33m660[0m| ---- |   [31m685[0m| ---- |   [31m699[0m| ---- |   [31m752[0m|   [31m759[0m|   [31m789[0m|   [31m796[0m| ---- | ---- |   [31m830[0m|   [31m837[0m| ---- |   [31m870[0m|   [31m877[0m|   [31m883[0m| ---- |   [31m901[0m|   [31m908[0m| ---- |   [31m943[0m|   [31m950[0m|   [31m967[0m| ---- |   [31m976[0m|   [31m986[0m|  [31m1000[0m| ---- | ---- |  [31m1020[0m|  [31m1027[0m| ---- |  [31m1034[0m| ---- | ---- |  [31m1047[0m| ---- | ---- | ---- |  [31m1075[0m|  [31m1082[0m|  [35m1093[0m|  [36m1135[0m|  [31m1155[0m|  [31m1169[0m| ---- |  [31m1211[0m|  [31m1235[0m| ---- | ---- | ---- |  [31m1275[0m|  [31m1280[0m|  [31m1292[0m|  [31m1297[0m| ---- |  [0m1302[0m|  [31m1307[0m|  [1m1313[0m|  [31m1326[0m| ---- | ---- | ---- |  [31m1352[0m| ---- | ---- |  [31m1382[0m| ---- | ---- | ---- |  [0m1423[0m| ---- |  [0m1428[0m| ---- |  [33m1445[0m|  [35m1452[0m| ---- |  [31m1459[0m| ---- |  [31m1470[0m| ---- | ---- |  [1m1517[0m|  [1m1522[0m| ---- |  [31m1540[0m| ---- | ---- | ---- |  [35m1579[0m| ---- |  [1m1585[0m|  [36m1590[0m|  [33m1596[0m|  [31m1601[0m
-    mouse_PSC:|    [31m30[0m|    [31m73[0m| ---- |    [31m85[0m| ---- |   [31m104[0m|   [31m139[0m| ---- |   [35m144[0m| ---- | ---- | ---- |   [31m162[0m|   [31m179[0m|   [31m192[0m| ---- |   [31m205[0m|   [33m214[0m|   [31m223[0m| ---- |   [31m257[0m|   [31m270[0m|   [31m288[0m| ---- |   [0m298[0m|   [31m305[0m|   [31m311[0m|   [31m317[0m|   [35m324[0m| ---- |   [35m331[0m|   [31m338[0m|   [31m356[0m|   [31m366[0m| ---- |   [1m375[0m|   [33m382[0m|   [33m388[0m| ---- |   [31m405[0m| ---- |   [31m418[0m|   [31m454[0m|   [31m472[0m|   [31m489[0m|   [31m512[0m|   [31m535[0m|   [31m547[0m|   [31m552[0m|   [31m572[0m| ---- |   [31m585[0m|   [31m591[0m| ---- |   [31m625[0m|   [31m653[0m|   [31m660[0m|   [31m674[0m| ---- |   [31m690[0m|   [31m700[0m|   [31m731[0m|   [31m752[0m|   [31m759[0m|   [31m789[0m|   [35m796[0m|   [35m801[0m|   [31m820[0m|   [31m831[0m|   [31m838[0m|   [31m862[0m|   [31m870[0m|   [35m877[0m|   [33m883[0m|   [0m891[0m|   [31m900[0m|   [31m907[0m|   [31m936[0m|   [31m943[0m|   [31m949[0m| ---- |   [31m969[0m|   [31m976[0m|   [33m985[0m| ---- |  [35m1007[0m|  [33m1013[0m|  [31m1019[0m| ---- |  [31m1030[0m| ---- |  [33m1038[0m|  [31m1045[0m| ---- |  [31m1051[0m|  [31m1060[0m|  [31m1072[0m| ---- | ---- |  [34m1092[0m|  [31m1136[0m|  [31m1156[0m|  [31m1169[0m|  [31m1175[0m|  [31m1212[0m|  [31m1235[0m|  [33m1243[0m|  [0m1258[0m|  [35m1271[0m| ---- |  [31m1280[0m|  [31m1292[0m| ---- |  [1m1300[0m| ---- |  [31m1307[0m|  [1m1313[0m|  [31m1327[0m|  [31m1333[0m|  [31m1338[0m|  [33m1347[0m|  [31m1352[0m|  [31m1358[0m|  [31m1378[0m| ---- |  [31m1385[0m|  [31m1392[0m|  [31m1419[0m| ---- |  [35m1425[0m| ---- |  [31m1430[0m|  [31m1444[0m| ---- |  [31m1454[0m| ---- |  [31m1463[0m|  [31m1470[0m|  [33m1488[0m|  [33m1496[0m|  [31m1516[0m|  [31m1521[0m|  [31m1528[0m|  [31m1539[0m|  [31m1546[0m|  [31m1567[0m|  [35m1576[0m| ---- |  [31m1581[0m| ---- | ---- | ---- |  [31m1601[0m
+      mouse_B:|    [34m31[0m| ---- | ---- |    [33m73[0m|    [33m85[0m|   [1m104[0m|   [35m138[0m| ---- |   [0m155[0m|   [0m158[0m|   [34m160[0m|   [1m178[0m|   [33m191[0m|   [33m206[0m|   [33m224[0m| ---- |   [35m270[0m| ---- |   [1m281[0m|   [0m290[0m|   [33m297[0m|   [1m305[0m|   [1m312[0m|   [34m317[0m|   [1m323[0m|   [1m328[0m|   [1m338[0m| ---- |   [33m356[0m| ---- | ---- | ---- |   [1m382[0m|   [0m389[0m| ---- |   [33m407[0m|   [34m410[0m|   [36m419[0m|   [33m454[0m| ---- |   [35m508[0m|   [34m510[0m|   [34m512[0m| ---- |   [36m522[0m|   [36m530[0m|   [1m535[0m|   [1m543[0m| ---- |   [34m552[0m|   [36m561[0m| ---- |   [33m574[0m| ---- |   [0m591[0m|   [33m600[0m|   [1m608[0m|   [0m612[0m|   [33m625[0m|   [33m635[0m| ---- | ---- | ---- |   [1m660[0m| ---- |   [1m673[0m| ---- | ---- | ---- |   [36m692[0m|   [0m700[0m|   [35m731[0m|   [35m751[0m|   [0m761[0m|   [35m789[0m|   [0m798[0m|   [34m801[0m| ---- |   [35m819[0m|   [33m830[0m|   [1m837[0m|   [0m849[0m| ---- |   [1m861[0m| ---- |   [1m870[0m|   [1m877[0m|   [34m880[0m|   [34m883[0m|   [34m889[0m| ---- |   [34m895[0m|   [34m900[0m| ---- |   [34m908[0m| ---- | ---- | ---- | ---- | ---- |   [0m949[0m|   [34m959[0m|   [34m963[0m| ---- |   [34m967[0m|   [0m976[0m| ---- |   [34m986[0m| ---- |  [33m1020[0m|  [1m1027[0m| ---- |  [0m1047[0m|  [34m1051[0m| ---- | ---- | ---- |  [33m1075[0m| ---- |  [34m1084[0m|  [34m1093[0m|  [34m1097[0m| ---- |  [33m1134[0m|  [34m1136[0m|  [33m1154[0m| ---- | ---- |  [0m1169[0m|  [0m1175[0m| ---- |  [33m1211[0m| ---- |  [0m1221[0m|  [1m1228[0m|  [34m1235[0m| ---- |  [33m1257[0m|  [0m1264[0m|  [33m1270[0m|  [34m1275[0m|  [1m1280[0m|  [0m1291[0m|  [0m1298[0m|  [34m1301[0m|  [1m1307[0m|  [33m1314[0m|  [34m1316[0m| ---- |  [1m1326[0m|  [33m1333[0m| ---- | ---- |  [33m1352[0m|  [36m1359[0m|  [33m1369[0m|  [33m1378[0m|  [1m1384[0m|  [33m1393[0m|  [35m1418[0m| ---- |  [34m1428[0m| ---- |  [33m1444[0m|  [34m1448[0m|  [36m1452[0m|  [0m1459[0m| ---- |  [0m1470[0m|  [35m1490[0m| ---- | ---- |  [33m1521[0m|  [1m1528[0m|  [1m1540[0m|  [1m1546[0m| ---- |  [35m1575[0m|  [33m1581[0m| ---- |  [33m1602[0m
+    mouse_PSC:|    [34m31[0m|    [33m63[0m|    [33m71[0m|    [34m73[0m|    [1m85[0m|   [36m104[0m|   [33m139[0m|   [1m145[0m| ---- |   [36m158[0m|   [34m160[0m|   [1m179[0m|   [0m192[0m|   [1m206[0m|   [33m223[0m|   [33m256[0m|   [1m270[0m|   [34m273[0m|   [36m281[0m|   [36m290[0m|   [0m297[0m|   [1m305[0m|   [34m311[0m|   [34m317[0m|   [33m323[0m|   [34m329[0m|   [36m338[0m|   [33m344[0m|   [1m356[0m|   [0m362[0m|   [34m370[0m|   [34m376[0m|   [1m382[0m|   [0m389[0m|   [33m405[0m|   [35m407[0m|   [34m410[0m|   [34m418[0m|   [33m454[0m|   [33m489[0m|   [33m508[0m|   [34m510[0m|   [34m512[0m|   [34m514[0m|   [0m522[0m|   [0m530[0m|   [0m535[0m| ---- |   [34m547[0m|   [34m552[0m|   [34m560[0m|   [33m572[0m| ---- |   [36m585[0m|   [34m591[0m| ---- |   [33m607[0m|   [33m612[0m|   [33m625[0m|   [1m635[0m|   [36m640[0m|   [0m648[0m|   [36m653[0m|   [0m660[0m|   [34m663[0m|   [33m674[0m|   [0m681[0m|   [1m687[0m|   [34m690[0m| ---- |   [36m700[0m|   [33m731[0m|   [33m752[0m|   [0m760[0m|   [33m789[0m|   [34m799[0m|   [34m801[0m|   [33m808[0m|   [1m820[0m|   [1m831[0m|   [36m838[0m|   [34m849[0m|   [1m856[0m|   [36m862[0m|   [1m868[0m|   [34m870[0m| ---- |   [34m880[0m|   [34m883[0m|   [34m888[0m|   [34m891[0m| ---- | ---- |   [34m905[0m|   [34m907[0m|   [34m914[0m|   [33m921[0m|   [0m931[0m|   [36m936[0m|   [33m943[0m|   [0m949[0m|   [34m959[0m|   [34m962[0m|   [34m965[0m|   [34m967[0m|   [36m976[0m|   [34m979[0m| ---- |   [34m988[0m|  [33m1019[0m| ---- |  [36m1030[0m|  [34m1047[0m|  [34m1051[0m|  [0m1057[0m|  [34m1060[0m|  [1m1069[0m|  [34m1076[0m|  [34m1082[0m| ---- |  [34m1093[0m| ---- |  [34m1099[0m|  [33m1134[0m|  [34m1136[0m| ---- |  [33m1156[0m|  [36m1163[0m|  [0m1169[0m| ---- |  [34m1177[0m|  [33m1211[0m|  [36m1218[0m| ---- | ---- |  [34m1235[0m|  [1m1243[0m|  [33m1258[0m| ---- |  [1m1271[0m| ---- |  [34m1280[0m|  [1m1292[0m|  [0m1298[0m|  [34m1301[0m|  [33m1307[0m|  [33m1314[0m|  [34m1316[0m|  [0m1319[0m|  [36m1327[0m|  [0m1333[0m|  [33m1339[0m|  [33m1346[0m|  [0m1352[0m|  [0m1358[0m| ---- |  [1m1377[0m|  [36m1385[0m|  [0m1392[0m|  [35m1418[0m|  [36m1425[0m| ---- |  [34m1430[0m|  [1m1444[0m| ---- |  [36m1453[0m| ---- |  [34m1462[0m|  [0m1470[0m| ---- |  [33m1496[0m|  [33m1516[0m|  [34m1521[0m|  [34m1528[0m|  [0m1539[0m|  [36m1546[0m|  [33m1566[0m|  [33m1575[0m| ---- |  [34m1583[0m|  [33m1602[0m
     
 
 
@@ -682,34 +690,39 @@ This analysis returns an alignment score between 0 and 1 (0: no match,
 of borders conserved in the second experiment, and the proportion of
 borders conserved in the first experiment:
 
-.. code:: ipython2
+.. code:: ipython3
 
     stats
 
 
+.. ansi-block::
+
+    The history saving thread hit an unexpected error (OperationalError('database is locked')).History will not be written to the database.
+
+
 
 
 .. ansi-block::
 
-    (0.3202614379084967, 0.0, 0.7604166666666666, 0.8050847457627118)
+    (0.4696132596685082, 0.0, 0.872, 0.8980891719745223)
 
 
 
-.. code:: ipython2
+.. code:: ipython3
 
-    print 'Alignment score: %.3f, p-value: %.4f\n  proportion of borders of T0 found in T60: %.3f, of T60 in T0 %.3f' % stats
+    print('Alignment score: %.3f, p-value: %.4f\n  proportion of borders of T0 found in T60: %.3f, of T60 in T0 %.3f' % stats)
 
 
 .. ansi-block::
 
-    Alignment score: 0.320, p-value: 0.0000
-      proportion of borders of T0 found in T60: 0.760, of T60 in T0 0.805
+    Alignment score: 0.470, p-value: 0.0000
+      proportion of borders of T0 found in T60: 0.872, of T60 in T0 0.898
 
 
 Save Chromosome object (with TAD definition)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     crm.save_chromosome('results/fragment/chr3.tdb')
 
@@ -731,12 +744,12 @@ score as it is the fastest (tadbit strategy is almost not usable bellow
 20 kb). We compare the number of TAD borders that are shared (plus-minus
 one bin) between the two replicates (iPS and B cells).
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.hic_parser import load_hic_data_from_bam
     from pytadbit.tadbit import insulation_score, insulation_to_borders
 
-.. code:: ipython2
+.. code:: ipython3
 
     base_path = 'results/fragment/{0}_both/03_filtering/valid_reads12_{0}.bam'
     cel1 = 'mouse_B'
@@ -744,7 +757,7 @@ one bin) between the two replicates (iPS and B cells).
     borders = {}
     resos = [5000, 10000, 20000, 30000, 40000, 50000, 60000, 80000, 100000, 150000, 200000]
 
-.. code:: ipython2
+.. code:: ipython3
 
     for c in ['chr%d' % cs for cs in range(1, 20)] + ['chrX']:
         borders[c] = {}
@@ -761,22 +774,467 @@ one bin) between the two replicates (iPS and B cells).
             hic_data1.normalize_expected()
             hic_data2.normalize_hic(silent=True)
             hic_data2.normalize_expected()
-            wsize = (1, max(2, 500000 / reso))
-            delta = max(1, 100000 / reso)
+            wsize = (1, max(2, 500000 // reso))
+            delta = max(1, 100000 // reso)
             insc1, delta1 = insulation_score(hic_data1, [wsize], resolution=100000, normalize=True, delta=delta)
             insc2, delta2 = insulation_score(hic_data2, [wsize], resolution=100000, normalize=True, delta=delta)
             borders1 = insulation_to_borders(insc1[wsize], delta1[wsize], min_strength=0.1)
             borders2 = insulation_to_borders(insc2[wsize], delta2[wsize], min_strength=0.1)
             borders[c][reso] = borders1, borders2
 
+
+.. ansi-block::
+
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+     - computing insulation in band 1-100
+     - computing insulation in band 1-100
+     - computing insulation in band 1-50
+     - computing insulation in band 1-50
+     - computing insulation in band 1-25
+     - computing insulation in band 1-25
+     - computing insulation in band 1-16
+     - computing insulation in band 1-16
+     - computing insulation in band 1-12
+     - computing insulation in band 1-12
+     - computing insulation in band 1-10
+     - computing insulation in band 1-10
+     - computing insulation in band 1-8
+     - computing insulation in band 1-8
+     - computing insulation in band 1-6
+     - computing insulation in band 1-6
+     - computing insulation in band 1-5
+     - computing insulation in band 1-5
+     - computing insulation in band 1-3
+     - computing insulation in band 1-3
+     - computing insulation in band 1-2
+     - computing insulation in band 1-2
+
+
 We align TAD borders and keep the proportion of borders aligned between
 cell types
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.alignment import align
 
-.. code:: ipython2
+.. code:: ipython3
 
     scores = {}
     props1 = {}
@@ -794,8 +1252,10 @@ cell types
 We plot the results, as boxplots to group the values of each
 chromosomes:
 
-.. code:: ipython2
+.. code:: ipython3
 
+    from functools import reduce
+    
     plt.figure(figsize=(12, 5))
     bp = plt.boxplot([reduce(lambda x, y: x+ y, 
                      [(props1[c][i], props2[c][i]) for c in props1])

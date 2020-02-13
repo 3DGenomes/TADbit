@@ -2,17 +2,18 @@
 12 nov. 2014
 """
 
-from warnings                             import warn
-from gzip                                 import open as gopen
+from warnings                             import warn, catch_warnings, simplefilter
 from os                                   import SEEK_END
 from subprocess                           import Popen, PIPE
-from itertools                            import izip_longest
+from itertools                            import zip_longest
 import re
 
+from collections                          import OrderedDict
 from numpy                                import nanstd, nanmean, linspace, nansum
 
+from pytadbit.utils.file_handling         import magic_open
 from pytadbit.utils.extraviews            import tadbit_savefig
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, iupac2regex
 from pytadbit.mapping.restriction_enzymes import religateds, repaired
 
 try:
@@ -20,6 +21,10 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, paired=False):
     """
@@ -45,9 +50,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
     if isinstance(r_enz, list):
         r_enzs = r_enz
-    elif isinstance(r_enz, str):
+    elif isinstance(r_enz, basestring):
         r_enzs = [r_enz]
-    for k in RESTRICTION_ENZYMES.keys():
+    for k in list(RESTRICTION_ENZYMES.keys()):
         for i in range(len(r_enzs)):
             if k.lower() == str(r_enz[i]).lower():
                 r_enz[i] = k
@@ -57,16 +62,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     henes = []
     sites = {}
     fixes = {}
-    liges = {}
+    liges = OrderedDict()
     ligep = {}
     tkw = dict(size=4, width=1.5)
-    if fnam.endswith('.gz'):
-        fhandler = gopen(fnam)
-    elif fnam.endswith('.dsrc'):
-        proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE)
-        fhandler = proc.stdout
-    else:
-        fhandler = open(fnam)
+    fhandler = magic_open(fnam)
     if len(r_enzs) == 1 and r_enzs[0] is None:
         if nreads:
             while True:
@@ -103,11 +102,12 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             sites[r_enz] = []  # initialize dico to store undigested sites
             fixes[r_enz] = []  # initialize dico to store digested sites
         l_sites = religateds(r_enzs)
+        l_sites = OrderedDict((k,iupac2regex(l_sites[k])) for k in l_sites)
         site = {}
         fixe = {}
         for r_enz in r_enzs:
-            site[r_enz] = re.compile(r_sites[r_enz])
-            fixe[r_enz] = re.compile(d_sites[r_enz])
+            site[r_enz] = re.compile(iupac2regex(r_sites[r_enz]))
+            fixe[r_enz] = re.compile(iupac2regex(d_sites[r_enz]))
         # ligation sites should appear in lower case in the sequence
         lige = {}
         for k in l_sites:
@@ -115,6 +115,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
             ligep[k] = 0   # initialize dico to store sites
             l_sites[k] = l_sites[k].lower()
             lige[k] = re.compile(l_sites[k])
+        callback = lambda pat: pat.group(0).lower()
         while len(quals) <= nreads:
             try:
                 next(fhandler)
@@ -122,16 +123,17 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 break
             seq = next(fhandler)
             # ligation sites replaced by lower case to ease the search
-            for lig in l_sites.values():
-                seq = seq.replace(lig.upper(), lig)
+            for lig in list(l_sites.values()):
+                seq = re.sub(lig.upper(), callback, seq)
             for r_enz in r_enzs:
                 sites[r_enz].extend([m.start() for m in site[r_enz].finditer(seq)])
                 # TODO: you cannot have a repaired/fixed site in the middle of
                 # the sequence, this could be only checked at the beginning
                 fixes[r_enz].extend([m.start() for m in fixe[r_enz].finditer(seq)])
-            for k  in lige:  # for each paired of cut-site
+            for k in lige:  # for each paired of cut-site
                 liges[k].extend([m.start() for m in lige[k].finditer(seq)])
-                ligep[k] += l_sites[k] in seq
+                if lige[k].search(seq):
+                    ligep[k] += 1
             # store the number of Ns found in the sequences
             if 'N' in seq:
                 henes.extend([i for i, s in enumerate(seq) if s == 'N'])
@@ -141,8 +143,8 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     fhandler.close()
     if not nreads:
         nreads = len(quals)
-    quals = izip_longest(*quals, fillvalue=float('nan'))
-    meanquals, errorquals = zip(*[(nanmean(q), nanstd(q)) for q in quals])
+    quals = zip_longest(*quals, fillvalue=float('nan'))
+    meanquals, errorquals = list(zip(*[(nanmean(q), nanstd(q)) for q in quals]))
     max_seq_len = len(meanquals)
 
     if axe:
@@ -165,7 +167,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
 
-    ax.errorbar(range(max_seq_len), meanquals,
+    ax.errorbar(list(range(max_seq_len)), meanquals,
                 linewidth=1, elinewidth=1, color='darkblue',
                 yerr=errorquals, ecolor='orange')
 
@@ -184,7 +186,9 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
     axb.set_ylabel('Number of "N" per position')
     try: # no Ns found (yes... it happens)
         axb.set_yscale('log')
-        axb.set_ylim((0, axb.get_ylim()[1] * 1000))
+        with catch_warnings():
+            simplefilter("ignore")
+            axb.set_ylim((0, axb.get_ylim()[1] * 1000))
     except ValueError:
         axb.set_yscale('linear')
     ax.set_ylim((0, ax.get_ylim()[1]))
@@ -254,7 +258,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
-            ax2.plot(sites[r_enz], linewidth=2, color=color.next(),
+            ax2.plot(sites[r_enz], linewidth=2, color=next(color),
                      alpha=0.9,
                      label='Undigested RE site (%s: %s)' % (r_enz, r_sites[r_enz])
                      if any([f > 0 for f in fixes[r_enz]])
@@ -270,7 +274,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r1, r2 in liges:
             # print 'ligated', r1, r2
             # print liges[(r1, r2)][:20]
-            ax3.plot(liges[(r1, r2)], linewidth=2, color=color.next(),
+            ax3.plot(liges[(r1, r2)], linewidth=2, color=next(color),
                      alpha=0.9,
                      label = 'Ligated (%s-%s: %s)' % (r1, r2, l_sites[(r1, r2)].upper()))
         ax3.yaxis.label.set_color('darkblue')
@@ -290,7 +294,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 ax4.spines["right"].set_visible(True)
                 # print 'repaired', r_enz
                 # print fixes[r_enz][:20]
-                ax4.plot(fixes[r_enz], linewidth=2, color=color.next(),
+                ax4.plot(fixes[r_enz], linewidth=2, color=next(color),
                          alpha=0.9,
                          label='Dangling-ends (%s: %s)' % (r_enz, d_sites[r_enz]))
                 ax4.yaxis.label.set_color('darkgreen')
@@ -320,10 +324,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         for r_enz in r_enzs:
             if any([f > 0 for f in fixes[r_enz]]):
                 des[r_enz] = ((100. * (fixes[r_enz][0] + (fixes[r_enz][(max_seq_len // 2)]
-                                                          if paired else 0))) // nreads)
+                                                          if paired else 0))) / nreads)
             else:
                 des[r_enz] = (100. * (sites[r_enz][0] + (sites[r_enz][(max_seq_len // 2)]
-                                                         if paired else 0))) // nreads
+                                                         if paired else 0))) / nreads
 
         # Decorate plot
         title = ''
@@ -361,5 +365,5 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
 def make_patch_spines_invisible(ax):
     ax.set_frame_on(True)
     ax.patch.set_visible(False)
-    for sp in ax.spines.itervalues():
+    for sp in ax.spines.values():
         sp.set_visible(False)

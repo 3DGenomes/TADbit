@@ -1,6 +1,8 @@
 """
 simple BED and BEDgraph parser
 """
+from __future__ import print_function
+from builtins   import next
 
 from pytadbit.utils.file_handling import magic_open
 from pytadbit.utils.extraviews import nicer
@@ -54,13 +56,13 @@ def parse_bed(fnam, resolution=1):
     """
 
     fhandler = magic_open(fnam)
-    line = fhandler.next()
+    line = next(fhandler)
     fpos = len(line)
     while (line.startswith('#')     or
            line.startswith('track') or
            line.startswith('browser')):
         fpos += len(line)
-        line = fhandler.next()
+        line = next(fhandler)
     ##################
     # check file type
     try:
@@ -92,7 +94,7 @@ def parse_bed(fnam, resolution=1):
     fhandler.seek(fpos)
     for line in fhandler:
         crm, beg, end, val = parse_line(line)
-        pos = (beg + end - beg) / resolution
+        pos = (beg + end - beg) // resolution
         dico.setdefault(crm, {})
         dico[crm].setdefault(pos, 0)
         dico[crm][pos] += val
@@ -126,18 +128,18 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
     if path.exists(tadbit_fname) and not reload_cache:
         def read_line(line):
             crm, elements = line.split()
-            return crm, map(float, elements.split(','))
+            return crm, list(map(float, elements.split(',')))
         return dict(read_line(l) for l in open(tadbit_fname))
 
     fh = open(fname)
-    line = fh.next()
+    line = next(fh)
     crmM, begM, endM, val = line.split()
     crm = crmM
     if wanted_chrom:
         if crmM != wanted_chrom:
             print('     skipping %s' % crmM)
             while crmM != wanted_chrom:
-                line = fh.next()
+                line = next(fh)
                 crmM, begM, endM, val = line.split()
                 crm = crmM
     mappability = {}
@@ -166,14 +168,14 @@ def parse_mappability_bedGraph(fname, resolution, wanted_chrom=None,
                 if weight < 0:
                     break
                 tmp += weight * float(val)
-                line = fh.next()
+                line = next(fh)
         except StopIteration:
             mappability[crm].append(tmp / resolution)
             break
         mappability[crm].append(tmp / resolution)
         crm = crmM
         begB +=  resolution
-    print "     saving mappabilty to cache..."
+    print("     saving mappabilty to cache...")
     if save_cache:
         out = open(tadbit_fname, 'w')
         for crm in mappability:

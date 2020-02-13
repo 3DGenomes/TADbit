@@ -3,6 +3,7 @@
 
 This script generates a false genome for testing purposes
 """
+from __future__ import print_function
 
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser import parse_fasta
@@ -19,7 +20,7 @@ try:
 except IndexError:
     pass
 
-print ali
+print(ali)
 
 # VARIABLES
 num_crms      = 9
@@ -40,16 +41,16 @@ nts = ('ATGC' * 100) +'N'
 
 # RANDOM GENOME GENERATION
 genome = {}
-for crm in xrange(1, num_crms + 1):
+for crm in range(1, num_crms + 1):
     crm_len = int(mean_crm_size * random())
     genome['chr' + str(crm)] = ''.join([nts[int(401 * random())]
-                                        for _ in xrange(crm_len)])
+                                        for _ in range(crm_len)])
 
 out = open('test.fa~', 'w')
-for crm in xrange(1, num_crms + 1):
+for crm in range(1, num_crms + 1):
     out.write('>chr%d\n' % crm)
     crm = 'chr' + str(crm)
-    for p in xrange(0, len(genome[crm]), 60):
+    for p in range(0, len(genome[crm]), 60):
         out.write(genome[crm][p:p+60] + '\n')
 out.close()
 
@@ -101,10 +102,10 @@ if ali == 'sam':
 flags = ['+', '-'] if ali=='map' else [66 , 82 ]
 
 # SELF-CIRCLES
-for i in xrange(selfcircle):
-    crm  = genome.keys()    [int(random() * len(genome))]
+for i in range(selfcircle):
+    crm  = list(genome.keys())    [int(random() * len(genome))]
     while True:
-        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
         if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
             break
     while True:
@@ -130,10 +131,10 @@ for i in xrange(selfcircle):
     out2.write(read.format(**read2))
 
 # DANGLING-ENDS
-for i in xrange(dangling):
-    crm  = genome.keys()    [int(random() * len(genome))]
+for i in range(dangling):
+    crm  = list(genome.keys())    [int(random() * len(genome))]
     while True:
-        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
         if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
             break
     while True:
@@ -159,10 +160,10 @@ for i in xrange(dangling):
     out2.write(read.format(**read2))
 
 # ERRORS
-for i in xrange(error):
-    crm  = genome.keys()    [int(random() * len(genome))]
+for i in range(error):
+    crm  = list(genome.keys())    [int(random() * len(genome))]
     while True:
-        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
         if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
             break
     while True:
@@ -184,10 +185,10 @@ for i in xrange(error):
     out2.write(read.format(**read2))
 
 # EXTRA-DANGLING-ENDS
-for i in xrange(extradangling):
-    crm  = genome.keys()    [int(random() * len(genome))]
+for i in range(extradangling):
+    crm  = list(genome.keys())    [int(random() * len(genome))]
     while True:
-        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        frag = list(frags[crm].keys())[int(random() * len(frags[crm]))]
         if (frags[crm][frag][1] - frags[crm][frag][0]) > 6:
             break
     while True:
@@ -224,11 +225,11 @@ for i in xrange(extradangling):
 # DUPPLICATES
 i = 0
 while i < duplicates * 2:
-    crm1  = genome.keys()    [int(random() * len(genome))]
-    crm2  = genome.keys()    [int(random() * len(genome))]
+    crm1  = list(genome.keys())    [int(random() * len(genome))]
+    crm2  = list(genome.keys())    [int(random() * len(genome))]
     while True:
-        frag1 = frags[crm1].keys()[int(random() * len(frags[crm1]))]
-        frag2 = frags[crm2].keys()[int(random() * len(frags[crm2]))]
+        frag1 = list(frags[crm1].keys())[int(random() * len(frags[crm1]))]
+        frag2 = list(frags[crm2].keys())[int(random() * len(frags[crm2]))]
         if frags[crm2][frag2][1] - frags[crm2][frag2][0] < 6:
             continue
         if frags[crm1][frag1][1] - frags[crm1][frag1][0] < 6:

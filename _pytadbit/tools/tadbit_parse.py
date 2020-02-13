@@ -5,13 +5,16 @@ information needed
  - path working directory with mapped reads or list of SAM/BAM/MAP files
 
 """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 from os                             import path, remove
 from string                         import ascii_letters
 from random                         import random
 from shutil                         import copyfile
 from argparse                       import HelpFormatter
-from cPickle                        import load, UnpicklingError
+from pickle                        import load, UnpicklingError
 from warnings                       import warn
 
 import time
@@ -25,6 +28,7 @@ from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import print_db, get_jobid
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
+from functools import reduce
 
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
@@ -64,9 +68,9 @@ def run(opts):
 
     logging.info('parsing genomic sequence')
     try:
-        # allows the use of cPickle genome to make it faster
-        genome = load(open(opts.genome[0]))
-    except UnpicklingError:
+        # allows the use of pickle genome to make it faster
+        genome = load(open(opts.genome[0],'rb'))
+    except (UnpicklingError, KeyError):
         genome = parse_fasta(opts.genome, chr_regexp=opts.filter_chrom)
 
     if not opts.skip:
@@ -199,7 +203,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                            counts[count][item]))
                     sum_reads += counts[count][item]
             except lite.IntegrityError:
-                print 'WARNING: already parsed (MAPPED_OUTPUTs)'
+                print('WARNING: already parsed (MAPPED_OUTPUTs)')
             try:
                 cur.execute("""
                 insert into PARSED_OUTPUTs
@@ -210,7 +214,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                        sum_reads, ','.join([':'.join(map(str, (n, multis[count][n])))
                                             for n in multis[count] if n])))
             except lite.IntegrityError:
-                print 'WARNING: already parsed (PARSED_OUTPUTs)'
+                print('WARNING: already parsed (PARSED_OUTPUTs)')
 
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
@@ -370,16 +374,16 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
+        print('Writing log to ' + path.join(opts.workdir, 'process.log'))
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
-                            filemode='aw')
+                            filemode='a+')
     except IOError:
         logging.basicConfig(level=logging.DEBUG,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log2'),
-                            filemode='aw')
+                            filemode='a+')
 
     # to display log on stdout also
     logging.getLogger().addHandler(logging.StreamHandler())

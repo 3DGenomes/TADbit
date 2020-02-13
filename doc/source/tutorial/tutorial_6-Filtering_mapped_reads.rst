@@ -1,4 +1,3 @@
-
 Filtering
 =========
 
@@ -15,31 +14,31 @@ the same RE fragment in *facing* orientation. 3. **Error**: both
 read-ends are mapped to the same RE fragment in the same orientation. 4.
 **Extra dangling-end**: the read-ends are mapped to different RE
 fragments in *facing* orientation, but are close enough (<
-*max\_molecule\_length* bp) from the RE cut-site to be considered part
-of adjacent RE fragments that were not separated by digestion. The
-*max\_molecule\_length* parameter can be inferred from the
-*fragment\_size* function previously detailed. 5. **Too close from RE
-sites (or semi-dangling-end)**: the start position of one of the
-read-end is too close (5 bp by default) from the RE cutting site. 6.
-**Too short**: one of the read-ends is mapped to RE fragments of less
-than 75bp. These are removed since there is ambiguity on where the
-read-end is mapped as it could also belong to any of the two neighboring
-RE fragments. 7. **Too large**: the read-ends are mapped to long RE
-fragments (default: 100 kb, P < 10-5 to occur in a randomized genome)
-and they likely represent poorly assembled or repetitive regions. 8.
-**Over-represented**: the read-ends coming from the top 0.5% most
-frequently detected RE fragments, they may represent PCR artefacts,
-random breaks, or genome assembly errors. 9. **PCR artefacts or
-duplicated**: the combination of the start positions, mapped length, and
-strands of both read-ends are identical. In this case, only one copy is
-kept. 10. **Random breaks**: the start position of one read-end is too
-far (> *minimum\_distance\_to\_RE*) from the RE cut-site. These are
-produced most probably by non-canonical enzyme activity or by random
-physical breakage of the chromatin. Note, that to filter all these types
-of fragments the minimum\_distance\_to\_RE parameter should be larger
-than the *maximum\_fragment\_length*.
+*max_molecule_length* bp) from the RE cut-site to be considered part of
+adjacent RE fragments that were not separated by digestion. The
+*max_molecule_length* parameter can be inferred from the *fragment_size*
+function previously detailed. 5. **Too close from RE sites (or
+semi-dangling-end)**: the start position of one of the read-end is too
+close (5 bp by default) from the RE cutting site. 6. **Too short**: one
+of the read-ends is mapped to RE fragments of less than 75bp. These are
+removed since there is ambiguity on where the read-end is mapped as it
+could also belong to any of the two neighboring RE fragments. 7. **Too
+large**: the read-ends are mapped to long RE fragments (default: 100 kb,
+P < 10-5 to occur in a randomized genome) and they likely represent
+poorly assembled or repetitive regions. 8. **Over-represented**: the
+read-ends coming from the top 0.5% most frequently detected RE
+fragments, they may represent PCR artefacts, random breaks, or genome
+assembly errors. 9. **PCR artefacts or duplicated**: the combination of
+the start positions, mapped length, and strands of both read-ends are
+identical. In this case, only one copy is kept. 10. **Random breaks**:
+the start position of one read-end is too far (>
+*minimum_distance_to_RE*) from the RE cut-site. These are produced most
+probably by non-canonical enzyme activity or by random physical breakage
+of the chromatin. Note, that to filter all these types of fragments the
+minimum_distance_to_RE parameter should be larger than the
+*maximum_fragment_length*.
 
-.. code:: ipython2
+.. code:: ipython3
 
     cell = 'mouse_B'  # or mouse_PSC
     rep = 'rep1'  # or rep2
@@ -47,7 +46,7 @@ than the *maximum\_fragment\_length*.
 Filter out dangling ends and self-circles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.filter import filter_reads
 
@@ -58,7 +57,7 @@ in previous section.
 The ``min_distance_to_re``, that affects the detection of random breaks,
 should be large enough in order to contain almost all the fragments.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # this will last ~10 minutes
     masked = filter_reads(
@@ -91,7 +90,7 @@ affected by each.
 Apply filters on the data
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.filter import apply_filter
     
@@ -116,7 +115,7 @@ Apply filters on the data
 Evaluate changes
 ^^^^^^^^^^^^^^^^
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
     
@@ -130,7 +129,7 @@ Evaluate changes
 
 Zoom to a single chromosome or a region:
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_map('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}.tsv'.format(cell, rep), 
             resolution=1000000, show=True, focus='chr1', cmap='viridis')
@@ -140,7 +139,7 @@ Zoom to a single chromosome or a region:
 .. image:: ../nbpictures//tutorial_6-Filtering_mapped_reads_14_0.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_map('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}.tsv'.format(cell, rep), 
             resolution=1000000, show=True, focus=(500, 1000), cmap='viridis')
@@ -179,17 +178,18 @@ copy, S: second copy) - Chromosome ID of the second read-end - Genomic
 position of the second read-end - Mapped length of the second pair-end -
 Nothing (*) (the field is usually reserved to sequence) - Nothing (*)
 (the field is usually reserved to quality) - TC tag indicating single
-(1) or multi contact (3 6 ... number being the number of times a given
+(1) or multi contact (3 6 … number being the number of times a given
 sequenced fragment is involved in a pairwise contact) - S1 and S2 tags
 are the strand orientation of the left and right read-end
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
 
-.. code:: ipython2
+.. code:: ipython3
 
     bed2D_to_BAMhic('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}.tsv'.format(cell, rep), 
                     valid=True, ncpus=8, 
                     outbam='results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}'.format(cell, rep), 
                     frmt='mid', masked=None)
+

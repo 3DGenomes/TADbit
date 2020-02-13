@@ -1,6 +1,8 @@
 """
 17 nov. 2014
 """
+from __future__ import print_function
+from builtins import next
 
 from itertools import combinations
 from bisect import bisect_right as bisect
@@ -10,6 +12,11 @@ from shutil import copyfileobj
 from warnings import warn
 import os
 from sys import stdout
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
@@ -49,13 +56,13 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
     frag_chunk = kwargs.get('frag_chunk', 100000)
     if verbose:
-        print 'Searching and mapping RE sites to the reference genome'
+        print('Searching and mapping RE sites to the reference genome')
     frags = map_re_sites(re_name, genome_seq, frag_chunk=frag_chunk,
                          verbose=verbose)
 
-    if isinstance(f_names1, str):
+    if isinstance(f_names1, basestring):
         f_names1 = [f_names1]
-    if isinstance(f_names2, str):
+    if isinstance(f_names2, basestring):
         f_names2 = [f_names2]
     if f_names2:
         fnames = f_names1, f_names2
@@ -72,7 +79,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
     procs   = []
     for read in range(len(fnames)):
         if verbose:
-            print 'Loading read' + str(read + 1)
+            print('Loading read' + str(read + 1))
         windows[read] = {}
         num = 0
         # iteration over reads
@@ -83,7 +90,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             try:
                 fhandler = Samfile(fnam)
             except IOError:
-                print 'WARNING: file "%s" not found' % fnam
+                print('WARNING: file "%s" not found' % fnam)
                 continue
             except ValueError:
                 raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
@@ -105,7 +112,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 warn('WARNING: unrecognized mapper used to generate file\n')
                 condition = lambda x: x[1][1] != 1
             if verbose:
-                print 'loading SAM file from %s: %s' % (mapper, fnam)
+                print('loading SAM file from %s: %s' % (mapper, fnam))
             # getrname chromosome names
             i = 0
             crm_dict = {}
@@ -130,7 +137,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 else:
                     pos = r.pos + len_seq
                 try:
-                    frag_piece = frags[crm][pos / frag_chunk]
+                    frag_piece = frags[crm][pos // frag_chunk]
                 except KeyError:
                     # Chromosome not in hash
                     continue
@@ -143,7 +150,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                     while idx >= len(frag_piece) and count < len_seq:
                         pos -= 1
                         count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
+                        frag_piece = frags[crm][pos // frag_chunk]
                         idx = bisect(frag_piece, pos)
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +
@@ -184,7 +191,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         tmp_name = tmp_files[0]
         
         if verbose:
-            print 'Getting Multiple contacts'
+            print('Getting Multiple contacts')
         reads_fh = open(outfiles[read], 'w')
         ## Also pipe file header
         # chromosome sizes (in order)
@@ -198,7 +205,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         ## Multicontacts
         tmp_reads_fh = open(tmp_name)
         try:
-            read_line = tmp_reads_fh.next()
+            read_line = next(tmp_reads_fh)
         except StopIteration:
             raise StopIteration('ERROR!\n Nothing parsed, check input files and'
                                 ' chromosome names (in genome.fasta and SAM/MAP'
@@ -219,6 +226,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
+        tmp_reads_fh.close()
         if clean:
             os.system('rm -rf ' + tmp_name)
     # wait for compression to finish
@@ -323,7 +331,7 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
                 else:
                     pos = read.pos + len_seq
                 try:
-                    frag_piece = frags[crm][pos / frag_chunk]
+                    frag_piece = frags[crm][pos // frag_chunk]
                 except KeyError:
                     # Chromosome not in hash
                     read_multi = []
@@ -337,7 +345,7 @@ def parse_gem_3c(f_name, out_file, genome_lengths, frags, verbose=False,
                     while idx >= len(frag_piece) and count < len_seq:
                         pos -= 1
                         count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
+                        frag_piece = frags[crm][pos // frag_chunk]
                         idx = bisect(frag_piece, pos)
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +
@@ -504,20 +512,20 @@ def merge_sort(file1, file2, outfiles, nfile, paired=False):
                                                                  float(j.split('\t')[10])))
     else:
         greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
-    read1 = fh1.next()
-    read2 = fh2.next()
+    read1 = next(fh1)
+    read2 = next(fh2)
     while True:
         if greater(read2, read1):
             tmp_file.write(read1)
             try:
-                read1 = fh1.next()
+                read1 = next(fh1)
             except StopIteration:
                 tmp_file.write(read2)
                 break
         else:
             tmp_file.write(read2)
             try:
-                read2 = fh2.next()
+                read2 = next(fh2)
             except StopIteration:
                 tmp_file.write(read1)
                 break
