@@ -82,13 +82,6 @@ From:neurodebian:buster
   wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/py3.zip && unzip py3.zip && \
   cd TADbit-py3 && yes | python setup.py install && cd .. && rm -rf TADbit-py3 py3.zip
   
-  ############################################################################
-  # Clean
-  apt-get remove -y --purge unzip build-essential r-cran-devtools && \
-  apt-get autoremove -y && \
-  apt-get  autoclean -y && \
-  rm -rf /var/lib/apt/lists/*
-
 %runscript
   echo "Wecome to TADbit Singularity container"
   exec /bin/bash --norc
