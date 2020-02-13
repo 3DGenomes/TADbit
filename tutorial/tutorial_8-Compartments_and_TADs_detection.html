@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Compartments and TADs detection &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -50,107 +49,100 @@ content) to identify which bins belong to the A or B compartments. The
 percentage of bases that are either guanine or cytosine on a DNA strand
 correlates directly with gene density and is a good measure to identify
 open and close chromatine.</p>
-<p><strong>*Note</strong>: Compartments are detected on the full genome matrix.*</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span> <span class="k">import</span> <span class="n">get_gc_content</span><span class="p">,</span> <span class="n">parse_fasta</span>
-<span class="kn">from</span> <span class="nn">cPickle</span> <span class="k">import</span> <span class="n">load</span>
+<p><strong>Note</strong><em>: Compartments are detected on the full genome matrix.</em></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span> <span class="kn">import</span> <span class="n">get_gc_content</span><span class="p">,</span> <span class="n">parse_fasta</span>
+<span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">200000</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">200000</span>
 <span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
 <span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/04_normalizing/biases_</span><span class="si">{0}</span><span class="s1">_both_</span><span class="si">{1}</span><span class="s1">kb.biases&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rich_in_A</span> <span class="o">=</span> <span class="n">get_gc_content</span><span class="p">(</span><span class="n">parse_fasta</span><span class="p">(</span><span class="s1">&#39;genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa&#39;</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rich_in_A</span> <span class="o">=</span> <span class="n">get_gc_content</span><span class="p">(</span><span class="n">parse_fasta</span><span class="p">(</span><span class="s1">&#39;genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa&#39;</span><span class="p">),</span>
                            <span class="n">by_chrom</span><span class="o">=</span><span class="kc">True</span> <span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Loading cached genome
-</pre>
+<pre class="ansi-block literal-block">Loading cached genome</pre>
 <div class="section" id="compartments">
 <h2>Compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="mouse-b-cells">
 <h3>Mouse B cells<a class="headerlink" href="#mouse-b-cells" title="Permalink to this headline">¶</a></h3>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
                                   <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
-                                  <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                  <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                   <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Matrix size 13641x13641)                                                    [2018-10-11 11:30:12]
+<pre class="ansi-block literal-block">(Matrix size 13641x13641)                                                    [2020-02-06 12:04:07]
 
-- Parsing BAM (122 chunks)                                                   [2018-10-11 11:30:12]
+- Parsing BAM (122 chunks)                                                   [2020-02-06 12:04:08]
    .......... .......... .......... .......... ..........     50/122
    .......... .......... .......... .......... ..........    100/122
    .......... .......... ..                                  122/122
 
-- Getting matrices                                                           [2018-10-11 11:33:14]
+- Getting matrices                                                           [2020-02-06 12:06:28]
    .......... .......... .......... .......... ..........     50/122
    .......... .......... .......... .......... ..........    100/122
-   .......... .......... ..                                  122/122
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/fragment/$cell\_both/05_segmenting
+   .......... .......... ..                                  122/122</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> mkdir -p results/fragment/<span class="nv">$cell</span><span class="se">\_</span>both/05_segmenting
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chrname</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
 <span class="n">corr</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">find_compartments</span><span class="p">(</span><span class="n">show_compartment_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="p">[</span><span class="n">crm</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">rich_in_A</span><span class="o">=</span><span class="n">rich_in_A</span><span class="p">,</span>
-        <span class="n">savedata</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/compartments_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">reso</span><span class="p">),</span>
-        <span class="n">savedir</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/eigenvectors_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">reso</span><span class="p">))</span>
+        <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="p">[</span><span class="n">chrname</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">rich_in_A</span><span class="o">=</span><span class="n">rich_in_A</span><span class="p">,</span>
+        <span class="n">savedata</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/compartments_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chrname</span><span class="p">,</span> <span class="n">reso</span><span class="p">),</span>
+        <span class="n">savedir</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/eigenvectors_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chrname</span><span class="p">,</span> <span class="n">reso</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_10_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_10_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_10_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_10_0.png" />
 </div>
 <div class="section" id="mouse-ips-cells">
 <h3>Mouse iPS cells<a class="headerlink" href="#mouse-ips-cells" title="Permalink to this headline">¶</a></h3>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
                                   <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
-                                  <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                  <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                   <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Matrix size 13641x13641)                                                    [2018-10-11 11:43:44]
+<pre class="ansi-block literal-block">(Matrix size 13641x13641)                                                    [2020-02-06 12:20:31]
 
-- Parsing BAM (122 chunks)                                                   [2018-10-11 11:43:45]
+- Parsing BAM (122 chunks)                                                   [2020-02-06 12:20:32]
    .......... .......... .......... .......... ..........     50/122
    .......... .......... .......... .......... ..........    100/122
    .......... .......... ..                                  122/122
 
-- Getting matrices                                                           [2018-10-11 11:48:20]
+- Getting matrices                                                           [2020-02-06 12:22:08]
    .......... .......... .......... .......... ..........     50/122
    .......... .......... .......... .......... ..........    100/122
-   .......... .......... ..                                  122/122
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/fragment/$cell\_both/05_segmenting
+   .......... .......... ..                                  122/122</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> mkdir -p results/fragment/<span class="nv">$cell</span><span class="se">\_</span>both/05_segmenting
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chrname</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
 <span class="n">corr</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">find_compartments</span><span class="p">(</span><span class="n">show_compartment_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="p">[</span><span class="n">crm</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">rich_in_A</span><span class="o">=</span><span class="n">rich_in_A</span><span class="p">,</span>
-        <span class="n">savedata</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/compartments_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">reso</span><span class="p">),</span>
-        <span class="n">savedir</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/eigenvectors_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">reso</span><span class="p">))</span>
+        <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="p">[</span><span class="n">chrname</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">rich_in_A</span><span class="o">=</span><span class="n">rich_in_A</span><span class="p">,</span>
+        <span class="n">savedata</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/compartments_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chrname</span><span class="p">,</span> <span class="n">reso</span><span class="p">),</span>
+        <span class="n">savedir</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/05_segmenting/eigenvectors_</span><span class="si">{1}</span><span class="s1">_</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chrname</span><span class="p">,</span> <span class="n">reso</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_15_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_15_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_15_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_15_0.png" />
 </div>
 <div class="section" id="compare">
 <h3>Compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
 <p>The assignments of the compartments for the two cell types are stored in
 two different files:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! head -n 20 results/fragment/mouse_B_both/05_segmenting/compartments_chr3_200000.tsv
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> head -n <span class="m">20</span> results/fragment/mouse_B_both/05_segmenting/compartments_chr3_200000.tsv
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-## CHR chr3 Eigenvector: 1
+<pre class="ansi-block literal-block">## CHR chr3 Eigenvector: 1
 #   start   end     rich in A       type
 chr3        16      44      0.40    B
 chr3        45      52      0.50    A
@@ -169,13 +161,11 @@ chr3        154     156     0.64    A
 chr3        157     162     0.51    B
 chr3        163     164     0.87    A
 chr3        165     178     0.46    B
-chr3        179     181     0.61    A
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! head -n 20 results/fragment/mouse_PSC_both/05_segmenting/compartments_chr3_200000.tsv
+chr3        179     181     0.61    A</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> head -n <span class="m">20</span> results/fragment/mouse_PSC_both/05_segmenting/compartments_chr3_200000.tsv
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-## CHR chr3 Eigenvector: 1
+<pre class="ansi-block literal-block">## CHR chr3 Eigenvector: 1
 #   start   end     rich in A       type
 chr3        16      42      0.40    B
 chr3        43      52      0.49    A
@@ -194,29 +184,25 @@ chr3        161     165     0.54    A
 chr3        166     169     0.54    B
 chr3        170     183     0.46    A
 chr3        184     184     nan     B
-chr3        188     189     0.84    A
-</pre>
+chr3        188     189     0.84    A</pre>
 <p>In another folder, we also saved the coordinates of each computed
 eigenvector:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! ls -lh results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> ls -lh results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-total 52K
--rw-r--r-- 1 systemd-network users 49K oct 11 11:43 chr3_EigVect1.tsv
-</pre>
-<p><strong>*Note</strong>: In this file the first line shows the eigenvector index with
-it’s corresponding eigenvalue (the first column should always be the one
-you selected, even if it is not the first eigenvector).*</p>
+<pre class="ansi-block literal-block">total 52K
+-rw-r--r-- 1 dcastillo dcastillo 49K Feb  6 12:08 chr3_EigVect1.tsv</pre>
+<p><strong>Note</strong><em>: In this file the first line shows the eigenvector index
+with it’s corresponding eigenvalue (the first column should always be
+the one you selected, even if it is not the first eigenvector).</em></p>
 <p>Then there are the coordinates of the eigenvectors. In the first column,
 the coordinates correspond to the assignment of the A and B
 compartments, positive values for A compartments and negative values for
 B compartments.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! head -n 20 results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> head -n <span class="m">20</span> results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-# EV_1 (199.3674)   EV_2 (38.9365)  EV_3 (22.7067)
+<pre class="ansi-block literal-block"># EV_1 (199.3674)   EV_2 (38.9365)  EV_3 (22.7067)
 nan nan     nan
 nan nan     nan
 nan nan     nan
@@ -232,15 +218,16 @@ nan nan     nan
 nan nan     nan
 nan nan     nan
 nan nan     nan
--0.047058774338678624       -0.0008416946845418646  0.041851430073603285
--0.04570124930041133        -0.00491013140668968    0.038322756862219455
--0.045914264537434225       -0.002039448345766831   0.03596787271950662
--0.04485768885458887        -0.003962351416821032   0.0423027589274437
-</pre>
+-0.04705877433867864        0.0008416946845418325   -0.0418514300736033
+-0.04570124930041132        0.004910131406689665    -0.03832275686221951
+-0.04591426453743422        0.002039448345766754    -0.035967872719506695
+-0.044857688854588844       0.003962351416820969    -0.04230275892744377</pre>
 <p>Load eigenvectors coordinates from files:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">builtins</span>   <span class="kn">import</span> <span class="nb">next</span>
 
-<span class="n">header</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;results/fragment/mouse_B_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv&#39;</span><span class="p">)</span>
+
+<span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 
 <span class="n">ev1_B</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
@@ -249,7 +236,7 @@ nan nan     nan
 
 <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;results/fragment/mouse_PSC_both/05_segmenting/eigenvectors_chr3_200000/chr3_EigVect1.tsv&#39;</span><span class="p">)</span>
 
-<span class="n">header</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 
 <span class="n">ev1_PSC</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
@@ -265,10 +252,10 @@ nan nan     nan
 <div class="section" id="spot-changes-in-activity">
 <h3>Spot changes in activity<a class="headerlink" href="#spot-changes-in-activity" title="Permalink to this headline">¶</a></h3>
 <p>Plot the difference between each eigenvector along chromosome</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="s1">&#39;More active in B cell&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="p">[</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">diff</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.09</span><span class="p">,</span> <span class="s1">&#39;More active in PSC cell&#39;</span><span class="p">)</span>
@@ -279,11 +266,11 @@ nan nan     nan
 <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Genomic coordinate (</span><span class="si">%s</span><span class="s1"> kb)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_29_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_29_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_29_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_29_0.png" />
 </div>
 <div class="section" id="correlate-eigenvectors">
 <h3>Correlate eigenvectors<a class="headerlink" href="#correlate-eigenvectors" title="Permalink to this headline">¶</a></h3>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ev1_B</span><span class="p">)):</span>
     <span class="k">if</span> <span class="n">ev1_B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">ev1_PSC</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ev1_B</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ev1_PSC</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -297,7 +284,7 @@ nan nan     nan
 <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;PSC cell EV1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_31_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_31_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_31_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_31_0.png" />
 </div>
 </div>
 <div class="section" id="tads">
@@ -308,11 +295,11 @@ borders at 100kbp resolution.</p>
 
 An example of consistency between TAD borders is shown in the following graph. TAD borders are called at 1 kb resolution (insulation score-based method). We assume that there should be a high ratio of conservation between the 4 replicates and as we see that's true for resolutions lower than approximately 100kbp. If our bin size is for example 50kbp, we only reach the same ratio of consistency if we consider TAD borders found 2 bins away as being the same border in the different replicates.
 
-<img src="../nbpictures/TAD_calling_resolution.png"> --><div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">Chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
+<img src="../nbpictures/TAD_calling_resolution.png"> --><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
 <span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/04_normalizing/biases_</span><span class="si">{0}</span><span class="s1">_both_</span><span class="si">{1}</span><span class="s1">kb.biases&#39;</span>
 
 <span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
@@ -321,45 +308,44 @@ An example of consistency between TAD borders is shown in the following graph. T
 <span class="n">cel2</span> <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
                                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="n">hic_data2</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">),</span>
                                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Matrix size 1601x1601)                                                      [2018-10-17 00:42:22]
+<pre class="ansi-block literal-block">(Matrix size 1601x1601)                                                      [2020-02-06 12:36:22]
 
-- Parsing BAM (101 chunks)                                                   [2018-10-17 00:42:22]
+- Parsing BAM (101 chunks)                                                   [2020-02-06 12:36:24]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
-- Getting matrices                                                           [2018-10-17 00:42:31]
+- Getting matrices                                                           [2020-02-06 12:36:28]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
 
-(Matrix size 1601x1601)                                                      [2018-10-17 00:42:42]
+(Matrix size 1601x1601)                                                      [2020-02-06 12:36:54]
 
-- Parsing BAM (101 chunks)                                                   [2018-10-17 00:42:42]
+- Parsing BAM (101 chunks)                                                   [2020-02-06 12:36:55]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
-- Getting matrices                                                           [2018-10-17 00:42:51]
+- Getting matrices                                                           [2020-02-06 12:36:59]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
-   .                                                         101/101
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">chrname</span><span class="p">)</span>
+   .                                                         101/101</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chrname</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
+<span class="n">crm</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">chrname</span><span class="p">)</span>
 <span class="n">crm</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span>
                    <span class="n">hic_data</span><span class="o">=</span><span class="p">[</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)],</span>
                    <span class="n">norm_data</span><span class="o">=</span><span class="p">[</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span><span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
@@ -370,10 +356,10 @@ An example of consistency between TAD borders is shown in the following graph. T
                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)])</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_39_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_39_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_39_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_39_0.png" />
 <div class="section" id="tad-caller-algorithms">
 <h3>TAD caller algorithms<a class="headerlink" href="#tad-caller-algorithms" title="Permalink to this headline">¶</a></h3>
 </div>
@@ -384,28 +370,26 @@ detection algorithm that returns the optimal segmentation of the
 chromosome under BIC-penalized likelihood. The model assumes that counts
 have a Poisson distribution and that the expected value of the counts
 decreases like a power-law with the linear distance on the chromosome.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_44_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_44_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_44_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_44_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_45_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_45_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">]</span>
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_45_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_45_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">]</span>
 <span class="n">PSC</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s1">&#39;mouse_PSC&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-[Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: visibility),
- Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: visibility)]
-</pre>
+<pre class="ansi-block literal-block">[Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: visibility),
+ Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: visibility)]</pre>
 </div>
 <div class="section" id="topdom">
 <h3>TopDom<a class="headerlink" href="#topdom" title="Permalink to this headline">¶</a></h3>
@@ -416,36 +400,35 @@ depends on a single parameter corresponding to the window size. The
 algorithm provides a measure (from 0 to 10) of confidence on the
 accuracy of the border detection
 (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/26704975">https://www.ncbi.nlm.nih.gov/pubmed/26704975</a>).</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">use_topdom</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">use_topdom</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_51_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_51_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_51_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_51_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">)],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_52_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_52_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_52_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_52_0.png" />
 </div>
 <div class="section" id="insulation-score">
 <h3>Insulation score<a class="headerlink" href="#insulation-score" title="Permalink to this headline">¶</a></h3>
-<p>Insulation score (Crane et al. 2015 <a class="reference external" href="https://doi.org/10.1038/nature14450">https://doi.org/10.1038/nature14450</a>)
+<p>Insulation score (Crane et al. 2015 <a class="reference external" href="https://doi.org/10.1038/nature14450">https://doi.org/10.1038/nature14450</a>)
 can be used to build an insulation profile of the genome and, with a
 simple transformation, to identify TAD borders.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="k">import</span> <span class="n">insulation_score</span><span class="p">,</span> <span class="n">insulation_to_borders</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">insulation_score</span><span class="p">,</span> <span class="n">insulation_to_borders</span>
 </pre></div>
 </div>
 <p>First we need to normalize the matrices by visibility and by decay:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
 <span class="n">hic_data1</span><span class="o">.</span><span class="n">normalize_expected</span><span class="p">()</span>
 
 <span class="n">hic_data2</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
 <span class="n">hic_data2</span><span class="o">.</span><span class="n">normalize_expected</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-iterative correction
+<pre class="ansi-block literal-block">iterative correction
   - copying matrix
   - computing biases
 rescaling to factor 1
@@ -458,34 +441,33 @@ iterative correction
 rescaling to factor 1
   - getting the sum of the matrix
     =&gt; 1570.990
-  - rescaling biases
-</pre>
+  - rescaling biases</pre>
 <p>The two important parameter to define are the window size, the distance
 from the diagonal and the delta. - the square size should be 500 kb as
 close as possible from the diagonal - the delta is to look for increases
 in insulation around a given bin. Should be around 100 kb (in out case
 we define it as 200 kb as we are working at 100 kb resolution, and
 working with only one bin is a bit to little)</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">insc1</span><span class="p">,</span> <span class="n">delta1</span> <span class="o">=</span> <span class="n">insulation_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">insc1</span><span class="p">,</span> <span class="n">delta1</span> <span class="o">=</span> <span class="n">insulation_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">insc2</span><span class="p">,</span> <span class="n">delta2</span> <span class="o">=</span> <span class="n">insulation_score</span><span class="p">(</span><span class="n">hic_data2</span><span class="p">,</span> <span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-- computing insulation in band 1-4
-- computing insulation in band 1-4
-</pre>
+<pre class="ansi-block literal-block">- computing insulation in band 1-4
+- computing insulation in band 1-4</pre>
+<pre class="ansi-block literal-block">/home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/numpy/core/fromnumeric.py:3335: RuntimeWarning: Mean of empty slice.
+  out=out, **kwargs)</pre>
 <p>Once defined the insulation score and the values of delta can be used to
 search for borders.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">borders1</span> <span class="o">=</span> <span class="n">insulation_to_borders</span><span class="p">(</span><span class="n">insc1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">delta1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">min_strength</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">borders1</span> <span class="o">=</span> <span class="n">insulation_to_borders</span><span class="p">(</span><span class="n">insc1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">delta1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">min_strength</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 <span class="n">borders2</span> <span class="o">=</span> <span class="n">insulation_to_borders</span><span class="p">(</span><span class="n">insc2</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">delta2</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">min_strength</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Currently the representation is not available in TADbit as for the other
 methods, but we can easily plot it:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;B cell&#39;</span><span class="p">)</span>
@@ -515,65 +497,60 @@ methods, but we can easily plot it:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_65_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_65_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_65_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_65_0.png" />
 </div>
 </div>
 <div class="section" id="comparison-of-tad-borders">
 <h2>Comparison of TAD borders<a class="headerlink" href="#comparison-of-tad-borders" title="Permalink to this headline">¶</a></h2>
 <p>The TAD borders can be aligned, using a simple reciprocal best hit
 strategy:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">align_experiments</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">max_dist</span><span class="o">=</span><span class="n">reso</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">align_experiments</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">max_dist</span><span class="o">=</span><span class="n">reso</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the plots below, each arc represents a TAD. Between two consecutive
 arcs the triangle mark the border. This triangle is colored depending on
 the confidence of the TAD border call.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_70_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_70_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">ymax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_70_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_70_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">ymax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_71_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_71_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_71_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_71_0.png" />
 <div class="section" id="statistical-significance-of-the-tad-borders-alignments">
 <h3>Statistical significance of the TAD borders alignments<a class="headerlink" href="#statistical-significance-of-the-tad-borders-alignments" title="Permalink to this headline">¶</a></h3>
 <p>In order to asses how well two experiments align, or how conserved are
 the TAD borders between two experiments, we can compare the overlap
 between our experiments with the overlap of simulated random
 distributions of TAD borders.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">align_experiments</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">randomize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ali</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">align_experiments</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">randomize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">ali</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ali</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Alignment shown in 100 Kb (2 experiments) (scores: <span class="ansi-blue">0</span> <span class="ansi-blue">1</span> <span class="ansi-blue">2</span> <span class="ansi-cyan">3</span> 4 <span class="ansi-bold">5</span> <span class="ansi-yellow">6</span> <span class="ansi-yellow">7</span> <span class="ansi-magenta">8</span> <span class="ansi-magenta">9</span> <span class="ansi-red">10</span>)
-  mouse_B:|    <span class="ansi-red">30</span>|    <span class="ansi-red">73</span>|    78|    <span class="ansi-red">85</span>|    <span class="ansi-red">90</span>|   <span class="ansi-red">104</span>| ---- |   <span class="ansi-magenta">141</span>| ---- |   146|   153|   158|   <span class="ansi-red">163</span>|   <span class="ansi-magenta">179</span>|   <span class="ansi-magenta">192</span>|   197|   <span class="ansi-red">205</span>| ---- | ---- |   <span class="ansi-red">227</span>| ---- |   <span class="ansi-red">270</span>| ---- |   <span class="ansi-red">290</span>| ---- |   <span class="ansi-red">305</span>|   <span class="ansi-red">312</span>|   <span class="ansi-yellow">317</span>|   <span class="ansi-red">323</span>|   <span class="ansi-red">328</span>| ---- | ---- |   <span class="ansi-red">356</span>| ---- |   <span class="ansi-magenta">368</span>|   <span class="ansi-magenta">375</span>|   <span class="ansi-red">382</span>|   <span class="ansi-red">389</span>|   <span class="ansi-bold">403</span>| ---- |   <span class="ansi-yellow">408</span>|   <span class="ansi-red">418</span>| ---- | ---- | ---- |   <span class="ansi-red">512</span>|   <span class="ansi-red">535</span>|   <span class="ansi-red">548</span>|   <span class="ansi-red">553</span>| ---- |   <span class="ansi-red">576</span>| ---- |   <span class="ansi-red">590</span>|   <span class="ansi-red">608</span>|   <span class="ansi-red">625</span>|   <span class="ansi-yellow">653</span>|   <span class="ansi-yellow">660</span>| ---- |   <span class="ansi-red">685</span>| ---- |   <span class="ansi-red">699</span>| ---- |   <span class="ansi-red">752</span>|   <span class="ansi-red">759</span>|   <span class="ansi-red">789</span>|   <span class="ansi-red">796</span>| ---- | ---- |   <span class="ansi-red">830</span>|   <span class="ansi-red">837</span>| ---- |   <span class="ansi-red">870</span>|   <span class="ansi-red">877</span>|   <span class="ansi-red">883</span>| ---- |   <span class="ansi-red">901</span>|   <span class="ansi-red">908</span>| ---- |   <span class="ansi-red">943</span>|   <span class="ansi-red">950</span>|   <span class="ansi-red">967</span>| ---- |   <span class="ansi-red">976</span>|   <span class="ansi-red">986</span>|  <span class="ansi-red">1000</span>| ---- | ---- |  <span class="ansi-red">1020</span>|  <span class="ansi-red">1027</span>| ---- |  <span class="ansi-red">1034</span>| ---- | ---- |  <span class="ansi-red">1047</span>| ---- | ---- | ---- |  <span class="ansi-red">1075</span>|  <span class="ansi-red">1082</span>|  <span class="ansi-magenta">1093</span>|  <span class="ansi-cyan">1135</span>|  <span class="ansi-red">1155</span>|  <span class="ansi-red">1169</span>| ---- |  <span class="ansi-red">1211</span>|  <span class="ansi-red">1235</span>| ---- | ---- | ---- |  <span class="ansi-red">1275</span>|  <span class="ansi-red">1280</span>|  <span class="ansi-red">1292</span>|  <span class="ansi-red">1297</span>| ---- |  1302|  <span class="ansi-red">1307</span>|  <span class="ansi-bold">1313</span>|  <span class="ansi-red">1326</span>| ---- | ---- | ---- |  <span class="ansi-red">1352</span>| ---- | ---- |  <span class="ansi-red">1382</span>| ---- | ---- | ---- |  1423| ---- |  1428| ---- |  <span class="ansi-yellow">1445</span>|  <span class="ansi-magenta">1452</span>| ---- |  <span class="ansi-red">1459</span>| ---- |  <span class="ansi-red">1470</span>| ---- | ---- |  <span class="ansi-bold">1517</span>|  <span class="ansi-bold">1522</span>| ---- |  <span class="ansi-red">1540</span>| ---- | ---- | ---- |  <span class="ansi-magenta">1579</span>| ---- |  <span class="ansi-bold">1585</span>|  <span class="ansi-cyan">1590</span>|  <span class="ansi-yellow">1596</span>|  <span class="ansi-red">1601</span>
-mouse_PSC:|    <span class="ansi-red">30</span>|    <span class="ansi-red">73</span>| ---- |    <span class="ansi-red">85</span>| ---- |   <span class="ansi-red">104</span>|   <span class="ansi-red">139</span>| ---- |   <span class="ansi-magenta">144</span>| ---- | ---- | ---- |   <span class="ansi-red">162</span>|   <span class="ansi-red">179</span>|   <span class="ansi-red">192</span>| ---- |   <span class="ansi-red">205</span>|   <span class="ansi-yellow">214</span>|   <span class="ansi-red">223</span>| ---- |   <span class="ansi-red">257</span>|   <span class="ansi-red">270</span>|   <span class="ansi-red">288</span>| ---- |   298|   <span class="ansi-red">305</span>|   <span class="ansi-red">311</span>|   <span class="ansi-red">317</span>|   <span class="ansi-magenta">324</span>| ---- |   <span class="ansi-magenta">331</span>|   <span class="ansi-red">338</span>|   <span class="ansi-red">356</span>|   <span class="ansi-red">366</span>| ---- |   <span class="ansi-bold">375</span>|   <span class="ansi-yellow">382</span>|   <span class="ansi-yellow">388</span>| ---- |   <span class="ansi-red">405</span>| ---- |   <span class="ansi-red">418</span>|   <span class="ansi-red">454</span>|   <span class="ansi-red">472</span>|   <span class="ansi-red">489</span>|   <span class="ansi-red">512</span>|   <span class="ansi-red">535</span>|   <span class="ansi-red">547</span>|   <span class="ansi-red">552</span>|   <span class="ansi-red">572</span>| ---- |   <span class="ansi-red">585</span>|   <span class="ansi-red">591</span>| ---- |   <span class="ansi-red">625</span>|   <span class="ansi-red">653</span>|   <span class="ansi-red">660</span>|   <span class="ansi-red">674</span>| ---- |   <span class="ansi-red">690</span>|   <span class="ansi-red">700</span>|   <span class="ansi-red">731</span>|   <span class="ansi-red">752</span>|   <span class="ansi-red">759</span>|   <span class="ansi-red">789</span>|   <span class="ansi-magenta">796</span>|   <span class="ansi-magenta">801</span>|   <span class="ansi-red">820</span>|   <span class="ansi-red">831</span>|   <span class="ansi-red">838</span>|   <span class="ansi-red">862</span>|   <span class="ansi-red">870</span>|   <span class="ansi-magenta">877</span>|   <span class="ansi-yellow">883</span>|   891|   <span class="ansi-red">900</span>|   <span class="ansi-red">907</span>|   <span class="ansi-red">936</span>|   <span class="ansi-red">943</span>|   <span class="ansi-red">949</span>| ---- |   <span class="ansi-red">969</span>|   <span class="ansi-red">976</span>|   <span class="ansi-yellow">985</span>| ---- |  <span class="ansi-magenta">1007</span>|  <span class="ansi-yellow">1013</span>|  <span class="ansi-red">1019</span>| ---- |  <span class="ansi-red">1030</span>| ---- |  <span class="ansi-yellow">1038</span>|  <span class="ansi-red">1045</span>| ---- |  <span class="ansi-red">1051</span>|  <span class="ansi-red">1060</span>|  <span class="ansi-red">1072</span>| ---- | ---- |  <span class="ansi-blue">1092</span>|  <span class="ansi-red">1136</span>|  <span class="ansi-red">1156</span>|  <span class="ansi-red">1169</span>|  <span class="ansi-red">1175</span>|  <span class="ansi-red">1212</span>|  <span class="ansi-red">1235</span>|  <span class="ansi-yellow">1243</span>|  1258|  <span class="ansi-magenta">1271</span>| ---- |  <span class="ansi-red">1280</span>|  <span class="ansi-red">1292</span>| ---- |  <span class="ansi-bold">1300</span>| ---- |  <span class="ansi-red">1307</span>|  <span class="ansi-bold">1313</span>|  <span class="ansi-red">1327</span>|  <span class="ansi-red">1333</span>|  <span class="ansi-red">1338</span>|  <span class="ansi-yellow">1347</span>|  <span class="ansi-red">1352</span>|  <span class="ansi-red">1358</span>|  <span class="ansi-red">1378</span>| ---- |  <span class="ansi-red">1385</span>|  <span class="ansi-red">1392</span>|  <span class="ansi-red">1419</span>| ---- |  <span class="ansi-magenta">1425</span>| ---- |  <span class="ansi-red">1430</span>|  <span class="ansi-red">1444</span>| ---- |  <span class="ansi-red">1454</span>| ---- |  <span class="ansi-red">1463</span>|  <span class="ansi-red">1470</span>|  <span class="ansi-yellow">1488</span>|  <span class="ansi-yellow">1496</span>|  <span class="ansi-red">1516</span>|  <span class="ansi-red">1521</span>|  <span class="ansi-red">1528</span>|  <span class="ansi-red">1539</span>|  <span class="ansi-red">1546</span>|  <span class="ansi-red">1567</span>|  <span class="ansi-magenta">1576</span>| ---- |  <span class="ansi-red">1581</span>| ---- | ---- | ---- |  <span class="ansi-red">1601</span>
-</pre>
+<pre class="ansi-block literal-block">Alignment shown in 100 Kb (2 experiments) (scores: <span class="ansi-blue">0</span> <span class="ansi-blue">1</span> <span class="ansi-blue">2</span> <span class="ansi-cyan">3</span> 4 <span class="ansi-bold">5</span> <span class="ansi-yellow">6</span> <span class="ansi-yellow">7</span> <span class="ansi-magenta">8</span> <span class="ansi-magenta">9</span> <span class="ansi-red">10</span>)
+  mouse_B:|    <span class="ansi-blue">31</span>| ---- | ---- |    <span class="ansi-yellow">73</span>|    <span class="ansi-yellow">85</span>|   <span class="ansi-bold">104</span>|   <span class="ansi-magenta">138</span>| ---- |   155|   158|   <span class="ansi-blue">160</span>|   <span class="ansi-bold">178</span>|   <span class="ansi-yellow">191</span>|   <span class="ansi-yellow">206</span>|   <span class="ansi-yellow">224</span>| ---- |   <span class="ansi-magenta">270</span>| ---- |   <span class="ansi-bold">281</span>|   290|   <span class="ansi-yellow">297</span>|   <span class="ansi-bold">305</span>|   <span class="ansi-bold">312</span>|   <span class="ansi-blue">317</span>|   <span class="ansi-bold">323</span>|   <span class="ansi-bold">328</span>|   <span class="ansi-bold">338</span>| ---- |   <span class="ansi-yellow">356</span>| ---- | ---- | ---- |   <span class="ansi-bold">382</span>|   389| ---- |   <span class="ansi-yellow">407</span>|   <span class="ansi-blue">410</span>|   <span class="ansi-cyan">419</span>|   <span class="ansi-yellow">454</span>| ---- |   <span class="ansi-magenta">508</span>|   <span class="ansi-blue">510</span>|   <span class="ansi-blue">512</span>| ---- |   <span class="ansi-cyan">522</span>|   <span class="ansi-cyan">530</span>|   <span class="ansi-bold">535</span>|   <span class="ansi-bold">543</span>| ---- |   <span class="ansi-blue">552</span>|   <span class="ansi-cyan">561</span>| ---- |   <span class="ansi-yellow">574</span>| ---- |   591|   <span class="ansi-yellow">600</span>|   <span class="ansi-bold">608</span>|   612|   <span class="ansi-yellow">625</span>|   <span class="ansi-yellow">635</span>| ---- | ---- | ---- |   <span class="ansi-bold">660</span>| ---- |   <span class="ansi-bold">673</span>| ---- | ---- | ---- |   <span class="ansi-cyan">692</span>|   700|   <span class="ansi-magenta">731</span>|   <span class="ansi-magenta">751</span>|   761|   <span class="ansi-magenta">789</span>|   798|   <span class="ansi-blue">801</span>| ---- |   <span class="ansi-magenta">819</span>|   <span class="ansi-yellow">830</span>|   <span class="ansi-bold">837</span>|   849| ---- |   <span class="ansi-bold">861</span>| ---- |   <span class="ansi-bold">870</span>|   <span class="ansi-bold">877</span>|   <span class="ansi-blue">880</span>|   <span class="ansi-blue">883</span>|   <span class="ansi-blue">889</span>| ---- |   <span class="ansi-blue">895</span>|   <span class="ansi-blue">900</span>| ---- |   <span class="ansi-blue">908</span>| ---- | ---- | ---- | ---- | ---- |   949|   <span class="ansi-blue">959</span>|   <span class="ansi-blue">963</span>| ---- |   <span class="ansi-blue">967</span>|   976| ---- |   <span class="ansi-blue">986</span>| ---- |  <span class="ansi-yellow">1020</span>|  <span class="ansi-bold">1027</span>| ---- |  1047|  <span class="ansi-blue">1051</span>| ---- | ---- | ---- |  <span class="ansi-yellow">1075</span>| ---- |  <span class="ansi-blue">1084</span>|  <span class="ansi-blue">1093</span>|  <span class="ansi-blue">1097</span>| ---- |  <span class="ansi-yellow">1134</span>|  <span class="ansi-blue">1136</span>|  <span class="ansi-yellow">1154</span>| ---- | ---- |  1169|  1175| ---- |  <span class="ansi-yellow">1211</span>| ---- |  1221|  <span class="ansi-bold">1228</span>|  <span class="ansi-blue">1235</span>| ---- |  <span class="ansi-yellow">1257</span>|  1264|  <span class="ansi-yellow">1270</span>|  <span class="ansi-blue">1275</span>|  <span class="ansi-bold">1280</span>|  1291|  1298|  <span class="ansi-blue">1301</span>|  <span class="ansi-bold">1307</span>|  <span class="ansi-yellow">1314</span>|  <span class="ansi-blue">1316</span>| ---- |  <span class="ansi-bold">1326</span>|  <span class="ansi-yellow">1333</span>| ---- | ---- |  <span class="ansi-yellow">1352</span>|  <span class="ansi-cyan">1359</span>|  <span class="ansi-yellow">1369</span>|  <span class="ansi-yellow">1378</span>|  <span class="ansi-bold">1384</span>|  <span class="ansi-yellow">1393</span>|  <span class="ansi-magenta">1418</span>| ---- |  <span class="ansi-blue">1428</span>| ---- |  <span class="ansi-yellow">1444</span>|  <span class="ansi-blue">1448</span>|  <span class="ansi-cyan">1452</span>|  1459| ---- |  1470|  <span class="ansi-magenta">1490</span>| ---- | ---- |  <span class="ansi-yellow">1521</span>|  <span class="ansi-bold">1528</span>|  <span class="ansi-bold">1540</span>|  <span class="ansi-bold">1546</span>| ---- |  <span class="ansi-magenta">1575</span>|  <span class="ansi-yellow">1581</span>| ---- |  <span class="ansi-yellow">1602</span>
+mouse_PSC:|    <span class="ansi-blue">31</span>|    <span class="ansi-yellow">63</span>|    <span class="ansi-yellow">71</span>|    <span class="ansi-blue">73</span>|    <span class="ansi-bold">85</span>|   <span class="ansi-cyan">104</span>|   <span class="ansi-yellow">139</span>|   <span class="ansi-bold">145</span>| ---- |   <span class="ansi-cyan">158</span>|   <span class="ansi-blue">160</span>|   <span class="ansi-bold">179</span>|   192|   <span class="ansi-bold">206</span>|   <span class="ansi-yellow">223</span>|   <span class="ansi-yellow">256</span>|   <span class="ansi-bold">270</span>|   <span class="ansi-blue">273</span>|   <span class="ansi-cyan">281</span>|   <span class="ansi-cyan">290</span>|   297|   <span class="ansi-bold">305</span>|   <span class="ansi-blue">311</span>|   <span class="ansi-blue">317</span>|   <span class="ansi-yellow">323</span>|   <span class="ansi-blue">329</span>|   <span class="ansi-cyan">338</span>|   <span class="ansi-yellow">344</span>|   <span class="ansi-bold">356</span>|   362|   <span class="ansi-blue">370</span>|   <span class="ansi-blue">376</span>|   <span class="ansi-bold">382</span>|   389|   <span class="ansi-yellow">405</span>|   <span class="ansi-magenta">407</span>|   <span class="ansi-blue">410</span>|   <span class="ansi-blue">418</span>|   <span class="ansi-yellow">454</span>|   <span class="ansi-yellow">489</span>|   <span class="ansi-yellow">508</span>|   <span class="ansi-blue">510</span>|   <span class="ansi-blue">512</span>|   <span class="ansi-blue">514</span>|   522|   530|   535| ---- |   <span class="ansi-blue">547</span>|   <span class="ansi-blue">552</span>|   <span class="ansi-blue">560</span>|   <span class="ansi-yellow">572</span>| ---- |   <span class="ansi-cyan">585</span>|   <span class="ansi-blue">591</span>| ---- |   <span class="ansi-yellow">607</span>|   <span class="ansi-yellow">612</span>|   <span class="ansi-yellow">625</span>|   <span class="ansi-bold">635</span>|   <span class="ansi-cyan">640</span>|   648|   <span class="ansi-cyan">653</span>|   660|   <span class="ansi-blue">663</span>|   <span class="ansi-yellow">674</span>|   681|   <span class="ansi-bold">687</span>|   <span class="ansi-blue">690</span>| ---- |   <span class="ansi-cyan">700</span>|   <span class="ansi-yellow">731</span>|   <span class="ansi-yellow">752</span>|   760|   <span class="ansi-yellow">789</span>|   <span class="ansi-blue">799</span>|   <span class="ansi-blue">801</span>|   <span class="ansi-yellow">808</span>|   <span class="ansi-bold">820</span>|   <span class="ansi-bold">831</span>|   <span class="ansi-cyan">838</span>|   <span class="ansi-blue">849</span>|   <span class="ansi-bold">856</span>|   <span class="ansi-cyan">862</span>|   <span class="ansi-bold">868</span>|   <span class="ansi-blue">870</span>| ---- |   <span class="ansi-blue">880</span>|   <span class="ansi-blue">883</span>|   <span class="ansi-blue">888</span>|   <span class="ansi-blue">891</span>| ---- | ---- |   <span class="ansi-blue">905</span>|   <span class="ansi-blue">907</span>|   <span class="ansi-blue">914</span>|   <span class="ansi-yellow">921</span>|   931|   <span class="ansi-cyan">936</span>|   <span class="ansi-yellow">943</span>|   949|   <span class="ansi-blue">959</span>|   <span class="ansi-blue">962</span>|   <span class="ansi-blue">965</span>|   <span class="ansi-blue">967</span>|   <span class="ansi-cyan">976</span>|   <span class="ansi-blue">979</span>| ---- |   <span class="ansi-blue">988</span>|  <span class="ansi-yellow">1019</span>| ---- |  <span class="ansi-cyan">1030</span>|  <span class="ansi-blue">1047</span>|  <span class="ansi-blue">1051</span>|  1057|  <span class="ansi-blue">1060</span>|  <span class="ansi-bold">1069</span>|  <span class="ansi-blue">1076</span>|  <span class="ansi-blue">1082</span>| ---- |  <span class="ansi-blue">1093</span>| ---- |  <span class="ansi-blue">1099</span>|  <span class="ansi-yellow">1134</span>|  <span class="ansi-blue">1136</span>| ---- |  <span class="ansi-yellow">1156</span>|  <span class="ansi-cyan">1163</span>|  1169| ---- |  <span class="ansi-blue">1177</span>|  <span class="ansi-yellow">1211</span>|  <span class="ansi-cyan">1218</span>| ---- | ---- |  <span class="ansi-blue">1235</span>|  <span class="ansi-bold">1243</span>|  <span class="ansi-yellow">1258</span>| ---- |  <span class="ansi-bold">1271</span>| ---- |  <span class="ansi-blue">1280</span>|  <span class="ansi-bold">1292</span>|  1298|  <span class="ansi-blue">1301</span>|  <span class="ansi-yellow">1307</span>|  <span class="ansi-yellow">1314</span>|  <span class="ansi-blue">1316</span>|  1319|  <span class="ansi-cyan">1327</span>|  1333|  <span class="ansi-yellow">1339</span>|  <span class="ansi-yellow">1346</span>|  1352|  1358| ---- |  <span class="ansi-bold">1377</span>|  <span class="ansi-cyan">1385</span>|  1392|  <span class="ansi-magenta">1418</span>|  <span class="ansi-cyan">1425</span>| ---- |  <span class="ansi-blue">1430</span>|  <span class="ansi-bold">1444</span>| ---- |  <span class="ansi-cyan">1453</span>| ---- |  <span class="ansi-blue">1462</span>|  1470| ---- |  <span class="ansi-yellow">1496</span>|  <span class="ansi-yellow">1516</span>|  <span class="ansi-blue">1521</span>|  <span class="ansi-blue">1528</span>|  1539|  <span class="ansi-cyan">1546</span>|  <span class="ansi-yellow">1566</span>|  <span class="ansi-yellow">1575</span>| ---- |  <span class="ansi-blue">1583</span>|  <span class="ansi-yellow">1602</span></pre>
 <p>This analysis returns an alignment score between 0 and 1 (0: no match,
 1: all borders aligned), a p-value (usually equal zero), the proportion
 of borders conserved in the second experiment, and the proportion of
 borders conserved in the first experiment:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(0.3202614379084967, 0.0, 0.7604166666666666, 0.8050847457627118)
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Alignment score: </span><span class="si">%.3f</span><span class="s1">, p-value: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s1">  proportion of borders of T0 found in T60: </span><span class="si">%.3f</span><span class="s1">, of T60 in T0 </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stats</span>
+<pre class="ansi-block literal-block">The history saving thread hit an unexpected error (OperationalError('database is locked')).History will not be written to the database.</pre>
+<pre class="ansi-block literal-block">(0.4696132596685082, 0.0, 0.872, 0.8980891719745223)</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Alignment score: </span><span class="si">%.3f</span><span class="s1">, p-value: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s1">  proportion of borders of T0 found in T60: </span><span class="si">%.3f</span><span class="s1">, of T60 in T0 </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stats</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Alignment score: 0.320, p-value: 0.0000
-  proportion of borders of T0 found in T60: 0.760, of T60 in T0 0.805
-</pre>
+<pre class="ansi-block literal-block">Alignment score: 0.470, p-value: 0.0000
+  proportion of borders of T0 found in T60: 0.872, of T60 in T0 0.898</pre>
 </div>
 <div class="section" id="save-chromosome-object-with-tad-definition">
 <h3>Save Chromosome object (with TAD definition)<a class="headerlink" href="#save-chromosome-object-with-tad-definition" title="Permalink to this headline">¶</a></h3>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">save_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">save_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -591,18 +568,18 @@ resolutions.</p>
 score as it is the fastest (tadbit strategy is almost not usable bellow
 20 kb). We compare the number of TAD borders that are shared (plus-minus
 one bin) between the two replicates (iPS and B cells).</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="k">import</span> <span class="n">insulation_score</span><span class="p">,</span> <span class="n">insulation_to_borders</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">insulation_score</span><span class="p">,</span> <span class="n">insulation_to_borders</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
 <span class="n">cel1</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
 <span class="n">cel2</span> <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 <span class="n">borders</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">resos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">40000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">,</span> <span class="mi">60000</span><span class="p">,</span> <span class="mi">80000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">,</span> <span class="mi">150000</span><span class="p">,</span> <span class="mi">200000</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chr</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cs</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;chrX&#39;</span><span class="p">]:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chr</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cs</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;chrX&#39;</span><span class="p">]:</span>
     <span class="n">borders</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">reso</span> <span class="ow">in</span> <span class="n">resos</span><span class="p">:</span>
         <span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
@@ -617,8 +594,8 @@ one bin) between the two replicates (iPS and B cells).</p>
         <span class="n">hic_data1</span><span class="o">.</span><span class="n">normalize_expected</span><span class="p">()</span>
         <span class="n">hic_data2</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">hic_data2</span><span class="o">.</span><span class="n">normalize_expected</span><span class="p">()</span>
-        <span class="n">wsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">500000</span> <span class="o">/</span> <span class="n">reso</span><span class="p">))</span>
-        <span class="n">delta</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100000</span> <span class="o">/</span> <span class="n">reso</span><span class="p">)</span>
+        <span class="n">wsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">500000</span> <span class="o">//</span> <span class="n">reso</span><span class="p">))</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100000</span> <span class="o">//</span> <span class="n">reso</span><span class="p">)</span>
         <span class="n">insc1</span><span class="p">,</span> <span class="n">delta1</span> <span class="o">=</span> <span class="n">insulation_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">)</span>
         <span class="n">insc2</span><span class="p">,</span> <span class="n">delta2</span> <span class="o">=</span> <span class="n">insulation_score</span><span class="p">(</span><span class="n">hic_data2</span><span class="p">,</span> <span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">)</span>
         <span class="n">borders1</span> <span class="o">=</span> <span class="n">insulation_to_borders</span><span class="p">(</span><span class="n">insc1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">delta1</span><span class="p">[</span><span class="n">wsize</span><span class="p">],</span> <span class="n">min_strength</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
@@ -626,12 +603,452 @@ one bin) between the two replicates (iPS and B cells).</p>
         <span class="n">borders</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">reso</span><span class="p">]</span> <span class="o">=</span> <span class="n">borders1</span><span class="p">,</span> <span class="n">borders2</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2
+- computing insulation in band 1-100
+- computing insulation in band 1-100
+- computing insulation in band 1-50
+- computing insulation in band 1-50
+- computing insulation in band 1-25
+- computing insulation in band 1-25
+- computing insulation in band 1-16
+- computing insulation in band 1-16
+- computing insulation in band 1-12
+- computing insulation in band 1-12
+- computing insulation in band 1-10
+- computing insulation in band 1-10
+- computing insulation in band 1-8
+- computing insulation in band 1-8
+- computing insulation in band 1-6
+- computing insulation in band 1-6
+- computing insulation in band 1-5
+- computing insulation in band 1-5
+- computing insulation in band 1-3
+- computing insulation in band 1-3
+- computing insulation in band 1-2
+- computing insulation in band 1-2</pre>
 <p>We align TAD borders and keep the proportion of borders aligned between
 cell types</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.alignment</span> <span class="k">import</span> <span class="n">align</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.alignment</span> <span class="kn">import</span> <span class="n">align</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">props1</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">props2</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">borders</span><span class="p">:</span>
@@ -647,7 +1064,9 @@ cell types</p>
 </div>
 <p>We plot the results, as boxplots to group the values of each
 chromosomes:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <span class="n">bp</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">boxplot</span><span class="p">([</span><span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span> <span class="n">y</span><span class="p">,</span>
                  <span class="p">[(</span><span class="n">props1</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">props2</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">props1</span><span class="p">])</span>
                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">resos</span><span class="p">))],</span> <span class="n">positions</span><span class="o">=</span><span class="n">resos</span><span class="p">,</span> <span class="n">widths</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
@@ -664,7 +1083,7 @@ chromosomes:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_8-Compartments_and_TADs_detection_90_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_90_0.png" />
+<img alt="../_images//tutorial_8-Compartments_and_TADs_detection_90_0.png" src="../_images//tutorial_8-Compartments_and_TADs_detection_90_0.png" />
 <p>In the case of these experiments it seems that looking for TAD borders
 bellow 50 kb is dangerous, as very few are reproducible. Calling TAD
 borders at 100 kb resolution might be here a good idea.</p>
@@ -706,13 +1125,11 @@ borders at 100 kb resolution might be here a good idea.</p>
   <p class="topless"><a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html"
                         title="next chapter">Comparison of Hi-C experiments</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -739,8 +1156,8 @@ borders at 100 kb resolution might be here a good idea.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

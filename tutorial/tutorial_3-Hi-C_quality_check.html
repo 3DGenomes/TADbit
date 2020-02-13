@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Hi-C quality check &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -49,32 +48,28 @@ header of the DNA sequence with the read id (plus optional fields) 2.
 the DNA sequence 3. starting with <code class="docutils literal notranslate"><span class="pre">+</span></code>, the header of the sequence
 quality (this line could be either a repetition of first line or empty)
 4. the sequence quality (it is provided as PHRED score and it is not
-human readable. Check
-<a class="reference external" href="https://en.wikipedia.org/wiki/Phred_quality_score">https://en.wikipedia.org/wiki/Phred_quality_score</a> for more details)</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+human readable. Check <a class="reference external" href="https://en.wikipedia.org/wiki/Phred_quality_score">https://en.wikipedia.org/wiki/Phred_quality_score</a>
+for more details)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-<span class="n">dsrc</span> <span class="n">d</span> <span class="o">-</span><span class="n">s</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span> <span class="o">|</span> <span class="n">head</span> <span class="o">-</span><span class="n">n</span> <span class="mi">8</span>
+dsrc d -s FASTQs/mouse_B_rep1_1.fastq.dsrc <span class="p">|</span> head -n <span class="m">8</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-&#64;SRR5344921.1
+<pre class="ansi-block literal-block">&#64;SRR5344921.1
 ACCACTGATGGCACCACTGTTGTACTTTAGGATCGATCACTCCTTATACGCACATAGGAAACACTGACTAGAGGG
 +
 &#64;B&#64;B&#64;&gt;1&gt;=;1&#64;EG0B0;1=E1:&gt;&gt;1111&lt;?=1E9=0&gt;&lt;C:&lt;&gt;11=11?1=ECDC1&gt;1=&#64;FD1&lt;:1?C#######
 &#64;SRR5344921.2
 GGGCTTTTTTTGGCTGGGAGACTATTTATAACTGCTTCTATTTCTTTAGGGGATATGGGACTGTTTAGAAGGTCA
 +
-BCCBBFGGGG&#64;GEGGGGDGEBGEF&#64;&lt;1FGGEFGGECGG&#64;FEGGGEG&gt;&#64;1=09/BFGGEG111C&lt;F1&gt;11BGF1=1
-</pre>
+BCCBBFGGGG&#64;GEGGGGDGEBGEF&#64;&lt;1FGGEFGGECGG&#64;FEGGGEG&gt;&#64;1=09/BFGGEG111C&lt;F1&gt;11BGF1=1</pre>
 <p>Count the number of lines in the file (4 times the number of reads)</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-<span class="n">dsrc</span> <span class="n">d</span> <span class="o">-</span><span class="n">s</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span> <span class="o">|</span> <span class="n">wc</span> <span class="o">-</span><span class="n">l</span>
+dsrc d -s FASTQs/mouse_B_rep1_1.fastq.dsrc <span class="p">|</span> wc -l
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-400000000
-</pre>
+<pre class="ansi-block literal-block">400000000</pre>
 <p>There are 400 M lines in the file, which means 100M reads in total.</p>
 <div class="section" id="quality-check-before-mapping">
 <h2>Quality check before mapping<a class="headerlink" href="#quality-check-before-mapping" title="Permalink to this headline">¶</a></h2>
@@ -82,17 +77,15 @@ BCCBBFGGGG&#64;GEGGGGDGEBGEF&#64;&lt;1FGGEFGGECGG&#64;FEGGGEG&gt;&#64;1=09/BFGGE
 <h3>Check restriction-enzyme used<a class="headerlink" href="#check-restriction-enzyme-used" title="Permalink to this headline">¶</a></h3>
 <p>Most important to analyze Hi-C dataset is the restriction enzyme used in
 the experiment. TADbit provides a simple function to check for it:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">identify_re</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">identify_re</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pat</span><span class="p">,</span> <span class="n">enz</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">identify_re</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_B_rep1_1.fastq.dsrc&#39;</span><span class="p">)</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">pat</span><span class="p">,</span> <span class="n">enz</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">identify_re</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_B_rep1_1.fastq.dsrc&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span> <span class="s1">&#39;- Most probable pattern: </span><span class="si">%s</span><span class="s1">, matching enzymes: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pat</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">enz</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Most probable pattern: </span><span class="si">%s</span><span class="s1">, matching enzymes: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pat</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">enz</span><span class="p">)))</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-- Most probable pattern: GATC, matching enzymes: BssMI,DpnII,Sau3AI,MboI,Kzo9I,Bsp143I,NdeII,BstMBI,BfuCI
-</pre>
+<pre class="ansi-block literal-block">- Most probable pattern: GATC, matching enzymes: BssMI,DpnII,Sau3AI,MboI,Kzo9I,Bsp143I,NdeII,BstMBI,BfuCI</pre>
 </div>
 <div class="section" id="plot-phred-score-and-ligation-digestion-sites">
 <h3>Plot PHRED score and ligation/digestion sites<a class="headerlink" href="#plot-phred-score-and-ligation-digestion-sites" title="Permalink to this headline">¶</a></h3>
@@ -102,13 +95,13 @@ check the proportion of reads with ligation sites as well as the number
 of reads starting by a cut-site.</p>
 <p>These numbers will give us a first hint on the <strong>efficiencies of two
 critical steps in the HiC experiment, the digestion and the ligation.</strong></p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="k">import</span> <span class="n">quality_plot</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="kn">import</span> <span class="n">quality_plot</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r_enz</span> <span class="o">=</span> <span class="s1">&#39;MboI&#39;</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">r_enz</span> <span class="o">=</span> <span class="s1">&#39;MboI&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span>
 <span class="n">repl</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>
 </pre></div>
 </div>
@@ -130,15 +123,13 @@ efficiency. - The <strong>percentage of non-ligated digested</strong>
 (dangling-ends), which relates to the ligation efficiency. - The
 <strong>percentage of read-ends with a ligation site</strong>, which is negatively
 correlated with the percentage of dangling-ends.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq.dsrc&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">),</span> <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;FASTQs/mouse_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_1.fastq.dsrc&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">repl</span><span class="p">),</span> <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_3-Hi-C_quality_check_17_0.png" src="../_images/tutorial_3-Hi-C_quality_check_17_0.png" />
-<pre class="ansi-block literal-block">
-({'MboI': 3.8757}, {('MboI', 'MboI'): 20.5069})
-</pre>
-<p><em>Note: this plot is **compatible with the use of multiple restriction
-enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
+<img alt="../_images//tutorial_3-Hi-C_quality_check_17_0.png" src="../_images//tutorial_3-Hi-C_quality_check_17_0.png" />
+<pre class="ansi-block literal-block">({'MboI': 3.8757}, {('MboI', 'MboI'): 20.5069})</pre>
+<p><em>Note: this plot is</em><strong>compatible with the use of multiple restriction
+enzymes</strong><em>(which is why the ligation site is labeled as MboI-MboI)</em></p>
 </div>
 </div>
 </div>
@@ -184,13 +175,11 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
   <p class="topless"><a href="tutorial_4-Mapping.html"
                         title="next chapter">Iterative vs fragment-based mapping</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -217,8 +206,8 @@ enzymes*</em> (which is why the ligation site is labeled as MboI-MboI)*</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

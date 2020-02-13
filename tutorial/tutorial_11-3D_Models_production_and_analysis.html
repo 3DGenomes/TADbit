@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Modelling a region of the chromatin &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -46,68 +45,67 @@
 <h1>Modelling a region of the chromatin<a class="headerlink" href="#modelling-a-region-of-the-chromatin" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="load-previous-data">
 <h2>Load previous data<a class="headerlink" href="#load-previous-data" title="Permalink to this headline">¶</a></h2>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">load_chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: None),
- Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: None))
-</pre>
+<pre class="ansi-block literal-block">(Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: None),
+ Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: None))</pre>
 <p>Load raw data matrices, and normalized matrices</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_rep1/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_rep1.bam&#39;</span>
-<span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_rep1/04_normalizing/biases_</span><span class="si">{0}</span><span class="s1">_both_</span><span class="si">{1}</span><span class="s1">kb.biases&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
+<span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/04_normalizing/biases_</span><span class="si">{0}</span><span class="s1">_both_</span><span class="si">{1}</span><span class="s1">kb.biases&#39;</span>
 <span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">chrname</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
 <span class="n">cel1</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
 <span class="n">cel2</span> <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
                                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="c1">#hic_data2 = load_hic_data_from_bam(base_path.format(cel2),</span>
-<span class="c1">#                                   resolution=reso,</span>
-<span class="c1">#                                   region=&#39;chr3&#39;,</span>
-<span class="c1">#                                   biases=bias_path.format(cel2, reso / 1000),</span>
-<span class="c1">#                                   ncpus=8)</span>
+<span class="n">hic_data2</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">),</span>
+                                  <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
+                                  <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
+                                  <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
+                                  <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">---------------------------------------------------------------------------</span>
+<pre class="ansi-block literal-block">(Matrix size 1601x1601)                                                      [2020-02-06 16:50:49]
 
-<span class="ne">IOError</span>                                   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">)</span>
+- Parsing BAM (101 chunks)                                                   [2020-02-06 16:50:49]
+   .......... .......... .......... .......... ..........     50/101
+   .......... .......... .......... .......... ..........    100/101
+   .                                                         101/101
 
-<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">14</span><span class="o">-</span><span class="n">bb3edc8b68a8</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span><span class="p">()</span>
-      <span class="mi">3</span>                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-      <span class="mi">4</span>                                    <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
-<span class="o">----&gt;</span> <span class="mi">5</span>                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-      <span class="mi">6</span> <span class="c1">#hic_data2 = load_hic_data_from_bam(base_path.format(cel2),</span>
-      <span class="mi">7</span> <span class="c1">#                                   resolution=reso,</span>
-
-
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">dcastillo</span><span class="o">/</span><span class="n">miniconda2</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python2</span><span class="o">.</span><span class="mi">7</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">pytadbit</span><span class="o">/</span><span class="n">parsers</span><span class="o">/</span><span class="n">hic_parser</span><span class="o">.</span><span class="n">pyc</span> <span class="ow">in</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">biases</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">ncpus</span><span class="p">,</span> <span class="n">filter_exclude</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
-    <span class="mi">558</span>     <span class="k">if</span> <span class="n">biases</span><span class="p">:</span>
-    <span class="mi">559</span>         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">biases</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
-<span class="o">--&gt;</span> <span class="mi">560</span>             <span class="n">biases</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">biases</span><span class="p">))</span>
-    <span class="mi">561</span>         <span class="k">if</span> <span class="n">biases</span><span class="p">[</span><span class="s1">&#39;resolution&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">resolution</span><span class="p">:</span>
-    <span class="mi">562</span>             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: resolution of biases do not match to the &#39;</span>
+- Getting matrices                                                           [2020-02-06 16:50:52]
+   .......... .......... .......... .......... ..........     50/101
+   .......... .......... .......... .......... ..........    100/101
+   .                                                         101/101
 
 
-<span class="ne">IOError</span><span class="p">:</span> <span class="p">[</span><span class="n">Errno</span> <span class="mi">2</span><span class="p">]</span> <span class="n">No</span> <span class="n">such</span> <span class="n">file</span> <span class="ow">or</span> <span class="n">directory</span><span class="p">:</span> <span class="s1">&#39;results/fragment/mouse_B_rep1/04_normalizing/biases_mouse_B_both_100kb.biases&#39;</span>
-</pre></div>
-</div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
+(Matrix size 1601x1601)                                                      [2020-02-06 16:50:56]
+
+- Parsing BAM (101 chunks)                                                   [2020-02-06 16:50:56]
+   .......... .......... .......... .......... ..........     50/101
+   .......... .......... .......... .......... ..........    100/101
+   .                                                         101/101
+
+- Getting matrices                                                           [2020-02-06 16:51:00]
+   .......... .......... .......... .......... ..........     50/101
+   .......... .......... .......... .......... ..........    100/101
+   .                                                         101/101</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
 <span class="n">B</span><span class="o">.</span><span class="n">load_norm_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
 
 <span class="n">PSC</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data2</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
@@ -121,39 +119,36 @@
 produce an ensemble of models.</p>
 <p>From the models produced (n_models) we will tell TADbit to conserve a
 number of them (n_keep) that best satisfy the imposed restraints.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimal_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dcutoff&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimal_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dcutoff&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
                  <span class="s1">&#39;kbending&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="s1">&#39;kforce&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-                 <span class="s1">&#39;lowfreq&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span>
-                 <span class="s1">&#39;maxdist&#39;</span><span class="p">:</span> <span class="mf">2250.0</span><span class="p">,</span>
+                 <span class="s1">&#39;lowfreq&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6</span><span class="p">,</span>
+                 <span class="s1">&#39;maxdist&#39;</span><span class="p">:</span> <span class="mf">2000.0</span><span class="p">,</span>
                  <span class="s1">&#39;reference&#39;</span><span class="p">:</span> <span class="s1">&#39;Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
-                 <span class="s1">&#39;upfreq&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">}</span>
+                 <span class="s1">&#39;upfreq&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">model_region</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-                            <span class="n">config</span><span class="o">=</span><span class="n">optimal_params</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">model_region</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                          <span class="n">config</span><span class="o">=</span><span class="n">optimal_params</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span> <span class="o">=</span> <span class="n">PSC</span><span class="o">.</span><span class="n">model_region</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span> <span class="o">=</span> <span class="n">PSC</span><span class="o">.</span><span class="n">model_region</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                               <span class="n">config</span><span class="o">=</span><span class="n">optimal_params</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The ensemble of models have inherited the description from the
 Chromosome object</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">models_B</span><span class="o">.</span><span class="n">description</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">models_B</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-{'restriction enzyme': None, 'start': 29900000, 'end': 36000000, 'assembly': None, 'resolution': 100000, 'identifier': None, 'experiment type': 'Hi-C', 'species': None, 'chromosome': 'chr3', 'cell type': None}
-</pre>
+<pre class="ansi-block literal-block">{'identifier': None, 'chromosome': 'chr3', 'start': 29900000, 'end': 36000000, 'species': None, 'restriction enzyme': None, 'cell type': None, 'experiment type': 'Hi-C', 'resolution': 100000, 'assembly': None}</pre>
 <p>We still can access to the experiment object from the 3D models:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">models_B</span><span class="o">.</span><span class="n">experiment</span>
-<span class="nb">print</span> <span class="n">models_PSC</span><span class="o">.</span><span class="n">experiment</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">models_B</span><span class="o">.</span><span class="n">experiment</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">models_PSC</span><span class="o">.</span><span class="n">experiment</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Experiment mouse_B:
+<pre class="ansi-block literal-block">Experiment mouse_B:
    resolution        : 100 kb
    TADs              : 96
    Hi-C rows         : 1601
@@ -169,98 +164,92 @@ Experiment mouse_PSC:
    normalized        : visibility
    identifier        : UNKNOWN
    cell type         : UNKNOWN
-   restriction enzyme: UNKNOWN
-</pre>
+   restriction enzyme: UNKNOWN</pre>
 <p>We can have a look at the data that was used to define restraints:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">zscore_plot</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">zscore_plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_20_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_20_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">zscore_plot</span><span class="p">()</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_20_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_20_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">zscore_plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_21_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_21_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_21_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_21_0.png" />
 <p>and also visualize how the IMP objective function (OF) of the stored
 model improves during the MOnte Carlo optimization:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models_B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">model</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_23_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_23_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_23_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_23_0.png" />
 </div>
 <div class="section" id="structural-models">
 <h2>Structural Models<a class="headerlink" href="#structural-models" title="Permalink to this headline">¶</a></h2>
 <p>The definition of the “best models” can be changed at any time. Only the
 best models will be used in the analysis.</p>
 <p>Select top 10 models</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="nb">print</span> <span class="s2">&quot;Lowest 10 IMP OF models:&quot;</span>
-<span class="nb">print</span> <span class="n">models_B</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lowest 10 IMP OF models:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">models_B</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Lowest 10 IMP OF models:
+<pre class="ansi-block literal-block">Lowest 10 IMP OF models:
 StructuralModels with 10 models of 61 particles
-   (objective function range: 51 - 53)
+   (objective function range: 59 - 61)
    (corresponding to the best models out of 100 models).
   IMP modeling used this parameters:
-   - maxdist     : 2.25
-   - scale       : 0.01
-   - dcutoff     : 2.0
    - reference   : Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018
    - kforce      : 5
-   - lowfreq     : -0.1
-   - upfreq      : 0.1
-   - lowrdist    : 1.0
-   - container   : {'shape': None, 'radius': None, 'cforce': None, 'height': None}
-   - resolution  : 100000
+   - scale       : 0.01
    - kbending    : 0.0
-  Models where clustered into 0 clusters
-</pre>
+   - maxdist     : 2.0
+   - lowfreq     : -0.6
+   - upfreq      : 0.0
+   - dcutoff     : 2.0
+   - resolution  : 100000
+   - container   : {'shape': None, 'radius': None, 'height': None, 'cforce': None}
+   - lowrdist    : 1.0
+  Models where clustered into 0 clusters</pre>
 <p>Select top 100 models</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="nb">print</span> <span class="s2">&quot;Lowest 100 IMP OF models:&quot;</span>
-<span class="nb">print</span> <span class="n">models_B</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lowest 100 IMP OF models:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">models_B</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Lowest 100 IMP OF models:
+<pre class="ansi-block literal-block">Lowest 100 IMP OF models:
 StructuralModels with 100 models of 61 particles
-   (objective function range: 51 - 55)
+   (objective function range: 59 - 62)
    (corresponding to the best models out of 100 models).
   IMP modeling used this parameters:
-   - maxdist     : 2.25
-   - scale       : 0.01
-   - dcutoff     : 2.0
    - reference   : Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018
    - kforce      : 5
-   - lowfreq     : -0.1
-   - upfreq      : 0.1
-   - lowrdist    : 1.0
-   - container   : {'shape': None, 'radius': None, 'cforce': None, 'height': None}
-   - resolution  : 100000
+   - scale       : 0.01
    - kbending    : 0.0
-  Models where clustered into 0 clusters
-</pre>
+   - maxdist     : 2.0
+   - lowfreq     : -0.6
+   - upfreq      : 0.0
+   - dcutoff     : 2.0
+   - resolution  : 100000
+   - container   : {'shape': None, 'radius': None, 'height': None, 'cforce': None}
+   - lowrdist    : 1.0
+  Models where clustered into 0 clusters</pre>
 <p>The ensemble of models “models_B” and “models_PSC” contain the models
 generated by the Montecarlo simulation ordered by its Objective Function
 (OF). The first model in the list is the one than best satisfies the
 imposed restraints.</p>
 <p>To get the data for the lowest IMP OF model in the set of models we
 retrieve model number 0</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models_B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span> <span class="n">model</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models_B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-IMP model ranked 1 (61 particles) with:
- - Final objective function value: 51.9272783348
- - random initial value: 66
+<pre class="ansi-block literal-block">IMP model ranked 1 (61 particles) with:
+ - Final objective function value: 59.917060532471695
+ - random initial value: 347
  - first coordinates:
         X      Y      Z
-   -11698  -4519 -26493
-   -12505  -5036 -26610
-   -13363  -4652 -26351
-</pre>
+     6106  -2093  -8118
+     5934  -2067  -7209
+     6763  -2547  -7196</pre>
 <p>We can check the correlation of models_B with the original HiC matrix.</p>
 <p>In the plot “Real vs modelled data” we should see a positive correlation
 of the contacts in the models with the frequency of interaction of the
@@ -268,31 +257,25 @@ pairs of beads in the HiC matrix. High interaction frequency between two
 loci in the matrix is reflected by the fact of having a high proportion
 of models where the beads representing those two loci are “in contact”
 (distance lower than the cutoff).</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-/home/dcastillo/miniconda2/lib/python2.7/site-packages/pytadbit/modelling/structuralmodels.py:1869: RuntimeWarning: divide by zero encountered in log2
-  ims = ax.imshow(log2(self._original_data), origin='lower',
-</pre>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_33_1.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_33_1.png" />
-<pre class="ansi-block literal-block">
-SpearmanrResult(correlation=0.9073157367165072, pvalue=0.0)
-</pre>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_33_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_33_0.png" />
+<pre class="ansi-block literal-block">SpearmanrResult(correlation=0.9130233605402466, pvalue=0.0)</pre>
 <p>To plot all the models in the ensemble we use the view_models function.
 By default the centroid (the model closer to the median) is highlighted.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s1">&#39;plot&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s1">&#39;plot&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_35_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_35_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_35_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_35_0.png" />
 <p>We can also plot individual models.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;plot&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;plot&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_37_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_37_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_37_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_37_0.png" />
 <p>And use Chimera (<a class="reference external" href="https://www.cgl.ucsf.edu/chimera/">https://www.cgl.ucsf.edu/chimera/</a>) for the
 visualization of the 3D structure</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="model-analysis">
@@ -307,7 +290,7 @@ preferred orientation. We can use the function align_models to rotate
 and translate the coordinates of the models so they follow the same
 orientation as one of the models in the ensemble. By default the model
 used as reference is the first one.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With the function deconvolve we obtain a deconvolution analysis of a
@@ -318,19 +301,19 @@ common sets of contacts in the ensemble.</p>
 </div>
 <div class="section" id="deconvolve">
 <h2>Deconvolve<a class="headerlink" href="#deconvolve" title="Permalink to this headline">¶</a></h2>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">deconvolve</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">represent_models</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">n_best_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">deconvolve</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">represent_models</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">n_best_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Total number of clusters: 6
-   Cluster #1 has 3 models [top model: 151]
-   Cluster #2 has 3 models [top model: 66]
-   Cluster #3 has 3 models [top model: 184]
-   Cluster #4 has 2 models [top model: 208]
-   Cluster #5 has 2 models [top model: 388]
-   Cluster #6 has 2 models [top model: 288]
-</pre>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_46_1.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_46_1.png" />
+<pre class="ansi-block literal-block">Total number of clusters: 8
+   Cluster #1 has 5 models [top model: 66]
+   Cluster #2 has 5 models [top model: 237]
+   Cluster #3 has 4 models [top model: 269]
+   Cluster #4 has 3 models [top model: 191]
+   Cluster #5 has 3 models [top model: 61]
+   Cluster #6 has 2 models [top model: 175]
+   Cluster #7 has 2 models [top model: 396]
+   Cluster #8 has 2 models [top model: 152]</pre>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_46_1.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_46_1.png" />
 </div>
 <div class="section" id="clustering">
 <h2>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h2>
@@ -338,76 +321,62 @@ Total number of clusters: 6
 can be based on different statistics measures (score, rmsd, drmsd or
 eqv). By default a score computed as a combination of rmsd, drmsd and
 eqv is used.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cluster models based on structural similarity</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cluster models based on structural similarity</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">cluster_models</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">models_B</span><span class="o">.</span><span class="n">clusters</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">models_B</span><span class="o">.</span><span class="n">clusters</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Number of singletons excluded from clustering: 0 (total singletons: 0)
-Total number of clusters: 4
-   Cluster #1 has 44 models [top model: 388]
-   Cluster #2 has 34 models [top model: 66]
-   Cluster #3 has 14 models [top model: 303]
-   Cluster #4 has 8 models [top model: 17]
+<pre class="ansi-block literal-block">Number of singletons excluded from clustering: 0 (total singletons: 0)
+Total number of clusters: 2
+   Cluster #1 has 50 models [top model: 396]
+   Cluster #2 has 50 models [top model: 347]
 
-Total number of clusters: 4
-   Cluster #1 has 44 models [top model: 388]
-   Cluster #2 has 34 models [top model: 66]
-   Cluster #3 has 14 models [top model: 303]
-   Cluster #4 has 8 models [top model: 17]
-</pre>
+Total number of clusters: 2
+   Cluster #1 has 50 models [top model: 396]
+   Cluster #2 has 50 models [top model: 347]</pre>
 <p>The analysis dendogram allows us to view the different clusters
 population and their OF values.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot the resulting clusers</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot the resulting clusers</span>
 <span class="n">cl</span> <span class="o">=</span> <span class="n">models_B</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_51_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_51_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cluster models based on structural similarity</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_51_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_51_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cluster models based on structural similarity</span>
 <span class="n">models_PSC</span><span class="o">.</span><span class="n">cluster_models</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">models_PSC</span><span class="o">.</span><span class="n">clusters</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">models_PSC</span><span class="o">.</span><span class="n">clusters</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Number of singletons excluded from clustering: 47 (total singletons: 47)
-Total number of clusters: 14
-   Cluster #1 has 13 models [top model: 50]
-   Cluster #2 has 4 models [top model: 71]
-   Cluster #3 has 4 models [top model: 302]
-   Cluster #4 has 4 models [top model: 177]
-   Cluster #5 has 4 models [top model: 218]
-   Cluster #6 has 4 models [top model: 155]
-   Cluster #7 has 3 models [top model: 352]
-   Cluster #8 has 3 models [top model: 93]
-   Cluster #9 has 3 models [top model: 299]
-   Cluster #10 has 3 models [top model: 82]
-   Cluster #11 has 2 models [top model: 215]
-   Cluster #12 has 2 models [top model: 51]
-   Cluster #13 has 2 models [top model: 220]
-   Cluster #14 has 2 models [top model: 27]
+<pre class="ansi-block literal-block">Number of singletons excluded from clustering: 64 (total singletons: 64)
+Total number of clusters: 11
+   Cluster #1 has 5 models [top model: 159]
+   Cluster #2 has 5 models [top model: 232]
+   Cluster #3 has 4 models [top model: 46]
+   Cluster #4 has 4 models [top model: 54]
+   Cluster #5 has 4 models [top model: 279]
+   Cluster #6 has 3 models [top model: 191]
+   Cluster #7 has 3 models [top model: 135]
+   Cluster #8 has 2 models [top model: 378]
+   Cluster #9 has 2 models [top model: 59]
+   Cluster #10 has 2 models [top model: 152]
+   Cluster #11 has 2 models [top model: 29]
 
-Total number of clusters: 14
-   Cluster #1 has 13 models [top model: 50]
-   Cluster #2 has 4 models [top model: 71]
-   Cluster #3 has 4 models [top model: 302]
-   Cluster #4 has 4 models [top model: 177]
-   Cluster #5 has 4 models [top model: 218]
-   Cluster #6 has 4 models [top model: 155]
-   Cluster #7 has 3 models [top model: 352]
-   Cluster #8 has 3 models [top model: 93]
-   Cluster #9 has 3 models [top model: 299]
-   Cluster #10 has 3 models [top model: 82]
-   Cluster #11 has 2 models [top model: 215]
-   Cluster #12 has 2 models [top model: 51]
-   Cluster #13 has 2 models [top model: 220]
-   Cluster #14 has 2 models [top model: 27]
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot the resulting clusers</span>
+Total number of clusters: 11
+   Cluster #1 has 5 models [top model: 159]
+   Cluster #2 has 5 models [top model: 232]
+   Cluster #3 has 4 models [top model: 46]
+   Cluster #4 has 4 models [top model: 54]
+   Cluster #5 has 4 models [top model: 279]
+   Cluster #6 has 3 models [top model: 191]
+   Cluster #7 has 3 models [top model: 135]
+   Cluster #8 has 2 models [top model: 378]
+   Cluster #9 has 2 models [top model: 59]
+   Cluster #10 has 2 models [top model: 152]
+   Cluster #11 has 2 models [top model: 29]</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot the resulting clusers</span>
 <span class="n">cl</span> <span class="o">=</span> <span class="n">models_PSC</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_53_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_53_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_53_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_53_0.png" />
 </div>
 <div class="section" id="consistency">
 <h2>Consistency<a class="headerlink" href="#consistency" title="Permalink to this headline">¶</a></h2>
@@ -415,16 +384,16 @@ Total number of clusters: 14
 accross a set of models. Particles in the same position accross
 different models are considered consistent if their distance is less
 than the given cutoff.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the consistency plot for all models in the first cluster (cluster 0)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the consistency plot for all models in the first cluster (cluster 0)</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">model_consistency</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_56_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_56_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the consistency plot for all models in the first cluster (cluster 0)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_56_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_56_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the consistency plot for all models in the first cluster (cluster 0)</span>
 <span class="n">models_PSC</span><span class="o">.</span><span class="n">model_consistency</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_57_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_57_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_57_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_57_0.png" />
 </div>
 <div class="section" id="dna-density-plots">
 <h2>DNA density plots<a class="headerlink" href="#dna-density-plots" title="Permalink to this headline">¶</a></h2>
@@ -438,70 +407,70 @@ running averages.</p>
 </p><p><p>In the modelling we have used a scale of 0.01 nm/bp; that means that if
 we expect 100 bp/nm of chromatin in each bead and between two
 consecutives beads.</p>
-</p><div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate a DNA density plot</span>
+</p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate a DNA density plot</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">density_plot</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_60_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_60_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate a DNA density plot</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_60_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_60_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate a DNA density plot</span>
 <span class="n">models_PSC</span><span class="o">.</span><span class="n">density_plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_61_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_61_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_61_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_61_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">density_plot</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_62_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_62_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_62_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_62_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
 <span class="n">models_PSC</span><span class="o">.</span><span class="n">density_plot</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_63_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_63_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_63_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_63_0.png" />
 </div>
 <div class="section" id="walking-angle">
 <h2>Walking Angle<a class="headerlink" href="#walking-angle" title="Permalink to this headline">¶</a></h2>
   <p>
 
-Walking\_angle plots the angle between triplets of contiguous<p>particles. The higher are these values the straighter are the models.</p>
-</p><div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">walking_angle</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+Walking_angle plots the angle between triplets of contiguous particles.<p>The higher are these values the straighter are the models.</p>
+</p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">walking_angle</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_66_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_66_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_66_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_66_0.png" />
 </div>
 <div class="section" id="particles-interactions">
 <h2>Particles interactions<a class="headerlink" href="#particles-interactions" title="Permalink to this headline">¶</a></h2>
   <p>
 
 We can plot for each particle the number of interactions (particles<p>closer than the given cutoff)</p>
-</p><div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">interactions</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+</p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">interactions</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_69_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_69_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">interactions</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_69_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_69_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">interactions</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_70_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_70_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_70_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_70_0.png" />
 </div>
 <div class="section" id="accessibility">
 <h2>Accessibility<a class="headerlink" href="#accessibility" title="Permalink to this headline">¶</a></h2>
   <p>
 
 The accessibility is calculated by considering a mesh surface around<p>the model and checking if each point of this mesh could be replaced by
-an object (i.e. a protein) represented as a sphere of a given radius.</p>
+an object (i.e. a protein) represented as a sphere of a given radius.</p>
 </p><p><p>Outer part of the model can be excluded from the estimation of
 accessible surface because contacts from this outer part to particles
 outside the model are unknown. To exclude the outer contour a sphere
 with a higher radius (superradius) is first tested in the mesh before
 proceding to the accessibility calculation.</p>
-</p><div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">accessibility</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+</p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">accessibility</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_73_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_73_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">accessibility</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_73_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_73_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">accessibility</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_74_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_74_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_74_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_74_0.png" />
 </div>
 <div class="section" id="calculating-distances-between-particles">
 <h2>Calculating distances between particles<a class="headerlink" href="#calculating-distances-between-particles" title="Permalink to this headline">¶</a></h2>
@@ -509,79 +478,73 @@ proceding to the accessibility calculation.</p>
 the median_3d_dist function which give us not only the median distance
 considering all the models but also an histogram of the different values
 accross them.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-1604.5285879828907
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<pre class="ansi-block literal-block">1618.4735489472441</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_78_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_78_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_78_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_78_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_79_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_79_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_79_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_79_0.png" />
 <p>The median distance can be calculated only in one of the clusters or in
 a set of models.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_81_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_81_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_81_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_81_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_11-3D_Models_production_and_analysis_82_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_82_0.png" />
+<img alt="../_images//tutorial_11-3D_Models_production_and_analysis_82_0.png" src="../_images//tutorial_11-3D_Models_production_and_analysis_82_0.png" />
 <p>The Structural Models object can be saved and retrieved at a later stage</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save your entire analysis and models</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save your entire analysis and models</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">save_models</span><span class="p">(</span><span class="s1">&#39;B.models&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">load_structuralmodels</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the models</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the models</span>
 <span class="n">loaded_models</span> <span class="o">=</span> <span class="n">load_structuralmodels</span><span class="p">(</span><span class="s1">&#39;B.models&#39;</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">loaded_models</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">loaded_models</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-StructuralModels with 100 models of 61 particles
-   (objective function range: 51 - 55)
+<pre class="ansi-block literal-block">StructuralModels with 100 models of 61 particles
+   (objective function range: 59 - 62)
    (corresponding to the best models out of 100 models).
   IMP modeling used this parameters:
-   - maxdist     : 2.25
-   - scale       : 0.01
-   - dcutoff     : 2.0
    - reference   : Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018
    - kforce      : 5
-   - lowfreq     : -0.1
-   - upfreq      : 0.1
-   - lowrdist    : 1.0
-   - container   : {'shape': None, 'radius': None, 'cforce': None, 'height': None}
-   - resolution  : 100000
+   - scale       : 0.01
    - kbending    : 0.0
-  Models where clustered into 4 clusters
-</pre>
+   - maxdist     : 2.0
+   - lowfreq     : -0.6
+   - upfreq      : 0.0
+   - dcutoff     : 2.0
+   - resolution  : 100000
+   - container   : {'shape': None, 'radius': None, 'height': None, 'cforce': None}
+   - lowrdist    : 1.0
+  Models where clustered into 2 clusters</pre>
 <p>Other information can also be saved independently like the contacts map
 as a bed-like file, the models either as a xyz bed-like file or as cmm
 to visualize with Chimera.</p>
 <p>We can also export the models and clusters to a JSON for a later
 inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/3dg/tadkit/">http://sgt.cnag.cat/3dg/tadkit/</a>)</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/models_B
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> mkdir -p results/models_B
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">experiment</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">experiment</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: visibility)
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">contact_map</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="s2">&quot;results/models_B/contact.txt&quot;</span><span class="p">)</span>
+<pre class="ansi-block literal-block">Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: visibility)</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">contact_map</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="s2">&quot;results/models_B/contact.txt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Write a CMM file for the top model</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Write a CMM file for the top model</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">write_cmm</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="s2">&quot;results/models_B&quot;</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="c1"># Write CMM ofcentroid model</span>
 <span class="n">models_B</span><span class="o">.</span><span class="n">write_cmm</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="s2">&quot;results/models_B&quot;</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="n">models_B</span><span class="o">.</span><span class="n">centroid_model</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
@@ -596,13 +559,21 @@ Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: v
 <span class="n">models_B</span><span class="o">.</span><span class="n">write_json</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;results/models_B/models_B.json&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mouse B&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span>! mkdir -p results/models_PSC
+<pre class="ansi-block literal-block">/home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/modelling/structuralmodels.py:2557: UserWarning: WARNING: chrom_start variable wasn't set, setting it to the position in the experiment matrix (29900000)
+  if isinstance(my_descr['start'], list) else my_descr['start'])))
+/home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/modelling/structuralmodels.py:2563: UserWarning: WARNING: chrom_end variable wasn't set, setting it to the position in the experiment matrix (36000000)
+  if isinstance(my_descr['end'], list) else my_descr['end'])))</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> mkdir -p results/models_PSC
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mus Musculus&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mus Musculus&#39;</span>
 <span class="n">models_PSC</span><span class="o">.</span><span class="n">write_json</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;results/models_PSC/models_PSC.json&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mouse PSC&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">/home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/modelling/structuralmodels.py:2557: UserWarning: WARNING: chrom_start variable wasn't set, setting it to the position in the experiment matrix (29900000)
+  if isinstance(my_descr['start'], list) else my_descr['start'])))
+/home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/modelling/structuralmodels.py:2563: UserWarning: WARNING: chrom_end variable wasn't set, setting it to the position in the experiment matrix (36000000)
+  if isinstance(my_descr['end'], list) else my_descr['end'])))</pre>
 </div>
 </div>
 
@@ -640,13 +611,11 @@ Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: v
   <p class="topless"><a href="../tools.html"
                         title="next chapter">TADbit tools</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -673,8 +642,8 @@ Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: v
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

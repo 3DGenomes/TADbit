@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Experimental data assessment and model parameters optimisation &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -52,25 +51,23 @@ diagonal count in order to remove outliers or problematic columns from
 the interaction matrix. The particles associated with the filtered
 columns will be modelled, but will have no experimental data applied.</p>
 <p>Here we load the data previous data already normalised.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="k">import</span> <span class="n">load_chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="k">import</span> <span class="n">load_hic_data_from_bam</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span> <span class="o">=</span> <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="p">,</span> <span class="n">PSC</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: None),
- Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: None))
-</pre>
+<pre class="ansi-block literal-block">(Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: None),
+ Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: None))</pre>
 <p>Load raw data matrices, and normalized matrices</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">.bam&#39;</span>
 <span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/04_normalizing/biases_</span><span class="si">{0}</span><span class="s1">_both_</span><span class="si">{1}</span><span class="s1">kb.biases&#39;</span>
 <span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">chrname</span> <span class="o">=</span> <span class="s1">&#39;chr3&#39;</span>
@@ -78,45 +75,43 @@ columns will be modelled, but will have no experimental data applied.</p>
 <span class="n">cel2</span> <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_data1</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">),</span>
                                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="n">hic_data2</span> <span class="o">=</span> <span class="n">load_hic_data_from_bam</span><span class="p">(</span><span class="n">base_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">),</span>
                                    <span class="n">resolution</span><span class="o">=</span><span class="n">reso</span><span class="p">,</span>
                                    <span class="n">region</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span>
-                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">,</span> <span class="n">reso</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+                                   <span class="n">biases</span><span class="o">=</span><span class="n">bias_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel2</span><span class="p">,</span> <span class="n">reso</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span>
                                    <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(Matrix size 1601x1601)                                                      [2018-10-16 16:31:07]
+<pre class="ansi-block literal-block">(Matrix size 1601x1601)                                                      [2020-02-06 16:39:39]
 
-- Parsing BAM (101 chunks)                                                   [2018-10-16 16:31:07]
+- Parsing BAM (101 chunks)                                                   [2020-02-06 16:39:39]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
-- Getting matrices                                                           [2018-10-16 16:31:25]
+- Getting matrices                                                           [2020-02-06 16:39:42]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
 
-(Matrix size 1601x1601)                                                      [2018-10-16 16:31:38]
+(Matrix size 1601x1601)                                                      [2020-02-06 16:39:46]
 
-- Parsing BAM (101 chunks)                                                   [2018-10-16 16:31:38]
+- Parsing BAM (101 chunks)                                                   [2020-02-06 16:39:46]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
    .                                                         101/101
 
-- Getting matrices                                                           [2018-10-16 16:31:56]
+- Getting matrices                                                           [2020-02-06 16:39:50]
    .......... .......... .......... .......... ..........     50/101
    .......... .......... .......... .......... ..........    100/101
-   .                                                         101/101
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
+   .                                                         101/101</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">B</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
 <span class="n">B</span><span class="o">.</span><span class="n">load_norm_data</span><span class="p">([</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
 
 <span class="n">PSC</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">([</span><span class="n">hic_data2</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">)])</span>
@@ -124,38 +119,38 @@ columns will be modelled, but will have no experimental data applied.</p>
 </pre></div>
 </div>
 <p>It is a good practice to check that the data is there:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_11_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_11_0.png" />
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_11_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_11_0.png" />
 <p>Focus on the genomic region to model.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">visualize</span><span class="p">([</span><span class="s1">&#39;mouse_B&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse_PSC&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" />
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_13_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_13_0.png" />
 </div>
 <div class="section" id="data-modellability-assessment-via-mmp-score">
 <h2>Data modellability assessment via MMP score<a class="headerlink" href="#data-modellability-assessment-via-mmp-score" title="Permalink to this headline">¶</a></h2>
 <p>We can use the Matrix Modeling Potential (MMP) score (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4402535/">Trussart M. et
-al. Nature Communication,
+al. Nature Communication,
 2017</a>) to
 identify a priori whether the interaction matrices have the potential of
 being use for modeling. The MMP score ranges from 0 to 1 and combines
 three different measures: the contribution of the significant
 eigenvectors, the skewness and the kurtosis of the distribution of
 Z-scores.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="k">import</span> <span class="n">mmp_score</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">mmp_score</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mmp_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:30000000-36000000&#39;</span><span class="p">),</span> <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;../nbpictures/mmp_score.png&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mmp_score</span><span class="p">(</span><span class="n">hic_data1</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3:30000000-36000000&#39;</span><span class="p">),</span>
+          <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_both/mmp_score.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cel1</span><span class="p">))</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-(0.8049955427707568, 0.788681592624057, 0.6737285903820441, 0.9006937517389604)
-</pre>
-<div class="figure">
-<img alt="" src="../_images/mmp_score.png" />
-</div>
+<pre class="ansi-block literal-block">(0.8049308283731964,
+ 0.7885888244416531,
+ 0.6736346044021908,
+ 0.9006021702003049)</pre>
+<p><img alt="image0" src="../_images/Contact_map.png" /></p>
 </div>
 <div class="section" id="data-transformation-and-scoring-function">
 <h2>Data Transformation and scoring function<a class="headerlink" href="#data-transformation-and-scoring-function" title="Permalink to this headline">¶</a></h2>
@@ -187,23 +182,21 @@ frequencies above the upper-bound cutoff are restrained by a harmonic
 oscillator at an equilibrium distance, while those below the lower-bound
 cutoff are maintained further than an equilibrium distance by a lower
 bound harmonic oscillator.</p>
-<div class="figure">
-<img alt="" src="../_images/tadbit_restraints.png" />
-</div>
+<p><img alt="image0" src="../_images/Contact_map.png" /></p>
 <div class="section" id="optimization-of-parameters">
 <h3>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h3>
 <p>We need to identified empirically (via a grid-search optimisation) the
 optimal parameters for the mdoelling procedure:</p>
 <ul class="simple">
-<li>maxdist: maximal distance assosiated two interacting particles.</li>
-<li>upfreq: to define particles that do interact frequently (defines
-attraction)</li>
-<li>lowfreq: to define particles that do not interact frequently (
-defines repulsion)</li>
-<li>dcutoff: the definition of “contact” in units of bead diameter. Value
+<li><p>maxdist: maximal distance assosiated two interacting particles.</p></li>
+<li><p>upfreq: to define particles that do interact frequently (defines
+attraction)</p></li>
+<li><p>lowfreq: to define particles that do not interact frequently (
+defines repulsion)</p></li>
+<li><p>dcutoff: the definition of “contact” in units of bead diameter. Value
 of 2 means that a contact will occur when 2 beads are closer than 2
 times their diameter. This will be used to compare 3D models with
-Hi-C interaction maps.</li>
+Hi-C interaction maps.</p></li>
 </ul>
 <p>Pairs of beads interacting less than lowfreq (left dashed line) are
 penalized if they are closer than their assigned minimum distance
@@ -212,9 +205,7 @@ penalized if they are closer than their assigned minimum distance
 assigned maximum distance (Harmonic upper bound). Pairs of beads which
 interaction fall in between lowfreq and upfreq are not penalized except
 if they are neighbours (Harmonic)</p>
-<div class="figure">
-<img alt="" src="../_images/tadbit_distance_freq_fitting.png" />
-</div>
+<p><img alt="image0" src="../_images/Contact_map.png" /></p>
 <p>In the parameter optimization step we are going to give a set of ranges
 for the different search parameters. For each possible combination
 TADbit will produce a set of models.</p>
@@ -225,315 +216,285 @@ in the schema below. The contact map is then compared with the Hi-C
 interaction experiment by means of a Spearman correlation coefficient.
 The sets having higher correlation coefficients are those that best
 represents the original data.</p>
-<div class="figure">
-<img alt="" src="../_images/Contact_map.png" />
-</div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<p><img alt="image0" src="../_images/Contact_map.png" /></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                                    <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
                                    <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
                                    <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
                                    <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Optimizing 61 particles
-  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation
-</pre>
-<pre class="ansi-block literal-block">
-1   0.01  0               1000    -0.9    0       4      0.1699
-1   0.01  0               1000    -0.9    0       3      0.5399
-1   0.01  0               1000    -0.9    0       2      0.8703
-2   0.01  0               1000    -0.9    0.3     4      0.3357
-2   0.01  0               1000    -0.9    0.3     3      0.6376
-2   0.01  0               1000    -0.9    0.3     2      0.8724
-3   0.01  0               1000    -0.9    0.6     4      0.5638
-3   0.01  0               1000    -0.9    0.6     3      0.735
-3   0.01  0               1000    -0.9    0.6     2      0.8341
-4   0.01  0               1000    -0.6    0       4      0.1719
-4   0.01  0               1000    -0.6    0       3      0.5417
-4   0.01  0               1000    -0.6    0       2      0.87
-5   0.01  0               1000    -0.6    0.3     4      0.3357
-5   0.01  0               1000    -0.6    0.3     3      0.6375
-5   0.01  0               1000    -0.6    0.3     2      0.8716
-6   0.01  0               1000    -0.6    0.6     4      0.5647
-6   0.01  0               1000    -0.6    0.6     3      0.7367
-6   0.01  0               1000    -0.6    0.6     2      0.8347
-7   0.01  0               1000    -0.3    0       4      0.1816
-7   0.01  0               1000    -0.3    0       3      0.546
-7   0.01  0               1000    -0.3    0       2      0.8663
-8   0.01  0               1000    -0.3    0.3     4      0.3644
-8   0.01  0               1000    -0.3    0.3     3      0.6365
-8   0.01  0               1000    -0.3    0.3     2      0.8657
-9   0.01  0               1000    -0.3    0.6     4      0.56
-9   0.01  0               1000    -0.3    0.6     3      0.7333
-9   0.01  0               1000    -0.3    0.6     2      0.8327
-10  0.01  0               1000    0       0       4      0.1641
-10  0.01  0               1000    0       0       3      0.538
-10  0.01  0               1000    0       0       2      0.8642
-11  0.01  0               1000    0       0.3     4      0.3614
-11  0.01  0               1000    0       0.3     3      0.6382
-11  0.01  0               1000    0       0.3     2      0.8704
-12  0.01  0               1000    0       0.6     4      0.5564
-12  0.01  0               1000    0       0.6     3      0.7318
-12  0.01  0               1000    0       0.6     2      0.8283
-13  0.01  0               1500    -0.9    0       4      0.2911
-13  0.01  0               1500    -0.9    0       3      0.6079
-13  0.01  0               1500    -0.9    0       2      0.8816
-14  0.01  0               1500    -0.9    0.3     4      0.4308
-14  0.01  0               1500    -0.9    0.3     3      0.6946
-14  0.01  0               1500    -0.9    0.3     2      0.8797
-15  0.01  0               1500    -0.9    0.6     4      0.6034
-15  0.01  0               1500    -0.9    0.6     3      0.7661
-15  0.01  0               1500    -0.9    0.6     2      0.8226
-16  0.01  0               1500    -0.6    0       4      0.3003
-16  0.01  0               1500    -0.6    0       3      0.6033
-16  0.01  0               1500    -0.6    0       2      0.8842
-17  0.01  0               1500    -0.6    0.3     4      0.4306
-17  0.01  0               1500    -0.6    0.3     3      0.7004
-17  0.01  0               1500    -0.6    0.3     2      0.8773
-18  0.01  0               1500    -0.6    0.6     4      0.5964
-18  0.01  0               1500    -0.6    0.6     3      0.7633
-18  0.01  0               1500    -0.6    0.6     2      0.8305
-19  0.01  0               1500    -0.3    0       4      0.3134
-19  0.01  0               1500    -0.3    0       3      0.6251
-19  0.01  0               1500    -0.3    0       2      0.8817
-20  0.01  0               1500    -0.3    0.3     4      0.4292
-20  0.01  0               1500    -0.3    0.3     3      0.6976
-20  0.01  0               1500    -0.3    0.3     2      0.882
-21  0.01  0               1500    -0.3    0.6     4      0.6027
-21  0.01  0               1500    -0.3    0.6     3      0.7641
-21  0.01  0               1500    -0.3    0.6     2      0.831
-22  0.01  0               1500    0       0       4      0.3061
-22  0.01  0               1500    0       0       3      0.6216
-22  0.01  0               1500    0       0       2      0.886
-23  0.01  0               1500    0       0.3     4      0.4257
-23  0.01  0               1500    0       0.3     3      0.6979
-23  0.01  0               1500    0       0.3     2      0.881
-24  0.01  0               1500    0       0.6     4      0.6047
-24  0.01  0               1500    0       0.6     3      0.7652
-24  0.01  0               1500    0       0.6     2      0.826
-25  0.01  0               2000    -0.9    0       4      0.4056
-25  0.01  0               2000    -0.9    0       3      0.701
-25  0.01  0               2000    -0.9    0       2      0.8931
-26  0.01  0               2000    -0.9    0.3     4      0.5013
-26  0.01  0               2000    -0.9    0.3     3      0.7637
-26  0.01  0               2000    -0.9    0.3     2      0.8874
-27  0.01  0               2000    -0.9    0.6     4      0.6337
-27  0.01  0               2000    -0.9    0.6     3      0.7854
-27  0.01  0               2000    -0.9    0.6     2      0.8334
-28  0.01  0               2000    -0.6    0       4      0.4141
-28  0.01  0               2000    -0.6    0       3      0.6998
-28  0.01  0               2000    -0.6    0       2      0.8956
-29  0.01  0               2000    -0.6    0.3     4      0.5109
-29  0.01  0               2000    -0.6    0.3     3      0.7621
-29  0.01  0               2000    -0.6    0.3     2      0.8843
-30  0.01  0               2000    -0.6    0.6     4      0.6316
-30  0.01  0               2000    -0.6    0.6     3      0.7835
-30  0.01  0               2000    -0.6    0.6     2      0.8361
-31  0.01  0               2000    -0.3    0       4      0.4018
-31  0.01  0               2000    -0.3    0       3      0.6995
-31  0.01  0               2000    -0.3    0       2      0.8917
-32  0.01  0               2000    -0.3    0.3     4      0.5099
-32  0.01  0               2000    -0.3    0.3     3      0.7648
-32  0.01  0               2000    -0.3    0.3     2      0.8847
-33  0.01  0               2000    -0.3    0.6     4      0.6404
-33  0.01  0               2000    -0.3    0.6     3      0.7922
-33  0.01  0               2000    -0.3    0.6     2      0.8407
-34  0.01  0               2000    0       0       4      0.3912
-34  0.01  0               2000    0       0       3      0.6963
-34  0.01  0               2000    0       0       2      0.8929
-35  0.01  0               2000    0       0.3     4      0.5051
-35  0.01  0               2000    0       0.3     3      0.7564
-35  0.01  0               2000    0       0.3     2      0.8858
-36  0.01  0               2000    0       0.6     4      0.6377
-36  0.01  0               2000    0       0.6     3      0.7839
-36  0.01  0               2000    0       0.6     2      0.8392
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<pre class="ansi-block literal-block">Optimizing 61 particles
+  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation</pre>
+<pre class="ansi-block literal-block">1   0.01  0               1000    -0.9    0       4      0.2021
+1   0.01  0               1000    -0.9    0       3      0.5706
+1   0.01  0               1000    -0.9    0       2      0.8769
+2   0.01  0               1000    -0.9    0.3     4      0.3995
+2   0.01  0               1000    -0.9    0.3     3      0.6799
+2   0.01  0               1000    -0.9    0.3     2      0.8864
+3   0.01  0               1000    -0.9    0.6     4      0.62
+3   0.01  0               1000    -0.9    0.6     3      0.7709
+3   0.01  0               1000    -0.9    0.6     2      0.8531
+4   0.01  0               1000    -0.6    0       4      0.205
+4   0.01  0               1000    -0.6    0       3      0.58
+4   0.01  0               1000    -0.6    0       2      0.8773
+5   0.01  0               1000    -0.6    0.3     4      0.4014
+5   0.01  0               1000    -0.6    0.3     3      0.6827
+5   0.01  0               1000    -0.6    0.3     2      0.8869
+6   0.01  0               1000    -0.6    0.6     4      0.6181
+6   0.01  0               1000    -0.6    0.6     3      0.776
+6   0.01  0               1000    -0.6    0.6     2      0.8502
+7   0.01  0               1000    -0.3    0       4      0.2084
+7   0.01  0               1000    -0.3    0       3      0.5789
+7   0.01  0               1000    -0.3    0       2      0.877
+8   0.01  0               1000    -0.3    0.3     4      0.3999
+8   0.01  0               1000    -0.3    0.3     3      0.6746
+8   0.01  0               1000    -0.3    0.3     2      0.8824
+9   0.01  0               1000    -0.3    0.6     4      0.6224
+9   0.01  0               1000    -0.3    0.6     3      0.7678
+9   0.01  0               1000    -0.3    0.6     2      0.8425
+10  0.01  0               1000    0       0       4      0.19
+10  0.01  0               1000    0       0       3      0.5669
+10  0.01  0               1000    0       0       2      0.8763
+11  0.01  0               1000    0       0.3     4      0.404
+11  0.01  0               1000    0       0.3     3      0.6753
+11  0.01  0               1000    0       0.3     2      0.8883
+12  0.01  0               1000    0       0.6     4      0.6052
+12  0.01  0               1000    0       0.6     3      0.7689
+12  0.01  0               1000    0       0.6     2      0.8443
+13  0.01  0               1500    -0.9    0       4      0.3574
+13  0.01  0               1500    -0.9    0       3      0.6476
+13  0.01  0               1500    -0.9    0       2      0.8926
+14  0.01  0               1500    -0.9    0.3     4      0.4787
+14  0.01  0               1500    -0.9    0.3     3      0.7314
+14  0.01  0               1500    -0.9    0.3     2      0.8977
+15  0.01  0               1500    -0.9    0.6     4      0.6623
+15  0.01  0               1500    -0.9    0.6     3      0.7958
+15  0.01  0               1500    -0.9    0.6     2      0.8401
+16  0.01  0               1500    -0.6    0       4      0.3513
+16  0.01  0               1500    -0.6    0       3      0.646
+16  0.01  0               1500    -0.6    0       2      0.8951
+17  0.01  0               1500    -0.6    0.3     4      0.4728
+17  0.01  0               1500    -0.6    0.3     3      0.7341
+17  0.01  0               1500    -0.6    0.3     2      0.8985
+18  0.01  0               1500    -0.6    0.6     4      0.6491
+18  0.01  0               1500    -0.6    0.6     3      0.7945
+18  0.01  0               1500    -0.6    0.6     2      0.8407
+19  0.01  0               1500    -0.3    0       4      0.367
+19  0.01  0               1500    -0.3    0       3      0.6571
+19  0.01  0               1500    -0.3    0       2      0.8897
+20  0.01  0               1500    -0.3    0.3     4      0.4695
+20  0.01  0               1500    -0.3    0.3     3      0.7355
+20  0.01  0               1500    -0.3    0.3     2      0.9004
+21  0.01  0               1500    -0.3    0.6     4      0.6568
+21  0.01  0               1500    -0.3    0.6     3      0.7947
+21  0.01  0               1500    -0.3    0.6     2      0.8391
+22  0.01  0               1500    0       0       4      0.3722
+22  0.01  0               1500    0       0       3      0.6566
+22  0.01  0               1500    0       0       2      0.8943
+23  0.01  0               1500    0       0.3     4      0.4745
+23  0.01  0               1500    0       0.3     3      0.7278
+23  0.01  0               1500    0       0.3     2      0.8946
+24  0.01  0               1500    0       0.6     4      0.6529
+24  0.01  0               1500    0       0.6     3      0.7951
+24  0.01  0               1500    0       0.6     2      0.8404
+25  0.01  0               2000    -0.9    0       4      0.4613
+25  0.01  0               2000    -0.9    0       3      0.7304
+25  0.01  0               2000    -0.9    0       2      0.8991
+26  0.01  0               2000    -0.9    0.3     4      0.5551
+26  0.01  0               2000    -0.9    0.3     3      0.7915
+26  0.01  0               2000    -0.9    0.3     2      0.8977
+27  0.01  0               2000    -0.9    0.6     4      0.6894
+27  0.01  0               2000    -0.9    0.6     3      0.8012
+27  0.01  0               2000    -0.9    0.6     2      0.8377
+28  0.01  0               2000    -0.6    0       4      0.4717
+28  0.01  0               2000    -0.6    0       3      0.7292
+28  0.01  0               2000    -0.6    0       2      0.9036
+29  0.01  0               2000    -0.6    0.3     4      0.5526
+29  0.01  0               2000    -0.6    0.3     3      0.7815
+29  0.01  0               2000    -0.6    0.3     2      0.8998
+30  0.01  0               2000    -0.6    0.6     4      0.7032
+30  0.01  0               2000    -0.6    0.6     3      0.8049
+30  0.01  0               2000    -0.6    0.6     2      0.8387
+31  0.01  0               2000    -0.3    0       4      0.4678
+31  0.01  0               2000    -0.3    0       3      0.715
+31  0.01  0               2000    -0.3    0       2      0.8939
+32  0.01  0               2000    -0.3    0.3     4      0.5525
+32  0.01  0               2000    -0.3    0.3     3      0.7861
+32  0.01  0               2000    -0.3    0.3     2      0.8994
+33  0.01  0               2000    -0.3    0.6     4      0.7005
+33  0.01  0               2000    -0.3    0.6     3      0.804
+33  0.01  0               2000    -0.3    0.6     2      0.8399
+34  0.01  0               2000    0       0       4      0.4594
+34  0.01  0               2000    0       0       3      0.7167
+34  0.01  0               2000    0       0       2      0.8992
+35  0.01  0               2000    0       0.3     4      0.5481
+35  0.01  0               2000    0       0.3     3      0.7883
+35  0.01  0               2000    0       0.3     2      0.8981
+36  0.01  0               2000    0       0.6     4      0.692
+36  0.01  0               2000    0       0.6     3      0.8032
+36  0.01  0               2000    0       0.6     2      0.8541</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_23_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_23_0.png" />
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_23_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_23_0.png" />
 <p>Refine optimization in a small region:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">1750</span><span class="p">],</span>
                        <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
                        <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Optimizing 61 particles
-  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation
-</pre>
-<pre class="ansi-block literal-block">
-1   0.01  0               1750    -0.9    0       3      0.6576
-1   0.01  0               1750    -0.9    0       2      0.8908
-2   0.01  0               1750    -0.9    0.3     3      0.7223
-2   0.01  0               1750    -0.9    0.3     2      0.8791
-3   0.01  0               1750    -0.6    0       3      0.6603
-3   0.01  0               1750    -0.6    0       2      0.889
-4   0.01  0               1750    -0.6    0.3     3      0.7223
-4   0.01  0               1750    -0.6    0.3     2      0.8827
-5   0.01  0               1750    -0.3    0       3      0.6543
-5   0.01  0               1750    -0.3    0       2      0.8909
-6   0.01  0               1750    -0.3    0.3     3      0.731
-6   0.01  0               1750    -0.3    0.3     2      0.8823
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<pre class="ansi-block literal-block">Optimizing 61 particles
+  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation</pre>
+<pre class="ansi-block literal-block">1   0.01  0               1750    -0.9    0       3      0.6859
+1   0.01  0               1750    -0.9    0       2      0.8985
+2   0.01  0               1750    -0.9    0.3     3      0.7587
+2   0.01  0               1750    -0.9    0.3     2      0.9
+3   0.01  0               1750    -0.6    0       3      0.6879
+3   0.01  0               1750    -0.6    0       2      0.8937
+4   0.01  0               1750    -0.6    0.3     3      0.7521
+4   0.01  0               1750    -0.6    0.3     2      0.8993
+5   0.01  0               1750    -0.3    0       3      0.6857
+5   0.01  0               1750    -0.3    0       2      0.9
+6   0.01  0               1750    -0.3    0.3     3      0.7644
+6   0.01  0               1750    -0.3    0.3     2      0.8981</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_26_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_26_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_26_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_26_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2250</span><span class="p">],</span>
                        <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                        <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-xx        0.01    0               2000    -0.3    0       4       0.4018
-xx        0.01    0               2000    -0.3    0.3     2       0.8847
-</pre>
-<pre class="ansi-block literal-block">
-Optimizing 61 particles
-  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation
-</pre>
-<pre class="ansi-block literal-block">
-1   0.01  0               2000    -0.2    0       2      0.8933
-2   0.01  0               2000    -0.2    0.3     2      0.8842
-3   0.01  0               2000    -0.1    0       2      0.8945
-4   0.01  0               2000    -0.1    0.3     2      0.8866
-xx        0.01    0               2000    0       0       4       0.3912
-xx        0.01    0               2000    0       0.3     2       0.8858
-5   0.01  0               2250    -0.3    0       2      0.8944
-6   0.01  0               2250    -0.3    0.3     2      0.886
-7   0.01  0               2250    -0.2    0       2      0.8952
-8   0.01  0               2250    -0.2    0.3     2      0.8876
-9   0.01  0               2250    -0.1    0       2      0.8954
-10  0.01  0               2250    -0.1    0.3     2      0.8881
-11  0.01  0               2250    0       0       2      0.895
-12  0.01  0               2250    0       0.3     2      0.8855
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<pre class="ansi-block literal-block">xx        0.01    0               2000    -0.3    0       4.0     0.4678
+xx        0.01    0               2000    -0.3    0.3     4.0     0.5525</pre>
+<pre class="ansi-block literal-block">Optimizing 61 particles
+  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation</pre>
+<pre class="ansi-block literal-block">1   0.01  0               2000    -0.2    0       2      0.9001
+2   0.01  0               2000    -0.2    0.3     2      0.8989
+3   0.01  0               2000    -0.1    0       2      0.901
+4   0.01  0               2000    -0.1    0.3     2      0.8967
+xx        0.01    0               2000    0       0       4.0     0.4594
+xx        0.01    0               2000    0       0.3     4.0     0.5481
+5   0.01  0               2250    -0.3    0       2      0.8962
+6   0.01  0               2250    -0.3    0.3     2      0.8964
+7   0.01  0               2250    -0.2    0       2      0.9024
+8   0.01  0               2250    -0.2    0.3     2      0.9004
+9   0.01  0               2250    -0.1    0       2      0.8992
+10  0.01  0               2250    -0.1    0.3     2      0.9009
+11  0.01  0               2250    0       0       2      0.9001
+12  0.01  0               2250    0       0.3     2      0.8967</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_28_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_28_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_28_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_28_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                        <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2250</span><span class="p">],</span>
                        <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-xx        0.01    0               2000    -0.3    0       4       0.4018
-</pre>
-<pre class="ansi-block literal-block">
-Optimizing 61 particles
-  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation
-</pre>
-<pre class="ansi-block literal-block">
-1   0.01  0               2000    -0.3    0.1     2      0.8905
-2   0.01  0               2000    -0.3    0.2     2      0.8877
-xx        0.01    0               2000    -0.3    0.3     2       0.8847
-xx        0.01    0               2000    -0.2    0       2       0.8933
-3   0.01  0               2000    -0.2    0.1     2      0.8857
-4   0.01  0               2000    -0.2    0.2     2      0.8864
-xx        0.01    0               2000    -0.2    0.3     2       0.8842
-xx        0.01    0               2000    -0.1    0       2       0.8945
-5   0.01  0               2000    -0.1    0.1     2      0.8892
-6   0.01  0               2000    -0.1    0.2     2      0.8854
-xx        0.01    0               2000    -0.1    0.3     2       0.8866
-xx        0.01    0               2000    0       0       4       0.3912
-7   0.01  0               2000    0       0.1     2      0.8895
-8   0.01  0               2000    0       0.2     2      0.8846
-xx        0.01    0               2000    0       0.3     2       0.8858
-xx        0.01    0               2250    -0.3    0       2       0.8944
-9   0.01  0               2250    -0.3    0.1     2      0.8941
-10  0.01  0               2250    -0.3    0.2     2      0.8876
-xx        0.01    0               2250    -0.3    0.3     2       0.886
-xx        0.01    0               2250    -0.2    0       2       0.8952
-11  0.01  0               2250    -0.2    0.1     2      0.8917
-12  0.01  0               2250    -0.2    0.2     2      0.8893
-xx        0.01    0               2250    -0.2    0.3     2       0.8876
-xx        0.01    0               2250    -0.1    0       2       0.8954
-13  0.01  0               2250    -0.1    0.1     2      0.8974
-14  0.01  0               2250    -0.1    0.2     2      0.8855
-xx        0.01    0               2250    -0.1    0.3     2       0.8881
-xx        0.01    0               2250    0       0       2       0.895
-15  0.01  0               2250    0       0.1     2      0.8948
-16  0.01  0               2250    0       0.2     2      0.8876
-xx        0.01    0               2250    0       0.3     2       0.8855
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<pre class="ansi-block literal-block">xx        0.01    0               2000    -0.3    0       4.0     0.4678</pre>
+<pre class="ansi-block literal-block">Optimizing 61 particles
+  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation</pre>
+<pre class="ansi-block literal-block">1   0.01  0               2000    -0.3    0.1     2      0.898
+2   0.01  0               2000    -0.3    0.2     2      0.8979
+xx        0.01    0               2000    -0.3    0.3     4.0     0.5525
+xx        0.01    0               2000    -0.2    0       2.0     0.9001
+3   0.01  0               2000    -0.2    0.1     2      0.8908
+4   0.01  0               2000    -0.2    0.2     2      0.8944
+xx        0.01    0               2000    -0.2    0.3     2.0     0.8989
+xx        0.01    0               2000    -0.1    0       2.0     0.901
+5   0.01  0               2000    -0.1    0.1     2      0.8967
+6   0.01  0               2000    -0.1    0.2     2      0.8941
+xx        0.01    0               2000    -0.1    0.3     2.0     0.8967
+xx        0.01    0               2000    0       0       4.0     0.4594
+7   0.01  0               2000    0       0.1     2      0.9006
+8   0.01  0               2000    0       0.2     2      0.8914
+xx        0.01    0               2000    0       0.3     4.0     0.5481
+xx        0.01    0               2250    -0.3    0       2.0     0.8962
+9   0.01  0               2250    -0.3    0.1     2      0.8991
+10  0.01  0               2250    -0.3    0.2     2      0.8957
+xx        0.01    0               2250    -0.3    0.3     2.0     0.8964
+xx        0.01    0               2250    -0.2    0       2.0     0.9024
+11  0.01  0               2250    -0.2    0.1     2      0.8984
+12  0.01  0               2250    -0.2    0.2     2      0.8993
+xx        0.01    0               2250    -0.2    0.3     2.0     0.9004
+xx        0.01    0               2250    -0.1    0       2.0     0.8992
+13  0.01  0               2250    -0.1    0.1     2      0.9024
+14  0.01  0               2250    -0.1    0.2     2      0.8959
+xx        0.01    0               2250    -0.1    0.3     2.0     0.9009
+xx        0.01    0               2250    0       0       2.0     0.9001
+15  0.01  0               2250    0       0.1     2      0.9033
+16  0.01  0               2250    0       0.2     2      0.895
+xx        0.01    0               2250    0       0.3     2.0     0.8967</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_30_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_30_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_30_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_30_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-{'dcutoff': 2.0,
+<pre class="ansi-block literal-block">{'scale': 0.01,
  'kbending': 0.0,
- 'kforce': 5,
- 'lowfreq': -0.1,
- 'maxdist': 2250.0,
+ 'maxdist': 2000.0,
+ 'lowfreq': -0.6,
+ 'upfreq': 0.0,
+ 'dcutoff': 2.0,
  'reference': '',
- 'scale': 0.01,
- 'upfreq': 0.1}
-</pre>
+ 'kforce': 5}</pre>
 <p>For the other replicate, we can reduce the space of search:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span> <span class="o">=</span> <span class="n">PSC</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span> <span class="o">=</span> <span class="n">PSC</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                                      <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                                      <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                                      <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2250</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span>
                                      <span class="n">dcutoff_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Optimizing 61 particles
-  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation
-</pre>
-<pre class="ansi-block literal-block">
-1   0.01  0               2000    -0.3    0       2      0.925
-2   0.01  0               2000    -0.3    0.1     2      0.9242
-3   0.01  0               2000    -0.3    0.2     2      0.9199
-4   0.01  0               2000    -0.3    0.3     2      0.9119
-5   0.01  0               2000    -0.2    0       2      0.9243
-6   0.01  0               2000    -0.2    0.1     2      0.924
-7   0.01  0               2000    -0.2    0.2     2      0.9191
-8   0.01  0               2000    -0.2    0.3     2      0.9122
-9   0.01  0               2000    -0.1    0       2      0.9255
-10  0.01  0               2000    -0.1    0.1     2      0.9231
-11  0.01  0               2000    -0.1    0.2     2      0.9194
-12  0.01  0               2000    -0.1    0.3     2      0.911
-13  0.01  0               2250    -0.3    0       2      0.9274
-14  0.01  0               2250    -0.3    0.1     2      0.9239
-15  0.01  0               2250    -0.3    0.2     2      0.918
-16  0.01  0               2250    -0.3    0.3     2      0.9126
-17  0.01  0               2250    -0.2    0       2      0.9262
-18  0.01  0               2250    -0.2    0.1     2      0.9239
-19  0.01  0               2250    -0.2    0.2     2      0.9172
-20  0.01  0               2250    -0.2    0.3     2      0.9122
-21  0.01  0               2250    -0.1    0       2      0.9287
-22  0.01  0               2250    -0.1    0.1     2      0.9243
-23  0.01  0               2250    -0.1    0.2     2      0.9172
-24  0.01  0               2250    -0.1    0.3     2      0.9144
-</pre>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<pre class="ansi-block literal-block">Optimizing 61 particles
+  num scale kbending        maxdist lowfreq upfreq  dcutoff correlation</pre>
+<pre class="ansi-block literal-block">1   0.01  0               2000    -0.3    0       2      0.9309
+2   0.01  0               2000    -0.3    0.1     2      0.9237
+3   0.01  0               2000    -0.3    0.2     2      0.9177
+4   0.01  0               2000    -0.3    0.3     2      0.9084
+5   0.01  0               2000    -0.2    0       2      0.9268
+6   0.01  0               2000    -0.2    0.1     2      0.9245
+7   0.01  0               2000    -0.2    0.2     2      0.9159
+8   0.01  0               2000    -0.2    0.3     2      0.9095
+9   0.01  0               2000    -0.1    0       2      0.9283
+10  0.01  0               2000    -0.1    0.1     2      0.9239
+11  0.01  0               2000    -0.1    0.2     2      0.9136
+12  0.01  0               2000    -0.1    0.3     2      0.9071
+13  0.01  0               2250    -0.3    0       2      0.9285
+14  0.01  0               2250    -0.3    0.1     2      0.9233
+15  0.01  0               2250    -0.3    0.2     2      0.9165
+16  0.01  0               2250    -0.3    0.3     2      0.9068
+17  0.01  0               2250    -0.2    0       2      0.9294
+18  0.01  0               2250    -0.2    0.1     2      0.9214
+19  0.01  0               2250    -0.2    0.2     2      0.9154
+20  0.01  0               2250    -0.2    0.3     2      0.9041
+21  0.01  0               2250    -0.1    0       2      0.9304
+22  0.01  0               2250    -0.1    0.1     2      0.9219
+23  0.01  0               2250    -0.1    0.2     2      0.9157
+24  0.01  0               2250    -0.1    0.3     2      0.9076</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_10-Modeling_parameters_optimization_34_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_34_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
+<img alt="../_images//tutorial_10-Modeling_parameters_optimization_34_0.png" src="../_images//tutorial_10-Modeling_parameters_optimization_34_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_PSC</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-{'dcutoff': 2.0,
+<pre class="ansi-block literal-block">{'scale': 0.01,
  'kbending': 0.0,
- 'kforce': 5,
- 'lowfreq': -0.1,
- 'maxdist': 2250.0,
+ 'maxdist': 2000.0,
+ 'lowfreq': -0.3,
+ 'upfreq': 0.0,
+ 'dcutoff': 2.0,
  'reference': '',
- 'scale': 0.01,
- 'upfreq': 0.0}
-</pre>
+ 'kforce': 5}</pre>
 </div>
 </div>
 </div>
@@ -572,13 +533,11 @@ Optimizing 61 particles
   <p class="topless"><a href="tutorial_11-3D_Models_production_and_analysis.html"
                         title="next chapter">Modelling a region of the chromatin</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -605,8 +564,8 @@ Optimizing 61 particles
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

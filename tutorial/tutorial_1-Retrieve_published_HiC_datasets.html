@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Retrieve HiC dataset from NCBI &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -45,7 +44,7 @@
   <div class="section" id="retrieve-hic-dataset-from-ncbi">
 <h1>Retrieve HiC dataset from NCBI<a class="headerlink" href="#retrieve-hic-dataset-from-ncbi" title="Permalink to this headline">¶</a></h1>
 <p>We will use data from <a class="reference external" href="#cite-ralph">(Stadhouders R, Vidal E, Serra F, Di Stefano B
-et al. 2018)</a>, which comes from mouse cells where Hi-C
+et al. 2018)</a>, which comes from mouse cells where Hi-C
 experiment where conducted in different states during highly-efficient
 somatic cell reprogramming.</p>
 <p>The data can be downloaded from:</p>
@@ -58,37 +57,35 @@ program from the SRA Toolkit
 <p>We download 100M reads for each of 4 replicates (2 replicates from B
 cells and 2 from Pluripotent Stem Cells),and organize each in two files,
 one per read-end (this step is long and can take <strong>up to 6 hours</strong>):</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">FASTQs</span>
+mkdir -p FASTQs
 
-<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344921</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344921_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344921_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+fastq-dump -A SRR5344921 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+mv FASTQs/SRR5344921_1.fastq FASTQs/mouse_B_rep1_1.fastq
+mv FASTQs/SRR5344921_2.fastq FASTQs/mouse_B_rep1_2.fastq
 
-<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344925</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344925_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344925_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+fastq-dump -A SRR5344925 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+mv FASTQs/SRR5344925_1.fastq FASTQs/mouse_B_rep2_1.fastq
+mv FASTQs/SRR5344925_2.fastq FASTQs/mouse_B_rep2_2.fastq
 
-<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344969</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344969_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344969_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
+fastq-dump -A SRR5344969 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs
+mv FASTQs/SRR5344969_1.fastq FASTQs/mouse_PSC_rep1_1.fastq
+mv FASTQs/SRR5344969_2.fastq FASTQs/mouse_PSC_rep1_2.fastq
 
-<span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">A</span> <span class="n">SRR5344973</span> <span class="o">-</span><span class="n">DQ</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si&#39;</span> <span class="o">-</span><span class="n">X</span> <span class="mi">100000000</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">files</span> <span class="o">--</span><span class="n">outdir</span> <span class="n">FASTQs</span><span class="o">/</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344973_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">mv</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">SRR5344973_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+fastq-dump -A SRR5344973 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+mv FASTQs/SRR5344973_1.fastq FASTQs/mouse_PSC_rep2_1.fastq
+mv FASTQs/SRR5344973_2.fastq FASTQs/mouse_PSC_rep2_2.fastq
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Read 100000000 spots for SRR5344921
+<pre class="ansi-block literal-block">Read 100000000 spots for SRR5344921
 Written 100000000 spots for SRR5344921
 Read 100000000 spots for SRR5344925
 Written 100000000 spots for SRR5344925
 Read 100000000 spots for SRR5344969
 Written 100000000 spots for SRR5344969
 Read 100000000 spots for SRR5344973
-Written 100000000 spots for SRR5344973
-</pre>
+Written 100000000 spots for SRR5344973</pre>
 <p>Files are renamed for convenience.</p>
 <p><em>Note: the parameter used here for fastq-dump are for generating simple
 FASTQ files, -DQ ‘+’ tells to put a single plus sign as header of the
@@ -106,16 +103,16 @@ occupies ~17 Gb (total 130 Gb).</p>
 <p>Internally we use DSRC <a class="reference external" href="#cite-roguski2014dsrc">(Roguski and Deorowicz,
 2014)</a> that allows better compression ration
 and, more importantly, faster decompression:</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
-<span class="n">dsrc</span> <span class="n">c</span> <span class="o">-</span><span class="n">t8</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span><span class="o">.</span><span class="n">dsrc</span>
+dsrc c -t8 FASTQs/mouse_B_rep1_1.fastq FASTQs/mouse_B_rep1_1.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_B_rep1_2.fastq FASTQs/mouse_B_rep1_2.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_B_rep2_1.fastq FASTQs/mouse_B_rep2_1.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_B_rep2_2.fastq FASTQs/mouse_B_rep2_2.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_PSC_rep1_1.fastq FASTQs/mouse_PSC_rep1_1.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_PSC_rep1_2.fastq FASTQs/mouse_PSC_rep1_2.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_PSC_rep2_1.fastq FASTQs/mouse_PSC_rep2_1.fastq.dsrc
+dsrc c -t8 FASTQs/mouse_PSC_rep2_2.fastq FASTQs/mouse_PSC_rep2_2.fastq.dsrc
 </pre></div>
 </div>
 <p>After compression we reduce the total size to 27 Gb (<strong>20% of the
@@ -127,22 +124,22 @@ Gb (occupies ~15% more than dsrc compressed files)</em></p>
 </div>
 <div class="section" id="cleanup">
 <h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this headline">¶</a></h2>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_B_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep1_2</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_1</span><span class="o">.</span><span class="n">fastq</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">FASTQs</span><span class="o">/</span><span class="n">mouse_PSC_rep2_2</span><span class="o">.</span><span class="n">fastq</span>
+rm -f FASTQs/mouse_B_rep1_1.fastq
+rm -f FASTQs/mouse_B_rep1_2.fastq
+rm -f FASTQs/mouse_B_rep2_1.fastq
+rm -f FASTQs/mouse_B_rep2_2.fastq
+rm -f FASTQs/mouse_PSC_rep1_1.fastq
+rm -f FASTQs/mouse_PSC_rep1_2.fastq
+rm -f FASTQs/mouse_PSC_rep2_1.fastq
+rm -f FASTQs/mouse_PSC_rep2_2.fastq
 </pre></div>
 </div>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<p>[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
+<p>[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
 <em>Transcription factors orchestrate dynamic interplay between genome
 topology and gene regulation during cell reprogramming</em>.</p>
 <p>[^](#ref-4) Roguski, :raw-latex:<a href="#id1"><span class="problematic" id="id2">`</span></a>Lukasz <a href="#id3"><span class="problematic" id="id4">`</span></a>and Deorowicz, Sebastian.
@@ -191,13 +188,11 @@ topology and gene regulation during cell reprogramming</em>.</p>
   <p class="topless"><a href="tutorial_2-Preparation_of_the_reference_genome.html"
                         title="next chapter">Preparation of the reference genome</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -224,8 +219,8 @@ topology and gene regulation during cell reprogramming</em>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

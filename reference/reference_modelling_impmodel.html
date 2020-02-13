@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>IMPmodel class &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -44,7 +43,7 @@
             
   <dl class="function">
 <dt id="pytadbit.modelling.impmodel.load_impmodel_from_cmm">
-<code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em class="sig-param">f_name</em>, <em class="sig-param">rand_init=None</em>, <em class="sig-param">radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">marker_set</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
   <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7347.50964739&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7743.92836303&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-8283.39749204&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.00990099009901&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.990099009901&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">/&gt;</span>
@@ -53,26 +52,25 @@
 <span class="o">&lt;/</span><span class="n">marker_set</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">IMP random initial number used to generate the model</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – radius of each particle</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Params f_name</dt>
+<dd class="field-odd"><p>path where to find the file</p>
+</dd>
+<dt class="field-even">Params None rand_init</dt>
+<dd class="field-even"><p>IMP random initial number used to generate the model</p>
+</dd>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – radius of each particle</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>IMPmodel</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.modelling.impmodel.load_impmodel_from_xyz">
-<code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em class="sig-param">f_name</em>, <em class="sig-param">rand_init=None</em>, <em class="sig-param">radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ID              : some identifier</span>
 <span class="c1"># SPECIES         : None</span>
@@ -87,58 +85,53 @@
 <span class="mi">2</span>  <span class="mi">19</span><span class="p">:</span><span class="mi">10001</span><span class="o">-</span><span class="mi">20000</span>   <span class="o">-</span><span class="mf">55.574</span>     <span class="mf">396.869</span>    <span class="o">-</span><span class="mf">129.782</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">IMP random initial number used to generate the model</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – radius of each particle</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Params f_name</dt>
+<dd class="field-odd"><p>path where to find the file</p>
+</dd>
+<dt class="field-even">Params None rand_init</dt>
+<dd class="field-even"><p>IMP random initial number used to generate the model</p>
+</dd>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – radius of each particle</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>IMPmodel</p>
+</dd>
+</dl>
 </dd></dl>
 
 <div class="section" id="impmodel-class">
 <h1>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.modelling.impmodel.IMPmodel">
-<em class="property">class </em><code class="descclassname">pytadbit.modelling.impmodel.</code><code class="descname">IMPmodel</code><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">IMPmodel</code><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container for the IMP modeling results. The container is a dictionary
 with the following keys:</p>
 <ul class="simple">
-<li>log_objfun: The list of IMP objective function values</li>
-<li>objfun: The final objective function value of the corresponding model</li>
-<li>rand_init: Random number generator feed (needed for model reproducibility)</li>
-<li>x, y, z: 3D coordinates of each particles. Each represented as a list</li>
+<li><p>log_objfun: The list of IMP objective function values</p></li>
+<li><p>objfun: The final objective function value of the corresponding model</p></li>
+<li><p>rand_init: Random number generator feed (needed for model reproducibility)</p></li>
+<li><p>x, y, z: 3D coordinates of each particles. Each represented as a list</p></li>
 </ul>
 <dl class="method">
 <dt id="pytadbit.modelling.impmodel.IMPmodel.objective_function">
-<code class="descname">objective_function</code><span class="sig-paren">(</span><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">objective_function</code><span class="sig-paren">(</span><em class="sig-param">log=False</em>, <em class="sig-param">smooth=True</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function plots the objective function value per each Monte-Carlo
 step.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>log</strong> (<em>False</em>) – log plot</li>
-<li><strong>smooth</strong> (<em>True</em>) – curve smoothing</li>
-<li><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
-appearance</li>
-<li><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – path to a file where to save the image generated;
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> (<em>False</em>) – log plot</p></li>
+<li><p><strong>smooth</strong> (<em>True</em>) – curve smoothing</p></li>
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+appearance</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
-of the file name will determine the desired format).</li>
+of the file name will determine the desired format).</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -184,13 +177,11 @@ of the file name will determine the desired format).</li>
   <p class="topless"><a href="reference_modelling_structuralmodels.html"
                         title="next chapter">StructuralModels class</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -217,8 +208,8 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

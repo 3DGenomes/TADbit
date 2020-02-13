@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Filtering &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -44,9 +43,9 @@
             
   <div class="section" id="filtering">
 <h1>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h1>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="Filters" src="../_images/Filters.jpeg" />
-<p class="caption"><span class="caption-text">Filters</span></p>
+<p class="caption"><span class="caption-text">Filters</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Pairs of mapped read-ends are filtered in order to keep only valid
 pairs. The filters available in TADbit are these one: 1.
@@ -56,36 +55,36 @@ the same RE fragment in <em>facing</em> orientation. 3. <strong>Error</strong>: 
 read-ends are mapped to the same RE fragment in the same orientation. 4.
 <strong>Extra dangling-end</strong>: the read-ends are mapped to different RE
 fragments in <em>facing</em> orientation, but are close enough (&lt;
-<em>max_molecule_length</em> bp) from the RE cut-site to be considered part
-of adjacent RE fragments that were not separated by digestion. The
-<em>max_molecule_length</em> parameter can be inferred from the
-<em>fragment_size</em> function previously detailed. 5. <strong>Too close from RE
-sites (or semi-dangling-end)</strong>: the start position of one of the
-read-end is too close (5 bp by default) from the RE cutting site. 6.
-<strong>Too short</strong>: one of the read-ends is mapped to RE fragments of less
-than 75bp. These are removed since there is ambiguity on where the
-read-end is mapped as it could also belong to any of the two neighboring
-RE fragments. 7. <strong>Too large</strong>: the read-ends are mapped to long RE
-fragments (default: 100 kb, P &lt; 10-5 to occur in a randomized genome)
-and they likely represent poorly assembled or repetitive regions. 8.
-<strong>Over-represented</strong>: the read-ends coming from the top 0.5% most
-frequently detected RE fragments, they may represent PCR artefacts,
-random breaks, or genome assembly errors. 9. <strong>PCR artefacts or
-duplicated</strong>: the combination of the start positions, mapped length, and
-strands of both read-ends are identical. In this case, only one copy is
-kept. 10. <strong>Random breaks</strong>: the start position of one read-end is too
-far (&gt; <em>minimum_distance_to_RE</em>) from the RE cut-site. These are
-produced most probably by non-canonical enzyme activity or by random
-physical breakage of the chromatin. Note, that to filter all these types
-of fragments the minimum_distance_to_RE parameter should be larger
-than the <em>maximum_fragment_length</em>.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>  <span class="c1"># or mouse_PSC</span>
+<em>max_molecule_length</em> bp) from the RE cut-site to be considered part of
+adjacent RE fragments that were not separated by digestion. The
+<em>max_molecule_length</em> parameter can be inferred from the <em>fragment_size</em>
+function previously detailed. 5. <strong>Too close from RE sites (or
+semi-dangling-end)</strong>: the start position of one of the read-end is too
+close (5 bp by default) from the RE cutting site. 6. <strong>Too short</strong>: one
+of the read-ends is mapped to RE fragments of less than 75bp. These are
+removed since there is ambiguity on where the read-end is mapped as it
+could also belong to any of the two neighboring RE fragments. 7. <strong>Too
+large</strong>: the read-ends are mapped to long RE fragments (default: 100 kb,
+P &lt; 10-5 to occur in a randomized genome) and they likely represent
+poorly assembled or repetitive regions. 8. <strong>Over-represented</strong>: the
+read-ends coming from the top 0.5% most frequently detected RE
+fragments, they may represent PCR artefacts, random breaks, or genome
+assembly errors. 9. <strong>PCR artefacts or duplicated</strong>: the combination of
+the start positions, mapped length, and strands of both read-ends are
+identical. In this case, only one copy is kept. 10. <strong>Random breaks</strong>:
+the start position of one read-end is too far (&gt;
+<em>minimum_distance_to_RE</em>) from the RE cut-site. These are produced most
+probably by non-canonical enzyme activity or by random physical breakage
+of the chromatin. Note, that to filter all these types of fragments the
+minimum_distance_to_RE parameter should be larger than the
+<em>maximum_fragment_length</em>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>  <span class="c1"># or mouse_PSC</span>
 <span class="n">rep</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>  <span class="c1"># or rep2</span>
 </pre></div>
 </div>
 <div class="section" id="filter-out-dangling-ends-and-self-circles">
 <h2>Filter out dangling ends and self-circles<a class="headerlink" href="#filter-out-dangling-ends-and-self-circles" title="Permalink to this headline">¶</a></h2>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="k">import</span> <span class="n">filter_reads</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">filter_reads</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">max_molecule_length</span></code> parameter used to filter-out
@@ -93,15 +92,14 @@ pseudo-dangling-ends can be extracted from the <code class="docutils literal not
 in previous section.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">min_distance_to_re</span></code>, that affects the detection of random breaks,
 should be large enough in order to contain almost all the fragments.</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will last ~10 minutes</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will last ~10 minutes</span>
 <span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span>
     <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
     <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
     <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-Filtered reads (and percentage of total):
+<pre class="ansi-block literal-block">Filtered reads (and percentage of total):
 
                    Mapped both  :   87,862,102 (100.00%)
   -----------------------------------------------------
@@ -114,46 +112,41 @@ Filtered reads (and percentage of total):
    7-                 too large :        1,256 (  0.00%)
    8-          over-represented :    2,693,107 (  3.07%)
    9-                duplicated :    1,605,185 (  1.83%)
-  10-             random breaks :      308,512 (  0.35%)
-</pre>
+  10-             random breaks :      308,512 (  0.35%)</pre>
 <p>This generates a dictionary with the different filters and the reads
 affected by each.</p>
 </div>
 <div class="section" id="apply-filters-on-the-data">
 <h2>Apply filters on the data<a class="headerlink" href="#apply-filters-on-the-data" title="Permalink to this headline">¶</a></h2>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="k">import</span> <span class="n">apply_filter</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">apply_filter</span>
 
 <span class="n">apply_filter</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
              <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span> <span class="n">masked</span><span class="p">,</span>
              <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
 </pre></div>
 </div>
-<pre class="ansi-block literal-block">
-saving to file 66,612,427 reads without.
-</pre>
-<pre class="ansi-block literal-block">
-66612427
-</pre>
+<pre class="ansi-block literal-block">saving to file 66,612,427 reads without.</pre>
+<pre class="ansi-block literal-block">66612427</pre>
 <div class="section" id="evaluate-changes">
 <h3>Evaluate changes<a class="headerlink" href="#evaluate-changes" title="Permalink to this headline">¶</a></h3>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="k">import</span> <span class="n">hic_map</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">hic_map</span>
 
 <span class="n">hic_map</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
         <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_6-Filtering_mapped_reads_12_0.png" src="../_images/tutorial_6-Filtering_mapped_reads_12_0.png" />
+<img alt="../_images//tutorial_6-Filtering_mapped_reads_12_0.png" src="../_images//tutorial_6-Filtering_mapped_reads_12_0.png" />
 <p>Zoom to a single chromosome or a region:</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
         <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr1&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_6-Filtering_mapped_reads_14_0.png" src="../_images/tutorial_6-Filtering_mapped_reads_14_0.png" />
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+<img alt="../_images//tutorial_6-Filtering_mapped_reads_14_0.png" src="../_images//tutorial_6-Filtering_mapped_reads_14_0.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hic_map</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
         <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_6-Filtering_mapped_reads_15_0.png" src="../_images/tutorial_6-Filtering_mapped_reads_15_0.png" />
+<img alt="../_images//tutorial_6-Filtering_mapped_reads_15_0.png" src="../_images//tutorial_6-Filtering_mapped_reads_15_0.png" />
 <div class="section" id="save-to-bam">
 <h4>Save to BAM<a class="headerlink" href="#save-to-bam" title="Permalink to this headline">¶</a></h4>
 <p>Working with TSV (tab-separated-value file format) files is very slow.
@@ -183,10 +176,10 @@ Nothing (*) (the field is usually reserved to sequence) - Nothing (*)
 (1) or multi contact (3 6 … number being the number of times a given
 sequenced fragment is involved in a pairwise contact) - S1 and S2 tags
 are the strand orientation of the left and right read-end</p>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_bam_parser</span> <span class="k">import</span> <span class="n">bed2D_to_BAMhic</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_bam_parser</span> <span class="kn">import</span> <span class="n">bed2D_to_BAMhic</span>
 </pre></div>
 </div>
-<div class="code ipython2 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bed2D_to_BAMhic</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bed2D_to_BAMhic</span><span class="p">(</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">.tsv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
                 <span class="n">valid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ncpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                 <span class="n">outbam</span><span class="o">=</span><span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rep</span><span class="p">),</span>
                 <span class="n">frmt</span><span class="o">=</span><span class="s1">&#39;mid&#39;</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -238,13 +231,11 @@ are the strand orientation of the left and right read-end</p>
   <p class="topless"><a href="tutorial_7-Bin_filtering_and_normalization.html"
                         title="next chapter">Bin filtering and normalization</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -271,8 +262,8 @@ are the strand orientation of the left and right read-end</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

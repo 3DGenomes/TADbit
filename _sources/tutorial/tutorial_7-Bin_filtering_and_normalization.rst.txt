@@ -1,19 +1,18 @@
-
 Bin filtering and normalization
 ===============================
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.hic_parser import load_hic_data_from_bam
 
-.. code:: ipython2
+.. code:: ipython3
 
     cell = 'mouse_B'
     repl = 'rep1'
     
     reso = 100000
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data = load_hic_data_from_bam(
         'results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}.bam'.format(cell, repl),
@@ -23,14 +22,14 @@ Bin filtering and normalization
 .. ansi-block::
 
     
-      (Matrix size 27269x27269)                                                    [2019-01-11 12:35:55]
+      (Matrix size 27269x27269)                                                    [2020-02-06 11:17:21]
     
-      - Parsing BAM (122 chunks)                                                   [2019-01-11 12:35:55]
+      - Parsing BAM (122 chunks)                                                   [2020-02-06 11:17:21]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
     
-      - Getting matrices                                                           [2019-01-11 12:37:01]
+      - Getting matrices                                                           [2020-02-06 11:17:53]
          .......... .......... .......... .......... ..........     50/122
          .......... .......... .......... .......... ..........    100/122
          .......... .......... ..                                  122/122
@@ -46,14 +45,14 @@ interactions (``min_count=10``). This is a relatively loose filtering.
 2. We apply a more complex filter. We will remove bins with a total
 number of counts much lower than the mean of the interaction counts.
 
-***Note**: For this (very sparse) dataset, we required very few (10)
+**Note**\ *: For this (very sparse) dataset, we required very few (10)
 interactions per bin. In normal cases, to filter bins with too low
 interaction counts one should require that each bin contains a minimum
 percentage (default 75%) of cells with no-zero counts, or a minimum
 number of interactions in total (for good quality data the recommended
 value could be 2500).*
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.filter_columns(draw_hist=True, min_count=10, by_mean=True, silent=True)
 
@@ -68,21 +67,10 @@ value could be 2500).*
 .. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_6_1.png
 
 
-.. code:: ipython2
+.. code:: ipython3
 
-    print 'removed {:,} columns out of {:,} ({:.1f}%)'.format(len(hic_data.bads), len(hic_data),
-                                                               len(hic_data.bads) / float(len(hic_data)) * 100)
-
-
-.. ansi-block::
-
-    removed 2,660 columns out of 27,269 (9.8%)
-
-
-.. code:: ipython2
-
-    print 'removed {:,} columns out of {:,} ({:.1f}%)'.format(len(hic_data.bads), len(hic_data),
-                                                               len(hic_data.bads) / float(len(hic_data)) * 100)
+    print('removed {:,} columns out of {:,} ({:.1f}%)'.format(len(hic_data.bads), len(hic_data),
+                                                               len(hic_data.bads) / float(len(hic_data)) * 100))
 
 
 .. ansi-block::
@@ -95,31 +83,23 @@ have more cells than your screen have pixels), so it is much more
 informative to plot a specific region of the genome only using the
 ``focus`` parameter.
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_map(hic_data, normalized=False, focus='chr3', show=True, cmap='viridis')
 
 
-.. ansi-block::
 
-    /home/dcastillo/miniconda2/lib/python2.7/site-packages/matplotlib/axes/_base.py:3477: UserWarning: Attempted to set non-positive ylimits for log-scale axis; invalid limits will be ignored.
-      'Attempted to set non-positive ylimits for log-scale axis; '
-    /home/dcastillo/miniconda2/lib/python2.7/site-packages/pytadbit/utils/tadmaths.py:90: RuntimeWarning: divide by zero encountered in log10
-      return np.log10(val)
-
-
-
-.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_11_1.png
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_10_0.png
 
 
 Normalization algorithms
 ------------------------
 
-***Note**: if columns with a lot of zeroes are present the ICE
+**Note**\ *: if columns with a lot of zeroes are present the ICE
 normalization will last very long to converge, and these low-coverage
 columns will present, at the end of the normalization, few cells with
 very high values of interaction*
@@ -144,7 +124,7 @@ matrix :math:`M` is iteratively computed as:
 This normalization has usually a quite strong effect, and visually the
 matrices look very smooth and regular.
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.normalize_hic(iterations=100, max_dev=0.00001)
 
@@ -186,7 +166,7 @@ matrices look very smooth and regular.
       - rescaling biases
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
     
@@ -194,16 +174,16 @@ matrices look very smooth and regular.
 
 
 
-.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_17_0.png
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_16_0.png
 
 
 Save biases
 ~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.save_biases('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}_ICE_{2}kb.biases'.format(
-        cell, repl, reso / 1000))
+        cell, repl, reso // 1000))
 
 Vanilla coverage normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -211,7 +191,7 @@ Vanilla coverage normalization
 The vanilla normalization \ `(Rao et al., 2014) <#cite-Rao2014>`__ is a
 variation of the ICE where a single iteration is performed.
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.normalize_hic(iterations=0, max_dev=0.00001)
 
@@ -227,7 +207,7 @@ variation of the ICE where a single iteration is performed.
       - rescaling biases
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
     
@@ -235,16 +215,16 @@ variation of the ICE where a single iteration is performed.
 
 
 
-.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_23_0.png
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_22_0.png
 
 
 Save biases
 ~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.save_biases('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}_Vanilla_{2}kb.biases'.format(
-        cell, repl, reso / 1000))
+        cell, repl, reso // 1000))
 
 Square root vanilla coverage (SQRT) normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -255,7 +235,7 @@ is divided by the square root of the product of sums of counts.
 
 .. math:: M_{i,j} = \frac{W_{i,j}}{\sqrt{\sum_{n=0}^N{W_{i,n}} \times \sum_{n=0}^N{W_{n,j}}}}
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.normalize_hic(iterations=0, sqrt=True, max_dev=0.00001)
 
@@ -271,7 +251,7 @@ is divided by the square root of the product of sums of counts.
       - rescaling biases
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
     
@@ -279,16 +259,16 @@ is divided by the square root of the product of sums of counts.
 
 
 
-.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_29_0.png
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_28_0.png
 
 
 Save biases
 ~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.save_biases('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}_SQRT_{2}kb.biases'.format(
-        cell, repl, reso / 1000))
+        cell, repl, reso // 1000))
 
 OneD normalization
 ~~~~~~~~~~~~~~~~~~
@@ -303,68 +283,64 @@ As the estimation of each of this statistics is very important for the
 normalization, they are left outside the normalization function, in
 order to allow user to modify them.
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.parsers.bed_parser          import parse_mappability_bedGraph
     from pytadbit.utils.normalize_hic         import oneD
     from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
     from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
 
-.. code:: ipython2
+.. code:: ipython3
 
     fasta = 'genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.fa'
     genome = parse_fasta(fasta, verbose=False)
 
 get mappability ~2 min
 
-.. code:: ipython2
+.. code:: ipython3
 
     f_mappability = 'genome/Mus_musculus-GRCm38.p6/Mus_musculus-GRCm38.p6.50mer.bedGraph'
     
     mappability = parse_mappability_bedGraph(f_mappability, reso)
 
+.. code:: ipython3
 
-.. ansi-block::
-
-         saving mappabilty to cache...
-
-
-.. code:: ipython2
-
+    from functools import reduce
+    
     for c in genome:
         if not c in mappability:
-            mappability[c] = [float('nan')] * (len(genome) / reso + 1)
-        if len(mappability[c]) < len(genome) / reso + 1:
+            mappability[c] = [float('nan')] * (len(genome) // reso + 1)
+        if len(mappability[c]) < len(genome) // reso + 1:
             mappability[c] += [float('nan')] * (
-                (len(genome) / reso + 1) - len(mappability[c]))
+                (len(genome) // reso + 1) - len(mappability[c]))
     mappability = reduce(lambda x, y: x + y,
                          (mappability.get(c, []) for c in genome))
 
 get GC content ~ 30 sec
 
-.. code:: ipython2
+.. code:: ipython3
 
     gc_content = get_gc_content(genome, reso, n_cpus=8)
 
-compute r\_sites ~30 sec
+compute r_sites ~30 sec
 
-.. code:: ipython2
+.. code:: ipython3
 
     re_site = RESTRICTION_ENZYMES['MboI'].replace('|', '')
     
     n_rsites  = []
     for crm in genome:
-        for pos in xrange(0, len(genome[crm]), reso):
+        for pos in range(0, len(genome[crm]), reso):
             seq = genome[crm][pos:pos + reso + 400]
             n_rsites.append(seq.count(re_site))
 
-.. code:: ipython2
+.. code:: ipython3
 
     sum_cols = [float('nan') if c in hic_data.bads else 
-                sum(0.0 if l in hic_data.bads else hic_data[c, l] for l in xrange(len(hic_data))) 
-                for c in xrange(len(hic_data))]
+                sum(0.0 if l in hic_data.bads else hic_data[c, l] for l in range(len(hic_data))) 
+                for c in range(len(hic_data))]
 
-.. code:: ipython2
+.. code:: ipython3
 
     biases = oneD(tot=sum_cols, map=mappability, res=n_rsites, cg=gc_content)
 
@@ -374,11 +350,11 @@ compute r\_sites ~30 sec
     
 
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.bias = list(biases)
 
-.. code:: ipython2
+.. code:: ipython3
 
     from pytadbit.mapping.analyze import hic_map
     
@@ -386,16 +362,16 @@ compute r\_sites ~30 sec
 
 
 
-.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_46_0.png
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_45_0.png
 
 
 Save biases
 ~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     hic_data.save_biases('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}_oneD_{2}kb.biases'.format(
-        cell, repl, reso / 1000))
+        cell, repl, reso // 1000))
 
 Comparison
 ~~~~~~~~~~
@@ -403,13 +379,13 @@ Comparison
 By eye, the effect of choosing one normalization over an other is often
 very small
 
-.. code:: ipython2
+.. code:: ipython3
 
     import matplotlib.pyplot as plt
     import numpy as np
     from pytadbit.utils.extraviews import plot_HiC_matrix
 
-.. code:: ipython2
+.. code:: ipython3
 
     plt.figure(figsize=(22, 21))
     axe = plt.subplot(3, 2, 1)
@@ -421,7 +397,7 @@ very small
     for num, norm in enumerate(['SQRT', 'oneD', 'Vanilla', 'ICE'], 3):
         # load biases
         hic_data.load_biases('results/fragment/{0}_{1}/03_filtering/valid_reads12_{0}_{1}_{3}_{2}kb.biases'.format(
-        cell, repl, reso / 1000, norm))
+        cell, repl, reso // 1000, norm))
         # retrieve data as matrix
         matrix = hic_data.get_matrix(focus='chr3:10000000-40000000', normalized=True, masked=True)
         # define subplot
@@ -437,9 +413,13 @@ very small
 
 .. ansi-block::
 
-    /home/dcastillo/miniconda2/lib/python2.7/site-packages/ipykernel_launcher.py:5: RuntimeWarning: divide by zero encountered in log2
+    /home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/ipykernel_launcher.py:5: RuntimeWarning: divide by zero encountered in log2
       """
-    /home/dcastillo/miniconda2/lib/python2.7/site-packages/ipykernel_launcher.py:18: RuntimeWarning: divide by zero encountered in log2
+    /home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/ipykernel_launcher.py:18: RuntimeWarning: divide by zero encountered in log2
+
+
+
+.. image:: ../nbpictures//tutorial_7-Bin_filtering_and_normalization_51_1.png
 
 
 Other normalizations

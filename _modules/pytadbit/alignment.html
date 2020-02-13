@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>pytadbit.alignment &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -41,25 +40,26 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="k">import</span> <span class="n">colorize</span><span class="p">,</span> <span class="n">tadbit_savefig</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="k">import</span> <span class="n">_tad_density_plot</span>
-<span class="kn">from</span> <span class="nn">random</span>                            <span class="k">import</span> <span class="n">random</span><span class="p">,</span> <span class="n">shuffle</span>
-<span class="kn">from</span> <span class="nn">sys</span>                               <span class="k">import</span> <span class="n">stdout</span>
-<span class="kn">from</span> <span class="nn">pytadbit.boundary_aligner.aligner</span> <span class="k">import</span> <span class="n">align</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">colorize</span><span class="p">,</span> <span class="n">tadbit_savefig</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">_tad_density_plot</span>
+<span class="kn">from</span> <span class="nn">random</span>                            <span class="kn">import</span> <span class="n">random</span><span class="p">,</span> <span class="n">shuffle</span>
+<span class="kn">from</span> <span class="nn">sys</span>                               <span class="kn">import</span> <span class="n">stdout</span>
+<span class="kn">from</span> <span class="nn">pytadbit.boundary_aligner.aligner</span> <span class="kn">import</span> <span class="n">align</span>
 
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">interp1d</span>
+    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span> <span class="k">import</span> <span class="n">Interpolate</span> <span class="k">as</span> <span class="n">interp1d</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span> <span class="kn">import</span> <span class="n">Interpolate</span> <span class="k">as</span> <span class="n">interp1d</span>
 
 
 <div class="viewcode-block" id="Alignment"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment">[docs]</a><span class="k">class</span> <span class="nc">Alignment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alignment of TAD borders</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">consensus</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">consensus</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__experiments</span> <span class="o">=</span> <span class="n">experiments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__values</span> <span class="o">=</span> <span class="p">[]</span>
@@ -71,18 +71,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">score</span>
 
 
-    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__len</span>
 
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        calls Alignment.print_alignment</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_alignment</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Alignment description</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -90,7 +90,7 @@
                 <span class="s1">&#39;number of experiments: </span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">))</span>
 
 
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
@@ -101,7 +101,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ERROR: </span><span class="si">%s</span><span class="s1"> not in alignment&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
 
-    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">j</span>
         <span class="k">else</span><span class="p">:</span>
@@ -109,7 +109,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -121,8 +121,10 @@
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ERROR: </span><span class="si">%s</span><span class="s1"> not in alignment&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">key</span>
 
@@ -131,7 +133,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate over experiment names and aligned boundaries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="k">yield</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
 
 
@@ -139,7 +141,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate over experiment names and aligned boundaries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
 
@@ -147,9 +149,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate over columns in the alignment</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="n">col</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)):</span>
                 <span class="n">col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">exp</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
             <span class="k">yield</span> <span class="n">col</span></div>
 
@@ -190,7 +192,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Only ansi and html ftype implemented.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">+=</span> <span class="s1">&#39;Alignment shown in </span><span class="si">%s</span><span class="s1"> Kb (</span><span class="si">%s</span><span class="s1"> experiments) (&#39;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">xpers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">xpers</span><span class="p">))</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">xpers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">xpers</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">+=</span> <span class="s1">&#39;scores: </span><span class="si">%s</span><span class="s1">)</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="p">[</span><span class="n">colorize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">ftype</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">)]))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xpers</span><span class="p">):</span>
@@ -211,7 +213,7 @@
             <span class="n">out</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;&#39;</span>
         <span class="k">if</span> <span class="n">string</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">out</span>
-        <span class="nb">print</span> <span class="n">out</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
 
 
 
@@ -265,10 +267,10 @@
         <span class="n">cond</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">cond1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cond2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">min_num</span> <span class="o">=</span> <span class="n">min_num</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)</span>
         <span class="n">column</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="n">col</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)):</span>
                 <span class="n">col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">exp</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">cond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">exp</span><span class="p">][</span><span class="n">pos</span><span class="p">]):</span>
                     <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -328,19 +330,19 @@
 <span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
 <span class="sd">           of the file name will determine the desired format).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">matplotlib.cm</span> <span class="k">import</span> <span class="n">jet</span>
-        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.cm</span> <span class="kn">import</span> <span class="n">jet</span>
+        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
         <span class="n">experiments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__experiments</span>
 
         <span class="n">maxres</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">])</span>
-        <span class="n">facts</span> <span class="o">=</span> <span class="p">[</span><span class="n">maxres</span> <span class="o">/</span> <span class="n">e</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">]</span>
+        <span class="n">facts</span> <span class="o">=</span> <span class="p">[</span><span class="n">maxres</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">]</span>
 
 
         <span class="n">siz</span> <span class="o">=</span> <span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
         <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
-            <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">30</span>
+            <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">//</span> <span class="mi">30</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">/</span> <span class="mi">30</span>
+            <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">//</span> <span class="mi">30</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">experiments</span><span class="p">),</span>
                                  <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                  <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figsiz</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">experiments</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.8</span><span class="p">))</span>
@@ -362,7 +364,7 @@
             <span class="k">for</span> <span class="n">iex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiments</span><span class="p">)):</span>
                 <span class="n">starting</span> <span class="o">=</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">focus</span> <span class="k">else</span> <span class="mi">1</span>
                 <span class="n">ending</span> <span class="o">=</span> <span class="p">(</span><span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">focus</span>
-                          <span class="k">else</span> <span class="n">experiments</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>
+                          <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">experiments</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>
                 <span class="n">axes</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
                 <span class="n">axes</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxy</span><span class="p">))</span>
                 <span class="n">maxxs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ending</span> <span class="o">/</span> <span class="n">facts</span><span class="p">[</span><span class="n">iex</span><span class="p">])</span>
@@ -406,18 +408,18 @@
         <span class="c1"># cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
         <span class="n">plots</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
             <span class="n">plots</span> <span class="o">+=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">100</span><span class="p">,),(</span><span class="mi">100</span><span class="p">,),</span> <span class="n">marker</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
                               <span class="n">color</span><span class="o">=</span><span class="n">jet</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">),</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span>
-                            <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)],</span>
+                            <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)],</span>
                             <span class="n">numpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Border scores&#39;</span><span class="p">,</span>
                             <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span>
                             <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span>
-                            <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)],</span>
+                            <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)],</span>
                             <span class="n">numpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Border scores&#39;</span><span class="p">,</span>
                             <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span>
                             <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
@@ -442,13 +444,13 @@
 <span class="sd">     - &#39;index&#39;: of this TAD within all TADs in the Experiment</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TAD</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">exp</span><span class="o">.</span><span class="n">tads</span> <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(((</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">),(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="n">exp</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">idx</span><span class="p">))))</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;exp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;exp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">)</span> \
                       <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&lt;&#39;</span></div>
 
 
@@ -465,7 +467,7 @@
     <span class="c1"># get all TAD lengths and multiply it by bin size of the experiment</span>
     <span class="n">norm_tads</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="n">tad</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tad</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">brk</span><span class="p">[</span><span class="s1">&#39;brk&#39;</span><span class="p">]:</span>
                 <span class="k">continue</span>
             <span class="n">norm_tads</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">brk</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">brk</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">tad</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
@@ -517,12 +519,12 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No TADs defined, use find_tad function.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">tads</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span> <span class="o">*</span> \
-                     <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+                     <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">())])</span>
     <span class="n">rnd_distr</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># rnd_len = []</span>
     <span class="n">distr</span> <span class="o">=</span> <span class="n">_interpolation</span><span class="p">(</span><span class="n">xpers</span><span class="p">)</span> <span class="k">if</span> <span class="n">rnd_method</span> <span class="ow">is</span> <span class="s1">&#39;interpolate&#39;</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="n">rnd_exp</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="n">tads</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">))]</span>
-    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span> <span class="o">/</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">%</span> <span class="mi">5</span><span class="p">:</span>
@@ -532,12 +534,12 @@
                 <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">rnd_method</span> <span class="ow">is</span> <span class="s1">&#39;interpolate&#39;</span><span class="p">:</span>
             <span class="n">rnd_tads</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_rnd_tads</span><span class="p">(</span><span class="n">r_size</span><span class="p">,</span> <span class="n">distr</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">))]</span>
+                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">))]</span>
             <span class="c1"># rnd_len.append(float(sum([len(r) for r in rnd_tads]))</span>
             <span class="c1">#                / len(rnd_tads))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">rnd_tads</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_shuffle_tads</span><span class="p">(</span><span class="n">rnd_exp</span><span class="p">())</span>
-                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">))]</span>
+                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">))]</span>
             <span class="c1"># rnd_len.append(len(tads))</span>
         <span class="n">rnd_distr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">align</span><span class="p">(</span><span class="n">rnd_tads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
                                <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
@@ -552,14 +554,14 @@
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> randomizations finished.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">))</span>
         <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-        <span class="nb">print</span> <span class="s1">&#39;  Observed alignment score: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">score</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  Observed alignment score: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">score</span><span class="p">))</span>
         <span class="c1"># print &#39;  Mean number of boundaries: {}; observed: {}&#39;.format (</span>
         <span class="c1">#     sum(rnd_len)/len(rnd_len),</span>
         <span class="c1">#     str([len(self.experiments[e].brks)</span>
         <span class="c1">#          for e in self.experiments]))</span>
-        <span class="nb">print</span> <span class="s1">&#39;Randomized scores between </span><span class="si">%s</span><span class="s1"> and </span><span class="si">%s</span><span class="s1">; observed: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="nb">min</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="n">score</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s1">&#39;p-value: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pval</span> <span class="k">if</span> <span class="n">pval</span> <span class="k">else</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">num</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Randomized scores between </span><span class="si">%s</span><span class="s1"> and </span><span class="si">%s</span><span class="s1">; observed: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="n">score</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;p-value: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pval</span> <span class="k">if</span> <span class="n">pval</span> <span class="k">else</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">num</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">pval</span></div>
 
 
@@ -621,13 +623,11 @@
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -649,8 +649,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

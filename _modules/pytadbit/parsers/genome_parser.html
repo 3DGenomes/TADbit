@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>pytadbit.parsers.genome_parser &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -41,13 +40,20 @@
 
 <span class="sd">convert a bunch of fasta files, or a single multi fasta file, into a dictionary</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mu</span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="k">import</span> <span class="n">magic_open</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">magic_open</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">basestring</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="n">basestring</span> <span class="o">=</span> <span class="nb">str</span>
 
 <div class="viewcode-block" id="parse_fasta"><a class="viewcode-back" href="../../../reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta">[docs]</a><span class="k">def</span> <span class="nf">parse_fasta</span><span class="p">(</span><span class="n">f_names</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chr_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chr_regexp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reload_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">only_length</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -69,7 +75,7 @@
 <span class="sd">    :returns: a sorted dictionary with chromosome names as keys, and sequences</span>
 <span class="sd">       as values (sequence in upper case)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f_names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f_names</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
         <span class="n">f_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_names</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -78,19 +84,20 @@
         <span class="n">fname</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">commonprefix</span><span class="p">(</span><span class="n">f_names</span><span class="p">),</span> <span class="s1">&#39;genome.TADbit&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">reload_cache</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;Loading cached genome&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading cached genome&#39;</span><span class="p">)</span>
         <span class="n">genome_seq</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
-                <span class="n">c</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
-                    <span class="n">genome_seq</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_open</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_open</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
+                    <span class="n">c</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">genome_seq</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
+                        <span class="n">genome_seq</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">genome_seq</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">genome_seq</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chr_names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chr_names</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
         <span class="n">chr_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">chr_names</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">chr_filter</span><span class="p">:</span>
@@ -107,60 +114,62 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">seq</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">f_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
-                    <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-                <span class="n">header</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">chr_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
-                    <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;UNWANTED&#39;</span>
-                <span class="k">elif</span> <span class="ow">not</span> <span class="n">chr_names</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span> <span class="s1">&#39;Parsing </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">header</span> <span class="o">=</span> <span class="n">chr_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span> <span class="s1">&#39;Parsing </span><span class="si">%s</span><span class="s1"> as </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span> <span class="n">header</span><span class="p">)</span>
-                <span class="n">seq</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">continue</span>
-            <span class="n">seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
-            <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">if</span> <span class="s1">&#39;UNWANTED&#39;</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
-            <span class="k">del</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="s1">&#39;UNWANTED&#39;</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">f_names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
+                        <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                    <span class="n">header</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">chr_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+                        <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;UNWANTED&#39;</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">chr_names</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">header</span> <span class="o">=</span> <span class="n">chr_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing </span><span class="si">%s</span><span class="s1"> as </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span>
+                                                        <span class="n">header</span><span class="p">))</span>
+                    <span class="n">seq</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">continue</span>
+                <span class="n">seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
+                <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s1">&#39;UNWANTED&#39;</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
+                <span class="k">del</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="s1">&#39;UNWANTED&#39;</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">fnam</span> <span class="ow">in</span> <span class="n">f_names</span><span class="p">:</span>
-            <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">chr_names</span><span class="p">:</span>
-                        <span class="n">header</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-                        <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
-                            <span class="n">header</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">chr_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">f_nam</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">chr_names</span><span class="p">:</span>
+                            <span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
+                                <span class="n">header</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">chr_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+                                    <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;UNWANTED&#39;</span>
+                                <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                                <span class="k">break</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+                            <span class="n">header</span> <span class="o">=</span> <span class="n">chr_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
                                 <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;UNWANTED&#39;</span>
                             <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
                             <span class="k">break</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">_</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-                        <span class="n">header</span> <span class="o">=</span> <span class="n">chr_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">bad_chrom</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
-                            <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;UNWANTED&#39;</span>
-                        <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-                        <span class="k">break</span>
-            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No crocodiles found, is it fasta?&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
-                <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">l</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">])</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No crocodiles found, is it fasta?&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">only_length</span><span class="p">:</span>
+                    <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">genome_seq</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">l</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">])</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">if</span> <span class="s1">&#39;UNWANTED&#39;</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
             <span class="k">del</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="s1">&#39;UNWANTED&#39;</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">save_cache</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">only_length</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;saving genome in cache&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saving genome in cache&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">fname</span> <span class="o">=</span> <span class="n">f_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_genome.TADbit&#39;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -184,7 +193,7 @@
 <span class="sd">       chromosomes)</span>
 <span class="sd">    :param False by_chrom: if False returns a unique list for the full genome</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">chromosomes</span> <span class="o">=</span> <span class="n">chromosomes</span> <span class="k">if</span> <span class="n">chromosomes</span> <span class="k">else</span> <span class="n">genome</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">chromosomes</span> <span class="o">=</span> <span class="n">chromosomes</span> <span class="k">if</span> <span class="n">chromosomes</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">genome</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">n_cpus</span><span class="p">:</span>
         <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
     <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">)</span>
@@ -203,7 +212,7 @@
 
 <span class="k">def</span> <span class="nf">_get_chr_gc_list</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
     <span class="n">gc_content</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chrom</span><span class="p">),</span> <span class="n">resolution</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chrom</span><span class="p">),</span> <span class="n">resolution</span><span class="p">):</span>
         <span class="n">seq</span> <span class="o">=</span> <span class="n">chrom</span><span class="p">[</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span> <span class="o">+</span> <span class="n">resolution</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">gc_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">))</span> <span class="o">/</span>
@@ -215,7 +224,7 @@
 
 <span class="k">def</span> <span class="nf">_get_chr_gc_dico</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">reso</span><span class="p">):</span>
     <span class="n">gc_content</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chrom</span><span class="p">),</span> <span class="n">reso</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chrom</span><span class="p">),</span> <span class="n">reso</span><span class="p">):</span>
         <span class="n">seq</span> <span class="o">=</span> <span class="n">chrom</span><span class="p">[</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span> <span class="o">+</span> <span class="n">reso</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">gc_content</span><span class="p">[</span><span class="n">pos</span>  <span class="o">/</span><span class="n">reso</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">))</span> <span class="o">/</span>
@@ -243,13 +252,11 @@
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -271,8 +278,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

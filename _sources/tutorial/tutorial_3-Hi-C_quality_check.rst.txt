@@ -1,4 +1,3 @@
-
 Hi-C quality check
 ------------------
 
@@ -7,8 +6,8 @@ header of the DNA sequence with the read id (plus optional fields) 2.
 the DNA sequence 3. starting with ``+``, the header of the sequence
 quality (this line could be either a repetition of first line or empty)
 4. the sequence quality (it is provided as PHRED score and it is not
-human readable. Check
-https://en.wikipedia.org/wiki/Phred\_quality\_score for more details)
+human readable. Check https://en.wikipedia.org/wiki/Phred_quality_score
+for more details)
 
 .. code:: bash
 
@@ -62,7 +61,7 @@ the experiment. TADbit provides a simple function to check for it:
 
     pat, enz, pv = identify_re('FASTQs/mouse_B_rep1_1.fastq.dsrc')
     
-    print '- Most probable pattern: %s, matching enzymes: %s' % (pat, ','.join(enz))
+    print('- Most probable pattern: %s, matching enzymes: %s' % (pat, ','.join(enz)))
 
 
 .. ansi-block::
@@ -132,5 +131,5 @@ correlated with the percentage of dangling-ends.
 
 
 
-*Note: this plot is **compatible with the use of multiple restriction
-enzymes** (which is why the ligation site is labeled as MboI-MboI)*
+*Note: this plot is*\ **compatible with the use of multiple restriction
+enzymes**\ *(which is why the ligation site is labeled as MboI-MboI)*

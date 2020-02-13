@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>pytadbit.mapping.full_mapper &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -40,20 +39,30 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">09 Jun 2015</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">builtins</span>   <span class="kn">import</span> <span class="nb">next</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">tempfile</span> <span class="k">import</span> <span class="n">gettempdir</span><span class="p">,</span> <span class="n">mkstemp</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
-<span class="kn">from</span> <span class="nn">pysam</span> <span class="k">import</span> <span class="n">Samfile</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>  <span class="k">as</span> <span class="nn">mu</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span><span class="p">,</span> <span class="n">mkstemp</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">Popen</span>
+<span class="kn">from</span> <span class="nn">pysam</span> <span class="kn">import</span> <span class="n">Samfile</span>
 
-<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="k">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">which</span><span class="p">,</span> <span class="n">is_fastq</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="k">import</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">get_free_space_mb</span>
-<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">religateds</span>
-<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">RESTRICTION_ENZYMES</span>
-<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="k">import</span> <span class="n">iupac2regex</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">which</span><span class="p">,</span> <span class="n">is_fastq</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">get_free_space_mb</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.sam_parser</span> <span class="kn">import</span> <span class="n">parse_gem_3c</span><span class="p">,</span> <span class="n">merge_sort</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">religateds</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">RESTRICTION_ENZYMES</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">map_re_sites</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">iupac2regex</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">basestring</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="n">basestring</span> <span class="o">=</span> <span class="nb">str</span>
 
 <span class="k">def</span> <span class="nf">transform_fastq</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_fastq</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_site</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">min_seq_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fastq</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -75,11 +84,11 @@
 <span class="sd">        Note: header also contains the sequence</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rlines</span> <span class="o">=</span> <span class="n">rlines</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="n">_</span>   <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities header but not needed</span>
-        <span class="n">qal</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities but not needed</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="n">_</span>   <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>  <span class="c1"># lose qualities header but not needed</span>
+        <span class="n">qal</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>  <span class="c1"># lose qualities but not needed</span>
         <span class="c1"># header now also contains original read</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
                 <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_get_fastq_read_light</span><span class="p">(</span><span class="n">rlines</span><span class="p">):</span>
@@ -88,10 +97,10 @@
 <span class="sd">        Note: header also contains the sequence</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rlines</span> <span class="o">=</span> <span class="n">rlines</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="n">_</span>   <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities header but not needed</span>
-        <span class="n">qal</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities but not needed</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span><span class="p">,</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="n">_</span>   <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>  <span class="c1"># lose qualities header but not needed</span>
+        <span class="n">qal</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>  <span class="c1"># lose qualities but not needed</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_get_map_read_heavy</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -106,7 +115,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">pat</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;nan&#39;</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">find_patterns</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">patterns</span><span class="p">):</span>
         <span class="n">pos</span><span class="p">,</span> <span class="n">pat</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">_inverse_find</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">p</span><span class="p">]),</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">)</span>
@@ -149,7 +158,7 @@
         <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">pos</span><span class="p">,</span> <span class="p">(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)</span> <span class="o">=</span> <span class="n">find_patterns</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">patterns</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_seq_len</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_seq_len</span><span class="p">:</span>
@@ -179,7 +188,7 @@
         <span class="n">strip_line</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
 
     <span class="c1"># define function to split reads according to restriction enzyme sites</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
         <span class="n">r_enzs</span> <span class="o">=</span> <span class="p">[</span><span class="n">r_enz</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">r_enzs</span> <span class="o">=</span> <span class="n">r_enz</span>
@@ -197,15 +206,15 @@
         <span class="k">for</span> <span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span> <span class="ow">in</span> <span class="n">enz_patterns</span><span class="p">:</span>
             <span class="n">sub_enz_patterns</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">enz_patterns</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)][:</span><span class="nb">len</span><span class="p">(</span><span class="n">enz_patterns</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)])</span>
-                                               <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+                                               <span class="o">//</span> <span class="mi">2</span><span class="p">])</span>
             <span class="n">len_relgs</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">enz_patterns</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)])</span>
-        <span class="nb">print</span> <span class="s1">&#39;  - splitting into restriction enzyme (RE) fragments using ligation sites&#39;</span>
-        <span class="nb">print</span> <span class="s1">&#39;  - ligation sites are replaced by RE sites to match the reference genome&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - splitting into restriction enzyme (RE) fragments using ligation sites&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - ligation sites are replaced by RE sites to match the reference genome&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">r_enz1</span> <span class="ow">in</span> <span class="n">r_enzs</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">r_enz2</span> <span class="ow">in</span> <span class="n">r_enzs</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s1">&#39;    * enzymes: </span><span class="si">%s</span><span class="s1"> &amp; </span><span class="si">%s</span><span class="s1">, ligation site: </span><span class="si">%s</span><span class="s1">, RE site: </span><span class="si">%s</span><span class="s1"> &amp; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    * enzymes: </span><span class="si">%s</span><span class="s1"> &amp; </span><span class="si">%s</span><span class="s1">, ligation site: </span><span class="si">%s</span><span class="s1">, RE site: </span><span class="si">%s</span><span class="s1"> &amp; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                     <span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">,</span> <span class="n">enz_patterns</span><span class="p">[(</span><span class="n">r_enz1</span><span class="p">,</span> <span class="n">r_enz2</span><span class="p">)],</span>
-                    <span class="n">enzymes</span><span class="p">[</span><span class="n">r_enz1</span><span class="p">],</span> <span class="n">enzymes</span><span class="p">[</span><span class="n">r_enz2</span><span class="p">])</span>
+                    <span class="n">enzymes</span><span class="p">[</span><span class="n">r_enz1</span><span class="p">],</span> <span class="n">enzymes</span><span class="p">[</span><span class="n">r_enz2</span><span class="p">]))</span>
         <span class="c1"># replace pattern with regex to support IUPAC annotation</span>
         <span class="k">for</span> <span class="n">ezp</span> <span class="ow">in</span> <span class="n">enz_patterns</span><span class="p">:</span>
             <span class="n">enz_patterns</span><span class="p">[</span><span class="n">ezp</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">iupac2regex</span><span class="p">(</span><span class="n">enz_patterns</span><span class="p">[</span><span class="n">ezp</span><span class="p">]))</span>
@@ -228,19 +237,19 @@
 
     <span class="c1">## Start processing the input file</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s1">&#39;Preparing </span><span class="si">%s</span><span class="s1"> file&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;FASTQ&#39;</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="s1">&#39;MAP&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Preparing </span><span class="si">%s</span><span class="s1"> file&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;FASTQ&#39;</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="s1">&#39;MAP&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">fastq</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;  - conversion to MAP format&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - conversion to MAP format&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">trim</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;  - trimming reads </span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">trim</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - trimming reads </span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">trim</span><span class="p">))</span>
     <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">skip</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">fastq</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;    ... skipping, only counting lines&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    ... skipping, only counting lines&#39;</span><span class="p">)</span>
             <span class="n">counter</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span>
                                                 <span class="n">cpus</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nthreads&#39;</span><span class="p">)))</span>
             <span class="n">counter</span> <span class="o">/=</span> <span class="mi">4</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="nb">print</span> <span class="s1">&#39;            &#39;</span> <span class="o">+</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="n">fastq</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;            &#39;</span> <span class="o">+</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="n">fastq</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out_fastq</span><span class="p">,</span> <span class="n">counter</span>
     <span class="c1"># open input file</span>
     <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span> <span class="n">cpus</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nthreads&#39;</span><span class="p">))</span>
@@ -260,7 +269,7 @@
         <span class="n">iter_frags</span> <span class="o">=</span> <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">enz_patterns</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
         <span class="c1"># the first fragment should not be preceded by the RE site</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">iter_frags</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_frags</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
             <span class="c1"># read full of ligation events, fragments not reaching minimum</span>
             <span class="k">continue</span>
@@ -270,7 +279,7 @@
             <span class="c1"># site is a RE site or nearly, and thus should not be found anyway)</span>
             <span class="n">iter_frags</span> <span class="o">=</span> <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">sub_enz_patterns</span><span class="p">,</span> <span class="n">no_site</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">iter_frags</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_frags</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
@@ -302,7 +311,7 @@
 <span class="k">def</span> <span class="nf">_map2fastq</span><span class="p">(</span><span class="n">read</span><span class="p">):</span>
     <span class="k">return</span> <span class="s1">&#39;@</span><span class="si">{0}</span><span class="se">\n</span><span class="si">{1}</span><span class="se">\n</span><span class="s1">+</span><span class="se">\n</span><span class="si">{2}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">read</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-<span class="k">def</span> <span class="nf">_bowtie2_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">unmap_out</span><span class="p">,</span> <span class="n">map_out</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_sam_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">unmap_out</span><span class="p">,</span> <span class="n">map_out</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Divides reads in a map file in two categories: uniquely mapped, and not.</span>
 <span class="sd">    Writes them in two files</span>
@@ -354,7 +363,7 @@
 <span class="sd">       - GEM unique-maps can not be used as it gets rid of reads like 1:0:0:5</span>
 <span class="sd">       - not feasible with gt.filter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fnam</span>
+    <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span> <span class="k">else</span> <span class="n">fnam</span>
     <span class="n">unmap_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">unmap_out</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">map_out</span>   <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">map_out</span>  <span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_strip_read_name</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
@@ -402,13 +411,13 @@
     <span class="c1"># check that we have the GEM binary:</span>
     <span class="n">bowtie2_binary</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">bowtie2_binary</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">bowtie2_binary</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: bowtie2 binary not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: </span><span class="si">%s</span><span class="s1"> binary not found&#39;</span><span class="o">%</span><span class="n">bowtie2_binary</span><span class="p">)</span>
 
     <span class="c1"># mapping</span>
-    <span class="nb">print</span> <span class="s1">&#39;TO BOWTIE2&#39;</span><span class="p">,</span> <span class="n">fastq_path1</span><span class="p">,</span> <span class="n">fastq_path2</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TO </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">bowtie2_binary</span><span class="p">,</span> <span class="n">fastq_path1</span><span class="p">,</span> <span class="n">fastq_path2</span><span class="p">)</span>
     <span class="n">bowtie2_cmd</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">bowtie2_binary</span><span class="p">,</span> <span class="s1">&#39;-x&#39;</span><span class="p">,</span> <span class="n">bowtie2_index_path</span><span class="p">,</span>
-        <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span> <span class="s1">&#39;--reorder&#39;</span><span class="p">,</span> <span class="s1">&#39;-S&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span> <span class="s1">&#39;--reorder&#39;</span><span class="p">,</span><span class="s1">&#39;-k&#39;</span><span class="p">,</span><span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;-S&#39;</span><span class="p">,</span>
         <span class="n">out_map_path</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">paired_map</span><span class="p">:</span>
@@ -421,20 +430,22 @@
             <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">bow_param</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">]:</span>
                 <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">bowtie2_binary</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">:</span>
         <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--very-sensitive&#39;</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bowtie2_cmd</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bowtie2_cmd</span><span class="p">))</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># check_call(gem_cmd, stdout=PIPE, stderr=PIPE)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">bowtie2_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">bowtie2_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="n">out</span>
-        <span class="nb">print</span> <span class="n">err</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
-                <span class="n">gem_binary</span><span class="o">=</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">fastq_path2</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">r_enz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gem_binary</span><span class="o">=</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param None focus: trims the sequence in the input FASTQ file according to a</span>
 <span class="sd">       (start, end) position, or the name of a restriction enzyme. By default it</span>
@@ -448,79 +459,87 @@
     <span class="n">max_edit_distance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_edit_distance&#39;</span>   <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
     <span class="n">mismatches</span>        <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mismatches&#39;</span>          <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
 
-    <span class="c1"># check that we have the GEM binary:</span>
-    <span class="n">gem_binary</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">gem_binary</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">gem_binary</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: GEM binary not found, install it from:&#39;</span>
-                        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/&#39;</span>
-                        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> - Download the GEM-binaries-Linux-x86_64-core_i3 if&#39;</span>
-                        <span class="s1">&#39;have a recent computer, the &#39;</span>
-                        <span class="s1">&#39;GEM-binaries-Linux-x86_64-core_2 otherwise</span><span class="se">\n</span><span class="s1"> - &#39;</span>
-                        <span class="s1">&#39;Uncompress with &quot;tar xjvf GEM-binaries-xxx.tbz2&quot;</span><span class="se">\n</span><span class="s1"> - &#39;</span>
-                        <span class="s1">&#39;Copy the binary gem-mapper to /usr/local/bin/ for &#39;</span>
-                        <span class="s1">&#39;example (somewhere in your PATH).</span><span class="se">\n\n</span><span class="s1">NOTE: GEM does &#39;</span>
-                        <span class="s1">&#39;not provide any binary for MAC-OS.&#39;</span><span class="p">)</span>
-
     <span class="c1"># mapping</span>
-    <span class="nb">print</span> <span class="s1">&#39;TO GEM&#39;</span><span class="p">,</span> <span class="n">fastq_path</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TO GEM&#39;</span><span class="p">,</span> <span class="n">gem_version</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">)</span>
     <span class="n">kgt</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span>
-    <span class="n">gem_cmd</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">gem_binary</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span><span class="p">,</span> <span class="n">gem_index_path</span><span class="p">,</span>
-        <span class="s1">&#39;-q&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;offset-33&#39;</span>                    <span class="p">),</span>
-        <span class="s1">&#39;-m&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_edit_distance</span>       <span class="p">)</span>  <span class="p">),</span>
-        <span class="s1">&#39;-s&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>  <span class="p">),</span>
-        <span class="s1">&#39;--allow-incomplete-strata&#39;</span> <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;0.00&#39;</span>   <span class="p">),</span>
-        <span class="s1">&#39;--granularity&#39;</span>             <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;10000&#39;</span>              <span class="p">),</span>
-        <span class="s1">&#39;--max-decoded-matches&#39;</span>     <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">)),</span>
-        <span class="s1">&#39;--min-decoded-strata&#39;</span>      <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="p">),</span>
-        <span class="s1">&#39;--min-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
-        <span class="s1">&#39;--max-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
-        <span class="s1">&#39;--min-matched-bases&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span> <span class="s1">&#39;0.8&#39;</span>          <span class="p">),</span>
-        <span class="s1">&#39;--gem-quality-threshold&#39;</span>   <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;26&#39;</span>       <span class="p">),</span>
-        <span class="s1">&#39;--max-big-indel-length&#39;</span>    <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span>        <span class="p">),</span>
-        <span class="s1">&#39;--mismatch-alphabet&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGT&#39;</span>         <span class="p">),</span>
-        <span class="s1">&#39;-E&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;0.30&#39;</span>                         <span class="p">),</span>
-        <span class="s1">&#39;--max-extendable-matches&#39;</span>  <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span> <span class="s1">&#39;20&#39;</span>      <span class="p">),</span>
-        <span class="s1">&#39;--max-extensions-per-match&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span>     <span class="p">),</span>
-        <span class="s1">&#39;-e&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>                <span class="p">),</span>
-        <span class="s1">&#39;-T&#39;</span>                        <span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span>
-        <span class="s1">&#39;-i&#39;</span>                        <span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span>
-        <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">out_map_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.map&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">gem_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">gem_cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">gem_binary</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span><span class="p">,</span> <span class="n">gem_index_path</span><span class="p">,</span>
+            <span class="s1">&#39;-q&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;offset-33&#39;</span>                    <span class="p">),</span>
+            <span class="s1">&#39;-m&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_edit_distance</span>       <span class="p">)</span>  <span class="p">),</span>
+            <span class="s1">&#39;-s&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>  <span class="p">),</span>
+            <span class="s1">&#39;--allow-incomplete-strata&#39;</span> <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;0.00&#39;</span>   <span class="p">),</span>
+            <span class="s1">&#39;--granularity&#39;</span>             <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;10000&#39;</span>              <span class="p">),</span>
+            <span class="s1">&#39;--max-decoded-matches&#39;</span>     <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;--min-decoded-strata&#39;</span>      <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="p">),</span>
+            <span class="s1">&#39;--min-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
+            <span class="s1">&#39;--max-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
+            <span class="s1">&#39;--min-matched-bases&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span> <span class="s1">&#39;0.8&#39;</span>          <span class="p">),</span>
+            <span class="s1">&#39;--gem-quality-threshold&#39;</span>   <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;26&#39;</span>       <span class="p">),</span>
+            <span class="s1">&#39;--max-big-indel-length&#39;</span>    <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span>        <span class="p">),</span>
+            <span class="s1">&#39;--mismatch-alphabet&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGT&#39;</span>         <span class="p">),</span>
+            <span class="s1">&#39;-E&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;0.30&#39;</span>                         <span class="p">),</span>
+            <span class="s1">&#39;--max-extendable-matches&#39;</span>  <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span> <span class="s1">&#39;20&#39;</span>      <span class="p">),</span>
+            <span class="s1">&#39;--max-extensions-per-match&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span>     <span class="p">),</span>
+            <span class="s1">&#39;-e&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>                <span class="p">),</span>
+            <span class="s1">&#39;-T&#39;</span>                        <span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span>
+            <span class="s1">&#39;-i&#39;</span>                        <span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span>
+            <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">out_map_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.map&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span>
 
-    <span class="k">if</span> <span class="s1">&#39;paired-end-alignment&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="s1">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--paired-end-alignment&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;map-both-ends&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="s1">&#39;b&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--map-both-ends&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;fast-mapping&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--fast-mapping&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;unique-mapping&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--unique-mapping&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;unique-pairing&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--unique-pairing&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;paired-end-alignment&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="s1">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--paired-end-alignment&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;map-both-ends&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="s1">&#39;b&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--map-both-ends&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;fast-mapping&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--fast-mapping&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;unique-mapping&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--unique-mapping&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;unique-pairing&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--unique-pairing&#39;</span><span class="p">)</span>
 
-    <span class="c1"># check kwargs</span>
-    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nthreads&#39;</span><span class="p">,</span> <span class="s1">&#39;max_edit_distance&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;mismatches&#39;</span><span class="p">,</span> <span class="s1">&#39;max_reads_per_chunk&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;out_files&#39;</span><span class="p">,</span> <span class="s1">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;skip&#39;</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;paired-end-alignment&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;map-both-ends&#39;</span><span class="p">,</span> <span class="s1">&#39;fast-mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;unique-mapping&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;unique-pairing&#39;</span><span class="p">,</span> <span class="s1">&#39;suffix&#39;</span><span class="p">]:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: </span><span class="si">%s</span><span class="s1"> not in usual keywords, misspelled?&#39;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
-
-    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gem_cmd</span><span class="p">)</span>
+        <span class="c1"># check kwargs</span>
+        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nthreads&#39;</span><span class="p">,</span> <span class="s1">&#39;max_edit_distance&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;mismatches&#39;</span><span class="p">,</span> <span class="s1">&#39;max_reads_per_chunk&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;out_files&#39;</span><span class="p">,</span> <span class="s1">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;skip&#39;</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;paired-end-alignment&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;map-both-ends&#39;</span><span class="p">,</span> <span class="s1">&#39;fast-mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;unique-mapping&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;unique-pairing&#39;</span><span class="p">,</span> <span class="s1">&#39;suffix&#39;</span><span class="p">]:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: </span><span class="si">%s</span><span class="s1"> not in usual keywords, misspelled?&#39;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gem_cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">gem_binary</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span><span class="p">,</span> <span class="n">gem_index_path</span><span class="p">,</span>
+            <span class="s1">&#39;-t&#39;</span>            <span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span>
+            <span class="s1">&#39;-F&#39;</span>            <span class="p">,</span> <span class="s1">&#39;SAM&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+            <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--gzip-output&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">fastq_path2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">r_enz</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: need enzyme name to fragment.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using GEM&#39;</span><span class="p">,</span> <span class="n">gem_version</span><span class="p">,</span> <span class="s1">&#39;with 3c mapping&#39;</span><span class="p">)</span>
+            <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--i1&#39;</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="s1">&#39;--i2&#39;</span><span class="p">,</span> <span class="n">fastq_path2</span><span class="p">,</span> <span class="s1">&#39;--3c&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+                <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--restriction-enzyme&#39;</span><span class="p">,</span> <span class="n">r_enz</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">r_z</span> <span class="ow">in</span> <span class="n">r_enz</span><span class="p">:</span>
+                    <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--restriction-enzyme&#39;</span><span class="p">,</span> <span class="n">r_z</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gem_cmd</span><span class="p">))</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># check_call(gem_cmd, stdout=PIPE, stderr=PIPE)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">gem_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">gem_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="n">out</span>
-        <span class="nb">print</span> <span class="n">err</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 
 
@@ -578,6 +597,28 @@
     <span class="n">outfiles</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="n">gettempdir</span><span class="p">())))</span>
+    <span class="k">if</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;gem&#39;</span><span class="p">:</span>
+        <span class="n">gem_version</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># check that we have the GEM binary:</span>
+        <span class="n">gem_binary</span> <span class="o">=</span> <span class="n">mapper_binary</span> <span class="ow">or</span> <span class="s1">&#39;gem-mapper&#39;</span>
+        <span class="n">gem_binary</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">gem_binary</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gem_binary</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: GEM binary not found, install it from:&#39;</span>
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/&#39;</span>
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> - Download the GEM-binaries-Linux-x86_64-core_i3 if&#39;</span>
+                            <span class="s1">&#39;have a recent computer, the &#39;</span>
+                            <span class="s1">&#39;GEM-binaries-Linux-x86_64-core_2 otherwise</span><span class="se">\n</span><span class="s1"> - &#39;</span>
+                            <span class="s1">&#39;Uncompress with &quot;tar xjvf GEM-binaries-xxx.tbz2&quot;</span><span class="se">\n</span><span class="s1"> - &#39;</span>
+                            <span class="s1">&#39;Copy the binary gem-mapper to /usr/local/bin/ for &#39;</span>
+                            <span class="s1">&#39;example (somewhere in your PATH).</span><span class="se">\n\n</span><span class="s1">NOTE: GEM does &#39;</span>
+                            <span class="s1">&#39;not provide any binary for MAC-OS.&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="n">gem_binary</span><span class="p">,</span><span class="s1">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">STDOUT</span><span class="p">,</span>
+                             <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+            <span class="n">gem_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">gem_version</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Falling to gem v2&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mapper_params</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mapper_params</span><span class="p">)</span>
     <span class="c1"># create directories</span>
@@ -616,7 +657,7 @@
             <span class="n">light_storage</span><span class="o">=</span><span class="n">light_storage</span><span class="p">)</span>
         <span class="c1"># clean</span>
         <span class="k">if</span> <span class="n">input_reads</span> <span class="o">!=</span> <span class="n">fastq_path</span> <span class="ow">and</span> <span class="n">clean</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;   x removing original input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">input_reads</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing original input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">input_reads</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_reads</span><span class="p">))</span>
         <span class="c1"># First mapping, full length</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">win</span><span class="p">:</span>
@@ -625,29 +666,35 @@
             <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">win</span>
         <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;Mapping reads in window </span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mapping reads in window </span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;Mapping full reads...&#39;</span><span class="p">,</span> <span class="n">curr_map</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mapping full reads...&#39;</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;gem&#39;</span><span class="p">:</span>
                 <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
-                             <span class="n">gem_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="s1">&#39;gem-mapper&#39;</span><span class="p">),</span>
+                             <span class="n">gem_binary</span><span class="o">=</span><span class="n">gem_binary</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="n">gem_version</span><span class="p">,</span>
                              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="c1"># parse map file to extract not uniquely mapped reads</span>
-                <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
-                <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span>
-                            <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
-                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
-                                         <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                                             <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
-            <span class="k">elif</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">gem_version</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">_sam_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span>
+                                <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                                             <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span>
+                                <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                                             <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                                                 <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span> <span class="ow">or</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;hisat2&#39;</span><span class="p">:</span>
                 <span class="n">_bowtie2_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
-                                 <span class="n">bowtie2_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">),</span>
+                                 <span class="n">bowtie2_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="n">mapper</span><span class="p">),</span>
                                  <span class="n">bowtie2_params</span><span class="o">=</span><span class="n">mapper_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="c1"># parse map file to extract not uniquely mapped reads</span>
-                <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
-                <span class="n">_bowtie2_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
+                <span class="n">_sam_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span>
                                 <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
                                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                              <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
@@ -655,9 +702,9 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: unknown mapper.&#39;</span><span class="p">)</span>
             <span class="c1"># clean</span>
             <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s1">&#39;   x removing </span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">curr_map</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing </span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">curr_map</span><span class="p">))</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map</span><span class="p">))</span>
-                <span class="nb">print</span> <span class="s1">&#39;   x removing map </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing map </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span><span class="p">)</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
             <span class="c1"># for next round, we will use remaining unmapped reads</span>
             <span class="n">input_reads</span> <span class="o">=</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
@@ -678,7 +725,7 @@
             <span class="n">light_storage</span><span class="o">=</span><span class="n">light_storage</span><span class="p">)</span>
         <span class="c1"># clean</span>
         <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;   x removing pre-</span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">input_reads</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing pre-</span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">input_reads</span><span class="p">))</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_reads</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">win</span><span class="p">:</span>
             <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span>
@@ -687,21 +734,28 @@
         <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">frag_map</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;gem&#39;</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span><span class="p">)</span>
                 <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
-                             <span class="n">gem_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="s1">&#39;gem-mapper&#39;</span><span class="p">),</span>
+                             <span class="n">gem_binary</span><span class="o">=</span><span class="n">gem_binary</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="n">gem_version</span><span class="p">,</span>
                              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
-                <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
-                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
+                <span class="c1"># check if output is sam format for gem3</span>
+                <span class="k">if</span> <span class="n">gem_version</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">_sam_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span>
+                                <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                          <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
-            <span class="k">elif</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                                             <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span> <span class="ow">or</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;hisat2&#39;</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span><span class="p">)</span>
                 <span class="n">_bowtie2_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
-                                 <span class="n">bowtie2_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">),</span>
+                                 <span class="n">bowtie2_binary</span><span class="o">=</span><span class="p">(</span><span class="n">mapper_binary</span> <span class="k">if</span> <span class="n">mapper_binary</span> <span class="k">else</span> <span class="n">mapper</span><span class="p">),</span>
                                  <span class="n">bowtie2_params</span><span class="o">=</span><span class="n">mapper_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="nb">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
-                <span class="n">_bowtie2_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
+                <span class="n">_sam_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span>
                                 <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
                                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                          <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
@@ -709,18 +763,202 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: unknown mapper.&#39;</span><span class="p">)</span>
         <span class="c1"># clean</span>
         <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;   x removing </span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">frag_map</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing </span><span class="si">%s</span><span class="s1"> input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span><span class="n">frag_map</span><span class="p">))</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">frag_map</span><span class="p">))</span>
-            <span class="nb">print</span> <span class="s1">&#39;   x removing failed to map &#39;</span> <span class="o">+</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing failed to map &#39;</span> <span class="o">+</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">))</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">)))</span>
-            <span class="nb">print</span> <span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
         <span class="n">outfiles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                       <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)),</span>
                          <span class="n">counter</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -rf </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">temp_dir</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">get_nread</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">outfiles</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">out</span> <span class="k">for</span> <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">outfiles</span><span class="p">]</span></div>
+
+<span class="k">def</span> <span class="nf">fast_fragment_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">fastq_path1</span><span class="p">,</span> <span class="n">fastq_path2</span><span class="p">,</span> <span class="n">r_enz</span><span class="p">,</span>
+                          <span class="n">genome_seq</span><span class="p">,</span> <span class="n">out_map</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_nread</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">mapper_binary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mapper_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">samtools</span> <span class="o">=</span> <span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maps FASTQ reads to an indexed reference genome with the knowledge of</span>
+<span class="sd">    the restriction enzyme used (fragment-based mapping).</span>
+
+<span class="sd">    :param mapper_index_path: path to index file created from a reference genome</span>
+<span class="sd">       using gem-index tool, bowtie2-build or hisat2-build</span>
+<span class="sd">    :param fastq_path1: PATH to FASTQ file of read 1, either compressed or not.</span>
+<span class="sd">    :param fastq_path2: PATH to FASTQ file of read 2, either compressed or not.</span>
+<span class="sd">    :param out_map_dir: path to outfile tab separated format containing mapped</span>
+<span class="sd">       read information.</span>
+<span class="sd">    :param r_enz: name of the restriction enzyme used in the experiment e.g.</span>
+<span class="sd">       HindIII.</span>
+<span class="sd">    :param genome_seq: a dictionary generated by :func:`pyatdbit.parser.genome_parser.parse_fasta`.</span>
+<span class="sd">       containing the genomic sequence</span>
+<span class="sd">    :param False clean: remove intermediate files created in temp_dir</span>
+<span class="sd">    :param False get_nread: returns a list of lists where each element contains</span>
+<span class="sd">       a path and the number of reads processed</span>
+<span class="sd">    :param 4 nthreads: number of threads to use for mapping (number of CPUs)</span>
+<span class="sd">    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be</span>
+<span class="sd">       written there.</span>
+<span class="sd">    :param gem-mapper mapper_binary: path to the binary mapper</span>
+<span class="sd">    :param None mapper_params: extra parameters for the mapper</span>
+<span class="sd">    :param samtools samtools: path to samtools binary.</span>
+
+<span class="sd">    :returns: outfile with the intersected read pairs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;suffix&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="n">suffix</span>
+    <span class="n">nthreads</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nthreads&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">samtools</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">samtools</span><span class="p">)</span>
+    <span class="c1"># check out folder</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">out_map</span><span class="p">))):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: Path to store the output does not exist.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="n">gettempdir</span><span class="p">())))</span>
+    <span class="n">gem_version</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># check that we have the GEM binary:</span>
+    <span class="n">gem_binary</span> <span class="o">=</span> <span class="n">mapper_binary</span> <span class="ow">or</span> <span class="s1">&#39;gem-mapper&#39;</span>
+    <span class="n">gem_binary</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">gem_binary</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gem_binary</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: GEM v3 binary not found, install it from:&#39;</span>
+                        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">https://github.com/smarco/gem3-mapper&#39;</span>
+                        <span class="s1">&#39;Copy the binary gem-mapper to /usr/local/bin/ for &#39;</span>
+                        <span class="s1">&#39;example (somewhere in your PATH).</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="n">gem_binary</span><span class="p">,</span><span class="s1">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">STDOUT</span><span class="p">,</span>
+                         <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">gem_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">gem_version</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Falling to gem v2&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gem_version</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">ERROR: GEM v3 binary not found, install it from:&#39;</span>
+                        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">https://github.com/smarco/gem3-mapper&#39;</span>
+                        <span class="s1">&#39;Copy the binary gem-mapper to /usr/local/bin/ for &#39;</span>
+                        <span class="s1">&#39;example (somewhere in your PATH).</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mapper_params</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mapper_params</span><span class="p">)</span>
+    <span class="c1"># create directories</span>
+    <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">]:</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span>
+    <span class="c1"># check space</span>
+    <span class="n">fspace</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_free_space_mb</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">fspace</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: only </span><span class="si">%d</span><span class="s1"> Gb left on tmp_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fspace</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">))</span>
+
+    <span class="c1"># iterative mapping</span>
+    <span class="n">base_name1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fastq_path1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">base_name1</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_name1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">curr_map1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span>
+            <span class="n">fastq_path1</span><span class="p">,</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">base_name1</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">fastq</span><span class="o">=</span><span class="n">is_fastq</span><span class="p">(</span><span class="n">fastq_path1</span><span class="p">),</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span> <span class="n">light_storage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">base_name2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fastq_path2</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">base_name2</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_name2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">curr_map2</span><span class="p">,</span> <span class="n">count_fastq</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span>
+            <span class="n">fastq_path2</span><span class="p">,</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">base_name2</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">fastq</span><span class="o">=</span><span class="n">is_fastq</span><span class="p">(</span><span class="n">fastq_path1</span><span class="p">),</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span> <span class="n">light_storage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">curr_map1</span> <span class="o">+</span> <span class="s1">&#39;_frag</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mapping fragments of remaining reads...&#39;</span><span class="p">)</span>
+    <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">curr_map1</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span><span class="n">fastq_path2</span><span class="o">=</span><span class="n">curr_map2</span><span class="p">,</span>
+                 <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">gem_binary</span><span class="o">=</span><span class="n">gem_binary</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="n">gem_version</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># clean</span>
+    <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing GEM 3 input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map1</span><span class="p">))</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map1</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing GEM 3 input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map2</span><span class="p">))</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map2</span><span class="p">))</span>
+
+    <span class="c1">#sort sam file</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">samtools</span> <span class="o">+</span> <span class="s1">&#39; sort -n -O SAM -@ </span><span class="si">%d</span><span class="s1"> -T </span><span class="si">%s</span><span class="s1"> -o </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span>
+                      <span class="o">%</span> <span class="p">(</span><span class="n">nthreads</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">))</span>
+    <span class="n">genome_lengths</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">crm</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">]))</span> <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">)</span>
+    <span class="n">frag_chunk</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frag_chunk&#39;</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)</span>
+    <span class="n">frags</span> <span class="o">=</span> <span class="n">map_re_sites</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="n">frag_chunk</span><span class="o">=</span><span class="n">frag_chunk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">samtools</span> <span class="ow">and</span> <span class="n">nthreads</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Splitting sam file&#39;</span><span class="p">)</span>
+        <span class="c1"># headers</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nthreads</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">samtools</span> <span class="o">+</span> <span class="s1">&#39; view -H -O SAM </span><span class="si">%s</span><span class="s1"> &gt; &quot;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%d</span><span class="s1">&quot;&#39;</span>
+                      <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="n">chunk_lines</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">count_fastq</span><span class="o">*</span><span class="mf">2.3</span><span class="p">)</span><span class="o">/</span><span class="n">nthreads</span><span class="p">)</span> <span class="c1"># estimate lines in sam with reads and frags</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">samtools</span> <span class="o">+</span> <span class="s1">&#39;&#39;&#39; view -O SAM </span><span class="si">%s</span><span class="s1"> | awk -v n=</span><span class="si">%d</span><span class="s1"> -v FS=&quot;</span><span class="se">\\</span><span class="s1">t&quot; &#39;</span>
+<span class="s1">              BEGIN { part=0; line=n }       </span>
+<span class="s1">              { if( line&gt;=n &amp;&amp; $1!=last_read ) {part++; line=1; print $0 &gt;&gt; &quot;</span><span class="si">%s</span><span class="s1">_&quot;part } </span>
+<span class="s1">                else { print $0 &gt;&gt; &quot;</span><span class="si">%s</span><span class="s1">_&quot;part; line++; } </span>
+<span class="s1">                last_read = $1;</span>
+<span class="s1">              }&#39;</span>
+<span class="s1">        &#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">chunk_lines</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing results...&#39;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;nthreads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">procs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">nthreads</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nthreads</span><span class="p">):</span>
+            <span class="n">frags_shared</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">frags</span><span class="p">)</span>
+            <span class="n">procs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span>
+                <span class="n">parse_gem_3c</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span>
+                                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_parsed_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span>
+                                    <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">genome_lengths</span><span class="p">),</span> <span class="n">frags_shared</span><span class="p">,</span>
+                                    <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">kwds</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="c1">#results.append(&#39;%s_parsed_%d&#39; % (out_map_path,(i+1)))</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">proc</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="n">procs</span> <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">get</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nthreads</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">,(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+
+        <span class="c1">#Final sort and merge</span>
+        <span class="n">nround</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">nround</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">num_procs</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nthreads</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">num_procs</span><span class="p">)</span>
+            <span class="n">procs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span>
+                <span class="n">merge_sort</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">results</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">out_map_path</span><span class="o">+</span><span class="s1">&#39;_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nround</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_procs</span><span class="p">)]</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">proc</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="n">procs</span> <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">get</span><span class="p">()]</span>
+
+        <span class="n">map_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_map</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">tmp_reads_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
+            <span class="n">map_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# CRM </span><span class="si">%s</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crm</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">])))</span>
+        <span class="k">for</span> <span class="n">read_line</span> <span class="ow">in</span> <span class="n">tmp_reads_fh</span><span class="p">:</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">read_line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">map_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">read</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="n">read</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span><span class="o">+</span><span class="n">read</span><span class="p">[</span><span class="mi">9</span><span class="p">:]))</span>
+        <span class="n">map_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
+        <span class="n">parse_gem_3c</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">out_map</span><span class="p">,</span> <span class="n">genome_lengths</span><span class="p">,</span> <span class="n">frags</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">tmp_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># clean</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">get_nread</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">out_map</span><span class="p">,</span><span class="n">count_fastq</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">out_map</span>
+    
 </pre></div>
 
           </div>
@@ -741,13 +979,11 @@
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -770,8 +1006,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

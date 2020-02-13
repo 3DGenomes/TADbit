@@ -2,8 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>TAD detection functions &#8212; Tadbit 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -46,7 +45,7 @@
 <h1>TAD detection functions<a class="headerlink" href="#tad-detection-functions" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.tadbit.tadbit">
-<code class="descclassname">pytadbit.tadbit.</code><code class="descname">tadbit</code><span class="sig-paren">(</span><em>x</em>, <em>remove=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>no_heuristic=0</em>, <em>use_topdom=False</em>, <em>topdom_window=5</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.tadbit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.tadbit.</code><code class="sig-name descname">tadbit</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">remove=None</em>, <em class="sig-param">n_cpus=1</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">max_tad_size='max'</em>, <em class="sig-param">no_heuristic=0</em>, <em class="sig-param">use_topdom=False</em>, <em class="sig-param">topdom_window=5</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.tadbit" title="Permalink to this definition">¶</a></dt>
 <dd><p>The TADbit algorithm works on raw chromosome interaction count data.
 The normalization is neither necessary nor recommended,
 since the data is assumed to be discrete counts.</p>
@@ -59,45 +58,41 @@ at position (i,j) is corrected by the counts at diagonal positions
 (i,i) and (j,j). This normalizes for different restriction enzyme
 site densities and ‘mappability’ of the reads in case a bin contains
 repeated regions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> – a square matrix of interaction counts in the HI-C data or a list
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – a square matrix of interaction counts in the HI-C data or a list
 of such matrices for replicated experiments. The counts must be evenly
 sampled and not normalized. x might be either a list of list, a path to
-a file or a file handler</li>
-<li><strong>norm</strong> (<em>'visibility'</em>) – kind of normalization to use. Choose between
-‘visibility’ of ‘Imakaev’</li>
-<li><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a python list of lists of booleans mapping positively
+a file or a file handler</p></li>
+<li><p><strong>norm</strong> (<em>'visibility'</em>) – kind of normalization to use. Choose between
+‘visibility’ of ‘Imakaev’</p></li>
+<li><p><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a python list of lists of booleans mapping positively
 columns to remove (if None only columns with a 0 in the diagonal will be
-removed)</li>
-<li><strong>n_cpus</strong> (<em>1</em>) – The number of CPUs to allocate to TADbit. If
-n_cpus=’max’ the total number of CPUs will be used</li>
-<li><strong>max_tad_size</strong> (<em>auto</em>) – an integer defining maximum size of TAD. Default
-(auto or max) defines it as the number of rows/columns</li>
-<li><strong>no_heuristic</strong> (<em>False</em>) – whether to use or not some heuristics</li>
-<li><strong>use_topdom</strong> (<em>False</em>) – whether to use TopDom algorithm to find tads or not (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/26704975">http://www.ncbi.nlm.nih.gov/pubmed/26704975</a>, <a class="reference external" href="http://zhoulab.usc.edu/TopDom/">http://zhoulab.usc.edu/TopDom/</a>)</li>
-<li><strong>topdom_window</strong> (<em>5</em>) – the window size for topdom algorithm</li>
-<li><strong>get_weights</strong> (<em>False</em>) – either to return the weights corresponding to the
+removed)</p></li>
+<li><p><strong>n_cpus</strong> (<em>1</em>) – The number of CPUs to allocate to TADbit. If
+n_cpus=’max’ the total number of CPUs will be used</p></li>
+<li><p><strong>max_tad_size</strong> (<em>auto</em>) – an integer defining maximum size of TAD. Default
+(auto or max) defines it as the number of rows/columns</p></li>
+<li><p><strong>no_heuristic</strong> (<em>False</em>) – whether to use or not some heuristics</p></li>
+<li><p><strong>use_topdom</strong> (<em>False</em>) – whether to use TopDom algorithm to find tads or not (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/26704975">http://www.ncbi.nlm.nih.gov/pubmed/26704975</a>, <a class="reference external" href="http://zhoulab.usc.edu/TopDom/">http://zhoulab.usc.edu/TopDom/</a>)</p></li>
+<li><p><strong>topdom_window</strong> (<em>5</em>) – the window size for topdom algorithm</p></li>
+<li><p><strong>get_weights</strong> (<em>False</em>) – either to return the weights corresponding to the
 Hi-C count (weights are a normalization dependent of the count of each
-columns)</li>
+columns)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of topologically associated domains’
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of topologically associated domains’
 boundaries, and the corresponding list associated log likelihoods.
 If no weights are given, it may also return calculated weights.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.tadbit.batch_tadbit">
-<code class="descclassname">pytadbit.tadbit.</code><code class="descname">batch_tadbit</code><span class="sig-paren">(</span><em>directory</em>, <em>parser=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#batch_tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.batch_tadbit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.tadbit.</code><code class="sig-name descname">batch_tadbit</code><span class="sig-paren">(</span><em class="sig-param">directory</em>, <em class="sig-param">parser=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#batch_tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.batch_tadbit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use tadbit on directories of data files.
 All files in the specified directory will be considered data file. The
 presence of non data files will cause the function to either crash or
@@ -115,49 +110,41 @@ they also have row names, read_options=list(header=FALSE, row.names=1).</p>
 <p>Other arguments such as max_size, n_CPU and verbose are passed to
 <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a>.</p>
 <p>NOTE: only used externally, not from Chromosome</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>directory</strong> – the directory containing the data files</li>
-<li><strong>kwargs</strong> – arguments passed to <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a> function</li>
-<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – a parser function that takes file name as input and
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> – the directory containing the data files</p></li>
+<li><p><strong>kwargs</strong> – arguments passed to <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a> function</p></li>
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a parser function that takes file name as input and
 returns a tuple representing the matrix of data. Tuple is a
-concatenation of column1 + column2 + column3 + …</li>
+concatenation of column1 + column2 + column3 + …</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> where each element has the name of the
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> where each element has the name of the
 unit/chromosome, and is the output of <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a> run on the
 corresponding files assumed to be replicates</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.tadbit.print_result_r">
-<code class="descclassname">pytadbit.tadbit.</code><code class="descname">print_result_r</code><span class="sig-paren">(</span><em>result</em>, <em>write=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#print_result_r"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.print_result_r" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pytadbit.tadbit.</code><code class="sig-name descname">print_result_r</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">write=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#print_result_r"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.print_result_r" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a table summarizing the TADs found by tadbit. This function outputs
 something similar to the R function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>result</strong> – the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a></li>
-<li><strong>write</strong> (<em>True</em>) – print table. If False, returns the string</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> – the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a></p></li>
+<li><p><strong>write</strong> (<em>True</em>) – print table. If False, returns the string</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">if write is False, returns a string corresponding to the table of
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>if write is False, returns a string corresponding to the table of
 results</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -201,13 +188,11 @@ results</p>
   <p class="topless"><a href="reference_clustering.html"
                         title="next chapter">TAD clustering</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -234,8 +219,8 @@ results</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Jun 23, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Feb 07, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
