@@ -47,10 +47,14 @@ def run(opts):
     else:
         biases1, mreads1, reso1 = load_parameters_fromdb(
             opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
+        print(biases1, mreads1, reso1)
         mreads1 = path.join(opts.workdir1, mreads1)
+        print(mreads1)
         try:
             biases1 = path.join(opts.workdir1, biases1)
         except AttributeError:
+            biases1 = None
+        except TypeError:  # Py3
             biases1 = None
 
     if opts.bam2:
@@ -64,6 +68,8 @@ def run(opts):
             biases2 = path.join(opts.workdir2, biases2)
         except AttributeError:
             biases2 = None
+        except TypeError:  # Py3
+            biases1 = None
 
     filter_exclude = opts.filter
 
