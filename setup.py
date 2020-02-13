@@ -11,7 +11,10 @@ import sys
 # os.environ["CC"] = "g++"
 
 # Py3/Py2 compatibility
-raw_input = input
+try:
+    input = raw_input
+except NameError:
+    pass
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -64,7 +67,7 @@ class InstallCommand(install):
                     if ex:
                         missing=True
                     else:
-                        print ("\n  However, you can still install Tadbit and " +
+                        print ("\n  However, you can still install Tadbit and "
                                "try to fix it afterwards.")
                         if ask( "  -> Do you want to continue with the installation?",
                                 ["y", "n"]) == "n":
@@ -74,10 +77,10 @@ class InstallCommand(install):
 
         # check if MCL is installed
         if not self.bypasscheck and not find_executable('mcl'):
-            print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
-                  '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
+            print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed '
+                  '(which do not seems to be).\nIf you are under Debian/Ubuntu'
                   ' just run "apt-get-install mcl".')
-            follow = raw_input('\n  You still have the option to follow with the ' +
+            follow = input('\n  You still have the option to follow with the '
                            'installation. Do you want to follow? [y/N]')
             if follow.upper() != 'Y' :
                 exit('\n    Wise choice :)\n')
