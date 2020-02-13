@@ -47,9 +47,7 @@ def run(opts):
     else:
         biases1, mreads1, reso1 = load_parameters_fromdb(
             opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
-        print(biases1, mreads1, reso1)
         mreads1 = path.join(opts.workdir1, mreads1)
-        print(mreads1)
         try:
             biases1 = path.join(opts.workdir1, biases1)
         except AttributeError:
