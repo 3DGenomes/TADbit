@@ -52,6 +52,8 @@ def run(opts):
             biases1 = path.join(opts.workdir1, biases1)
         except AttributeError:
             biases1 = None
+        except TypeError:  # Py3
+            biases1 = None
 
     if opts.bam2:
         mreads2 = path.realpath(opts.bam2)
@@ -64,6 +66,8 @@ def run(opts):
             biases2 = path.join(opts.workdir2, biases2)
         except AttributeError:
             biases2 = None
+        except TypeError:  # Py3
+            biases1 = None
 
     filter_exclude = opts.filter
 

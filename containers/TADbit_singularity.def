@@ -84,9 +84,6 @@ From:neurodebian:buster
   
   ############################################################################
   # Clean
-  apt-get remove -y --purge unzip build-essential r-cran-devtools && \
-  apt-get autoremove -y && \
-  apt-get  autoclean -y && \
   rm -rf /var/lib/apt/lists/*
 
 %runscript
