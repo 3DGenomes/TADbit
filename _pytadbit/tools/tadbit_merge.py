@@ -126,7 +126,8 @@ def run(opts):
         decay_corr_fig = 'None'
         eigen_corr_dat = 'None'
         eigen_corr_fig = 'None'
-        masked1 = masked2 = {}
+        masked1 = {}
+        masked2 = {}
 
         corr = eig_corr = scc = std = reprod = 0
         bads = {}
