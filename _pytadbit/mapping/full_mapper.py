@@ -386,10 +386,13 @@ def _bowtie2_mapping(bowtie2_index_path, fastq_path1, out_map_path, fastq_path2 
         bowtie2_cmd += ['-U', fastq_path1]
 
     if bowtie2_params:
-        for bow_param in bowtie2_params:
-            bowtie2_cmd.append('-'+bow_param)
-            if bowtie2_params[bow_param]:
-                bowtie2_cmd.append(bowtie2_params[bow_param])
+        if isinstance(bowtie2_params, dict):
+            for bow_param in bowtie2_params:
+                bowtie2_cmd.append('-'+bow_param)
+                if bowtie2_params[bow_param]:
+                    bowtie2_cmd.append(bowtie2_params[bow_param])
+        elif isinstance(bowtie2_params, list):
+            bowtie2_cmd += bowtie2_params
     elif bowtie2_binary == 'bowtie2':
         bowtie2_cmd.append('--very-sensitive')
     print(' '.join(bowtie2_cmd))
@@ -493,10 +496,13 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
         else:
             gem_cmd += ['-i', fastq_path]
         if gem_params:
-            for gem_param in gem_params:
-                gem_cmd.append('-'+gem_param)
-                if gem_params[gem_param]:
-                    gem_cmd.append(gem_params[gem_param])
+            if isinstance(gem_params, dict):
+                for gem_param in gem_params:
+                    gem_cmd.append('-'+gem_param)
+                    if gem_params[gem_param]:
+                        gem_cmd.append(gem_params[gem_param])
+            elif isinstance(gem_params, list):
+                 gem_cmd += gem_params
     print(' '.join(gem_cmd))
     try:
         # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
@@ -584,7 +590,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
         except ValueError as e:
             gem_version = 2
             print('Falling to gem v2')
-    if mapper_params:
+    if mapper_params and isinstance(mapper_params, dict):
         kwargs.update(mapper_params)
     # create directories
     for rep in [temp_dir, out_map_dir]:
