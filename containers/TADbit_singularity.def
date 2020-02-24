@@ -79,8 +79,8 @@ From:neurodebian:buster
 
   #############################################################################
   # TADbit
-  wget --quiet --no-check-certificate https://github.com/fransua/TADbit/archive/py3.zip && unzip py3.zip && \
-  cd TADbit-py3 && yes | python setup.py install && cd .. && rm -rf TADbit-py3 py3.zip
+  wget --quiet --no-check-certificate https://github.com/3DGenomes/TADbit/archive/master.zip && unzip master.zip && \
+  cd TADbit-master && yes | python setup.py install && cd .. && rm -rf TADbit-master master.zip
   
   ############################################################################
   # Clean
