@@ -575,6 +575,6 @@ def populate_args(parser):
                         mapper. e.g. if we want to set the proportion of
                         mismatches to 0.05 and the maximum indel length to 10,
                         (in GEM it would be: -e 0.05 --max-big-indel-length 10),
-                        here we could write: "--gem_param e:0.05
+                        here we could write: "--mapper_param e:0.05
                         max-big-indel-length:10". IMPORTANT: some options are
                         incompatible with 3C-derived experiments.''')
