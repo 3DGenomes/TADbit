@@ -106,10 +106,12 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
     fhandler.close()
     return count
 
+
 def filter_reads(fnam, output=None, max_molecule_length=500,
                  over_represented=0.005, max_frag_size=100000,
                  min_frag_size=100, re_proximity=5, verbose=True,
-                 savedata=None, min_dist_to_re=750, fast=True):
+                 savedata=None, min_dist_to_re=750, strict_duplicates=False,
+                 fast=True):
     """
     Filter mapped pair of reads in order to remove experimental artifacts (e.g.
     dangling-ends, self-circle, PCR artifacts...)
@@ -160,8 +162,12 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     :param None savedata: PATH where to write the number of reads retained by
        each filter
     :param True fast: parallel version, requires 4 CPUs and more RAM memory
+    :param False strict_duplicates: by default reads are considered duplicates if
+       they coincide in genomic coordinates and strand; with strict_duplicates
+       enabled, we also ask to consider read length (WARNING: this option is
+       called strict, but it is more permissive).
 
-    :return: dicitonary with, as keys, the kind of filter applied, and as values
+    :return: dictionary with, as keys, the kind of filter applied, and as values
        a set of read IDs to be removed
 
     *Note: Filtering is not exclusive, one read can be filtered several times.*
@@ -173,7 +179,10 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     if not fast: # mainly for debugging
         if verbose:
             print('filtering duplicates')
-        sub_mask, total = _filter_duplicates(fnam,output)
+        if strict_duplicates:
+            sub_mask, total = _filter_duplicates(fnam, output)
+        else:
+            sub_mask, total = _filter_duplicates(fnam, output)
         MASKED.update(sub_mask)
         if verbose:
             print('filtering same fragments')
@@ -183,7 +192,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         MASKED.update(_filter_from_res(fnam, max_frag_size, min_dist_to_re,
                                        re_proximity, min_frag_size, output))
         if verbose:
-            print('filtering over representeds')
+            print('filtering over represented')
         MASKED.update(_filter_over_represented(fnam, over_represented, output))
     else:
         pool = mu.Pool(4)
@@ -222,6 +231,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
                 k, MASKED[k]['name'], MASKED[k]['reads'],
                 float(MASKED[k]['reads']) / total * 100))
     return MASKED
+
 
 def _filter_same_frag(fnam, max_molecule_length, output):
     # t0 = time()
@@ -274,6 +284,40 @@ def _filter_same_frag(fnam, max_molecule_length, output):
         outfil[k].close()
     return masked
 
+
+def _filter_duplicates_strict(fnam, output):
+    total = 0
+    masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
+    outfil = {}
+    for k in masked:
+        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k] = open(masked[k]['fnam'], 'w')
+    fhandler = open(fnam)
+    line = next(fhandler)
+    while line.startswith('#'):
+        line = next(fhandler)
+    (read,
+     cr1, pos1, sd1, l1 , _, _,
+     cr2, pos2, sd2, l2 , _, _) = line.split('\t')
+    prev_elts = cr1, pos1, cr2, pos2, sd1, sd2, l1, l2
+    for line in fhandler:
+        (read,
+         cr1, pos1, sd1, l1 , _, _,
+         cr2, pos2, sd2, l2 , _, _) = line.split('\t')
+        new_elts = cr1, pos1, cr2, pos2, sd1, sd2, l1, l2
+        if prev_elts == new_elts:
+            masked[9]["reads"] += 1
+            outfil[9].write(read + '\n')
+        total += 1
+        prev_elts = new_elts
+    fhandler.close()
+    # print 'done 4', time() - t0
+    for k in masked:
+        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k].close()
+    return masked, total
+
+
 def _filter_duplicates(fnam, output):
     total = 0
     masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
@@ -305,6 +349,7 @@ def _filter_duplicates(fnam, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k].close()
     return masked, total
+
 
 def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                      re_proximity, min_frag_size, output):
@@ -363,6 +408,7 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k].close()
     return masked
+
 
 def _filter_over_represented(fnam, over_represented, output):
     # t0 = time()
