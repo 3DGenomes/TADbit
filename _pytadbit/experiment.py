@@ -733,18 +733,16 @@ class Experiment(object):
         if self.norm and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        self.hic_data[0].normalize_hic(iterations=iterations,max_dev=max_dev,
-                                       silent=silent)
-        self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
-                                self.hic_data[0].bias[i] /
-                                self.hic_data[0].bias[j] * size)
-                               for i in self.hic_data[0].bias for j in self.hic_data[0].bias], size)]
+        self.hic_data[0].normalize_hic(iterations=iterations, max_dev=max_dev,
+                                       silent=silent, factor=factor)
+        bias = self.hic_data[0].bias  # faster quick ref
+        hic_data = self.hic_data[0]
+        self.norm = [HiC_data([(i + j * size, float(hic_data[i, j]) /
+                                bias[i] / bias[j])
+                               for i in bias for j in bias], size)]
         # no need to use lists, tuples use less memory
         if factor:
             self._normalization = 'visibility_factor:' + str(factor)
-            factor = sum(self.norm[0].values()) / (self.size * self.size * factor)
-            for n in self.norm[0]:
-                self.norm[0][n] = self.norm[0][n] / factor
         else:
             self._normalization = 'visibility'
 
