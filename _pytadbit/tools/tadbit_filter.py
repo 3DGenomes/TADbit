@@ -277,7 +277,7 @@ def load_parameters_fromdb(opts):
         if not opts.pathids:
             cur.execute("""
             select distinct Id, Type from PATHs
-            where Type = 'BED' or Type = '2D_BED'
+            where Type = 'BED'
             """)
             pathids = cur.fetchall()
             if len(pathids) > 2:
@@ -285,6 +285,13 @@ def load_parameters_fromdb(opts):
                                 '(PATHids: %s), use "tadbit describe" and '
                                 'select corresponding PATHid with --pathids' % (
                                     ', '.join([str(j[0]) for j in pathids])))
+            elif not pathids:
+                pathids = cur.fetchall()
+                cur.execute("""
+                select distinct Id, Type from PATHs
+                where Type = '2D_BED'
+                """)
+                pathids = cur.fetchall()
             if pathids[0][1] == '2D_BED':
                 opts.fast_fragment = True
             if opts.fast_fragment and len(pathids) > 1:
