@@ -3,6 +3,7 @@ sudo: false
 
 python:
   - 2.7
+  - 3.5
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 
@@ -31,18 +32,18 @@ install:
     - pip install coveralls
 
 before_script:
-  - python --version
+    - python --version
 
 # command to run tests, e.g. python setup.py test
-script: cd test; coverage run --source=pytadbit test_all.py
+script:
+    - cd test; coverage run --source=pytadbit test_all.py
 
-# after_success:
-coveralls
+after_success:
+     - coveralls
 
 branches:
   only:
-    - master
-    - dev
+      - master
 
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
