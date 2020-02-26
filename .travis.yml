@@ -1,5 +1,5 @@
 language: python
-sudo: false
+os: linux
 
 python:
   - 2.7
@@ -31,6 +31,7 @@ install:
     - conda install -y -q imp
     - conda install -y -q -c bioconda mcl  # somehow channel needed?
     - conda install -y -q future
+    - conda install -y -q h5py
     - conda install -y -q samtools
     - conda install -y -q pysam
     - yes | python setup.py install
@@ -38,13 +39,17 @@ install:
 
 before_script:
     - python --version
+    - export COVERALLS_SERVICE_NAME=travis-ci
+    - export COVERALLS_REPO_TOKEN=abc12345
 
 # command to run tests, e.g. python setup.py test
 script:
     - cd test; coverage run --source=pytadbit test_all.py
 
 after_success:
-     - coveralls
+    - export COVERALLS_SERVICE_NAME=travis-ci
+    - export COVERALLS_REPO_TOKEN=abc12345
+    - coveralls
 
 branches:
   only:
