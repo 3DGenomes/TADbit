@@ -26,9 +26,14 @@ install:
     # Replace dep1 dep2 ... with your dependencies
     - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy matplotlib scipy
     - source activate test-environment
+    - conda config --add channels salilab && conda config --add channels bioconda
+    - conda config --add channels hargup/label/pypi && conda config --add channels conda-forge
+    - conda install -y -q mcl
+    - conda install -y -q future
+    - conda install -y -q samtools
+    - conda install -y -q pysam
+    - conda install -y -q imp
     - yes | python setup.py install
-    - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
-    - conda install -y -q -c https://conda.anaconda.org/salilab imp
     - pip install coveralls
 
 before_script:
