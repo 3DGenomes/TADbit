@@ -3,7 +3,7 @@ sudo: false
 
 python:
   - 2.7
-  - 3.5
+  - 3.7
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 
@@ -28,11 +28,11 @@ install:
     - source activate test-environment
     - conda config --add channels salilab && conda config --add channels bioconda
     - conda config --add channels hargup/label/pypi && conda config --add channels conda-forge
-    - conda install -y -q mcl
+    - conda install -y -q imp
+    - conda install -y -q -c bioconda mcl  # somehow channel needed?
     - conda install -y -q future
     - conda install -y -q samtools
     - conda install -y -q pysam
-    - conda install -y -q imp
     - yes | python setup.py install
     - pip install coveralls
 

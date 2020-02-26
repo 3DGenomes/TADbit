@@ -180,7 +180,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         if verbose:
             print('filtering duplicates')
         if strict_duplicates:
-            sub_mask, total = _filter_duplicates(fnam, output)
+            sub_mask, total = _filter_duplicates_strict(fnam, output)
         else:
             sub_mask, total = _filter_duplicates(fnam, output)
         MASKED.update(sub_mask)
