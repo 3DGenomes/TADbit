@@ -273,9 +273,15 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
-    # check GEM mapper extra options
+    # check mapper extra options
     if opts.mapper_param:
-        opts.mapper_param = dict([o.split(':') for o in opts.mapper_param])
+        if len(opts.mapper_param) == 1 \
+            and ('-' in opts.mapper_param[0] or \
+                 '--' in opts.mapper_param[0]):
+            # Single string surrounded by quotes
+            opts.mapper_param = opts.mapper_param[0].split()
+        else: 
+            opts.mapper_param = dict([o.split(':') for o in opts.mapper_param])
     else:
         opts.mapper_param = {}
     if opts.mapper == 'gem' and opts.gem_version < 3:
@@ -574,7 +580,9 @@ def populate_args(parser):
                         help='''any parameter that could be passed to the GEM, BOWTIE2 or HISAT2
                         mapper. e.g. if we want to set the proportion of
                         mismatches to 0.05 and the maximum indel length to 10,
-                        (in GEM it would be: -e 0.05 --max-big-indel-length 10),
-                        here we could write: "--gem_param e:0.05
-                        max-big-indel-length:10". IMPORTANT: some options are
-                        incompatible with 3C-derived experiments.''')
+                        (in GEM v2 it would be: -e 0.05 --max-big-indel-length 10),
+                        here we could write: "--mapper_param e:0.05
+                        max-big-indel-length:10". For BOWTIE2, GEM3 and HISAT2 you can
+                        also pass directly the parameters enclosed between quotes like:
+                        --mapper_param "-e 0.05 --alignment-local-min-score 15"
+                        IMPORTANT: some options are incompatible with 3C-derived experiments.''')
