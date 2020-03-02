@@ -2732,7 +2732,13 @@ def generate_random_walks(chromosome_particle_numbers,
         for particle in xrange(1,number_of_particles):
             #print "Positioning particle %d" % (particle+1)
             particle_overlap = 0 # 0 means that there is an overlap -> PROBLEM
+            overlapCounter = -1
+            maxIter = 1000
             while particle_overlap == 0:
+                overlapCounter += 1
+                if overlapCounter > maxIter:
+                    # raise error so log file is created to avoid k_seed
+                    raise
                 particle_overlap = 1
                 new_particle = []
                 if pbc:
