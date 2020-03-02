@@ -40,6 +40,12 @@ from pytadbit.modelling.lammpsmodel import LAMMPSmodel
 from pytadbit.modelling.structuralmodels import StructuralModels
 from pytadbit.modelling.restraints import HiCBasedRestraints
 
+class InitalConformationError(Exception):
+    """
+    Exception to handle failed initial conformation.
+    """
+    pass
+
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', None)
     failedSeedLog = kwargs.get('failedSeedLog', None)
@@ -60,6 +66,7 @@ def abortable_worker(func, *args, **kwargs):
                 f.write('%s\t%s\n' %(k, 'Failed'))
         p.terminate()
         raise
+
 
 def generate_lammps_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1,
@@ -2738,7 +2745,8 @@ def generate_random_walks(chromosome_particle_numbers,
                 overlapCounter += 1
                 if overlapCounter > maxIter:
                     # raise error so log file is created to avoid k_seed
-                    raise
+                    errorName = 'ERROR: Initial conformation non ending loop'
+                    raise InitalConformationError(errorName)
                 particle_overlap = 1
                 new_particle = []
                 if pbc:
