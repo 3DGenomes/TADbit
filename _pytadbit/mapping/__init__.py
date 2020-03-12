@@ -70,39 +70,39 @@ def merge_2d_beds(path1, path2, outpath):
     # merge sort the two files
     read1 = next(fh1)
     read2 = next(fh2)
-    nreads = 0
+    number_reads = 0
     while True:
         if greater(read2, read1):
             out.write(read1)
-            nreads += 1
+            number_reads += 1
             try:
                 read1 = next(fh1)
             except StopIteration:
                 out.write(read2)
-                nreads += 1
+                number_reads += 1
                 break
         else:
             out.write(read2)
-            nreads += 1
+            number_reads += 1
             try:
                 read2 = next(fh2)
             except StopIteration:
                 out.write(read1)
-                nreads += 1
+                number_reads += 1
                 break
     for read in fh1:
         out.write(read)
-        nreads += 1
+        number_reads += 1
     for read in fh2:
         out.write(read)
-        nreads += 1
+        number_reads += 1
     fh1.close()
     fh2.close()
     out.close()
-    return nreads
+    return number_reads
 
 
-def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', verbose = True):
+def merge_bams(bam1, bam2, output_bam, cpus = cpu_count(), samtools = 'samtools', verbose = True):
     """
     Merge two bam files with samtools into one.
 
@@ -113,7 +113,7 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
     samtools = which(samtools)
     if verbose:
         print('  - Mergeing experiments')
-    system(samtools  + ' merge -@ %d %s %s %s' % (cpus, outbam, bam1, bam2))
+    system(samtools  + ' merge -@ %d %s %s %s' % (cpus, output_bam, bam1, bam2))
     if verbose:
         print('  - Indexing new BAM file')
     # check samtools version number and modify command line
@@ -122,9 +122,9 @@ def merge_bams(bam1, bam2, outbam, cpus = cpu_count(), samtools = 'samtools', ve
                                            universal_newlines=True).communicate()[1].split('\n')
                             if 'Version' in l][0])
     if version >= LooseVersion('1.3.1'):
-        system(samtools  + ' index -@ %d %s' % (cpus, outbam))
+        system(samtools  + ' index -@ %d %s' % (cpus, output_bam))
     else:
-        system(samtools  + ' index %s' % (outbam))
+        system(samtools  + ' index %s' % (output_bam))
 
 
 def get_intersection(fname1, fname2, out_path, verbose=False, compress=False):

@@ -176,13 +176,15 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     if not output:
         output = fnam
 
+    if strict_duplicates:
+        _filter_duplicates = _filter_duplicates_strict
+    else:
+        _filter_duplicates = _filter_duplicates_loose
+
     if not fast: # mainly for debugging
         if verbose:
             print('filtering duplicates')
-        if strict_duplicates:
-            sub_mask, total = _filter_duplicates_strict(fnam, output)
-        else:
-            sub_mask, total = _filter_duplicates(fnam, output)
+        sub_mask, total = _filter_duplicates(fnam, output)
         MASKED.update(sub_mask)
         if verbose:
             print('filtering same fragments')
@@ -204,7 +206,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         c = pool.apply_async(_filter_over_represented,
                              args=(fnam, over_represented, output))
         d = pool.apply_async(_filter_duplicates,
-                             args=(fnam,output))
+                             args=(fnam, output))
         pool.close()
         pool.join()
         sub_mask, total = d.get()
@@ -318,7 +320,7 @@ def _filter_duplicates_strict(fnam, output):
     return masked, total
 
 
-def _filter_duplicates(fnam, output):
+def _filter_duplicates_loose(fnam, output):
     total = 0
     masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
     outfil = {}
