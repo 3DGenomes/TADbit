@@ -1,8 +1,9 @@
 language: python
-sudo: false
+os: linux
 
 python:
   - 2.7
+  - 3.7
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 
@@ -25,24 +26,34 @@ install:
     # Replace dep1 dep2 ... with your dependencies
     - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy matplotlib scipy
     - source activate test-environment
+    - conda config --add channels salilab && conda config --add channels bioconda
+    - conda config --add channels hargup/label/pypi && conda config --add channels conda-forge
+    - conda install -y -q imp
+    - conda install -y -q -c bioconda mcl  # somehow channel needed?
+    - conda install -y -q future
+    - conda install -y -q h5py
+    - conda install -y -q samtools
+    - conda install -y -q pysam
     - yes | python setup.py install
-    - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
-    - conda install -y -q -c https://conda.anaconda.org/salilab imp
     - pip install coveralls
 
 before_script:
-  - python --version
+    - python --version
+    - export COVERALLS_SERVICE_NAME=travis-ci
+    - export COVERALLS_REPO_TOKEN=abc12345
 
 # command to run tests, e.g. python setup.py test
-script: cd test; coverage run --source=pytadbit test_all.py
+script:
+    - cd test; coverage run --source=pytadbit test_all.py
 
-# after_success:
-coveralls
+after_success:
+    - export COVERALLS_SERVICE_NAME=travis-ci
+    - export COVERALLS_REPO_TOKEN=abc12345
+    - coveralls
 
 branches:
   only:
-    - master
-    - dev
+      - master
 
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:

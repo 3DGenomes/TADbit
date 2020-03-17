@@ -392,14 +392,14 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + "/20Kb/chrT/chrT_A.tsv", silent=True)
         exp.filter_columns(silent=True)
-        exp.normalize_hic(factor=None, silent=True)
+        exp.normalize_hic(factor=1, silent=True)
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs("lala")
         with open("lala") as f_lala:
             lines = f_lala.readlines()
         self.assertEqual(len(lines), 4674)
-        self.assertAlmostEqual(float(lines[25].split('\t')[2]),0.612332461036)
-        self.assertAlmostEqual(float(lines[2000].split('\t')[2]),0.0738742984321)
+        self.assertAlmostEqual(float(lines[25].split('\t')[2]), 0.5852295196345679)
+        self.assertAlmostEqual(float(lines[2000].split('\t')[2]), 0.07060448846960976)
         system("rm -f lala")
         if CHKTIME:
             print("11", time() - t0)
