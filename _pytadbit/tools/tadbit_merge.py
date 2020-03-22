@@ -24,7 +24,7 @@ from pytadbit.mapping.analyze        import correlate_matrices
 from pytadbit.mapping.analyze        import eig_correlate_matrices
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
-from pytadbit.utils.sqlite_utils     import get_path_id
+from pytadbit.utils.sqlite_utils     import get_path_id, retry
 from pytadbit.utils.file_handling    import mkdir, which
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.parsers.hic_bam_parser import printime
@@ -163,6 +163,7 @@ def run(opts):
     printime('\nDone.')
 
 
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                nbad_columns, ncolumns, scc, std, reprod,
                eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,

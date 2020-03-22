@@ -23,7 +23,7 @@ import time
 from pytadbit                       import load_hic_data_from_bam
 from pytadbit                       import tadbit
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
-from pytadbit.utils.sqlite_utils    import add_path, get_jobid, print_db
+from pytadbit.utils.sqlite_utils    import add_path, get_jobid, print_db, retry
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.parsers.tad_parser    import parse_tads
 from pytadbit.parsers.genome_parser import parse_fasta, get_gc_content
@@ -201,6 +201,7 @@ def run(opts):
             exit(1)
 
 
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                richA_stats, firsts, param_hash,
                launch_time, finish_time):

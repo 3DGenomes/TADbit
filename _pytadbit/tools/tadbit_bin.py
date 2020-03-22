@@ -33,7 +33,7 @@ from pytadbit.parsers.hic_bam_parser import filters_to_bin, printime
 from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
 from pytadbit.parsers.tad_parser     import parse_tads
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
-from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
+from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db, retry
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
 from pytadbit.utils.extraviews       import plot_HiC_matrix
 
@@ -381,6 +381,7 @@ def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
             axe1.set_ylabel('Chromosomes')
 
 
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, launch_time, finish_time, out_files, out_plots):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock

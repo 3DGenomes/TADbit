@@ -15,7 +15,7 @@ from string                               import ascii_letters
 from random                               import random
 from shutil                               import copyfile, rmtree
 from collections                          import OrderedDict, defaultdict
-from pickle                              import dump, load, HIGHEST_PROTOCOL
+from pickle                               import dump, load, HIGHEST_PROTOCOL
 from traceback                            import print_exc
 from multiprocessing                      import cpu_count
 import multiprocessing  as mu
@@ -27,7 +27,7 @@ from numpy                                import nanmean, isnan, nansum, seterr
 
 from pytadbit                             import load_hic_data_from_bam
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
-from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db
+from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db, retry
 from pytadbit.utils.file_handling         import mkdir
 from pytadbit.mapping.analyze             import plot_distance_vs_interactions
 from pytadbit.mapping.filter              import MASKED
@@ -186,7 +186,7 @@ def run(opts):
         exit(1)
 
 
-
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, bias_file, mreads,
                nbad_columns, ncolumns, raw_cisprc, norm_cisprc,
                inter_vs_gcoord, a2, bam_filter,
@@ -408,7 +408,8 @@ def populate_args(parser):
 
     glopts.add_argument('--normalize_only', dest='normalize_only', action='store_true',
                         default=False,
-                        help='skip calculation of Cis-percentage and decay')
+                        help=
+                        'skip calculation of Cis-percentage and decay')
 
     glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
 

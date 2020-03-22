@@ -37,7 +37,7 @@ from pytadbit                         import Chromosome
 from pytadbit.utils.file_handling     import mkdir
 from pytadbit.utils.extraviews        import nicer
 from pytadbit.utils.sqlite_utils      import get_path_id, add_path, get_jobid
-from pytadbit.utils.sqlite_utils      import digest_parameters
+from pytadbit.utils.sqlite_utils      import digest_parameters, retry
 from pytadbit                         import get_dependencies_version
 from pytadbit.parsers.hic_parser      import read_matrix
 
@@ -57,9 +57,9 @@ actions = {0  : "do nothing",
            4  : "constraints",
            5  : "objective function",
            6  : "centroid",
-           7 : "consistency",
-           8 : "density",
-           9 : "contact map",
+           7  : "consistency",
+           8  : "density",
+           9  : "contact map",
            10 : "walking angle",
            11 : "persistence length",
            12 : "accessibility",
@@ -748,6 +748,8 @@ def run(opts):
                 savedata=path.join(outdir, batch_job_hash + '_interactions.dat'),
                 error=True)
 
+
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, outdir, results, batch_job_hash,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:

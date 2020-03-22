@@ -21,7 +21,7 @@ import time
 from pytadbit.mapping                import get_intersection
 from pytadbit.utils.file_handling    import mkdir
 from pytadbit.utils.sqlite_utils     import get_jobid, add_path, get_path_id, print_db
-from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
+from pytadbit.utils.sqlite_utils     import already_run, digest_parameters, retry
 from pytadbit.mapping.analyze        import fragment_size
 from pytadbit.mapping.filter         import filter_reads, apply_filter
 from pytadbit.parsers.hic_bam_parser import bed2D_to_BAMhic
@@ -107,6 +107,7 @@ def run(opts):
                outbam + '.bam', hist_path, median, max_f, mad, launch_time, finish_time)
 
 
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                outbam, hist_path, median, max_f, mad, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
