@@ -37,7 +37,7 @@ from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.utils.file_handling         import which, mkdir, is_fastq
 from pytadbit.mapping.full_mapper         import full_mapping, fast_fragment_mapping
 from pytadbit.parsers.genome_parser       import parse_fasta
-from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
+from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db, retry
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
 
@@ -172,7 +172,7 @@ def check_options(opts):
         opts.gem_version = None
         try:
             out, _ = Popen([opts.mapper_binary,'--version'], stdout=PIPE,
-                             stderr=STDOUT, universal_newlines=True).communicate()
+                           stderr=STDOUT, universal_newlines=True).communicate()
             opts.gem_version = int(out[1])
         except ValueError as e:
             opts.gem_version = 2
@@ -275,12 +275,12 @@ def check_options(opts):
 
     # check mapper extra options
     if opts.mapper_param:
-        if len(opts.mapper_param) == 1 \
-            and ('-' in opts.mapper_param[0] or \
-                 '--' in opts.mapper_param[0]):
+        if (len(opts.mapper_param) == 1
+            and ('-' in opts.mapper_param[0] or
+                 '--' in opts.mapper_param[0])):
             # Single string surrounded by quotes
             opts.mapper_param = opts.mapper_param[0].split()
-        else: 
+        else:
             opts.mapper_param = dict([o.split(':') for o in opts.mapper_param])
     else:
         opts.mapper_param = {}
@@ -323,6 +323,7 @@ def check_options(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, dangling_ends, ligated, fig_path, outfiles, launch_time, finish_time):
     """
     write little DB to keep track of processes and options

@@ -14,8 +14,9 @@ from string                         import ascii_letters
 from random                         import random
 from shutil                         import copyfile
 from argparse                       import HelpFormatter
-from pickle                        import load, UnpicklingError
+from pickle                         import load, UnpicklingError
 from warnings                       import warn
+from functools                      import reduce
 
 import time
 import logging
@@ -25,10 +26,9 @@ from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
 from pytadbit.utils.file_handling   import mkdir
-from pytadbit.utils.sqlite_utils    import print_db, get_jobid
+from pytadbit.utils.sqlite_utils    import print_db, get_jobid, retry
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
-from functools import reduce
 
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
@@ -132,6 +132,8 @@ def run(opts):
     save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time)
 
+
+@retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
