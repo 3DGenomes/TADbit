@@ -22,7 +22,8 @@ try:
     basestring
 except NameError:
     basestring = str
-  
+
+
 def check_pik(path):
     with open(path, "rt") as f:
         f.seek (0, 2)                # Seek @ EOF
