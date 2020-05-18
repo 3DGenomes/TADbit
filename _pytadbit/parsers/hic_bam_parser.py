@@ -123,10 +123,18 @@ def _map2sam_mid(line, flag):
     # trans contact?
     if rname != rnext:
         flag += 1024 # filter_keys['trans-chromosomic'] = 2**10
-    r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{4}P\t{6}\t{7}\t{5}\t*\t*\t'
+    ci1 = l1
+    ci2 = l2
+    # samtools skip these reads at position 1 see:
+    # https://github.com/samtools/samtools/issues/1240
+    if int(pos) == 1: 
+        ci1 = "1M%d"%(int(l1)-1)
+    if int(pnext) == 1:
+        ci2 = "1M%d"%(int(l2)-1)
+    r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{11}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\t'
             'S1:i:{9}\tS2:i:{10}\n'
-            '{0}\t{1}\t{6}\t{7}\t0\t{5}S\t{2}\t{3}\t{4}\t*\t*\t'
+            '{0}\t{1}\t{6}\t{7}\t0\t{12}S\t{2}\t{3}\t{4}\t*\t*\t'
             'TC:i:{8}\t'
             'S1:i:{9}\tS2:i:{10}\n').format(
                 qname,               # 0
@@ -139,7 +147,9 @@ def _map2sam_mid(line, flag):
                 pnext,               # 7
                 tc,                  # 8
                 s1,                  # 9
-                s2)                  # 10
+                s2,                  # 10
+                ci1,                 # 11
+                ci2)                 # 12
     return r1r2
 
 
@@ -159,10 +169,18 @@ def _map2sam_long(line, flag):
     # trans contact?
     if rname != rnext:
         flag += 1024 # filter_keys['trans-chromosomic'] = 2**10
-    r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{4}P\t{6}\t{7}\t{5}\t*\t*\t'
+    ci1 = l1
+    ci2 = l2
+    # samtools skip these reads at position 1 see:
+    # https://github.com/samtools/samtools/issues/1240
+    if int(pos) == 1: 
+        ci1 = "1M%d"%(int(l1)-1)
+    if int(pnext) == 1:
+        ci2 = "1M%d"%(int(l2)-1)
+    r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{15}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\tS1:i:{13}\tS2:i:{14}\t'
             'E1:i:{9}\tE2:i:{10}\tE3:i:{11}\tE4:i:{12}\n'
-            '{0}\t{1}\t{6}\t{7}\t0\t{5}S\t{2}\t{3}\t{4}\t*\t*\t'
+            '{0}\t{1}\t{6}\t{7}\t0\t{16}S\t{2}\t{3}\t{4}\t*\t*\t'
             'TC:i:{8}\tS1:i:{14}\tS2:i:{13}\t'
             'E3:i:{11}\tE4:i:{12}\tE1:i:{9}\tE2:i:{10}\n').format(
                 qname,               # 0
@@ -179,7 +197,9 @@ def _map2sam_long(line, flag):
                 e3,                  # 11
                 e4,                  # 12
                 s1,                  # 13
-                s2)                  # 14
+                s2,                  # 14
+                ci1,                 # 15
+                ci2)                 # 16
     return r1r2
 
 
@@ -350,6 +370,13 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
     refs = bamfile.references
     bam_start = start - 2
     bam_start = max(0, bam_start)
+    section_pos = []
+    for sec in sections1:
+        if sec not in section_pos:
+            section_pos.append(sec[0])
+    for sec in sections2:
+        if sec not in section_pos:
+            section_pos.append(sec[0])
     try:
         dico = {}
         for r in bamfile.fetch(region=region,
@@ -361,6 +388,10 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             pos1 = r.reference_start + 1
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
+            if ((crm1 not in section_pos or crm2 not in section_pos) or
+                (section_pos.index(crm1) > section_pos.index(crm2)) or 
+                (crm1 == crm2 and pos1 > pos2)):
+                continue
             try:
                 pos1 = sections1[(crm1, pos1 // resolution)]
                 pos2 = sections2[(crm2, pos2 // resolution)]
@@ -374,10 +405,9 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             # print '%-50s %5s %9s %5s %9s' % (r.query_name,
             #                                  crm1, r.reference_start + 1,
             #                                  crm2, r.mpos + 1)
-        if half:
-            for c, i, j in dico:
-                if i < j:
-                    del dico[(c, i, j)]
+        if not half:
+            for c, i, j in list(dico):
+                dico[(c, j, i)] = dico[(c, i, j)] 
         out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                                 '%s:%d-%d.tsv' % (region, start, end)), 'w')
         out.write(''.join('%s\t%d\t%d\t%d\n' % (c, a, b, v)
