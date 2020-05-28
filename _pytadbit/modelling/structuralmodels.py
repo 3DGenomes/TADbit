@@ -49,6 +49,7 @@ from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
 from pytadbit.utils.extraviews        import tad_coloring
 from pytadbit.utils.extraviews        import tad_border_coloring
 from pytadbit.utils.extraviews        import color_residues
+from pytadbit.mapping.analyze         import scc
 from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
@@ -1752,7 +1753,6 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
-
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
@@ -1810,6 +1810,8 @@ class StructuralModels(object):
         elif corr == 'chi2':
             corr = chisquare(array(moddata), array(oridata))
             corr = 1. / corr[0], corr[1]
+        elif corr == 'scc':
+            corr = scc(model_matrix, self._original_data, max_dist=int(len(model_matrix)/2))
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
