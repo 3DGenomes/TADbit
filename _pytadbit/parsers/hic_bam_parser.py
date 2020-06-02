@@ -8,13 +8,13 @@ from builtins   import next
 
 from future import standard_library
 standard_library.install_aliases()
-from pickle                      import load, dump
+from pickle                       import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
-from io                     import StringIO
+from io                           import StringIO
 from shutil                       import copyfile
 import datetime
 from sys                          import stdout, stderr, exc_info, modules
@@ -127,10 +127,10 @@ def _map2sam_mid(line, flag):
     ci2 = l2
     # samtools skip these reads at position 1 see:
     # https://github.com/samtools/samtools/issues/1240
-    if int(pos) == 1: 
-        ci1 = "1M%d"%(int(l1)-1)
-    if int(pnext) == 1:
-        ci2 = "1M%d"%(int(l2)-1)
+    if pos == '1':
+        ci1 = "1M%d" % (int(l1) - 1)
+    if pnext == '1':
+        ci2 = "1M%d" % (int(l2) - 1)
     r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{11}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\t'
             'S1:i:{9}\tS2:i:{10}\n'
@@ -173,10 +173,10 @@ def _map2sam_long(line, flag):
     ci2 = l2
     # samtools skip these reads at position 1 see:
     # https://github.com/samtools/samtools/issues/1240
-    if int(pos) == 1: 
-        ci1 = "1M%d"%(int(l1)-1)
-    if int(pnext) == 1:
-        ci2 = "1M%d"%(int(l2)-1)
+    if pos == '1':
+        ci1 = "1M%d" % (int(l1) - 1)
+    if pnext == '1':
+        ci2 = "1M%d" % (int(l2) - 1)
     r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{15}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\tS1:i:{13}\tS2:i:{14}\t'
             'E1:i:{9}\tE2:i:{10}\tE3:i:{11}\tE4:i:{12}\n'
@@ -817,7 +817,7 @@ def _generate_name(regions, starts, ends, resolution, chr_order=None):
         for i, region in enumerate(regions):
             try:
                 name.append('%s:%d-%d' % (region, starts[i] // resolution,
-                                        ends[i] // resolution))
+                                          ends[i] // resolution))
             except TypeError: # all chromosomes
                 name.append('%s' % (region))
         name = '_'.join(name)
