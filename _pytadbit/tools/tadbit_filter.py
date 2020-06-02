@@ -247,7 +247,6 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                 (NULL,     %d, '%s',  '%s',    '%s',    %d)
                 """ % (get_path_id(cur, mreads, opts.workdir),
                        'valid-pairs', n_valid_pairs, '', jobid))
-        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         if not opts.fast_fragment:
             print_db(cur, 'MAPPED_OUTPUTs')
