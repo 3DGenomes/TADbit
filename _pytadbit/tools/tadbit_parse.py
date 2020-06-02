@@ -25,6 +25,7 @@ import sqlite3 as lite
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
+from pytadbit.parsers.sam_parser    import parse_sam
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import print_db, get_jobid, retry
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path
@@ -39,7 +40,14 @@ def run(opts):
     launch_time = time.localtime()
 
     reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
-    f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
+    if not opts.mapped1 and not opts.mapped2:
+        f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
+    else:
+        if opts.mapped1:
+            f_names1 = opts.mapped1
+        if opts.mapped2:
+            f_names2 = opts.mapped2
+        renz     = opts.renz
 
     renz = renz.split('-')
 
@@ -75,9 +83,14 @@ def run(opts):
 
     if not opts.skip:
         logging.info('parsing reads in %s project', name)
-        counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
-                                   out_file2=out_file2, re_name=renz, verbose=True,
-                                   genome_seq=genome, compress=opts.compress_input)
+        if opts.mapped1 or opts.mapped2:
+            counts, multis = parse_sam(f_names1, f_names2, out_file1=out_file1,
+                                       out_file2=out_file2, re_name=renz, verbose=True,
+                                       genome_seq=genome, compress=opts.compress_input)
+        else:
+            counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
+                                       out_file2=out_file2, re_name=renz, verbose=True,
+                                       genome_seq=genome, compress=opts.compress_input)
     else:
         counts = {}
         counts[0] = {}
@@ -170,6 +183,23 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             Total_interactions int,
             Multiples text,
             unique (PATHid))""")
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='JOBs'""")
+        if not cur.fetchall():
+            cur.execute("""
+            create table PATHs
+               (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
             param_hash = digest_parameters(opts, get_md5=True )
@@ -195,6 +225,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             try:
                 sum_reads = 0
                 for i, item in enumerate(counts[count]):
+                    add_path(cur, fnames[count][i]  ,  'MAPPED_FASTQ' , jobid, opts.workdir)
                     cur.execute("""
                     insert into MAPPED_OUTPUTs
                     (Id  , PATHid, BEDid, Uniquely_mapped)
@@ -218,7 +249,6 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             except lite.IntegrityError:
                 print('WARNING: already parsed (PARSED_OUTPUTs)')
 
-        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
         print_db(cur, 'PARSED_OUTPUTs')
@@ -232,6 +262,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         remove(path.join(opts.workdir, '__lock_db'))
     except OSError:
         pass
+
 
 def load_parameters_fromdb(opts, reads=None, jobids=None):
     if 'tmpdb' in opts and opts.tmpdb:
@@ -294,6 +325,7 @@ def populate_args(parser):
                                                       max_help_position=27)
 
     glopts = parser.add_argument_group('General options')
+    notadbit = parser.add_argument_group('Mapped outside TADbit options')
 
     # glopts.add_argument('--qc_plot', dest='quality_plot', action='store_true',
     #                   default=False,
@@ -312,6 +344,17 @@ def populate_args(parser):
     glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, default=None,
                         help='In case only one of the reads needs to be parsed')
+
+    notadbit.add_argument('--mapped1', dest='mapped1', metavar="PATHs",
+                        action='store', nargs='+', default=None, type=str,
+                        help='''paths to mapped bam files (first read-end)''')
+
+    notadbit.add_argument('--mapped2', dest='mapped2', metavar="PATHs",
+                        action='store', nargs='+', default=None, type=str,
+                        help='''paths to mapped bam files (second read-end)''')
+
+    notadbit.add_argument('--renz', dest='renz', metavar="STR",
+                        type=str, help='''restriction enzyme name''')
 
     glopts.add_argument('--filter_chrom', dest='filter_chrom',
                         default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?(_dna)?$",
@@ -370,6 +413,10 @@ def check_options(opts):
         opts.workdir = opts.workdir[:-1]
 
     # write log
+    newbie = False
+    if not path.exists(opts.workdir):
+        newbie = True
+        mkdir(opts.workdir)
     log_format = '[PARSING]   %(message)s'
 
     # reset logging
@@ -412,7 +459,10 @@ def check_options(opts):
             pass
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
+    try:
+        if already_run(opts):
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(path.join(dbdir, dbfile))
+            exit('WARNING: exact same job already computed, see JOBs table above')
+    except OSError:
+        pass
