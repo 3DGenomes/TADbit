@@ -18,6 +18,7 @@ try:
 except NameError:
     basestring = str
 
+
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
               mapper=None, **kwargs):
@@ -189,7 +190,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         if verbose:
             stdout.write('\n')
         tmp_name = tmp_files[0]
-        
+
         if verbose:
             print('Getting Multiple contacts')
         reads_fh = open(outfiles[read], 'w')
@@ -213,16 +214,22 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         prev_head = read_line.split('\t', 1)[0]
         prev_head = prev_head.split('~' , 1)[0]
         prev_read = read_line
-        multis[read] = 0
+        multis[read] = {}
+        multi = 0
         for read_line in tmp_reads_fh:
             head = read_line.split('\t', 1)[0]
             head = head.split('~' , 1)[0]
             if head == prev_head:
-                multis[read] += 1
                 prev_read =  prev_read.strip() + '|||' + read_line
+                multi += 1
             else:
                 reads_fh.write(prev_read)
                 prev_read = read_line
+                try:
+                    multis[read][multi] += 1
+                except KeyError:
+                    multis[read][multi] = 1
+                multi = 0
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
