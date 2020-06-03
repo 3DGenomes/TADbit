@@ -756,7 +756,7 @@ def fragment_size(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             to_return['first_decay'] = v - 10
             break
     else:
-        raise Exception('ERROR: not found')
+        raise ZeroDivisionError('ERROR: no dangling-ends found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
     to_return['mean'] = meanfr
