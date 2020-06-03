@@ -298,7 +298,7 @@ def read_read_frags(r, frags, frag_chunk):
             idx = bisect(frag_piece, pos)
         if count >= len_seq:
             raise Exception('Read mapped mostly outside ' +
-                            'chromosome\n')
+                            'chromosome\n(also reference genome can be truncated)')
         next_re = frag_piece[idx]
     prev_re = frag_piece[idx - 1 if idx else 0]
     return ('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
