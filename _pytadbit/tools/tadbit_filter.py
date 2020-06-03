@@ -63,9 +63,14 @@ def run(opts):
         print('Get insert size...')
         hist_path = path.join(opts.workdir,
                               'histogram_fragment_sizes_%s.pdf' % param_hash)
-        median, max_f, mad = fragment_size(
-            reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
-            savefig=hist_path)
+        try:
+            median, max_f, mad = fragment_size(
+                reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
+                savefig=hist_path)
+        except ZeroDivisionError:
+            warn('WARNING: cannot compute fragment length, too few '
+                 'dangling-ends. Setting median length to 400 nt.')
+            median, max_f, mad = 400, 100, 1000
 
         print('  - median insert size =', median)
         print('  - double median absolution of insert size =', mad)
