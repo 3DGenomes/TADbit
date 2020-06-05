@@ -8,7 +8,6 @@ information needed
 from __future__ import print_function
 
 from future import standard_library
-from __builtin__ import None
 standard_library.install_aliases()
 from argparse                         import HelpFormatter
 from os                               import path, remove, system, rename, makedirs
@@ -124,12 +123,13 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
                   "start": opts.beg + 1,
                   "end"  : opts.end}
 
-    container = None
     if opts.container:
         container = [opts.container[0],
                      int(opts.container[1]),
                      int(opts.container[2]),
                      int(opts.container[3])]
+    else:
+        container=None
 
     optpar = {'maxdist': float(m),
               'upfreq' : float(u),
