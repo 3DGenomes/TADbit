@@ -91,11 +91,11 @@ def convert_from_unicode(data):
         return type(data)(list(map(convert_from_unicode, data)))
     return data
 
-def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
+def prepare_common_data(exp, opts, outdir):
+    
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
     zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
-    nloci = opts.end - opts.beg
     if exp.norm and exp.norm[0].chromosomes:
         coords = []
         tot = 0
@@ -131,27 +131,35 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     else:
         container=None
 
-    optpar = {'maxdist': float(m),
-              'upfreq' : float(u),
-              'lowfreq': float(l),
-              'scale'  : float(s),
-              'kforce' : 5}
-
-    muls = tuple(map(my_round, (m, u, l, s)))
-    dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-
-    n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
-    n_last = n_jobs*opts.nmodels_per_job - opts.nmodels
-    paramsfile = path.join(dirname,'_tmp_common_params.pickle')
-    tmp_params = open(paramsfile, 'wb')
+    datafile = path.join(outdir,'_tmp_common_data.pickle')
+    tmp_params = open(datafile, 'wb')
     dump(exp, tmp_params)
     dump(zscores, tmp_params)
     dump(zeros, tmp_params)
     dump(values, tmp_params)
     dump(opts, tmp_params)
     dump(container, tmp_params)
-    dump(optpar, tmp_params)
     dump(coords, tmp_params)
+    tmp_params.close()
+
+def prepare_distributed_jobs(opts, m, u, l, s, outdir):
+    
+    muls = tuple(map(my_round, (m, u, l, s)))
+    dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
+
+    nloci = opts.end - opts.beg
+    optpar = {'maxdist': float(m),
+              'upfreq' : float(u),
+              'lowfreq': float(l),
+              'scale'  : float(s),
+              'kforce' : 5}
+
+    n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
+    n_last = n_jobs*opts.nmodels_per_job - opts.nmodels
+    datafile = path.join(outdir,'_tmp_common_data.pickle')
+    paramsfile = path.join(dirname,'_tmp_common_cfg_params.pickle')
+    tmp_params = open(paramsfile, 'wb')
+    dump(optpar, tmp_params)
     tmp_params.close()
     for n_job in range(n_jobs):
         nmodels_per_job = opts.nmodels_per_job
@@ -167,15 +175,17 @@ from os                               import path
 from pytadbit.modelling.imp_modelling import generate_3d_models
 
 params_file = open("%s","rb")
-exp = load(params_file)
-zscores = load(params_file)
-zeros = load(params_file)
-values = load(params_file)
-opts = load(params_file)
-container = load(params_file)
 optpar = load(params_file)
-coords = load(params_file)
 params_file.close()
+data_file = open("%s","rb")
+exp = load(data_file)
+zscores = load(data_file)
+zeros = load(data_file)
+values = load(data_file)
+opts = load(data_file)
+container = load(data_file)
+coords = load(data_file)
+data_file.close()
 
 try:
     models = generate_3d_models(zscores, opts.reso, %s,
@@ -190,7 +200,7 @@ try:
 except Exception as e:
     print(e)
     open(path.join("%s",'failed.flag'), 'a').close()
-    ''' % (paramsfile, nloci, nmodels_per_job, nmodels_per_job,
+    ''' % (paramsfile, datafile, nloci, nmodels_per_job, nmodels_per_job,
            n_job*opts.nmodels_per_job, job_dir,
            '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
            job_dir))
@@ -277,7 +287,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
             except Exception as error:
                 logging.info("Function raised %s" % error)
                 jobs[n_job].cancel()
-        paramsfile = path.join(dirname,'_tmp_common_params.pickle')
+        paramsfile = path.join(dirname,'_tmp_common_cfg_params.pickle')
         system('rm %s' % (paramsfile))
 
         models.define_best_models(opts.nkeep)
@@ -336,6 +346,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         logging.info('\n\n# %13s %6s %7s %7s %6s %7s %7s\n' % (
             "Optimization", "UpFreq", "LowFreq", "MaxDist",
             "scale", "cutoff", "| Correlation"))
+    prepare_common_data(exp, opts, outdir)
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
         m, u, l, s = list(map(my_round, (m, u, l, s)))
         muls = tuple((m, u, l, s))
@@ -343,7 +354,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
         if not path.exists(modelsfile):
             mkdir(cfgfolder)
-            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+            prepare_distributed_jobs(opts, m, u, l, s, outdir)
 
     # get the best combination
     best = ({'corr': 0}, [0, 0, 0, 0, 0])
@@ -387,7 +398,8 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
         logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
         return []
     mkdir(cfgfolder)
-    prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+    prepare_common_data(exp, opts, outdir)
+    prepare_distributed_jobs(opts, m, u, l, s, outdir)
     results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
                                                job_file_handler=job_file_handler,
                                                exp=exp, script_cmd=script_cmd,
