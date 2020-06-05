@@ -22,6 +22,7 @@ from hashlib                          import md5
 from functools                        import partial
 from multiprocessing                  import cpu_count, TimeoutError, Pool
 from multiprocessing.dummy            import Pool as ThreadPool
+from sqlite3                          import OperationalError
 import sqlite3 as lite
 import subprocess
 import time
@@ -122,6 +123,11 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
                   "start": opts.beg + 1,
                   "end"  : opts.end}
 
+    container = [opts.container[0],
+                 int(opts.container[1]),
+                 int(opts.container[2]),
+                 int(opts.container[3])]
+
     optpar = {'maxdist': float(m),
               'upfreq' : float(u),
               'lowfreq': float(l),
@@ -140,6 +146,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
     dump(zeros, tmp_params)
     dump(values, tmp_params)
     dump(opts, tmp_params)
+    dump(container, tmp_params)
     dump(optpar, tmp_params)
     dump(coords, tmp_params)
     tmp_params.close()
@@ -162,6 +169,7 @@ zscores = load(params_file)
 zeros = load(params_file)
 values = load(params_file)
 opts = load(params_file)
+container = load(params_file)
 optpar = load(params_file)
 coords = load(params_file)
 params_file.close()
@@ -171,7 +179,7 @@ try:
                                         values=values, n_models=%s,
                                         n_keep=%s,
                                         n_cpus=opts.cpus_per_job, keep_all=True,
-                                        start=int(opts.rand)+%s, container=None,
+                                        start=int(opts.rand)+%s, container=container,
                                         config=optpar, coords=coords, experiment=exp,
                                         zeros=zeros)
 
@@ -1018,6 +1026,17 @@ def populate_args(parser):
                         'number of beads, from which to consider 2 beads as ' +
                         'being close), i.e. 1:1.5:0.5 -- Can also pass only one' +
                         ' number -- or a list of numbers')
+    opopts.add_argument('--container', dest='container', metavar="LIST",
+                        action='store', default=None, nargs='+', type=str,
+                        help='''
+                        restrains particle to be within a given object. Can
+                        only be a 'cylinder', which is, in fact a cylinder of a given height to
+                        which are added hemispherical ends. This cylinder is defined by a radius,
+                        its height (with a height of 0 the cylinder becomes a sphere) and the
+                        force applied to the restraint. E.g. for modeling E. coli genome (2
+                        micrometers length and 0.5 micrometer of width), these values could be
+                        used: 'cylinder' 250 1500 50, and for a typical mammalian nuclei
+                        (6 micrometers diameter): 'cylinder' 3000 0 50''')
 
     opopts.add_argument('--analyze', dest='analyze',
                         default=False, action="store_true",
@@ -1165,12 +1184,17 @@ def load_optpar_fromdb(opts):
     con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
-        if not opts.optimization_id:
-            cur.execute("SELECT Id from MODELED_REGIONs where RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
-            opts.reso, opts.beg, opts.end))
-        else:
-            cur.execute("SELECT Id from MODELED_REGIONs where JOBid=%d and RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
-                opts.optimization_id,opts.reso, opts.beg, opts.end))
+        try:
+            if not opts.optimization_id:
+                cur.execute("SELECT Id from MODELED_REGIONs where RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
+                opts.reso, opts.beg, opts.end))
+            else:
+                cur.execute("SELECT Id from MODELED_REGIONs where JOBid=%d and RESO=%d and BEG=%d and END=%d and Type='OPTIM'" % (
+                    opts.optimization_id,opts.reso, opts.beg, opts.end))
+        except OperationalError:
+            raise OperationalError("ERROR: no optimization found. Run 'tadbit model' "
+                                   "with --optimize or use --force to indicate optimal "
+                                   "parameters ")
         try:
             optimid = cur.fetchall()
         except IndexError:
@@ -1287,7 +1311,7 @@ def load_hic_data(opts):
                 raise Exception('ERROR: chromosome %s not in input matrix(%s).' % (opts.crm,
                                                     ','.join([h for h in hic.chromosomes])))
             hic_bads = {k: v for k, v in list(hic.bads.items()) if k >= opts.beg and k < opts.end}
-            hic = hic.get_matrix(focus=(opts.beg+1,opts.end))
+            hic = hic.get_matrix(focus=(opts.beg+1,min(opts.end, len(hic))))
             opts.offset = opts.beg
         else:
             if len(hic.chromosomes) == 1: # we assume full chromosome
@@ -1330,3 +1354,4 @@ def load_hic_data(opts):
                                                    opts.reso))
             opts.end = crm.experiments[-1].size + opts.offset
     return crm
+

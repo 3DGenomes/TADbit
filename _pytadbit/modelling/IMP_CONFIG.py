@@ -9,7 +9,7 @@
 
 CONFIG = {
     # use these paramaters with the Hi-C data from:
-    'reference' : 'victor corces dataset 2013',
+    'reference' : 'example dataset',
 
     # Force applied to the restraints inferred to neighbor particles
     'kforce'    : 5,
