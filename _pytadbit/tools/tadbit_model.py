@@ -302,7 +302,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
 
     return results_corr, modelsfile
 
-def my_round(num, val=4):
+def my_round(num, val=6):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 
@@ -1134,7 +1134,7 @@ def check_options(opts):
         except (AttributeError, ValueError):
             return tuple([round(num(v),decs) for v in range_str])
 
-    opts.scale   = _load_range(opts.scale, decs=4)
+    opts.scale   = _load_range(opts.scale, decs=6)
     opts.maxdist = _load_range(opts.maxdist, num=int)
     opts.upfreq  = _load_range(opts.upfreq)
     opts.lowfreq = _load_range(opts.lowfreq)
