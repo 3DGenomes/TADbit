@@ -25,7 +25,7 @@ from pytadbit.mapping.analyze        import eig_correlate_matrices
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.sqlite_utils     import get_path_id, retry
-from pytadbit.utils.file_handling    import mkdir, which
+from pytadbit.utils.file_handling    import mkdir, which, magic_open
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.parsers.hic_bam_parser import printime
 
@@ -366,9 +366,17 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                                     'all_r1-r2_intersection_%s.tsv_%s.tsv' % (
                                         param_hash, f))
                 out = open(outmask, 'w')
-                for line in open(path.join(opts.workdir1, masked1[f]['path'])):
+                try:
+                    fh = magic_open(path.join(opts.workdir1, masked1[f]['path']))
+                except FileNotFoundError:
+                    fh = magic_open(path.join(opts.workdir1, masked1[f]['path'] + '.gz'))
+                for line in fh:
                     out.write(line)
-                for line in open(path.join(opts.workdir2, masked2[f]['path'])):
+                try:
+                    fh = magic_open(path.join(opts.workdir2, masked2[f]['path']))
+                except FileNotFoundError:
+                    fh = magic_open(path.join(opts.workdir2, masked2[f]['path'] + '.gz'))
+                for line in fh:
                     out.write(line)
                 add_path(cur, outmask, 'FILTER', jobid, opts.workdir)
             else:
