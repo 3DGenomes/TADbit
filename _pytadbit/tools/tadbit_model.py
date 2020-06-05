@@ -196,10 +196,19 @@ except Exception as e:
            job_dir))
 
         tmp.close()
+        if opts.script_template != '':
+            script_tmpl = path.join(job_dir,'_tmp_optim.cmd')
+            tmp = open(script_tmpl, 'w')
+            for line in open(opts.script_template):
+                tmp.write(line.replace('__file__',
+                                       scriptname).replace('__name__',
+                                                           'cfg_%s_%s_%s_%s'% muls
+                                                           +'_%d'%n_job).replace('__dir__',job_dir))
+            tmp.close()
 
-def run_distributed_job(job_dir, script_cmd , script_args):
+def run_distributed_job(job_dir, script_cmd, script_args, script_name):
 
-    scriptname = path.join(job_dir,'_tmp_optim.py')
+    scriptname = path.join(job_dir, script_name)
     logname = path.join(job_dir,'_tmp_log.log')
     with open(logname, 'a') as f:
         f.write('Log %s\n' % job_dir)
@@ -228,12 +237,15 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         jobs = {}
         for n_job in range(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+            if opts.script_template != '':
+                script_name = path.join(job_dir,'_tmp_optim.cmd')
+            else:
+                script_name = path.join(job_dir,'_tmp_optim.py')
             if job_file_handler:
-                scriptname = path.join(job_dir,'_tmp_optim.py')
-                job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
+                job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, script_name))
             else:
                 jobs[n_job] = partial(abortable_worker, run_distributed_job)
-                pool.apply_async(jobs[n_job], args=(job_dir, script_cmd , script_args))
+                pool.apply_async(jobs[n_job], args=(job_dir, script_cmd , script_args, script_name))
         pool.close()
         pool.join()
 
@@ -1079,6 +1091,12 @@ def populate_args(parser):
                         default='-u',
                         help=('Argumnets to script_cmd to call the jobs '
                               'in distributed mode.'))
+    ruopts.add_argument('--script_template', dest='script_template', metavar="STR", type=str,
+                        default='',
+                        help=('Template to generate a file that script_cmd will call for each job '
+                              'in distributed mode. Each __file__ marker in the template will be replaced'
+                              'by the job file __name__ with the name and __dir__ with the folder.'))
+
     # ruopts.add_argument('--job_list', dest='job_list', metavar='LIST/nothing', nargs='*',
     #                     choices=['maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff'],
     #                     default=None,
