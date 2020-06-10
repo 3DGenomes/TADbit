@@ -93,6 +93,10 @@ def convert_from_unicode(data):
 
 def prepare_common_data(exp, opts, outdir):
     
+    datafile = path.join(outdir,'_tmp_common_data.pickle')
+    if path.exists(datafile):
+        logging.info( '\nCommon data already generated. Please use tadbit clean if you want to redo it.')
+        return
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
     zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
@@ -131,7 +135,6 @@ def prepare_common_data(exp, opts, outdir):
     else:
         container=None
 
-    datafile = path.join(outdir,'_tmp_common_data.pickle')
     tmp_params = open(datafile, 'wb')
     dump(exp, tmp_params)
     dump(zscores, tmp_params)
@@ -166,6 +169,8 @@ def prepare_distributed_jobs(opts, m, u, l, s, outdir):
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
         job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+        if path.exists(job_dir):
+            continue
         mkdir(job_dir)
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
@@ -239,7 +244,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
     dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
     modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
 
-    if path.exists(modelsfile):
+    if path.exists(modelsfile) and not opts.force:
         models = load_structuralmodels(modelsfile)
     else:
         n_jobs = int(ceil(opts.nmodels/opts.nmodels_per_job))
@@ -247,6 +252,9 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         jobs = {}
         for n_job in range(n_jobs):
             job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+            results_file = path.join(job_dir,'results.models')
+            if path.isfile(results_file) and not opts.force:
+                continue
             if opts.script_template != '':
                 script_name = path.join(job_dir,'_tmp_optim.cmd')
             else:
@@ -353,8 +361,9 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
         if not path.exists(modelsfile):
-            mkdir(cfgfolder)
-            prepare_distributed_jobs(opts, m, u, l, s, outdir)
+            if not path.exists(cfgfolder) and not opts.force:
+                mkdir(cfgfolder)
+                prepare_distributed_jobs(opts, m, u, l, s, outdir)
 
     # get the best combination
     best = ({'corr': 0}, [0, 0, 0, 0, 0])
@@ -414,10 +423,13 @@ def run(opts):
     launch_time = time.localtime()
 
     # prepare output folders
-    batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
-        'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
-        'job_list', 'rand', 'optimize',
-        'optimization_id', 'cpus', 'workdir', 'matrix'])
+    if opts.optimize and opts.optimization_id:
+        batch_job_hash = load_preoptim_fromdb(opts)
+    else:
+        batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
+            'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
+            'job_list', 'rand', 'optimize',
+            'optimization_id', 'cpus', 'workdir', 'matrix'])
 
     # write log
     if opts.optimize:
@@ -541,6 +553,8 @@ def run(opts):
                             script_cmd = opts.script_cmd, script_args = opts.script_args)
 
         finish_time = time.localtime()
+        if opts.job_list:
+            job_file_handler.close()
         # save all job information to sqlite DB
         save_to_db(opts, outdir, results, batch_job_hash,
                launch_time, finish_time)
@@ -1089,7 +1103,7 @@ def populate_args(parser):
                         metavar="INT", default=1, type=int,
                         help=('Number of cpu nodes per distributed job.'))
     ruopts.add_argument('--concurrent_jobs', dest='concurrent_jobs',
-                        metavar="INT", default=cpu_count(), type=int,
+                        metavar="INT", default=None, type=int,
                         help=('Number of concurrent jobs in distributed mode.'))
     ruopts.add_argument('--timeout_job', dest='timeout_job', metavar="INT", type=int,
                         default=5000,
@@ -1153,6 +1167,7 @@ def populate_args(parser):
 
 def check_options(opts):
     # check resume
+    opts.concurrent_jobs = opts.concurrent_jobs or opts.cpus
     if not path.exists(opts.workdir):
         warn('ERROR: workdir not found, creating it')
         mkdir(opts.workdir)
@@ -1208,6 +1223,25 @@ def check_options(opts):
                                         for _ in range(10)]))
         opts.tmpdb = path.join(dbdir, dbfile)
 
+def load_preoptim_fromdb(opts):
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
+    with con:
+        cur = con.cursor()
+        try:
+            cur.execute("select Parameters_md5 from JOBs where id=%d and Type='PRE_OPTIM'" % (
+                opts.optimization_id))
+            hash_md5 = cur.fetchall()[0]
+        except IndexError:
+            raise IndexError("ERROR: no pre-optimization found. Run 'tadbit describe' "
+                                   "to check the pre-optimizations available ")
+        hash_md5 = hash_md5[0]
+        logging.info(('Loaded pre-optimization:%s' %hash_md5))
+
+    return hash_md5
 
 def load_optpar_fromdb(opts):
     if 'tmpdb' in opts and opts.tmpdb:

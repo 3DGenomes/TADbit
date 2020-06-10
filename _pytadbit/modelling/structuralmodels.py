@@ -1811,7 +1811,8 @@ class StructuralModels(object):
             corr = chisquare(array(moddata), array(oridata))
             corr = 1. / corr[0], corr[1]
         elif corr == 'scc':
-            corr = scc(model_matrix, self._original_data, max_dist=int(len(model_matrix)/2))
+            corr = scc(model_matrix, self._original_data,
+                       max_dist=min(int(len(model_matrix)/2),50))
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
