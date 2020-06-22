@@ -20,6 +20,7 @@ from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace
 from numpy                            import nanmin, nanmax
+from numpy                            import seterr
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
@@ -1597,7 +1598,7 @@ class StructuralModels(object):
         #plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False,
-                    stage=0, cmap='viridis'):
+                    stage=0, cmap='Reds'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1633,12 +1634,20 @@ class StructuralModels(object):
                     try:
                         zsc_mtrx[i][j] = stage_zscore[str(j)][str(i)]
                     except KeyError:
-                        zsc_mtrx[i][j] = 0
+                        zsc_mtrx[i][j] = float('Nan')
+
+        # suppress warnings due to nans in following lines
+        prevErrorSet = seterr()
+        seterr(invalid='ignore')
+
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
         masked_array_top = ma.array (
             masked_array, mask=masked_array < self._config['upfreq'])
         masked_array_bot = ma.array (
             masked_array, mask=self._config['lowfreq'] < masked_array)
+        
+        # get back to previous error warnings
+        seterr(invalid=prevErrorSet['invalid'])
 
         # color coding
         if cmap == 'viridis':
@@ -1648,7 +1657,10 @@ class StructuralModels(object):
             lowf = plt.get_cmap('Blues')
             upf = plt.get_cmap('Reds')
         cmap =  plt.get_cmap(cmap)
-        cmap.set_bad('darkgrey', 1.)
+        cmap.set_bad('white', 0.)
+        lowf.set_bad('white', 0.)
+        upf.set_bad('white', 0.)
+        
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
