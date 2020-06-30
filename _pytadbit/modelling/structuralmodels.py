@@ -27,6 +27,7 @@ from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace, errstate
 from numpy                            import nanmin, nanmax
+from numpy                            import seterr
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
@@ -1003,6 +1004,7 @@ class StructuralModels(object):
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
+        plt.draw()
         oldlabels = cbar.ax.get_yticklabels()
         newlabels = [str(int(100 * float(x.get_text())))+'%' for x in oldlabels]
         cbar.ax.set_yticklabels(newlabels)
@@ -1608,7 +1610,7 @@ class StructuralModels(object):
         #    plt.show()
         #plt.close('all')
 
-    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
+    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False, cmap='Reds'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1639,14 +1641,31 @@ class StructuralModels(object):
                     try:
                         zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
                     except KeyError:
-                        zsc_mtrx[i][j] = 0
+                        zsc_mtrx[i][j] = float('Nan')
+
+        # suppress warnings due to nans in following lines
+        prevErrorSet = seterr()
+        seterr(invalid='ignore')
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
         masked_array_top = ma.array (
             masked_array, mask=masked_array < self._config['upfreq'])
         masked_array_bot = ma.array (
             masked_array, mask=self._config['lowfreq'] < masked_array)
-        cmap = viridis
-        cmap.set_bad('w', 1.)
+
+        # get back to previous error warnings
+        seterr(invalid=prevErrorSet['invalid'])
+
+        # color coding
+        if cmap == 'viridis':
+            lowf = plt.get_cmap('Purples')
+            upf = plt.get_cmap('summer')
+        else:
+            lowf = plt.get_cmap('Blues')
+            upf = plt.get_cmap('Reds')
+        cmap =  plt.get_cmap(cmap)
+        cmap.set_bad('white', 0.)
+        lowf.set_bad('white', 0.)
+        upf.set_bad('white', 0.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
