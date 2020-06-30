@@ -13,7 +13,7 @@ from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
 from random                          import random
-from pickle                         import load
+from pickle                          import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
@@ -60,7 +60,6 @@ def run(opts):
         if not opts.biases and all(v != 'raw' for v in opts.normalizations):
             raise Exception('ERROR: external BAM input, should provide path to'
                             ' biases file.')
-        biases = opts.biases
     else:
         biases, mreads = load_parameters_fromdb(opts)
         mreads = path.join(opts.workdir, mreads)
