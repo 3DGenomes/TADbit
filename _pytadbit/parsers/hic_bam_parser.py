@@ -374,13 +374,6 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
     refs = bamfile.references
     bam_start = start - 2
     bam_start = max(0, bam_start)
-    section_pos = []
-    for sec in sections1:
-        if sec not in section_pos:
-            section_pos.append(sec[0])
-    for sec in sections2:
-        if sec not in section_pos:
-            section_pos.append(sec[0])
     try:
         dico = {}
         for r in bamfile.fetch(region=region,
@@ -677,7 +670,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
         if ncpus == 1:
             read_bam_frag(inbam, filter_exclude, all_bins,
                           bins_dict1, bins_dict2, rand_hash,
-                          resolution, tmpdir, region, b, e,)
+                          resolution, tmpdir, region, b, e)
         else:
             procs.append(pool.apply_async(
                 read_bam_frag, args=(inbam, filter_exclude, all_bins,
