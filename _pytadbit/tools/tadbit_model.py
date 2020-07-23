@@ -439,6 +439,8 @@ def run(opts):
         log_format = '[ANALYZE]   %(message)s'
     else:
         log_format = '[DEFAULT]   %(message)s'
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     try:
         logging.basicConfig(filename=path.join(opts.workdir, batch_job_hash + '.log'),
                             level=logging.INFO, format=log_format)
