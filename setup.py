@@ -187,8 +187,8 @@ def main():
         platforms = "OS Independent",
         license = "GPLv3",
         description  = 'Identification, analysis and modelling of topologically associating domains from Hi-C data',
-        long_description = (open("README.rst").read() +
-                            open("doc/source/install.rst").read()),
+        long_description = (open("README.rst", encoding="utf-8").read() +
+                            open("doc/source/install.rst", encoding="utf-8").read()),
         classifiers  = TAGS,
         provides     = ["pytadbit"],
         keywords     = ["testing"],
