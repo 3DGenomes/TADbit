@@ -3,6 +3,7 @@ from __future__ import print_function
 from setuptools.command.install import install
 from distutils.core import setup, Extension
 from os import path, system
+from io import open
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
