@@ -1212,7 +1212,6 @@ class StructuralModels(object):
             simplefilter("ignore", category=RuntimeWarning)
             distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                      average=False)
-            print(distsk)
         # write consistencies to file
         if savedata:
             out = open(savedata, 'w')
@@ -1598,7 +1597,7 @@ class StructuralModels(object):
                     ['nan\tnan' if part >= len(radsk[c]) else
                      (str(round(radsk[c][part], 3)) + '\t' +
                       str(round(errorp[c][part] - round(radsk[c][part], 3))))
-                     if radsk[c][part] else 'nan\tnan'
+                     if radsk[c][part] and not isnan(radsk[c][part]) else 'nan\tnan'
                      for c in steps])))
             out.close()
 
