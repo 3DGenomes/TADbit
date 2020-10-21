@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Utilities &#8212; Tadbit 0.1 documentation</title>
+    <title>Utilities &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -117,16 +117,16 @@ to represent. The order is important here. It will define which parameter
 will be placed respectively on the v, w, z, y, or x axes.</p></li>
 <li><p><strong>show_best</strong> (<em>0</em>) – number of best correlation value to highlight in the heatmaps.
 The best correlation is highlithed by default</p></li>
-<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a dict can be passed here in order to fix a given parameter value,
+<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a dict can be passed here in order to fix a given parameter value,
 e.g.: {‘scale’: 0.001, ‘kbending’: 30, ‘maxdist’: 500} will represent all the
 correlation values at fixed ‘scale’, ‘kbending’, and ‘maxdist’ values,
 respectively equal to 0.001, 30, and 500.</p></li>
-<li><p><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The distance cutoff (dcutoff) used to compute the contact matrix
+<li><p><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – The distance cutoff (dcutoff) used to compute the contact matrix
 in the models.</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the generated image.
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the generated image.
 If None, the image will be displayed using matplotlib GUI. NOTE: the extension
 of the file name will automatically determine the desired format.</p></li>
-<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</p></li>
+<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</p></li>
 <li><p><strong>cmap</strong> (<em>inferno</em>) – matplotlib colormap</p></li>
 </ul>
 </dd>
@@ -144,10 +144,10 @@ of the file name will automatically determine the desired format.</p></li>
 <li><p><strong>sm2</strong> – a StructuralModel</p></li>
 <li><p><strong>dcutoff</strong> (<em>150</em>) – distance threshold (nm) to determine if two
 particles are in contact</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the contact map will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the contact map will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the contact map only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the contact map only for the models in the
 cluster number ‘cluster’</p></li>
 </ul>
 </dd>
@@ -215,13 +215,13 @@ using matplotlib</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> – a <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></p></li>
 <li><p><strong>label</strong> (<em>False</em>) – show labels</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
 <li><p><strong>thin</strong> (<em>False</em>) – draw a thin black line instead of representing particles
 and edges</p></li>
 <li><p><strong>smooth</strong> (<em>0.001</em>) – connction between particles is smoothed according to
 the input condition</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>azimuth</strong> (<em>-90</em>) – angle to rotate camera along the y axis</p></li>
@@ -262,8 +262,8 @@ to view models.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cmm_files</strong> – list of .cmm files</p></li>
 <li><p><strong>chimera_bin</strong> (<em>'chimera'</em>) – path to chimera binary</p></li>
-<li><p><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of command lines for chimera</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save generated image</p></li>
+<li><p><strong>chimera_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of command lines for chimera</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save generated image</p></li>
 <li><p><strong>center_of_mass</strong> (<em>False</em>) – if True, draws the center of mass</p></li>
 <li><p><strong>gyradius</strong> (<em>False</em>) – increment the radius of the center of mass by the
 value of the radius of girations given.</p></li>
@@ -289,13 +289,13 @@ stored in the dictionary Experiment._zeros.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>matrx</strong> – Hi-C matrix of a given experiment</p></li>
 <li><p><strong>silent</strong> (<em>False</em>) – does not warn for removed columns</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>diagonal</strong> (<em>True</em>) – remove row/columns with zero in the diagonal</p></li>
 <li><p><strong>perc_zero</strong> (<em>90</em>) – maximum percentage of cells with no interactions
 allowed.</p></li>
-<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
+<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
 filtering… This option is slightly slower.</p></li>
 <li><p><strong>auto</strong> (<em>True</em>) – if False, only filters based on the given percentage
@@ -499,6 +499,7 @@ for details</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -545,13 +546,13 @@ for details</p>
         <li class="right" >
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

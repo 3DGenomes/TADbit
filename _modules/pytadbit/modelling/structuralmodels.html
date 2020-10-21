@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pytadbit.modelling.structuralmodels &#8212; Tadbit 0.1 documentation</title>
+    <title>pytadbit.modelling.structuralmodels &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/black-on-white.css" />
@@ -23,7 +23,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
@@ -86,6 +86,7 @@
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>        <span class="kn">import</span> <span class="n">tad_coloring</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>        <span class="kn">import</span> <span class="n">tad_border_coloring</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>        <span class="kn">import</span> <span class="n">color_residues</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span>         <span class="kn">import</span> <span class="n">scc</span>
 <span class="kn">from</span> <span class="nn">pytadbit.modelling.impmodel</span>      <span class="kn">import</span> <span class="n">IMPmodel</span>
 <span class="kn">from</span> <span class="nn">pytadbit.centroid</span>                <span class="kn">import</span> <span class="n">centroid_wrapper</span>
 <span class="kn">from</span> <span class="nn">pytadbit.aligner3d</span>               <span class="kn">import</span> <span class="n">aligner3d_wrapper</span>
@@ -1789,7 +1790,6 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
 
-
 <div class="viewcode-block" id="StructuralModels.correlate_with_real_data"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.correlate_with_real_data">[docs]</a>    <span class="k">def</span> <span class="nf">correlate_with_real_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">corr</span><span class="o">=</span><span class="s1">&#39;spearman&#39;</span><span class="p">,</span> <span class="n">midplot</span><span class="o">=</span><span class="s1">&#39;hexbin&#39;</span><span class="p">,</span>
@@ -1847,6 +1847,8 @@
         <span class="k">elif</span> <span class="n">corr</span> <span class="o">==</span> <span class="s1">&#39;chi2&#39;</span><span class="p">:</span>
             <span class="n">corr</span> <span class="o">=</span> <span class="n">chisquare</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">moddata</span><span class="p">),</span> <span class="n">array</span><span class="p">(</span><span class="n">oridata</span><span class="p">))</span>
             <span class="n">corr</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">corr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">corr</span> <span class="o">==</span> <span class="s1">&#39;scc&#39;</span><span class="p">:</span>
+            <span class="n">corr</span> <span class="o">=</span> <span class="n">scc</span><span class="p">(</span><span class="n">model_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_data</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model_matrix</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;ERROR: </span><span class="si">%s</span><span class="s1"> not implemented, must be one &#39;</span> <span class="o">+</span>
                                       <span class="s1">&#39;of spearman, pearson or frobenius</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -3117,14 +3119,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

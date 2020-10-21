@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>HiC_data class &#8212; Tadbit 0.1 documentation</title>
+    <title>HiC_data class &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_experiment.html" title="Experiment class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -56,7 +56,7 @@ file containing chromosome sequences. Orders matters.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lengths</strong> – list of chromosome lengths</p></li>
-<li><p><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of corresponding chromosome names.</p></li>
+<li><p><strong>chr_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of corresponding chromosome names.</p></li>
 <li><p><strong>binned</strong> (<em>False</em>) – if True, lengths will not be divided by resolution</p></li>
 </ul>
 </dd>
@@ -84,10 +84,10 @@ respect to the total number of interactions</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>normalized</strong> (<em>False</em>) – used normalized data</p></li>
-<li><p><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – exclude a given list of chromosome from the
+<li><p><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – exclude a given list of chromosome from the
 ratio (may want to exclude translocated chromosomes)</p></li>
 <li><p><strong>diagonal</strong> (<em>False</em>) – replace values in the diagonal by 0 or 1</p></li>
-<li><p><strong>equals</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – can pass a function that would decide if 2 chromosomes
+<li><p><strong>equals</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – can pass a function that would decide if 2 chromosomes
 have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
 consider chr2L and chr2R as being the same chromosome. WARNING: only
 working on consecutive chromosomes.</p></li>
@@ -113,12 +113,12 @@ stored in the dictionary Experiment._zeros.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>draw_hist</strong> (<em>False</em>) – shows the distribution of mean values by column
 the polynomial fit, and the cut applied.</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>perc_zero</strong> (<em>75</em>) – maximum percentage of cells with no interactions
 allowed.</p></li>
-<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
+<li><p><strong>min_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – minimum number of reads mapped to a bin (recommended
 value could be 2500). If set this option overrides the perc_zero
 filtering… This option is slightly slower.</p></li>
 <li><p><strong>by_mean</strong> (<em>True</em>) – filter columns by mean column value using
@@ -147,20 +147,20 @@ chromosome names.</p>
 if not enough reads are observed at a given distance the observations
 of the distance+1 are summed. a signal to noise ratio of &lt; 0.05
 corresponds to &gt; 400 reads.</p></li>
-<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store matrices with
+<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a directory to store matrices with
 compartment predictions, one image per chromosome, stored under
 ‘chromosome-name_EV1.png’.</p></li>
 <li><p><strong>format</strong> (<em>png</em>) – in which to save the figures.</p></li>
 <li><p><strong>show</strong> (<em>False</em>) – show the plot</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a new file to store compartment
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a new file to store compartment
 predictions, one file only.</p></li>
-<li><p><strong>savedir</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store coordinates of each
+<li><p><strong>savedir</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a directory to store coordinates of each
 eigenvector, one per chromosome. Each file contains one eigenvector
 per column, the first one being the one used as reference. This
 eigenvector is also rotated according to the prediction if a
 <cite>rich_in_A</cite> array was given.</p></li>
-<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory where to save correlation
+<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a directory where to save correlation
 matrices of each chromosome</p></li>
 <li><p><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
 and vmax=’auto’ to color according to the absolute maximum found).</p></li>
@@ -170,12 +170,12 @@ and vmax=’auto’ to color according to the absolute maximum found).</p></li>
 first eigenvector used to compute compartments.</p></li>
 <li><p><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</p></li>
 <li><p><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</p></li>
-<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of number referring to the index of the
+<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of number referring to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
 if asking for only one chromosome the list should be only of one
 element.</p></li>
-<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – by default compartments are identified using mean
+<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
 less). However this measure is not very accurate. Using this
 parameter a path to a BED or BED-Graph file with a list of genes or
@@ -222,14 +222,14 @@ chromosome names.</p>
 if not enough reads are observed at a given distance the observations
 of the distance+1 are summed. a signal to noise ratio of &lt; 0.05
 corresponds to &gt; 400 reads.</p></li>
-<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory to store matrices with
+<li><p><strong>crms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – only runs these given list of chromosomes</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a directory to store matrices with
 compartment predictions, one image per chromosome, stored under
 ‘chromosome-name.png’.</p></li>
 <li><p><strong>show</strong> (<em>False</em>) – show the plot</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a new file to store compartment
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a new file to store compartment
 predictions, one file only.</p></li>
-<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a directory where to save correlation
+<li><p><strong>savecorr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a directory where to save correlation
 matrices of each chromosome</p></li>
 <li><p><strong>vmin</strong> (<em>-1</em>) – for the color scale of the plotted map (use vmin=’auto’,
 and vmax=’auto’ to color according to the absolute maximum found).</p></li>
@@ -239,18 +239,18 @@ and vmax=’auto’ to color according to the absolute maximum found).</p></li>
 first eigenvector used to compute compartments.</p></li>
 <li><p><strong>suffix</strong> (<em>''</em>) – to be placed after file names of compartment images</p></li>
 <li><p><strong>max_ev</strong> (<em>3</em>) – maximum number of EV to try</p></li>
-<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of number referring to the index of the
+<li><p><strong>ev_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of number referring to the index of the
 eigenvector to be used. By default the first eigenvector is used.
 WARNING: index starts at 1, default is thus a list of ones. Note:
 if asking for only one chromosome the list should be only of one
 element.</p></li>
-<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – by default compartments are identified using mean
+<li><p><strong>rich_in_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – by default compartments are identified using mean
 number of intra-interactions (A compartments are expected to have
 less). However this measure is not very accurate. Using this
 parameter a path to a BED or BED-Graph file with a list of genes or
 active epigenetic marks can be passed, and used instead of the mean
 interactions.</p></li>
-<li><p><strong>log</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a folder where to save log of the assignment
+<li><p><strong>log</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a folder where to save log of the assignment
 of A/B compartments</p></li>
 <li><p><strong>label_compartments</strong> (<em>hmm</em>) – label compartments into A/B categories,
 otherwise just find borders (faster). Can be either hmm (default), or
@@ -292,7 +292,7 @@ compartment borders for each chromosome (keys are chromosome names)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
@@ -380,7 +380,7 @@ WARNING: parameters are not meant to be used by external users</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>savedata</strong> – path to a file.</p></li>
-<li><p><strong>chroms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – write only the given list of chromosomes (default
+<li><p><strong>chroms</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – write only the given list of chromosomes (default
 all chromosomes are written, note that the first column corresponding
 to chromosome name will disappear in non default case)</p></li>
 </ul>
@@ -406,7 +406,7 @@ to chromosome name will disappear in non default case)</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
@@ -434,7 +434,7 @@ chr2:333-444        chr1:111-222            55</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
@@ -454,7 +454,7 @@ Bad row/columns are returned as null row/columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a tuple with the (start, end) position of the desired
 window of data (start, starting at 1, and both start and end are
 inclusive). Alternatively a chromosome name can be input or a tuple
 of chromosome name, in order to retrieve a specific inter-chromosomal
@@ -538,13 +538,13 @@ region</p></li>
         <li class="right" >
           <a href="reference_experiment.html" title="Experiment class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

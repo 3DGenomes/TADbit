@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>TAD detection functions &#8212; Tadbit 0.1 documentation</title>
+    <title>TAD detection functions &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="TAD clustering" href="reference_clustering.html" />
-    <link rel="prev" title="Experiment class" href="reference_experiment.html" /> 
+    <link rel="prev" title="HiC_data class" href="reference_hic_data.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -29,9 +29,9 @@
           <a href="reference_clustering.html" title="TAD clustering"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reference_experiment.html" title="Experiment class"
+          <a href="reference_hic_data.html" title="HiC_data class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -67,7 +67,7 @@ sampled and not normalized. x might be either a list of list, a path to
 a file or a file handler</p></li>
 <li><p><strong>norm</strong> (<em>'visibility'</em>) – kind of normalization to use. Choose between
 ‘visibility’ of ‘Imakaev’</p></li>
-<li><p><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a python list of lists of booleans mapping positively
+<li><p><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a python list of lists of booleans mapping positively
 columns to remove (if None only columns with a 0 in the diagonal will be
 removed)</p></li>
 <li><p><strong>n_cpus</strong> (<em>1</em>) – The number of CPUs to allocate to TADbit. If
@@ -115,7 +115,7 @@ they also have row names, read_options=list(header=FALSE, row.names=1).</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> – the directory containing the data files</p></li>
 <li><p><strong>kwargs</strong> – arguments passed to <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a> function</p></li>
-<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a parser function that takes file name as input and
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a parser function that takes file name as input and
 returns a tuple representing the matrix of data. Tuple is a
 concatenation of column1 + column2 + column3 + …</p></li>
 </ul>
@@ -136,7 +136,7 @@ something similar to the R function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>result</strong> – the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a></p></li>
+<li><p><strong>result</strong> – the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> that returns <a class="reference internal" href="#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tadbit()</span></code></a></p></li>
 <li><p><strong>write</strong> (<em>True</em>) – print table. If False, returns the string</p></li>
 </ul>
 </dd>
@@ -167,6 +167,7 @@ results</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -182,8 +183,8 @@ results</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="reference_experiment.html"
-                        title="previous chapter">Experiment class</a></p>
+  <p class="topless"><a href="reference_hic_data.html"
+                        title="previous chapter">HiC_data class</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_clustering.html"
                         title="next chapter">TAD clustering</a></p>
@@ -211,15 +212,15 @@ results</p>
           <a href="reference_clustering.html" title="TAD clustering"
              >next</a> |</li>
         <li class="right" >
-          <a href="reference_experiment.html" title="Experiment class"
+          <a href="reference_hic_data.html" title="HiC_data class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

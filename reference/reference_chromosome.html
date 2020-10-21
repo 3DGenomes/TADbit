@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Chromosome class &#8212; Tadbit 0.1 documentation</title>
+    <title>Chromosome class &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_mapping.html" title="From FASTQ to matrix"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -53,22 +53,22 @@ chromosome of DNA, and to compare them.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> – name of the chromosome (might be a chromosome name for example)</p></li>
-<li><p><strong>species</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – species name</p></li>
-<li><p><strong>assembly</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – version number of the genomic assembly used</p></li>
-<li><p><strong>resolutions</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of resolutions corresponding to a list of
+<li><p><strong>species</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – species name</p></li>
+<li><p><strong>assembly</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – version number of the genomic assembly used</p></li>
+<li><p><strong>resolutions</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of resolutions corresponding to a list of
 experiments passed.</p></li>
-<li><p><strong>experiment_hic_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of paths to files
+<li><p><strong>experiment_hic_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of paths to files
 containing the Hi-C count matrices corresponding to different experiments</p></li>
-<li><p><strong>experiment_tads</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of paths to files
+<li><p><strong>experiment_tads</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of paths to files
 containing the definition of TADs corresponding to different experiments</p></li>
-<li><p><strong>experiment_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of the names of each
+<li><p><strong>experiment_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <code class="xref py py-func docutils literal notranslate"><span class="pre">list()</span></code> of the names of each
 experiment</p></li>
 <li><p><strong>max_tad_size</strong> (<em>infinite</em>) – maximum TAD size allowed. TADs longer than
 this value will not be considered, and size of the corresponding
 chromosome size will be reduced accordingly</p></li>
 <li><p><strong>chr_len</strong> (<em>0</em>) – size of the DNA chromosome in bp. By default it will be
 inferred from the distribution of TADs</p></li>
-<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>a parser function that returns a tuple of lists
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
@@ -82,7 +82,7 @@ the file example.tsv:</p>
 <code class="docutils literal notranslate"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></code></p>
 </p></li>
-<li><p><strong>kw_descr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>any other argument passed would be stored as
+<li><p><strong>kw_descr</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>any other argument passed would be stored as
 complementary descriptive field. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span>  <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s1">&#39;19&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s1">&#39;mus musculus&#39;</span><span class="p">,</span>
                   <span class="n">subspecies</span><span class="o">=</span><span class="s1">&#39;musculus musculus&#39;</span><span class="p">,</span>
@@ -116,13 +116,13 @@ complementary descriptive field. For example:</p>
 <li><p><strong>name</strong> – name of the experiment or of the Experiment object</p></li>
 <li><p><strong>resolution</strong> – resolution of the experiment (needed if name is not
 an Experiment object)</p></li>
-<li><p><strong>hic_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – whether a file or a list of lists corresponding to
+<li><p><strong>hic_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – whether a file or a list of lists corresponding to
 the Hi-C data</p></li>
-<li><p><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a file or a dict with precomputed TADs for this
+<li><p><strong>tad_def</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a file or a dict with precomputed TADs for this
 experiment</p></li>
 <li><p><strong>replace</strong> (<em>False</em>) – overwrite the experiments loaded under the same
 name</p></li>
-<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>a parser function that returns a tuple of lists
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. With
 a file example.tsv containing:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
@@ -149,7 +149,7 @@ resulting alignment will be stored in the self.experiment list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of names of the experiments to align. If None,
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of names of the experiments to align. If None,
 align all</p></li>
 <li><p><strong>experiment1</strong> – name of the first experiment to align</p></li>
 <li><p><strong>experiment2</strong> – name of the second experiment to align</p></li>
@@ -246,7 +246,7 @@ This can also be done directly with Chromosome.experiments[name].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tad</strong> – a given TAD (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>)</p></li>
+<li><p><strong>tad</strong> – a given TAD (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>)</p></li>
 <li><p><strong>x_name</strong> – name of the experiment</p></li>
 <li><p><strong>normed</strong> (<em>True</em>) – if True, normalize the Hi-C data</p></li>
 </ul>
@@ -277,13 +277,13 @@ This can also be done directly with Chromosome.experiments[name].</p>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.save_chromosome">
 <code class="sig-name descname">save_chromosome</code><span class="sig-paren">(</span><em class="sig-param">out_f</em>, <em class="sig-param">fast=True</em>, <em class="sig-param">divide=True</em>, <em class="sig-param">force=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.save_chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Chromosome object to a file (it uses <a class="reference external" href="https://docs.python.org/3/library/pickle.html#pickle.load" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.load()</span></code></a> from
-the <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>). Once saved, the object can be loaded with
+<dd><p>Save a Chromosome object to a file (it uses <a class="reference external" href="https://docs.python.org/3/library/pickle.html#pickle.load" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.load()</span></code></a> from
+the <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.9)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>). Once saved, the object can be loaded with
 <a class="reference internal" href="#pytadbit.chromosome.load_chromosome" title="pytadbit.chromosome.load_chromosome"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_chromosome()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>out_f</strong> – path to the file where to store the <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>
+<li><p><strong>out_f</strong> – path to the file where to store the <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.9)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>
 object</p></li>
 <li><p><strong>fast</strong> (<em>True</em>) – if True, skip Hi-C data and weights</p></li>
 <li><p><strong>divide</strong> (<em>True</em>) – if True writes two pickles, one with what would
@@ -319,18 +319,18 @@ in terms of relative Hi-C interaction count.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> – name of the experiment to visualize</p></li>
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – can pass a tuple (bin_start, bin_stop) to display the
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – can pass a tuple (bin_start, bin_stop) to display the
 alignment between these genomic bins</p></li>
-<li><p><strong>extras</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of coordinates (genomic bin) where to draw a
+<li><p><strong>extras</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of coordinates (genomic bin) where to draw a
 red cross</p></li>
-<li><p><strong>ymax</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – limit the y axis up to a given value</p></li>
+<li><p><strong>ymax</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – limit the y axis up to a given value</p></li>
 <li><p><strong>)</strong> (<em>(</em><em>'grey'</em><em>,</em>) – successive colors for alignment</p></li>
 <li><p><strong>normalized</strong> (<em>True</em>) – normalized Hi-C count are plotted instead of raw
 data.</p></li>
 <li><p><strong>shape</strong> (<em>'ellipse'</em>) – which kind of shape to use as schematic
 representation of TADs. Implemented: ‘ellipse’, ‘rectangle’,
 ‘triangle’</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 </ul>
@@ -345,9 +345,9 @@ of the file name will determine the desired format).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – name of the experiment to visualize, or list of
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – name of the experiment to visualize, or list of
 experiment names. If None, all experiments will be shown</p></li>
-<li><p><strong>tad</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>a given TAD in the form:</p>
+<li><p><strong>tad</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>a given TAD in the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
  <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
@@ -358,11 +358,11 @@ experiment names. If None, all experiments will be shown</p></li>
 between the first and last one passed will be showed. Thus, passing
 more than two TADs might be superfluous)</p>
 </p></li>
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a tuple with the start and end positions of the
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a tuple with the start and end positions of the
 region to visualize</p></li>
 <li><p><strong>paint_tads</strong> (<em>False</em>) – draw a box around the TADs defined for this
 experiment</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – an axe object from matplotlib can be passed in order
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – an axe object from matplotlib can be passed in order
 to customize the picture</p></li>
 <li><p><strong>show</strong> (<em>True</em>) – either to pop-up matplotlib image or not</p></li>
 <li><p><strong>logarithm</strong> (<em>True</em>) – show the logarithm values</p></li>
@@ -373,10 +373,10 @@ the matrix displayed; these rows correspond to filtered rows (see</em>
 <li><p><strong>relative</strong> (<em>True</em>) – color scale is relative to the whole matrix of
 data, not only to the region displayed</p></li>
 <li><p><strong>decorate</strong> (<em>True</em>) – draws color bar, title and axes labels</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – tuple with minimum and maximum value range for color
+<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – tuple with minimum and maximum value range for color
 scale. I.e. clim=(-4, 10)</p></li>
 <li><p><strong>cmap</strong> (<em>'jet'</em>) – color map from matplotlib. Can also be a
 preconfigured cmap object.</p></li>
@@ -457,6 +457,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -503,13 +504,13 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
         <li class="right" >
           <a href="reference_mapping.html" title="From FASTQ to matrix"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

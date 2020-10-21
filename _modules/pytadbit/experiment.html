@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pytadbit.experiment &#8212; Tadbit 0.1 documentation</title>
+    <title>pytadbit.experiment &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
@@ -23,7 +23,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
@@ -63,7 +63,8 @@
     <span class="kn">from</span> <span class="nn">pytadbit.modelling.impoptimizer</span>  <span class="kn">import</span> <span class="n">IMPoptimizer</span>
     <span class="kn">from</span> <span class="nn">pytadbit.modelling.imp_modelling</span> <span class="kn">import</span> <span class="n">generate_3d_models</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">pass</span>
+    <span class="c1"># stderr.write(&#39;IMP not found, check PYTHONPATH\n&#39;)</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -769,18 +770,16 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
             <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNING: removing previous weights</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span><span class="n">max_dev</span><span class="o">=</span><span class="n">max_dev</span><span class="p">,</span>
-                                       <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">HiC_data</span><span class="p">([(</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="o">/</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">size</span><span class="p">)</span>
-                               <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="p">],</span> <span class="n">size</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="n">max_dev</span><span class="p">,</span>
+                                       <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">)</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span>  <span class="c1"># faster quick ref</span>
+        <span class="n">hic_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">HiC_data</span><span class="p">([(</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">hic_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="o">/</span>
+                                <span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                               <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bias</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">bias</span><span class="p">],</span> <span class="n">size</span><span class="p">)]</span>
         <span class="c1"># no need to use lists, tuples use less memory</span>
         <span class="k">if</span> <span class="n">factor</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="s1">&#39;visibility_factor:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="o">/</span> <span class="n">factor</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="s1">&#39;visibility&#39;</span></div>
 
@@ -1697,14 +1696,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

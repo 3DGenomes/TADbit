@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Alignment class &#8212; Tadbit 0.1 documentation</title>
+    <title>Alignment class &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_aligner.html" title="Boundary Aligner"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -54,18 +54,18 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – can pass a tuple (bin_start, bin_stop) to display the
+<li><p><strong>focus</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – can pass a tuple (bin_start, bin_stop) to display the
 alignment between these genomic bins</p></li>
-<li><p><strong>extras</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of coordinates (genomic bin) where to draw a
+<li><p><strong>extras</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of coordinates (genomic bin) where to draw a
 red cross</p></li>
-<li><p><strong>ymax</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – limit the y axis up to a given value</p></li>
+<li><p><strong>ymax</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – limit the y axis up to a given value</p></li>
 <li><p><strong>)</strong> (<em>(</em><em>'grey'</em><em>,</em>) – successive colors for alignment</p></li>
 <li><p><strong>normalized</strong> (<em>True</em>) – normalized Hi-C count are plotted instead of raw
 data.</p></li>
 <li><p><strong>shape</strong> (<em>'ellipse'</em>) – which kind of shape to use as schematic
 representation of TADs. Implemented: ‘ellipse’, ‘rectangle’,
 ‘triangle’</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 </ul>
@@ -82,9 +82,9 @@ of the file name will determine the desired format).</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cond1</strong> – can be either a column number or a function to search for
 a given condition that may fulfill boundaries.</p></li>
-<li><p><strong>cond2</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a second function to search for a given condition
+<li><p><strong>cond2</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a second function to search for a given condition
 that may fulfill boundaries.</p></li>
-<li><p><strong>min_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – Number of boundaries in a given column that have to
+<li><p><strong>min_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – Number of boundaries in a given column that have to
 pass the defined conditions (all boundaries may pass them by default).</p></li>
 </ul>
 </dd>
@@ -145,8 +145,8 @@ confidence score for each boundary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None print all experiments</p></li>
-<li><p><strong>xpers</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None print all experiments</p></li>
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None print all experiments</p></li>
+<li><p><strong>xpers</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None print all experiments</p></li>
 <li><p><strong>string</strong> (<em>False</em>) – return string instead of printing</p></li>
 <li><p><strong>ftype</strong> (<em>ansi</em>) – display colors in ‘ansi’ or ‘html’ format</p></li>
 </ul>
@@ -185,7 +185,7 @@ alignment of randomized boundaries.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tads</strong> – original TADs of each experiment to align</p></li>
 <li><p><strong>distr</strong> – the function to interpolate TAD lengths from probability</p></li>
-<li><p><strong>score</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – just to print it when verbose</p></li>
+<li><p><strong>score</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – just to print it when verbose</p></li>
 <li><p><strong>num</strong> (<em>1000</em>) – number of random alignment to generate for comparison</p></li>
 <li><p><strong>verbose</strong> (<em>False</em>) – to print something nice</p></li>
 <li><p><strong>method</strong> (<em>interpolate</em>) – how to generate random tads (alternative is
@@ -253,6 +253,7 @@ distribution of lengths of TADs.</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -299,13 +300,13 @@ distribution of lengths of TADs.</p>
         <li class="right" >
           <a href="reference_aligner.html" title="Boundary Aligner"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>StructuralModels class &#8212; Tadbit 0.1 documentation</title>
+    <title>StructuralModels class &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_modelling_impmodel.html" title="IMPmodel class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -55,9 +55,9 @@ Hi-C pairwise interactions</p></li>
 number of nucleotides in each model’s particle</p></li>
 <li><p><strong>nloci</strong> – number of particles to model (may not all be present in
 zscores)</p></li>
-<li><p><strong>experiment</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – experiment from which to do the modelling (used only
+<li><p><strong>experiment</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – experiment from which to do the modelling (used only
 for descriptive purpose)</p></li>
-<li><p><strong>coords</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>a dictionary or a list of dictionaries like:</p>
+<li><p><strong>coords</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>a dictionary or a list of dictionaries like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="s1">&#39;19&#39;</span><span class="p">,</span>
  <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">14637</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="mi">15689</span><span class="p">}</span>
@@ -77,9 +77,9 @@ neighbors (e.g. 1 means consecutive particles)</p></li>
 <li><p><strong>verbose</strong> (<em>False</em>) – if set to True, information about the distance, force
 and Z-score between particles will be printed. If verbose is 0.5 than
 constraints will be printed only for the first model calculated.</p></li>
-<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – the normalized Hi-C data in a list of lists (equivalent
+<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the normalized Hi-C data in a list of lists (equivalent
 to a square matrix)</p></li>
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>a dictionary containing the standard
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>a dictionary containing the standard
 parameters used to generate the models. The dictionary should contain
 the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
 seen by doing:</p>
@@ -118,9 +118,9 @@ seen by doing:</p>
 </pre></div>
 </div>
 </p></li>
-<li><p><strong>first</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – particle number at which model should start (0 should be
+<li><p><strong>first</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – particle number at which model should start (0 should be
 used inside TADbit)</p></li>
-<li><p><strong>container</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – restrains particle to be within a given object. Can
+<li><p><strong>container</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – restrains particle to be within a given object. Can
 only be a ‘cylinder’, which is, in fact a cylinder of a given height to
 which are added hemispherical ends. This cylinder is defined by a radius,
 its height (with a height of 0 the cylinder becomes a sphere) and the
@@ -192,11 +192,11 @@ these model will not be used, just stored in case the set of
 ).</p></li>
 <li><p><strong>resolution</strong> – number of nucleotides per Hi-C bin. This will be the
 number of nucleotides in each model’s particle.</p></li>
-<li><p><strong>original_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of list (equivalent to a square matrix) of
+<li><p><strong>original_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of list (equivalent to a square matrix) of
 the normalized Hi-C data, used to build this list of models.</p></li>
-<li><p><strong>clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a dictionary of type
+<li><p><strong>clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a dictionary of type
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pytadbit.modelling.structuralmodels.ClusterOfModels</span></code></p></li>
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a dictionary containing the parameter to be used for the
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a dictionary containing the parameter to be used for the
 generation of three dimensional models.</p></li>
 </ul>
 </dd>
@@ -220,7 +220,7 @@ point occupies a given surface (see maths below). <em>Note that this
 number is considerably lowered by the occupancy of edges, depending
 of the angle formed by the edges surrounding a given particle, only
 10% to 50% of the ``nump`` will be drawn in fact.</em></p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path where to save chimera image</p></li>
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path where to save chimera image</p></li>
 <li><p><strong>) </strong><strong>steps</strong> (<em>(</em><em>1</em><em>,</em>) – how many particles to group for the
 estimation. By default 1 curve is drawn</p></li>
 <li><p><strong>superradius</strong> (<em>200</em>) – radius of an object used to exclude outer
@@ -282,15 +282,15 @@ accessible/(accessible+inaccessible) )</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the average model will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the average model will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the average model only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the average model only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>in_place</strong> (<em>False</em>) – if True, the result of the alignment will REPLACE
 the coordinates of each model. Default is too yield new coordinates of
 each model</p></li>
-<li><p><strong>reference_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – align given model to reference model</p></li>
+<li><p><strong>reference_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – align given model to reference model</p></li>
 <li><p><strong>by_cluster</strong> (<em>False</em>) – if True align each cluster individually in case
 we align all the models (models=None)</p></li>
 </ul>
@@ -327,10 +327,10 @@ we align all the models (models=None)</p></li>
 <li><p><strong>parta</strong> – A particle number</p></li>
 <li><p><strong>partb</strong> – A particle number</p></li>
 <li><p><strong>partc</strong> – A particle number</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the angle will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the angle only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the angle only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>radian</strong> (<em>False</em>) – if True, return value in radians (in degrees
 otherwise)</p></li>
@@ -350,10 +350,10 @@ returns a list of the angle g, h, i (see picture above)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the average model will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the average model will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the average model only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the average model only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>verbose</strong> (<em>False</em>) – prints the distance of each model to average model
 (in stderr)</p></li>
@@ -373,10 +373,10 @@ ARTIFICIAL model)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the centroid model will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the centroid model will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the centroid model only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the centroid model only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>verbose</strong> (<em>False</em>) – prints the distance of each model to average model
 (in stderr)</p></li>
@@ -399,11 +399,11 @@ cluster (or group of clusters, if it is an internal branch).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_best_clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – number of clusters to represent (by
+<li><p><strong>n_best_clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – number of clusters to represent (by
 default all clusters will be shown)</p></li>
 <li><p><strong>color</strong> (<em>False</em>) – color the dendrogram based on the significance of
 the clustering (basically it depends of the internal branch lengths)</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>width_factor</strong> (<em>10.0</em>) – multiplicator for the width of the line
@@ -491,19 +491,19 @@ by a distance cutoff) between two particles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the contact map will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the contact map will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the contact map only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the contact map only for the models in the
 cluster number ‘cluster’</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the contact map data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the contact map data
 generated, in three columns format (particle1, particle2, percentage
 of models where these two particles are in contact)</p></li>
 </ul>
@@ -519,21 +519,21 @@ original Hi-C data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the correlation will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the correlation will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the correlation only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the correlation only for the models in the
 cluster number ‘cluster’</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>plot</strong> (<em>False</em>) – to display the plot</p></li>
 <li><p><strong>log_corr</strong> (<em>True</em>) – log plot for correlation</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>contact_matrix</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – input a contact matrix instead of computing
+<li><p><strong>contact_matrix</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – input a contact matrix instead of computing
 it from the models</p></li>
 </ul>
 </dd>
@@ -563,7 +563,7 @@ They are also not stored into StructuralModels.clusters</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fact</strong> (<em>0.75</em>) – factor to define the percentage of equivalent
 positions to be considered in the clustering</p></li>
-<li><p><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance threshold (nm) to determine if two
+<li><p><strong>dcutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance threshold (nm) to determine if two
 particles are in contact, default is 1.5 times resolution times scale</p></li>
 <li><p><strong>method</strong> (<em>'mcl'</em>) – clustering method to use, which can be either
 ‘mcl’ or ‘ward’. MCL method is recommended. WARD method uses a scipy
@@ -572,21 +572,21 @@ number of clusters using the
 <a class="reference internal" href="reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz" title="pytadbit.utils.tadmaths.calinski_harabasz"><code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.utils.tadmaths.calinski_harabasz()</span></code></a> function.</p></li>
 <li><p><strong>mcl_bin</strong> (<em>'mcl'</em>) – path to the mcl executable file, in case of the
 ‘mcl is not in the PATH’ warning message</p></li>
-<li><p><strong>tmp_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a temporary file created during
+<li><p><strong>tmp_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a temporary file created during
 the clustering computation. Default will be created in /tmp/ folder</p></li>
 <li><p><strong>verbose</strong> (<em>True</em>) – same as print StructuralModels.clusters</p></li>
 <li><p><strong>n_cpus</strong> (<em>1</em>) – number of cpus to use in MCL clustering</p></li>
 <li><p><strong>mclargs</strong> – list with any other command line argument to be passed
 to mcl (i.e,: mclargs=[‘-pi’, ‘10’, ‘-I’, ‘2.0’])</p></li>
 <li><p><strong>n_best_clusters</strong> (<em>10</em>) – number of clusters to represent</p></li>
-<li><p><strong>clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – provide clusters as a dictionary with keys=cluster
+<li><p><strong>clusters</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – provide clusters as a dictionary with keys=cluster
 number, or name, and values list of model numbers.</p></li>
 <li><p><strong>represent_models</strong> (<em>False</em>) – To generate an interactive visualization
 of a representative model for each cluster. Representative model
 depends on the value passed to this option, it can be either
 ‘centroid’ or ‘best’ (this last standing for the model with lowest
 IMP objective function value).</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>figsize</strong> (<em>(</em><em>11</em><em>,</em><em>11</em><em>)</em>) – dimension of the plot</p></li>
@@ -620,15 +620,15 @@ region bins.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the density plot will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the density plot will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the density plot only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the density plot only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>2</strong><strong>, </strong><strong>3</strong><strong>, </strong><strong>4</strong><strong>, </strong><strong>5</strong><strong>) </strong><strong>steps</strong> (<em>(</em><em>1</em><em>,</em>) – how many particles to group for the
 estimation. By default 5 curves are drawn</p></li>
 <li><p><strong>error</strong> (<em>False</em>) – represent the error of the estimates</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
 <li><p><strong>interval</strong> (<em>1</em>) – distance are measure with this given interval
 between two bins.</p></li>
@@ -636,10 +636,10 @@ between two bins.</p></li>
 distance between the center of mass of the particles <em>n</em> to
 <em>n+interval</em> and the center of mass of the particles <em>n+interval</em> and
 <em>n+2interval</em></p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the density data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the density data
 generated (1 column per step + 1 for particle number).</p></li>
 <li><p><strong>plot</strong> (<em>True</em>) – e.g. if False, only saves data. No plotting done</p></li>
 </ul>
@@ -657,10 +657,10 @@ generated (1 column per step + 1 for particle number).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the angle will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the angle only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the angle only for the models in the
 cluster number ‘cluster’</p></li>
 </ul>
 </dd>
@@ -696,12 +696,12 @@ cutoff distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the contact matrix will be
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the contact matrix will be
 computed using all the models. A list of numbers corresponding to a
 given set of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the contact matrix only for the models in
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the contact matrix only for the models in
 the cluster number ‘cluster’</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.
 Cutoff can also be a list of values, in wich case the returned object
 will be a dictionnary of matrices (keys being square cutoffs)</p></li>
@@ -729,7 +729,7 @@ chromatin (in bp/nm).</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>begin</strong> (<em>0</em>) – starting particle of the region to consider</p></li>
-<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – ending particle of the region to consider</p></li>
+<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – ending particle of the region to consider</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -769,22 +769,22 @@ than the given cut-off). The value given is the average for all models.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the contact map will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the contact map will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the contact map only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the contact map only for the models in the
 cluster number ‘cluster’</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</p></li>
 <li><p><strong>2</strong><strong>, </strong><strong>3</strong><strong>, </strong><strong>4</strong><strong>, </strong><strong>5</strong><strong>) </strong><strong>steps</strong> (<em>(</em><em>1</em><em>,</em>) – how many particles to group for the
 estimation. By default 5 curves are drawn</p></li>
 <li><p><strong>error</strong> (<em>False</em>) – represent the error of the estimates</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the contact map data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the contact map data
 generated, in three columns format (particle1, particle2, percentage
 of models where these two particles are in contact)</p></li>
 <li><p><strong>average</strong> (<em>True</em>) – calculate average interactions along models,
@@ -804,10 +804,10 @@ otherwise, the median.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part1</strong> – number corresponding to the first particle</p></li>
 <li><p><strong>part2</strong> – number corresponding to the second particle</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the distance will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the distance will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the distance only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the distance only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>plot</strong> (<em>True</em>) – if True, display a histogram and a box-plot of the
 distribution of the calculated distances. If False, return either
@@ -815,9 +815,9 @@ the full list of the calculated distances or their median value</p></li>
 <li><p><strong>median</strong> (<em>True</em>) – return either the full list of the calculated
 distances (False) or their median value (True), when ‘plot’ is set
 to False</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 </ul>
@@ -840,25 +840,25 @@ the higher stability).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoffs</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – list of distance cutoffs (nm) used to compute the
+<li><p><strong>cutoffs</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – list of distance cutoffs (nm) used to compute the
 consistency. Two particle are considered consistent if their distance
 is less than the given cutoff, default is a tuple of 0.5, 1, 1.5 and
 2 times resolution, times scale.</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the consistency will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the consistency will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the consistency only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the consistency only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>tmp_path</strong> (<em>'/tmp/tmp_cons'</em>) – location of the input files for
 TM-score program</p></li>
 <li><p><strong>tmsc</strong> (<em>''</em>) – path to the TMscore_consistency script (assumed to be
 installed by default)</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the consistency data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the consistency data
 generated (1 column per cutoff + 1 for particle number).</p></li>
 <li><p><strong>plot</strong> (<em>True</em>) – e.g. only saves data. No plotting done</p></li>
 </ul>
@@ -877,7 +877,7 @@ step</p>
 <li><p><strong>model</strong> – the number of the model to plot</p></li>
 <li><p><strong>log</strong> (<em>False</em>) – log plot</p></li>
 <li><p><strong>smooth</strong> (<em>True</em>) – curve smoothing</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 </ul>
@@ -893,10 +893,10 @@ of the file name will determine the desired format).</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part</strong> – the index number of a particle</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the angle will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the angle only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the angle only for the models in the
 cluster number ‘cluster’</p></li>
 </ul>
 </dd>
@@ -942,14 +942,14 @@ or through matplotlib).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the visualization will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the visualization will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the visualization only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the visualization only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>tool</strong> (<em>'chimera'</em>) – path to the external tool used to visualize the
 model. Can also be ‘plot’, to use matplotlib.</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image OR movie
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image OR movie
 generated (depending on the extension; accepted formats are png, mov
 and webm). if set to None, the image or movie will be shown using
 the default GUI.</p></li>
@@ -985,7 +985,7 @@ Can be either ‘all’, ‘centroid’ or ‘best’ (‘best’ being the mode
 with the lowest IMP objective function value</p></li>
 <li><p><strong>show</strong> (<em>'all'</em>) – models to be displayed. Can be either ‘all’, ‘grid’
 or ‘highlighted’.</p></li>
-<li><p><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>list of commands to be passed to the viewer. The chimera list is:</p>
+<li><p><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – <p>list of commands to be passed to the viewer. The chimera list is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">focus</span>
 <span class="nb">set</span> <span class="n">bg_color</span> <span class="n">white</span>
 <span class="n">windowsize</span> <span class="mi">800</span> <span class="mi">600</span>
@@ -1041,23 +1041,23 @@ bellow, angle are calculated between loci A, D and G.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) all models will be used for
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) all models will be used for
 computation. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the angle only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the angle only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>3</strong><strong>) </strong><strong>steps</strong> (<em>(</em><em>1</em><em>,</em>) – how many particles to group for the estimation.
 By default 2 curves are drawn</p></li>
 <li><p><strong>signed</strong> (<em>True</em>) – whether to compute the sign of the angle according
 to a normal plane, or not.</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
 <li><p><strong>error</strong> (<em>False</em>) – represent the error of the estimates</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>plot</strong> (<em>True</em>) – e.g. if False, only saves data. No plotting done</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the angle data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the angle data
 generated (1 column per step + 1 for particle number).</p></li>
 </ul>
 </dd>
@@ -1084,28 +1084,28 @@ generated (1 column per step + 1 for particle number).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if None (default) the dihedral angle will be computed
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if None (default) the dihedral angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – compute the dihedral angle only for the models in the
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – compute the dihedral angle only for the models in the
 cluster number ‘cluster’</p></li>
 <li><p><strong>3</strong><strong>) </strong><strong>steps</strong> (<em>(</em><em>1</em><em>,</em>) – how many particles to group for the estimation.
 By default 2 curves are drawn</p></li>
 <li><p><strong>signed</strong> (<em>True</em>) – whether to compute the sign of the angle according
 to a normal plane, or not.</p></li>
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
 <li><p><strong>-1</strong><strong>, </strong><strong>0</strong><strong>, </strong><strong>1</strong><strong>, </strong><strong>2</strong><strong>) </strong><strong>span</strong> (<em>(</em><em>-3</em><em>,</em>) – by default computes angle between a plane
 comprising the current residue (<em>0</em>), the residue after (<em>1</em>) and the
 residue 3 positions before (<em>-3</em>), and the plane with the current
 residue, the residue directly after (<em>1</em>) and the residue 3 positions
 after (<em>3</em>). e.g. In the scheme bellow it’s plane ACD vs plane CDF.</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>error</strong> (<em>False</em>) – represent the error of the estimates</p></li>
 <li><p><strong>plot</strong> (<em>True</em>) – e.g. if False, only saves data. No plotting done</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the angle data
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the angle data
 generated (1 column per step + 1 for particle number).</p></li>
 </ul>
 </dd>
@@ -1136,10 +1136,10 @@ ALL the models will be written.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> – location where the file will be written (note: the
 name of the file will be model_1.cmm if model number is 1)</p></li>
-<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – the number of the model to save</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of numbers corresponding to a given set of
+<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the number of the model to save</p></li>
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of numbers corresponding to a given set of
 models to save</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
 <li><p><strong>rndname</strong> (<em>True</em>) – If True, file names will be formatted as:
 model.RND.cmm, where RND is the random number feed used by IMP to
 generate the corresponding model. If False, the format will be:
@@ -1184,13 +1184,13 @@ ALL the models will be written.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> – location where the file will be written (note: the
 name of the file will be model_1.cmm if model number is 1)</p></li>
-<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – the number of the model to save</p></li>
+<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the number of the model to save</p></li>
 <li><p><strong>rndname</strong> (<em>True</em>) – If True, file names will be formatted as:
 model.RND.cmm, where RND is the random number feed used by IMP to
 generate the corresponding model. If False, the format will be:
 model_NUM_RND.cmm where NUM is the rank of the model in terms of
 objective function value</p></li>
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – overide the default file name writing</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – overide the default file name writing</p></li>
 <li><p><strong>kwargs</strong> – any extra argument will be passed to the coloring
 function</p></li>
 <li><p><strong>infer_unrestrained</strong> (<em>False</em>) – infer unrestrained particle
@@ -1216,10 +1216,10 @@ ALL the models will be written.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> – location where the file will be written (note: the
 file name will be model.1.xyz, if the model number is 1)</p></li>
-<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – the number of the model to save</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of numbers corresponding to a given set of
+<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the number of the model to save</p></li>
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of numbers corresponding to a given set of
 models to be written</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
 <li><p><strong>rndname</strong> (<em>True</em>) – If True, file names will be formatted as:
 model.RND.xyz, where RND is the random number feed used by IMP to
 generate the corresponding model. If False, the format will be:
@@ -1248,10 +1248,10 @@ model using a file format compatible with babel
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> – location where the file will be written (note: the
 file name will be model.1.xyz, if the model number is 1)</p></li>
-<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – the number of the model to save</p></li>
-<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a list of numbers corresponding to a given set of
+<li><p><strong>model_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the number of the model to save</p></li>
+<li><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a list of numbers corresponding to a given set of
 models to be written</p></li>
-<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
+<li><p><strong>cluster</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – save the models in the cluster number ‘cluster’</p></li>
 <li><p><strong>rndname</strong> (<em>True</em>) – If True, file names will be formatted as:
 model.RND.xyz, where RND is the random number feed used by IMP to
 generate the corresponding model. If False, the format will be:
@@ -1275,9 +1275,9 @@ also shows the fit to normal distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
+<li><p><strong>axe</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a matplotlib.axes.Axes object to define the plot
 appearance</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
 <li><p><strong>do_normaltest</strong> (<em>False</em>) – to display the result of a test of normality
@@ -1309,6 +1309,7 @@ of the file name will determine the desired format).</p></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -1355,13 +1356,13 @@ of the file name will determine the desired format).</p></li>
         <li class="right" >
           <a href="reference_modelling_impmodel.html" title="IMPmodel class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
