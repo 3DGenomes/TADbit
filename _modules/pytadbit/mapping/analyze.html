@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pytadbit.mapping.analyze &#8212; Tadbit 0.1 documentation</title>
+    <title>pytadbit.mapping.analyze &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/black-on-white.css" />
@@ -23,7 +23,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="../mapping.html" accesskey="U">pytadbit.mapping</a> &#187;</li> 
@@ -794,7 +794,7 @@
             <span class="n">to_return</span><span class="p">[</span><span class="s1">&#39;first_decay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">10</span>
             <span class="k">break</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="s1">&#39;ERROR: no dangling-ends found&#39;</span><span class="p">)</span>
     <span class="n">to_return</span><span class="p">[</span><span class="s1">&#39;perc_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_perc</span>
     <span class="n">to_return</span><span class="p">[</span><span class="s1">&#39;MAD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mad</span><span class="p">(</span><span class="n">des</span><span class="p">)</span>
     <span class="n">to_return</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meanfr</span>
@@ -1077,6 +1077,42 @@
         <span class="k">return</span> <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">bads</span>
     <span class="k">return</span> <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span></div>
 
+<span class="k">def</span> <span class="nf">scc</span><span class="p">(</span><span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    
+    <span class="n">pearsons</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">dists</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">weigs</span><span class="o">=</span><span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">min_dist</span><span class="p">,</span> <span class="n">max_dist</span> <span class="o">+</span> <span class="n">min_dist</span><span class="p">):</span>
+        <span class="n">diag1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">diag2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat1</span><span class="p">)</span> <span class="o">-</span> <span class="n">dist</span><span class="p">):</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="n">dist</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mat1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mat1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]):</span>
+                <span class="k">continue</span>
+            <span class="n">diag1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mat1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">diag2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mat2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">diag1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                <span class="n">p_corr</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">diag1</span><span class="p">,</span> <span class="n">diag2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_corr</span><span class="p">):</span>
+                <span class="n">pearsons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_corr</span><span class="p">)</span>
+                <span class="n">r1</span> <span class="o">=</span> <span class="n">_unitize</span><span class="p">(</span><span class="n">diag1</span><span class="p">)</span>
+                <span class="n">r2</span> <span class="o">=</span> <span class="n">_unitize</span><span class="p">(</span><span class="n">diag2</span><span class="p">)</span>
+                <span class="n">weigs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span>
+                              <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">diag1</span><span class="p">))</span>
+                <span class="n">dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pearsons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">tot_weigth</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weigs</span><span class="p">)</span>
+    <span class="n">scc</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">pearsons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">weigs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">tot_weigth</span>
+              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pearsons</span><span class="p">)))</span>
+    <span class="n">var_corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">pearsons</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">weigs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pearsons</span><span class="p">)))</span> <span class="o">*</span> <span class="n">var_corr</span> <span class="o">/</span>
+           <span class="nb">sum</span><span class="p">(</span><span class="n">weigs</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span>
 
 <span class="k">def</span> <span class="nf">_evec_dist</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">):</span>
     <span class="n">d1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="o">-</span><span class="n">v2</span><span class="p">,</span><span class="n">v1</span><span class="o">-</span><span class="n">v2</span><span class="p">)</span>
@@ -1256,8 +1292,8 @@
         <span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Eigen Vectors exp. 2&#39;</span><span class="p">)</span>
         <span class="n">axe</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nvect</span><span class="p">)))</span>
         <span class="n">axe</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nvect</span><span class="p">)))</span>
-        <span class="n">axe</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nvect</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)))</span>
-        <span class="n">axe</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nvect</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nvect</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nvect</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
         <span class="n">axe</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">axe</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -1768,7 +1804,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="../mapping.html" >pytadbit.mapping</a> &#187;</li> 
@@ -1776,7 +1812,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

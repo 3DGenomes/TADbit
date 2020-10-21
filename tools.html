@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>TADbit tools &#8212; Tadbit 0.1 documentation</title>
+    <title>TADbit tools &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="tutorial/tutorial_11-3D_Models_production_and_analysis.html" title="Modelling a region of the chromatin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -51,27 +51,1043 @@ and also some statistics.</p>
 their general usage and function.</p>
 <div class="section" id="tadbit-map">
 <h2>TADbit map<a class="headerlink" href="#tadbit-map" title="Permalink to this headline">¶</a></h2>
+<p>Map Hi-C reads and organize results in an output working directory</p>
+<dl>
+<dt>usage: tadbit map [-h] [–skip_mapping] -w PATH –fastq PATH [–fastq2 PATH] –index PATH</dt><dd><p>[–genome PATH [PATH …]] –read INT –renz STR [STR …]
+[–chr_name STR [STR …]] [–tmp PATH] [–tmpdb PATH] [–noX] [–iterative]
+[–fast_fragment] [–windows WINDOWS [WINDOWS …]] [–species STR]
+[–descr LIST [LIST …]] [–skip] [–keep_tmp] [-C CPUS] [–mapper STR]
+[–mapper_binary STR] [–mapper_param MAPPER_PARAM [MAPPER_PARAM …]]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--skip_mapping</span></kbd></dt>
+<dd><p>generate a Hi-C specific quality plot from FASTQ and exits</p>
+</dd>
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to an output folder.</p>
+</dd>
+<dt><kbd><span class="option">--fastq <var>PATH</var></span></kbd></dt>
+<dd><p>path to a FASTQ files (can be compressed files)</p>
+</dd>
+<dt><kbd><span class="option">--fastq2 <var>PATH</var></span></kbd></dt>
+<dd><p>(beta) path to a FASTQ file of read 2 (can be compressed files).
+Needed for fast_fragment</p>
+</dd>
+<dt><kbd><span class="option">--index <var>PATH</var></span></kbd></dt>
+<dd><p>paths to file(s) with indexed FASTA files of the reference genome.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–genome PATH [PATH …]</dt><dd><p>paths to file(s) with FASTA files of the reference genome. Needed
+for fast_fragment mapping. If many, files will be concatenated.
+I.e.: –genome chr_1.fa chr_2.fa In this last case, order is
+important or the rest of the analysis. Note: it can also be the path
+to a previously parsed genome in pickle format.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--read <var>INT</var></span></kbd></dt>
+<dd><p>read number</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–renz STR [STR …]     restriction enzyme name(s). Use “–renz CHECK” to search for most</dt><dd><p>probable and exit; and use “–renz NONE” to avoid using RE site
+information.</p>
+</dd>
+<dt>–chr_name STR [STR …]</dt><dd><p>[fasta header] chromosome name(s). Used in the same order as data.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--tmp <var>PATH</var></span></kbd></dt>
+<dd><p>path to a temporary directory (default next to “workdir” directory)</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--skip</span></kbd></dt>
+<dd><p>[DEBUG] in case already mapped.</p>
+</dd>
+<dt><kbd><span class="option">--keep_tmp</span></kbd></dt>
+<dd><p>[DEBUG] keep temporary files.</p>
+</dd>
+</dl>
+</dd>
+<dt>Mapping options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--iterative</span></kbd></dt>
+<dd><p>default mapping strategy is fragment based use this flag for
+iterative mapping</p>
+</dd>
+<dt><kbd><span class="option">--fast_fragment</span></kbd></dt>
+<dd><p>(beta) use fast fragment mapping. Both fastq files are mapped using
+fragment based mapping in GEM v3. The output file is an intersected
+read file than can be used directly in tadbit filter (no tadbit
+parse needed). Access to samtools is needed for fast_fragment to
+work. –fastq2 and –genome needs to be specified and –read value
+should be 0.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–windows WINDOWS [WINDOWS …]</dt><dd><p>defines windows to be used to trim the input FASTQ reads, for
+example an iterative mapping can be defined as: “–windows 1:20 1:25
+1:30 1:35 1:40 1:45 1:50”. But this parameter can also be used for
+fragment based mapping if for example pair-end reads are both in the
+same FASTQ, for example: “–windows 1:50” (if the length of the
+reads is 100). Note: that the numbers are both inclusive.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpus <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+<dt><kbd><span class="option">--mapper <var>STR</var></span></kbd></dt>
+<dd><p>[gem] mapper used, options are gem, bowtie2 or hisat2</p>
+</dd>
+<dt><kbd><span class="option">--mapper_binary <var>STR</var></span></kbd></dt>
+<dd><p>[None] path to mapper binary</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–mapper_param MAPPER_PARAM [MAPPER_PARAM …]</dt><dd><p>any parameter that could be passed to the GEM, BOWTIE2 or HISAT2
+mapper. e.g. if we want to set the proportion of mismatches to 0.05
+and the maximum indel length to 10, (in GEM v2 it would be: -e 0.05
+–max-big-indel-length 10), here we could write: “–mapper_param
+e:0.05 max-big-indel-length:10”. For BOWTIE2, GEM3 and HISAT2 you
+can also pass directly the parameters enclosed between quotes like:
+–mapper_param “-e 0.05 –alignment-local-min-score 15” IMPORTANT:
+some options are incompatible with 3C-derived experiments.</p>
+</dd>
+</dl>
+</dd>
+<dt>Descriptive, optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--species <var>STR</var></span></kbd></dt>
+<dd><p>species name</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–descr LIST [LIST …]  extra descriptive fields each filed separated by coma, and inside</dt><dd><p>each, name and value separated by column:
+–descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-parse">
 <h2>TADbit parse<a class="headerlink" href="#tadbit-parse" title="Permalink to this headline">¶</a></h2>
+<p>Parse mapped Hi-C reads and get the intersection</p>
+<dl>
+<dt>usage: tadbit parse [-h] [-w PATH] [–type STR] [–read INT] [–mapped1 PATHs [PATHs …]]</dt><dd><p>[–mapped2 PATHs [PATHs …]] [–renz STR] [–filter_chrom FILTER_CHROM]
+[–skip] [–compress_input] [–tmpdb PATH] [–genome PATH [PATH …]]
+[–jobids INT [INT …]] [–noX]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit mapper)</p>
+</dd>
+<dt><kbd><span class="option">--type <var>STR</var></span></kbd></dt>
+<dd><p>[map]file type to be parser, MAP (GEM-mapper), SAM or BAM</p>
+</dd>
+<dt><kbd><span class="option">--read <var>INT</var></span></kbd></dt>
+<dd><p>In case only one of the reads needs to be parsed</p>
+</dd>
+<dt><kbd><span class="option">--filter_chrom <var>FILTER_CHROM</var></span></kbd></dt>
+<dd><p>default: –filter_chrom
+“^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?(_dna)?$”,
+regexp to consider only chromosome names passing</p>
+</dd>
+<dt><kbd><span class="option">--skip</span></kbd></dt>
+<dd><p>[DEBUG] in case already mapped.</p>
+</dd>
+<dt><kbd><span class="option">--compress_input</span></kbd></dt>
+<dd><p>Compress input mapped files when parsing is done. This is done in
+background, while next MAP file is processed, or while reads are
+sorted.</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–genome PATH [PATH …]</dt><dd><p>paths to file(s) with FASTA files of the reference genome. If many,
+files will be concatenated. I.e.: –genome chr_1.fa chr_2.fa In this
+last case, order is important or the rest of the analysis. Note: it
+can also be the path to a previously parsed genome in pickle format.</p>
+</dd>
+<dt>–jobids INT [INT …]   Use as input data generated by a job with a given jobid(s). Use</dt><dd><p>tadbit describe to find out which. In this case one jobid can be
+passed per read.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+</dl>
+</dd>
+<dt>Mapped outside TADbit options:</dt><dd><dl class="simple">
+<dt>–mapped1 PATHs [PATHs …]</dt><dd><p>paths to mapped bam files (first read-end)</p>
+</dd>
+<dt>–mapped2 PATHs [PATHs …]</dt><dd><p>paths to mapped bam files (second read-end)</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--renz <var>STR</var></span></kbd></dt>
+<dd><p>restriction enzyme name</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-normalize">
 <h2>TADbit normalize<a class="headerlink" href="#tadbit-normalize" title="Permalink to this headline">¶</a></h2>
+<p>Normalize Hi-C data and generates array of biases</p>
+<dl>
+<dt>usage: tadbit normalize [-h] -w PATH -r INT [–bam PATH] [-j INT] [–max_njobs INT] [–force]</dt><dd><p>[–tmpdb PATH] [-C CPUS] [–normalize_only] [–noX]
+[–normalization STR] [–biases_path BIASES_PATH] [–mappability PATH]
+[–fasta PATH] [–renz STR] [–factor NUM] [–prop_data FLOAT]
+[–seed INT] [–perc_zeros FLOAT] [–min_count INT] [–min_perc INT]
+[–max_perc INT] [–filter_only] [–fast_filter]
+[-B CHR:POS1-POS2 [CHR:POS1-POS2 …]] [-F INT [INT …]] [–valid]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Required options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit mapper)</p>
+</dd>
+<dt><kbd><span class="option">-r <var>INT</var></span>, <span class="option">--resolution <var>INT</var></span></kbd></dt>
+<dd><p>resolution at which to output matrices</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--bam <var>PATH</var></span></kbd></dt>
+<dd><p>path to a TADbit-generated BAM file with all reads (other wise the
+tool will guess from the working directory database)</p>
+</dd>
+<dt><kbd><span class="option">-j <var>INT</var></span>, <span class="option">--jobid <var>INT</var></span></kbd></dt>
+<dd><p>Use as input data generated by a job with a given jobid. Use tadbit
+describe to find out which.</p>
+</dd>
+<dt><kbd><span class="option">--max_njobs <var>INT</var></span></kbd></dt>
+<dd><p>[100] Define maximum number of jobs for reading BAM file (set to
+higher numbers for large files and low RAM memory).</p>
+</dd>
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>overwrite previously run job</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpus <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+<dt><kbd><span class="option">--normalize_only</span></kbd></dt>
+<dd><p>skip calculation of Cis-percentage and decay</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+</dl>
+</dd>
+<dt>Bin filtering options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--perc_zeros <var>FLOAT</var></span></kbd></dt>
+<dd><p>[95%] maximum percentage of zeroes allowed per column.</p>
+</dd>
+<dt><kbd><span class="option">--min_count <var>INT</var></span></kbd></dt>
+<dd><p>[None] minimum number of reads mapped to a bin (recommended value
+could be 2500). If set this option overrides the perc_zero
+filtering… This option is slightly slower.</p>
+</dd>
+<dt><kbd><span class="option">--min_perc <var>INT</var></span></kbd></dt>
+<dd><p>[None] lower percentile from which consider bins as good.</p>
+</dd>
+<dt><kbd><span class="option">--max_perc <var>INT</var></span></kbd></dt>
+<dd><p>[None] upper percentile until which consider bins as good.</p>
+</dd>
+<dt><kbd><span class="option">--filter_only</span></kbd></dt>
+<dd><p>skip normalization</p>
+</dd>
+<dt><kbd><span class="option">--fast_filter</span></kbd></dt>
+<dd><p>only filter according to the percentage of zero count or minimum
+count of reads</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-B CHR:POS1-POS2 [CHR:POS1-POS2 …], –badcols CHR:POS1-POS2 [CHR:POS1-POS2 …]</dt><dd><p>extra regions to be added to bad-columns (ingenomic position). e.g.:
+–badcols 1:150000000-160000000 2:1200000-1300000</p>
+</dd>
+</dl>
+</dd>
+<dt>Read filtering options:</dt><dd><dl class="simple">
+<dt>-F INT [INT …], –filter INT [INT …]</dt><dd><p>[[1, 2, 3, 4, 6, 7, 9, 10]] Use filters to define a set os valid
+pair of reads e.g.: ‘–apply 1 2 3 4 8 9 10’. Where these
+numberscorrespond to: 1: self-circle, 2: dangling-end, 3: error, 4:
+extra dangling-end, 5: too close from RES, 6: too short, 7: too
+large, 8: over-represented, 9: duplicated, 10: random breaks, 11:
+trans-chromosomic</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--valid</span></kbd></dt>
+<dd><p>input BAM file contains only valid pairs (already filtered).</p>
+</dd>
+</dl>
+</dd>
+<dt>Normalization options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--normalization <var>STR</var></span></kbd></dt>
+<dd><p>[Vanilla] normalization(s) to apply. Order matters. Choices:
+Vanilla, ICE, SQRT, oneD, custom</p>
+</dd>
+<dt><kbd><span class="option">--biases_path <var>BIASES_PATH</var></span></kbd></dt>
+<dd><p>biases file to compute decay. REQUIRED with “custom” normalization.
+Format: single column with header</p>
+</dd>
+<dt><kbd><span class="option">--mappability <var>PATH</var></span></kbd></dt>
+<dd><p>Path to mappability bedGraph file, required for oneD normalization.
+Mappability file can be generated with GEM (example from the genomic FASTA file hg38.fa):</p>
+<blockquote>
+<div><p>gem-indexer -i hg38.fa -o hg38
+gem-mappability -I hg38.gem -l 50 -o hg38.50mer -T 8
+gem-2-wig -I hg38.gem -i hg38.50mer.mappability -o hg38.50mer
+wigToBigWig hg38.50mer.wig hg38.50mer.sizes hg38.50mer.bw
+bigWigToBedGraph hg38.50mer.bw  hg38.50mer.bedGraph</p>
+</div></blockquote>
+</dd>
+<dt><kbd><span class="option">--fasta <var>PATH</var></span></kbd></dt>
+<dd><p>Path to FASTA file with genome sequence, to compute GC content and
+number of restriction sites per bin. Required for oneD normalization</p>
+</dd>
+<dt><kbd><span class="option">--renz <var>STR</var></span></kbd></dt>
+<dd><p>restriction enzyme name(s). Required for oneD normalization</p>
+</dd>
+<dt><kbd><span class="option">--factor <var>NUM</var></span></kbd></dt>
+<dd><p>[1] target mean value of a cell after normalization (can be used to
+weight experiments before merging)</p>
+</dd>
+<dt><kbd><span class="option">--prop_data <var>FLOAT</var></span></kbd></dt>
+<dd><p>[1] Only for oneD normalization: proportion of data to be used in
+fitting (for very large datasets). Number between 0 and 1.</p>
+</dd>
+<dt><kbd><span class="option">--seed <var>INT</var></span></kbd></dt>
+<dd><p>[1] Only for oneD normalization: seed number for the random picking
+of data when using the “prop_data” parameter</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="tadbit-bin">
+<h2>TADbit bin<a class="headerlink" href="#tadbit-bin" title="Permalink to this headline">¶</a></h2>
+<p>Bin Hi-C data into matrices</p>
+<dl>
+<dt>usage: tadbit bin [-h] -w PATH [–noX] -r INT [–bam PATH] [-j INT] [–force] [-q]</dt><dd><p>[–tmpdb PATH] [–nchunks NCHUNKS] [-C CPUS] [–chr_name STR [STR …]]
+[–matrix] [–cooler] [–rownames] [–plot] [–force_plot] [–only_plot] [-i]
+[–triangular] [–xtick_rotation XTICK_ROTATION] [–cmap CMAP]
+[–bad_color BAD_COLOR] [–format FORMAT] [–zrange ZRANGE]
+[–transform {log2,log,none}] [–figsize FIGSIZE] [–tad_def TAD_DEF] [-c]
+[-c2] [–biases PATH] [–norm STR [STR …]] [-F INT [INT …]] [–only_txt]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Required options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit mapper)</p>
+</dd>
+<dt><kbd><span class="option">-r <var>INT</var></span>, <span class="option">--resolution <var>INT</var></span></kbd></dt>
+<dd><p>resolution at which to output matrices</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--bam <var>PATH</var></span></kbd></dt>
+<dd><p>path to a TADbit-generated BAM file with all reads (other wise the
+tool will guess from the working directory database)</p>
+</dd>
+<dt><kbd><span class="option">-j <var>INT</var></span>, <span class="option">--jobid <var>INT</var></span></kbd></dt>
+<dd><p>Use as input data generated by a job with a given jobid. Use tadbit
+describe to find out which.</p>
+</dd>
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>overwrite previously run job</p>
+</dd>
+<dt><kbd><span class="option">-q</span>, <span class="option">--quiet</span></kbd></dt>
+<dd><p>remove all messages</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+<dt><kbd><span class="option">--nchunks <var>NCHUNKS</var></span></kbd></dt>
+<dd><p>maximum number of chunks into which to cut the BAM</p>
+</dd>
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpus <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–chr_name STR [STR …]</dt><dd><p>[fasta header] chromosome name(s). Order of chromosomes in the
+output matrices.</p>
+</dd>
+</dl>
+</dd>
+<dt>Read filtering options:</dt><dd><dl class="simple">
+<dt>-F INT [INT …], –filter INT [INT …]</dt><dd><p>[[1, 2, 3, 4, 6, 7, 9, 10]] Use filters to define a set os valid
+pair of reads e.g.: ‘–apply 1 2 3 4 8 9 10’. Where these
+numberscorrespond to: 0: nothing, 1: self-circle, 2: dangling-end,
+3: error, 4: extra dangling-end, 5: too close from RES, 6: too
+short, 7: too large, 8: over-represented, 9: duplicated, 10: random
+breaks, 11: trans-chromosomic</p>
+</dd>
+</dl>
+</dd>
+<dt>Normalization options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--biases <var>PATH</var></span></kbd></dt>
+<dd><p>path to file with pre-calculated biases by columns</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–norm STR [STR …]     [[‘raw’]] normalization(s) to apply. Choices are: [norm, decay, raw,</dt><dd><p>raw&amp;decay]</p>
+</dd>
+</dl>
+</dd>
+<dt>Output options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--matrix</span></kbd></dt>
+<dd><p>Write text matrix in multiple columns (square). By defaults matrices
+are written in BED-like format (also only way to get a raw matrix
+with all values including the ones in masked columns).</p>
+</dd>
+<dt><kbd><span class="option">--cooler</span></kbd></dt>
+<dd><p>Write i,j,v matrix in cooler format instead of text.</p>
+</dd>
+<dt><kbd><span class="option">--rownames</span></kbd></dt>
+<dd><p>To store row names in the output text matrix. WARNING: when non-
+matrix, results in two extra columns</p>
+</dd>
+<dt><kbd><span class="option">--only_plot</span></kbd></dt>
+<dd><p>[False] Skip writing matrix in text format.</p>
+</dd>
+<dt><kbd><span class="option">-i</span>, <span class="option">--interactive</span></kbd></dt>
+<dd><p>[False] Open matplotlib interactive plot (nothing will be saved).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-c , –coord             Coordinate of the region to retrieve. By default all genome,</dt><dd><p>arguments can be either one chromosome name, or the coordinate in
+the form: “-c chr3:110000000-120000000”</p>
+</dd>
+<dt>-c2 , –coord2           Coordinate of a second region to retrieve the matrix in the</dt><dd><p>intersection with the first region.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--only_txt</span></kbd></dt>
+<dd><p>Save only text file for matrices, not images</p>
+</dd>
+</dl>
+</dd>
+<dt>Plotting options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--plot</span></kbd></dt>
+<dd><p>Plot matrix in desired format.</p>
+</dd>
+<dt><kbd><span class="option">--force_plot</span></kbd></dt>
+<dd><p>Force plotting even with demoniacally big matrices (more than
+5000x5000, or 1500x1500with interactive option).</p>
+</dd>
+<dt><kbd><span class="option">--triangular</span></kbd></dt>
+<dd><p>[False] represents only half matrix. Note that this also results in
+truly vectorial images of matrix.</p>
+</dd>
+<dt><kbd><span class="option">--xtick_rotation <var>XTICK_ROTATION</var></span></kbd></dt>
+<dd><p>[-25] x-tick rotation</p>
+</dd>
+<dt><kbd><span class="option">--cmap <var>CMAP</var></span></kbd></dt>
+<dd><p>[viridis] Matplotlib color map to use.</p>
+</dd>
+<dt><kbd><span class="option">--bad_color <var>BAD_COLOR</var></span></kbd></dt>
+<dd><p>[white] Matplotlib color to use on bins filtered out (only used with
+normalized matrices, not raw).</p>
+</dd>
+<dt><kbd><span class="option">--format <var>FORMAT</var></span></kbd></dt>
+<dd><p>[png] plot file format.</p>
+</dd>
+<dt><kbd><span class="option">--zrange <var>ZRANGE</var></span></kbd></dt>
+<dd><p>Range, in log2 scale of the color scale. i.e.: –zrange=-2,2</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–transform {log2,log,none}</dt><dd><p>[log2] can be any of [log2, log, none]</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--figsize <var>FIGSIZE</var></span></kbd></dt>
+<dd><p>Range, in log2 scale of the color scale. default for triangular
+matrices: –figsize=16,10 and for square matrices: –figsize=16,14</p>
+</dd>
+<dt><kbd><span class="option">--tad_def <var>TAD_DEF</var></span></kbd></dt>
+<dd><p>tsv file with tad definition, columns: # start end score density</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-segment">
 <h2>TADbit segment<a class="headerlink" href="#tadbit-segment" title="Permalink to this headline">¶</a></h2>
+<p>Finds TAD or compartment segmentation in Hi-C data.</p>
+<dl>
+<dt>usage: tadbit segment [-h] -w PATH [–tmpdb PATH] [–nosql] [–all_bins] [–mreads PATH]</dt><dd><p>[–biases PATH] -r INT [–norm_matrix PATH] [–raw_matrix PATH]
+[-F INT [INT …]] [–noX] [–rich_in_A PATH] [–fasta PATH] [–savecorr]
+[–fix_corr_scale] [–format FORMAT] [–n_evs INT]
+[–ev_index INT [INT …]] [–only_compartments] [–only_tads] [-v]
+[-j INT] [-c STR [STR …]] [–max_tad_size INT] [-C CPUS] [–force]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit mapper)</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+<dt><kbd><span class="option">--nosql</span></kbd></dt>
+<dd><p>do not load/store data from/in sqlite database</p>
+</dd>
+<dt><kbd><span class="option">--all_bins</span></kbd></dt>
+<dd><p>skip the filtering of bins for detection of TADs</p>
+</dd>
+<dt><kbd><span class="option">--mreads <var>PATH</var></span></kbd></dt>
+<dd><p>path valid-pairs file (TADbit BAM format)</p>
+</dd>
+<dt><kbd><span class="option">--biases <var>PATH</var></span></kbd></dt>
+<dd><p>path to file with precalculated biases by columns</p>
+</dd>
+<dt><kbd><span class="option">-r <var>INT</var></span>, <span class="option">--resolution <var>INT</var></span></kbd></dt>
+<dd><p>resolution at which to output matrices</p>
+</dd>
+<dt><kbd><span class="option">--norm_matrix <var>PATH</var></span></kbd></dt>
+<dd><p>path to a matrix file with normalized read counts</p>
+</dd>
+<dt><kbd><span class="option">--raw_matrix <var>PATH</var></span></kbd></dt>
+<dd><p>path to a matrix file with raw read counts</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-F INT [INT …], –filter INT [INT …]</dt><dd><p>[[1, 2, 3, 4, 6, 7, 9, 10]] Use filters to define a set os valid
+pair of reads e.g.: ‘–apply 1 2 3 4 8 9 10’. Where these
+numberscorrespond to: 1: self-circle, 2: dangling-end, 3: error, 4:
+extra dangling-end, 5: too close from RES, 6: too short, 7: too
+large, 8: over-represented, 9: duplicated, 10: random breaks, 11:
+trans-chromosomic</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--only_compartments</span></kbd></dt>
+<dd><p>search A/B compartments using first eigen vector of the correlation
+matrix</p>
+</dd>
+<dt><kbd><span class="option">--only_tads</span></kbd></dt>
+<dd><p>search TAD boundaries break-point detection algorithm</p>
+</dd>
+<dt><kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></dt>
+<dd><p>print more messages</p>
+</dd>
+<dt><kbd><span class="option">-j <var>INT</var></span>, <span class="option">--jobid <var>INT</var></span></kbd></dt>
+<dd><p>Use as input data generated by a job with a given jobid. Use tadbit
+describe to find out which.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-c STR [STR …], –chromosomes STR [STR …]</dt><dd><p>Name of the chromosomes on which to search for TADs or compartments.</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpu <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>overwrite previously run job</p>
+</dd>
+</dl>
+</dd>
+<dt>Compartment calling options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--rich_in_A <var>PATH</var></span></kbd></dt>
+<dd><p>path to a BED or bedGraph file with list of protein coding gene or
+other active epigenetic mark, to be used to label compartments
+instead of using the relative interaction count.</p>
+</dd>
+<dt><kbd><span class="option">--fasta <var>PATH</var></span></kbd></dt>
+<dd><p>Path to fasta file with genome sequence, to compute GC content and
+use it to label compartments</p>
+</dd>
+<dt><kbd><span class="option">--savecorr</span></kbd></dt>
+<dd><p>Save correlation matrix used to predict compartments.</p>
+</dd>
+<dt><kbd><span class="option">--fix_corr_scale</span></kbd></dt>
+<dd><p>Correlation matrix plot scaled between correlation 1 and -1 instead
+of maximum observed values.</p>
+</dd>
+<dt><kbd><span class="option">--format <var>FORMAT</var></span></kbd></dt>
+<dd><p>[png] file format for figures</p>
+</dd>
+<dt><kbd><span class="option">--n_evs <var>INT</var></span></kbd></dt>
+<dd><p>[3] Number of eigenvectors to store. if “-1” all eigenvectors will
+be calculated</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–ev_index INT [INT …]</dt><dd><p>list of indexes of eigenvectors capturing compartments signal (one
+index per chromosome, in the same order as chromosomes in fasta
+file). Example picking the first eigenvector for all chromosomes but
+for chromosome 3: ‘–ev_index 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1</p>
+</dd>
+</dl>
+</dd>
+<dt>TAD calling options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--max_tad_size <var>INT</var></span></kbd></dt>
+<dd><p>an integer defining the maximum size of TAD. Default defines it as
+the number of rows/columns</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-model">
 <h2>TADbit model<a class="headerlink" href="#tadbit-model" title="Permalink to this headline">¶</a></h2>
+<p>Generates 3D models given an input interaction matrix and a set of input parameters</p>
+<dl>
+<dt>usage: tadbit model [-h] -w PATH [–input_matrix PATH] [–rand INT] [–nmodels INT]</dt><dd><p>[–nkeep INT] [-j INT] [–optimization_id INT] [–fig_format STR] [–noX]
+[–corr STR] [–species STRING] [–assembly STRING] [–cell STRING]
+[–exp_type STRING] [–project STRING] [–crm NAME] [–beg INT] [–end INT]
+[–matrix_beg INT] [-r INT] [–perc_zero FLOAT] [–optimize] [–model]
+[–force] [–maxdist LIST [LIST …]] [–upfreq LIST [LIST …]]
+[–lowfreq LIST [LIST …]] [–scale LIST [LIST …]]
+[–dcutoff LIST [LIST …]] [–analyze] [-C CPUS] [–job_list]
+[–nmodels_per_job INT] [–cpus_per_job INT] [–concurrent_jobs INT]
+[–timeout_job INT] [–script_cmd STR] [–script_args STR] [–tmpdb PATH]
+[–analyze_list INT [INT …]] [–not_write_cmm] [–not_write_xyz]
+[–not_write_json]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool TADbit mapper)</p>
+</dd>
+<dt><kbd><span class="option">--input_matrix <var>PATH</var></span></kbd></dt>
+<dd><p>In case input was not generated with the TADbit tools</p>
+</dd>
+<dt><kbd><span class="option">--rand <var>INT</var></span></kbd></dt>
+<dd><p>[1] random initial number. NOTE: when running single model at the
+time, should be different for each run</p>
+</dd>
+<dt><kbd><span class="option">--nmodels <var>INT</var></span></kbd></dt>
+<dd><p>[5000] number of models to generate for modeling</p>
+</dd>
+<dt><kbd><span class="option">--nkeep <var>INT</var></span></kbd></dt>
+<dd><p>[1000] number of models to keep for modeling</p>
+</dd>
+<dt><kbd><span class="option">-j <var>INT</var></span>, <span class="option">--jobid <var>INT</var></span></kbd></dt>
+<dd><p>Use as input data generated by a job with a given jobid. Use tadbit
+describe to find out which.</p>
+</dd>
+<dt><kbd><span class="option">--optimization_id <var>INT</var></span></kbd></dt>
+<dd><p>[None] ID of a pre-run optimization batch job</p>
+</dd>
+<dt><kbd><span class="option">--fig_format <var>STR</var></span></kbd></dt>
+<dd><p>file format and extension for figures and plots (can be any
+supported by matplotlib, png, eps…)</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--corr <var>STR</var></span></kbd></dt>
+<dd><p>correlation method to compare contact maps and original matrix
+(options are speraman, pearson, kendall, logpearson, chi2, scc )</p>
+</dd>
+</dl>
+</dd>
+<dt>Descriptive, optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--species <var>STRING</var></span></kbd></dt>
+<dd><p>species name, with no spaces, i.e.: homo_sapiens</p>
+</dd>
+<dt><kbd><span class="option">--assembly <var>STRING</var></span></kbd></dt>
+<dd><p>NCBI ID of the original assembly (i.e.: NCBI36 for human)</p>
+</dd>
+<dt><kbd><span class="option">--cell <var>STRING</var></span></kbd></dt>
+<dd><p>cell type name</p>
+</dd>
+<dt><kbd><span class="option">--exp_type <var>STRING</var></span></kbd></dt>
+<dd><p>experiment type name (i.e.: Hi-C)</p>
+</dd>
+<dt><kbd><span class="option">--project <var>STRING</var></span></kbd></dt>
+<dd><p>project name</p>
+</dd>
+</dl>
+</dd>
+<dt>Modeling preparation:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--crm <var>NAME</var></span></kbd></dt>
+<dd><p>chromosome name</p>
+</dd>
+<dt><kbd><span class="option">--beg <var>INT</var></span></kbd></dt>
+<dd><p>genomic coordinate from which to start modeling</p>
+</dd>
+<dt><kbd><span class="option">--end <var>INT</var></span></kbd></dt>
+<dd><p>genomic coordinate where to end modeling</p>
+</dd>
+<dt><kbd><span class="option">--matrix_beg <var>INT</var></span></kbd></dt>
+<dd><p>genomic coordinate of the first row/column of the input matrix. This
+has to be specified if the input matrix is not the TADbit tools
+generated abc format</p>
+</dd>
+<dt><kbd><span class="option">-r <var>INT</var></span>, <span class="option">--reso <var>INT</var></span></kbd></dt>
+<dd><p>resolution of the Hi-C experiment</p>
+</dd>
+</dl>
+<p>–perc_zero FLOAT</p>
+</dd>
+<dt>Parameter optimization:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--optimize</span></kbd></dt>
+<dd><p>optimization run, store less info about models</p>
+</dd>
+<dt><kbd><span class="option">--model</span></kbd></dt>
+<dd><p>modelling run</p>
+</dd>
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>use input parameters, and skip any precalculated optimization</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–maxdist LIST [LIST …]</dt><dd><p>range of numbers for maxdist, i.e. 400:1000:100 – or just a number
+– or a list of numbers</p>
+</dd>
+<dt>–upfreq LIST [LIST …]</dt><dd><p>range of numbers for upfreq, i.e. 0:1.2:0.3 – or just a number –
+or a list of numbers</p>
+</dd>
+<dt>–lowfreq LIST [LIST …]</dt><dd><p>range of numbers for lowfreq, i.e. -1.2:0:0.3 – or just a number –
+or a list of numbers</p>
+</dd>
+<dt>–scale LIST [LIST …]  [0.01] range of numbers to be test as optimal scale value, i.e.</dt><dd><p>0.005:0.01:0.001 – Can also pass only one number – or a list of
+numbers</p>
+</dd>
+<dt>–dcutoff LIST [LIST …]</dt><dd><p>[2] range of numbers to be test as optimal distance cutoff parameter
+(distance, in number of beads, from which to consider 2 beads as
+being close), i.e. 1:1.5:0.5 – Can also pass only one number – or
+a list of numbers</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--analyze</span></kbd></dt>
+<dd><p>analyze models.</p>
+</dd>
+</dl>
+</dd>
+<dt>Analysis:</dt><dd><dl class="simple">
+<dt>–analyze_list INT [INT …]</dt><dd><p>[2 3 4 5 6 7 8 9 10 11 12 13] list of numbers representing the
+analysis to be done. Choose between: 0) do nothing 1) optimization
+plot 2) correlation real/models 3) z-score plot 4) constraints 5)
+objective function 6) centroid 7) consistency 8) density 9) contact
+map 10) walking angle 11) persistence length 12) accessibility 13)
+interaction</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--not_write_cmm</span></kbd></dt>
+<dd><p>[False] do not generate cmm files for each model (Chimera input)</p>
+</dd>
+<dt><kbd><span class="option">--not_write_xyz</span></kbd></dt>
+<dd><p>[False] do not generate xyz files for each model (3D coordinates)</p>
+</dd>
+<dt><kbd><span class="option">--not_write_json</span></kbd></dt>
+<dd><p>[False] do not generate json file.</p>
+</dd>
+</dl>
+</dd>
+<dt>Running jobs:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpu <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+<dt><kbd><span class="option">--job_list</span></kbd></dt>
+<dd><p>generate a list of commands stored in a file named joblist_HASH.q
+(where HASH is replaced by a string specific to the parameters
+used). note that dcutoff will never be split as it does not require
+to re-run models.</p>
+</dd>
+<dt><kbd><span class="option">--nmodels_per_job <var>INT</var></span></kbd></dt>
+<dd><p>Number of models per distributed job.</p>
+</dd>
+<dt><kbd><span class="option">--cpus_per_job <var>INT</var></span></kbd></dt>
+<dd><p>Number of cpu nodes per distributed job.</p>
+</dd>
+<dt><kbd><span class="option">--concurrent_jobs <var>INT</var></span></kbd></dt>
+<dd><p>Number of concurrent jobs in distributed mode.</p>
+</dd>
+<dt><kbd><span class="option">--timeout_job <var>INT</var></span></kbd></dt>
+<dd><p>Time to wait for a concurrent jobs to finish before canceling it in
+distributed mode.</p>
+</dd>
+<dt><kbd><span class="option">--script_cmd <var>STR</var></span></kbd></dt>
+<dd><p>Command to call the jobs in distributed mode.</p>
+</dd>
+<dt><kbd><span class="option">--script_args <var>STR</var></span></kbd></dt>
+<dd><p>Argumnets to script_cmd to call the jobs in distributed mode.</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-merge">
 <h2>TADbit merge<a class="headerlink" href="#tadbit-merge" title="Permalink to this headline">¶</a></h2>
+<p>Load two working directories with different Hi-C data samples and merges them into a new
+working directory generating some statistics</p>
+<dl>
+<dt>usage: tadbit merge [-h] [-w PATH] [-w1 PATH] [-w2 PATH] [–bam1 PATH] [–noX] [–bam2 PATH]</dt><dd><p>[-C CPUS] [-r INT] [–skip_comparison] [–skip_merge]
+[–save STR [STR …]] [–jobid1 INT] [–jobid2 INT] [–force] [–norm]
+[–biases1 PATH] [–biases2 PATH] [–filter INT [INT …]]
+[–samtools PATH] [–tmpdb PATH]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to a new output folder</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-w1 PATH, –workdir1 PATH</dt><dd><p>path to working directory of the first HiC data sample to merge</p>
+</dd>
+<dt>-w2 PATH, –workdir2 PATH</dt><dd><p>path to working directory of the second HiC data sample to merge</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--bam1 <var>PATH</var></span></kbd></dt>
+<dd><p>path to the first TADbit-generated BAM file with all reads (other
+wise the tool will guess from the working directory database)</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--bam2 <var>PATH</var></span></kbd></dt>
+<dd><p>path to the second TADbit-generated BAM file with all reads (other
+wise the tool will guess from the working directory database)</p>
+</dd>
+<dt><kbd><span class="option">-C <var>CPUS</var></span>, <span class="option">--cpus <var>CPUS</var></span></kbd></dt>
+<dd><p>[32] Maximum number of CPU cores available in the execution host. If
+higher than 1, tasks with multi-threading capabilities will enabled
+(if 0 all available) cores will be used</p>
+</dd>
+<dt><kbd><span class="option">-r <var>INT</var></span>, <span class="option">--resolution <var>INT</var></span></kbd></dt>
+<dd><p>resolution at which to do the comparison, and generate the matrices.</p>
+</dd>
+<dt><kbd><span class="option">--skip_comparison</span></kbd></dt>
+<dd><p>skip the comparison between replicates (faster). Comparisons are
+performed at 3 levels 1- comparing first diagonals of each
+experiment (and generating SCC score and standard deviation see
+<a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>) 2- Comparing the first
+eigenvectors of input experiments 3- Generates reproducibility score
+using function from <a class="reference external" href="https://doi.org/10.1093/bioinformatics/btx152">https://doi.org/10.1093/bioinformatics/btx152</a></p>
+</dd>
+<dt><kbd><span class="option">--skip_merge</span></kbd></dt>
+<dd><p>skip the merge of replicates (faster).</p>
+</dd>
+</dl>
+<p>–save STR [STR …]     [genome] save genomic or chromosomic matrix.
+–jobid1 INT             Use as input data generated by a job with a given jobid. Use tadbit</p>
+<blockquote>
+<div><p>describe to find out which.</p>
+</div></blockquote>
+<dl class="option-list">
+<dt><kbd><span class="option">--jobid2 <var>INT</var></span></kbd></dt>
+<dd><p>Use as input data generated by a job with a given jobid. Use tadbit
+describe to find out which.</p>
+</dd>
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>overwrite previously run job</p>
+</dd>
+<dt><kbd><span class="option">--norm</span></kbd></dt>
+<dd><p>compare normalized matrices</p>
+</dd>
+<dt><kbd><span class="option">--biases1 <var>PATH</var></span></kbd></dt>
+<dd><p>path to file with precalculated biases by columns</p>
+</dd>
+<dt><kbd><span class="option">--biases2 <var>PATH</var></span></kbd></dt>
+<dd><p>path to file with precalculated biases by columns</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>–filter INT [INT …]   [[1, 2, 3, 4, 6, 7, 9, 10]] Use filters to define a set os valid</dt><dd><p>pair of reads e.g.: ‘–apply 1 2 3 4 8 9 10’. Where these
+numberscorrespond to: 1: self-circle, 2: dangling-end, 3: error, 4:
+extra dangling-end, 5: too close from RES, 6: too short, 7: too
+large, 8: over-represented, 9: duplicated, 10: random breaks, 11:
+trans-chromosomic</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--samtools <var>PATH</var></span></kbd></dt>
+<dd><p>path samtools binary</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-describe">
 <h2>TADbit describe<a class="headerlink" href="#tadbit-describe" title="Permalink to this headline">¶</a></h2>
+<p>Describe jobs and results in a given working directory</p>
+<dl>
+<dt>usage: tadbit describe [-h] [-w PATH] [–noX] [-t  […]] [-T  […]] [-j INT [INT …]]</dt><dd><p>[-W STR [STR …]] [-s STR [STR …]] [–tmpdb PATH] [–tsv] [-o OUTPUT]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit map)</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">-t</span></kbd></dt>
+<dd><p>[ …], –tables  [ …]
+[[‘1’, ‘2’, ‘3’, ‘4’, ‘5’, ‘6’, ‘7’, ‘8’, ‘9’, ‘10’, ‘11’, ‘12’,
+‘13’]] what tables to show, write either the sequence of names or
+indexes, according to this list: 1: paths, 2: jobs, 3:
+mapped_outputs, 4: mapped_inputs, 5: parsed_outputs, 6:
+intersection_outputs, 7: filter_outputs, 8: normalize_outputs, 9:
+merge_stats, 10: merge_outputs, 11: segment_outputs, 12: models, 13:
+modeled_regions</p>
+</dd>
+<dt><kbd><span class="option">-T</span></kbd></dt>
+<dd><p>[ …], –skip_tables  [ …]
+[[]] what tables NOT to show, write either the sequence of names or
+indexes, according to this list: 1: paths, 2: jobs, 3:
+mapped_outputs, 4: mapped_inputs, 5: parsed_outputs, 6:
+intersection_outputs, 7: filter_outputs, 8: normalize_outputs, 9:
+merge_stats, 10: merge_outputs, 11: segment_outputs, 12: models, 13:
+modeled_regions</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-j INT [INT …], –jobids INT [INT …]</dt><dd><p>Display only items matching these jobids.</p>
+</dd>
+<dt>-W STR [STR …], –where STR [STR …]</dt><dd><p>Select rows. List pairs of keywords (column header) and values to
+filter results. For example to get only results where “18” appears
+in the column “Chromosome”, the option should be set as: <cite>-W
+Chromosome,18</cite></p>
+</dd>
+<dt>-s STR [STR …], –select STR [STR …]</dt><dd><p>Select columns. List the keyword (column headers) to be displayed.
+E.g. to show only the colmns JobIds: <cite>-s Jobids</cite></p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+<dt><kbd><span class="option">--tsv</span></kbd></dt>
+<dd><p>Print output in tab separated format</p>
+</dd>
+<dt><kbd><span class="option">-o <var>OUTPUT</var></span>, <span class="option">--output <var>OUTPUT</var></span></kbd></dt>
+<dd><p>Writes output in specified file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 <div class="section" id="tadbit-clean">
 <h2>TADbit clean<a class="headerlink" href="#tadbit-clean" title="Permalink to this headline">¶</a></h2>
+<p>Delete jobs and results of a given list of jobids in a given directories</p>
+<dl>
+<dt>usage: tadbit clean [-h] [-w PATH] [-j INT [INT …]] [–delete] [–compress] [–noX]</dt><dd><p>[–change_workdir PATH] [–tmpdb PATH]</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+<dt><kbd><span class="option">--change_workdir <var>PATH</var></span></kbd></dt>
+<dd><p>In case folder was moved, input the new path</p>
+</dd>
+</dl>
+</dd>
+<dt>General options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-w <var>PATH</var></span>, <span class="option">--workdir <var>PATH</var></span></kbd></dt>
+<dd><p>path to working directory (generated with the tool tadbit mapper)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>-j INT [INT …], –jobids INT [INT …]</dt><dd><p>jobids of the files and entries to be removed</p>
+</dd>
+</dl>
+<dl class="option-list">
+<dt><kbd><span class="option">--delete</span></kbd></dt>
+<dd><p>delete files, otherwise only DB entries.</p>
+</dd>
+<dt><kbd><span class="option">--compress</span></kbd></dt>
+<dd><p>compress files and update paths accordingly</p>
+</dd>
+<dt><kbd><span class="option">--noX</span></kbd></dt>
+<dd><p>no display server (X screen)</p>
+</dd>
+<dt><kbd><span class="option">--tmpdb <var>PATH</var></span></kbd></dt>
+<dd><p>if provided uses this directory to manipulate the database</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 </div>
 
@@ -92,6 +1108,7 @@ their general usage and function.</p>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-map">TADbit map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-parse">TADbit parse</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-normalize">TADbit normalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tadbit-bin">TADbit bin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-segment">TADbit segment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-model">TADbit model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tadbit-merge">TADbit merge</a></li>
@@ -135,12 +1152,12 @@ their general usage and function.</p>
         <li class="right" >
           <a href="tutorial/tutorial_11-3D_Models_production_and_analysis.html" title="Modelling a region of the chromatin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

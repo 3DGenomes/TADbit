@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Comparison of Hi-C experiments &#8212; Tadbit 0.1 documentation</title>
+    <title>Comparison of Hi-C experiments &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
       </ul>
     </div>  
@@ -119,7 +119,7 @@ of the matrices starting from the main diagonal until the diagonal at
 <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_12_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_12_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_12_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_12_0.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## this part is to &quot;tune&quot; the plot ##</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="n">axe</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">()</span>
@@ -131,7 +131,7 @@ of the matrices starting from the main diagonal until the diagonal at
 <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_13_0.png" />
 <p>The SCC score as in HiCrep (see <a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>)
 is also computed. The value of SCC ranges from −1 to 1 and can be
 interpreted in a way similar to the standard correlation</p>
@@ -188,7 +188,7 @@ considered to have similar structure.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%5.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cor</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_19_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_19_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_19_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_19_0.png" />
 <pre class="ansi-block literal-block">0.976 0.191 0.032 0.018 0.021 0.003
 
 0.192 0.956 0.194 0.003 0.011 0.013
@@ -273,7 +273,7 @@ of the matrices starting from the main diagonal until the diagonal at
 <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_30_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_30_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_30_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_30_0.png" />
 <p>The SCC score as in HiCrep (see <a class="reference external" href="https://doi.org/10.1101/gr.220640.117">https://doi.org/10.1101/gr.220640.117</a>)
 is also computed. The value of SCC ranges from −1 to 1 and can be
 interpreted in a way similar to the standard correlation</p>
@@ -330,7 +330,7 @@ considered to have similar structure.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%5.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cor</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_36_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_36_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_36_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_36_0.png" />
 <pre class="ansi-block literal-block">0.989 0.088 0.002 0.005 0.005 0.002
 
 0.094 0.983 0.073 0.010 0.006 0.008
@@ -408,7 +408,7 @@ similarity) to 1 (identity).</p>
 <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_43_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_43_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_43_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_43_0.png" />
 <p>We expect a lower SCC score between different cell types</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SCC score: </span><span class="si">%.4f</span><span class="s1"> (+- </span><span class="si">%.7f</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scc</span><span class="p">,</span> <span class="n">std</span><span class="p">))</span>
 </pre></div>
@@ -455,7 +455,7 @@ similarity) to 1 (identity).</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%5.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cor</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_47_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_47_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_47_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_47_0.png" />
 <pre class="ansi-block literal-block">0.875 0.171 0.011 0.048 0.066 0.023
 
 0.251 0.787 0.481 0.072 0.070 0.032
@@ -522,7 +522,7 @@ similarity) to 1 (identity).</p>
 <span class="n">spearmans</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_51_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_51_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_51_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_51_0.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SCC score: </span><span class="si">%.4f</span><span class="s1"> (+- </span><span class="si">%.7f</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scc</span><span class="p">,</span> <span class="n">std</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -568,7 +568,7 @@ similarity) to 1 (identity).</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%5.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cor</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_54_0.png" src="../_images//tutorial_9-Compare_and_merge_Hi-C_experiments_54_0.png" />
+<img alt="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_54_0.png" src="../_images/tutorial_9-Compare_and_merge_Hi-C_experiments_54_0.png" />
 <pre class="ansi-block literal-block">0.904 0.086 0.018 0.057 0.080 0.028
 
 0.031 0.846 0.445 0.015 0.087 0.033
@@ -1515,13 +1515,13 @@ rescaling to factor 1
         <li class="right" >
           <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>IMPoptimizer class &#8212; Tadbit 0.1 documentation</title>
+    <title>IMPoptimizer class &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
       </ul>
     </div>  
@@ -62,9 +62,9 @@ their objective function value (the lower the better)</p></li>
 <li><p><strong>close_bins</strong> (<em>1</em>) – number of particles away (i.e. the bin number difference) a
 particle pair must be in order to be considered as neighbors (e.g. 1 means
 nearest neighbors particles)</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – distance cutoff (nm) to define whether two particles
 are in contact or not in the models, default is 2.0 * resolution * scale.</p></li>
-<li><p><strong>container</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – restrains particle to be within a given object.
+<li><p><strong>container</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – restrains particle to be within a given object.
 NOTE: The container can only be a ‘cylinder’ of a given height closed
 by hemispheres. This cylinder is defined by its radius, its height (if
 height=0 the container is a sphere), and the strength (k) of the harmonic
@@ -82,7 +82,7 @@ container = [‘cylinder’, 3000, 0, 50]</p></li>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – a description of the dataset optimized</p></li>
+<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – a description of the dataset optimized</p></li>
 <li><p><strong>with_corr</strong> (<em>False</em>) – if True, returns also the correlation value</p></li>
 </ul>
 </dd>
@@ -171,12 +171,12 @@ axes to be represented in the plot. The order will define which
 parameter will be placed on the x, y, z or w axe.</p></li>
 <li><p><strong>show_best</strong> (<em>0</em>) – number of best correlation values to highlight in
 the plot</p></li>
-<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if passed (as a dictionary), fix a given axe,
+<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if passed (as a dictionary), fix a given axe,
 e.g.: {‘scale’: 0.001, ‘maxdist’: 500}</p></li>
-<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – path to a file where to save the image generated;
+<li><p><strong>savefig</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</p></li>
-<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</p></li>
+<li><p><strong>clim</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – color scale. If None, the max and min values of the input are used.</p></li>
 <li><p><strong>cmap</strong> (<em>inferno</em>) – matplotlib colormap</p></li>
 </ul>
 </dd>
@@ -214,7 +214,7 @@ upfreq values. To be precise “freq” refers to the Z-score.</p></li>
 the optimal distance cutoff parameter (distance, in number of beads,
 from which to consider 2 beads as being close). The last value of the
 input tuple is the incremental step for scale parameter values.</p></li>
-<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – concatenate all generated models into a dictionary
+<li><p><strong>savedata</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – concatenate all generated models into a dictionary
 and save it into a file named by this argument</p></li>
 <li><p><strong>verbose</strong> (<em>True</em>) – print the results to the standard output</p></li>
 </ul>
@@ -258,6 +258,7 @@ the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_hic_data.html">HiC_data class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -304,13 +305,13 @@ the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file</p>
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

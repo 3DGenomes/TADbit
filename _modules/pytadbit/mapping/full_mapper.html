@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pytadbit.mapping.full_mapper &#8212; Tadbit 0.1 documentation</title>
+    <title>pytadbit.mapping.full_mapper &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/black-on-white.css" />
@@ -23,7 +23,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="../mapping.html" accesskey="U">pytadbit.mapping</a> &#187;</li> 
@@ -395,9 +395,7 @@
 <span class="k">def</span> <span class="nf">_bowtie2_mapping</span><span class="p">(</span><span class="n">bowtie2_index_path</span><span class="p">,</span> <span class="n">fastq_path1</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">fastq_path2</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">bowtie2_binary</span><span class="o">=</span><span class="s1">&#39;bowtie2&#39;</span><span class="p">,</span> <span class="n">bowtie2_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param None focus: trims the sequence in the input FASTQ file according to a</span>
-<span class="sd">       (start, end) position, or the name of a restriction enzyme. By default it</span>
-<span class="sd">       uses the full sequence.</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">bowtie2_index_path</span><span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">bowtie2_index_path</span><span class="p">))</span>
     <span class="n">fastq_path1</span>       <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">fastq_path1</span><span class="p">))</span>
@@ -426,10 +424,13 @@
         <span class="n">bowtie2_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-U&#39;</span><span class="p">,</span> <span class="n">fastq_path1</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">bowtie2_params</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">bow_param</span> <span class="ow">in</span> <span class="n">bowtie2_params</span><span class="p">:</span>
-            <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">bow_param</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">]:</span>
-                <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bowtie2_params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">bow_param</span> <span class="ow">in</span> <span class="n">bowtie2_params</span><span class="p">:</span>
+                <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">bow_param</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">]:</span>
+                    <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bowtie2_params</span><span class="p">[</span><span class="n">bow_param</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bowtie2_params</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">bowtie2_cmd</span> <span class="o">+=</span> <span class="n">bowtie2_params</span>
     <span class="k">elif</span> <span class="n">bowtie2_binary</span> <span class="o">==</span> <span class="s1">&#39;bowtie2&#39;</span><span class="p">:</span>
         <span class="n">bowtie2_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--very-sensitive&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bowtie2_cmd</span><span class="p">))</span>
@@ -445,7 +446,7 @@
 
 <span class="k">def</span> <span class="nf">_gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="n">fastq_path2</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">r_enz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gem_binary</span><span class="o">=</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">gem_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param None focus: trims the sequence in the input FASTQ file according to a</span>
 <span class="sd">       (start, end) position, or the name of a restriction enzyme. By default it</span>
@@ -532,6 +533,14 @@
                     <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--restriction-enzyme&#39;</span><span class="p">,</span> <span class="n">r_z</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">gem_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gem_params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">gem_param</span> <span class="ow">in</span> <span class="n">gem_params</span><span class="p">:</span>
+                    <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">gem_param</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">gem_params</span><span class="p">[</span><span class="n">gem_param</span><span class="p">]:</span>
+                        <span class="n">gem_cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gem_params</span><span class="p">[</span><span class="n">gem_param</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gem_params</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                 <span class="n">gem_cmd</span> <span class="o">+=</span> <span class="n">gem_params</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gem_cmd</span><span class="p">))</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># check_call(gem_cmd, stdout=PIPE, stderr=PIPE)</span>
@@ -619,7 +628,7 @@
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">gem_version</span> <span class="o">=</span> <span class="mi">2</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Falling to gem v2&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mapper_params</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">mapper_params</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mapper_params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mapper_params</span><span class="p">)</span>
     <span class="c1"># create directories</span>
     <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">out_map_dir</span><span class="p">]:</span>
@@ -674,7 +683,7 @@
             <span class="k">if</span> <span class="n">mapper</span> <span class="o">==</span> <span class="s1">&#39;gem&#39;</span><span class="p">:</span>
                 <span class="n">_gem_mapping</span><span class="p">(</span><span class="n">mapper_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
                              <span class="n">gem_binary</span><span class="o">=</span><span class="n">gem_binary</span><span class="p">,</span> <span class="n">gem_version</span><span class="o">=</span><span class="n">gem_version</span><span class="p">,</span>
-                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                             <span class="n">gem_params</span><span class="o">=</span><span class="n">mapper_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="c1"># parse map file to extract not uniquely mapped reads</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parsing result...&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">gem_version</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
@@ -998,7 +1007,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="../mapping.html" >pytadbit.mapping</a> &#187;</li> 
@@ -1006,7 +1015,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

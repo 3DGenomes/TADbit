@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pytadbit.mapping &#8212; Tadbit 0.1 documentation</title>
+    <title>pytadbit.mapping &#8212; TADbit 1.0 documentation</title>
     <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
@@ -23,7 +23,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
       </ul>
@@ -107,39 +107,39 @@
     <span class="c1"># merge sort the two files</span>
     <span class="n">read1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh1</span><span class="p">)</span>
     <span class="n">read2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh2</span><span class="p">)</span>
-    <span class="n">nreads</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">number_reads</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">greater</span><span class="p">(</span><span class="n">read2</span><span class="p">,</span> <span class="n">read1</span><span class="p">):</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
-            <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">read1</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh1</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
-                <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
-            <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">read2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fh2</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
-                <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">break</span>
     <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">fh1</span><span class="p">:</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">fh2</span><span class="p">:</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">number_reads</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">fh1</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">fh2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">nreads</span></div>
+    <span class="k">return</span> <span class="n">number_reads</span></div>
 
 
-<span class="k">def</span> <span class="nf">merge_bams</span><span class="p">(</span><span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">,</span> <span class="n">outbam</span><span class="p">,</span> <span class="n">cpus</span> <span class="o">=</span> <span class="n">cpu_count</span><span class="p">(),</span> <span class="n">samtools</span> <span class="o">=</span> <span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_bams</span><span class="p">(</span><span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">,</span> <span class="n">output_bam</span><span class="p">,</span> <span class="n">cpus</span> <span class="o">=</span> <span class="n">cpu_count</span><span class="p">(),</span> <span class="n">samtools</span> <span class="o">=</span> <span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge two bam files with samtools into one.</span>
 
@@ -150,7 +150,7 @@
     <span class="n">samtools</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="n">samtools</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - Mergeing experiments&#39;</span><span class="p">)</span>
-    <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; merge -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">outbam</span><span class="p">,</span> <span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">))</span>
+    <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; merge -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">output_bam</span><span class="p">,</span> <span class="n">bam1</span><span class="p">,</span> <span class="n">bam2</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - Indexing new BAM file&#39;</span><span class="p">)</span>
     <span class="c1"># check samtools version number and modify command line</span>
@@ -159,9 +159,9 @@
                                            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                             <span class="k">if</span> <span class="s1">&#39;Version&#39;</span> <span class="ow">in</span> <span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="s1">&#39;1.3.1&#39;</span><span class="p">):</span>
-        <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">outbam</span><span class="p">))</span>
+        <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index -@ </span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cpus</span><span class="p">,</span> <span class="n">output_bam</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">outbam</span><span class="p">))</span>
+        <span class="n">system</span><span class="p">(</span><span class="n">samtools</span>  <span class="o">+</span> <span class="s1">&#39; index </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">output_bam</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../reference/reference_mapping.html#pytadbit.mapping.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -444,14 +444,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Feb 07, 2020.
+      Last updated on Oct 21, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
