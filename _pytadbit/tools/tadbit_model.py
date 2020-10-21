@@ -277,7 +277,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
     for d, cut in sorted(cuts.items()):
         try:
             result = models.correlate_with_real_data(
-                cutoff=cut)[0]
+                cutoff=cut, corr=opts.corr)[0]
         except Exception as e:
             logging.info('  SKIPPING correlation: %s' % e)
             result = 0
@@ -536,7 +536,7 @@ def run(opts):
             # the original HiC matrix
             logging.info("\tCorrelation with data...")
             rho, pval = models.correlate_with_real_data(
-                cutoff=dcutoff,
+                cutoff=dcutoff, corr=opts.corr,
                 savefig=path.join(outdir, batch_job_hash + '_corre_real.' + opts.fig_format),
                 plot=True)
             logging.info("\t Correlation coefficient: %s [p-value: %s]", rho, pval)
@@ -940,6 +940,10 @@ def populate_args(parser):
                         help='''file format and extension for figures and plots
                         (can be any supported by matplotlib, png, eps...)''')
     glopts.add_argument('--noX', action='store_true', help='no display server (X screen)')
+    glopts.add_argument('--corr', dest='corr', metavar="STR",
+                        default="spearman",
+                        help='''correlation method to compare contact maps and original matrix
+                        (options are speraman, pearson, kendall, logpearson, chi2, scc )''')
 
     #########################################
     # DESCRIPTION
@@ -966,7 +970,7 @@ def populate_args(parser):
     reopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         default=None,
                         help='genomic coordinate where to end modeling')
-    reopts.add_argument('--matrix_beg', dest='matrix_beg', metavar="INT", type=float,
+    reopts.add_argument('--matrix_beg', dest='matrix_beg', metavar="INT", type=int,
                         default=None,
                         help='genomic coordinate of the first row/column ' +
                         'of the input matrix. This has to be specified if ' +
@@ -1123,14 +1127,14 @@ def check_options(opts):
         pass
 
     # turn options into lists
-    def _load_range(range_str, num=float):
+    def _load_range(range_str, num=float, decs=2):
         try:
             beg, end, step = list(map(num, range_str[0].split(':')))
-            return tuple([round(x,2) for x in arange(beg, end + step / 2, step)])
+            return tuple([round(x,decs) for x in arange(beg, end + step / 2, step)])
         except (AttributeError, ValueError):
-            return tuple([round(num(v),2) for v in range_str])
+            return tuple([round(num(v),decs) for v in range_str])
 
-    opts.scale   = _load_range(opts.scale)
+    opts.scale   = _load_range(opts.scale, decs=4)
     opts.maxdist = _load_range(opts.maxdist, num=int)
     opts.upfreq  = _load_range(opts.upfreq)
     opts.lowfreq = _load_range(opts.lowfreq)

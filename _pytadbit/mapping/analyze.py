@@ -1039,6 +1039,42 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
         return spearmans, dists, scc, std, bads
     return spearmans, dists, scc, std
 
+def scc(mat1, mat2, max_dist=50, min_dist=1):
+    
+    pearsons=[]
+    dists = []
+    weigs=[]
+
+    for dist in range(min_dist, max_dist + min_dist):
+        diag1 = []
+        diag2 = []
+        for j in range(len(mat1) - dist):
+            i = j + dist
+            if np.isnan(mat1[i][j]) or np.isnan(mat1[i][j]):
+                continue
+            diag1.append(mat1[i][j])
+            diag2.append(mat2[i][j])
+        if len(diag1) > 1:
+            with catch_warnings():
+                simplefilter("ignore")
+                p_corr = pearsonr(diag1, diag2)[0]
+            if not np.isnan(p_corr):
+                pearsons.append(p_corr)
+                r1 = _unitize(diag1)
+                r2 = _unitize(diag2)
+                weigs.append((np.var(r1, ddof=1) *
+                              np.var(r2, ddof=1))**0.5 * len(diag1))
+                dists.append(dist)
+    if len(pearsons) == 0:
+        return 0, 0
+    tot_weigth = sum(weigs)
+    scc = sum(pearsons[i] * weigs[i] / tot_weigth
+              for i in range(len(pearsons)))
+    var_corr = np.var(pearsons, ddof=1)
+    std = (sum(weigs[i]**2 for i in range(len(pearsons))) * var_corr /
+           sum(weigs)**2)**0.5
+
+    return scc, std
 
 def _evec_dist(v1,v2):
     d1=np.dot(v1-v2,v1-v2)
@@ -1218,8 +1254,8 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         axe.set_ylabel('Eigen Vectors exp. 2')
         axe.set_xticks(list(range(nvect)))
         axe.set_yticks(list(range(nvect)))
-        axe.set_xticklabels(list(range(1, nvect + 2)))
-        axe.set_yticklabels(list(range(1, nvect + 2)))
+        axe.set_xticklabels(list(range(1, nvect + 1)))
+        axe.set_yticklabels(list(range(1, nvect + 1)))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
 
