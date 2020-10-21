@@ -6,7 +6,7 @@ Installing TADbit on GNU/Linux
 .. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
 
 
-**TADbit requires python2 >= 2.6 as well as several dependencies that
+**TADbit requires python2 >= 2.6 or python3 >= 3.6 as well as several dependencies that
 are listed below.**
 
 Dependencies
@@ -102,11 +102,6 @@ Python libraries
 
    apt-get install python-scipy
    apt-get install python-numpy
-
-Optional packages (but **highly** recommended):
-
-::
-
    apt-get install python-matplotlib
 
 .. note:: **Alternative install**, you can install *python-setuptools*
@@ -120,15 +115,19 @@ With conda you can install most of the needed dependencies:
     %%bash
 
     ## required
-    conda install -y -q scipy                                      # scientific computing in python
-    conda install -y -q numpy                                      # scientific computing in python
-    conda install -y -q matplotlib                                 # to plot
-    conda install -y -q -c https://conda.anaconda.org/bcbio pysam  # to deal with SAM/BAM files
-
+    conda config --add channels bioconda
+    conda config --add channels conda-forge
+    conda install -y -q -c bioconda mcl
+    conda install -y -q future
+    conda install -y -q h5py
+    conda install -y -q samtools
+    conda install -y -q pysam
+    conda install -y -q matplotlib-base
+    conda install -y -q scipy
+	
     ## optional
     conda install -y -q jupyter                                    # this notebook :)
-    conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment
-    conda install -y -q -c bioconda h5py                           # to work with cooler format
+    conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment    
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
@@ -459,3 +458,16 @@ To do so, move to the test directory and run:
 
    cd test
    python test_all.py
+   
+Conda builds
+~~~~~~~~~~~~
+
+Alternatively we regularly build a conda package in bioconda. The packages come without IMP and with gem v3 as the default mapper
+
+.. code:: bash
+
+    %%bash
+
+    conda install -c bioconda tadbit
+    
+ 
