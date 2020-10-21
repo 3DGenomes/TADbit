@@ -1254,8 +1254,8 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         axe.set_ylabel('Eigen Vectors exp. 2')
         axe.set_xticks(list(range(nvect)))
         axe.set_yticks(list(range(nvect)))
-        axe.set_xticklabels(list(range(1, nvect + 2)))
-        axe.set_yticklabels(list(range(1, nvect + 2)))
+        axe.set_xticklabels(list(range(1, nvect + 1)))
+        axe.set_yticklabels(list(range(1, nvect + 1)))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
 

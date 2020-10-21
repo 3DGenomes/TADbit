@@ -364,7 +364,7 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             if f  != 'valid-pairs':
                 outmask = path.join(opts.workdir, '03_filtered_reads',
                                     'all_r1-r2_intersection_%s.tsv_%s.tsv' % (
-                                        param_hash, f))
+                                        param_hash, f.replace(' ', '_')))
                 out = open(outmask, 'w')
                 try:
                     fh = magic_open(path.join(opts.workdir1, masked1[f]['path']))
