@@ -1188,32 +1188,18 @@ def write_matrix(inbam, resolution, biases, outdir,
     if 'raw&decay' in normalizations and not cooler:
         write = write_raw_and_expc(write)
 
-    # pull all sub-matrices and write full matrix
-    if region2 is not None:  # already half-matrix in this case
-        half_matrix = False
-
     if cooler:
         for ichunk, c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
                                                      verbose=verbose, clean=clean,
                                                      include_chunk_count=True):
-            if j > k:
-                continue
             if j not in bads1 and k not in bads2:
                 out_raw.write_iter(ichunk, j, k, v)
         out_raw.close()
     else:
-        if half_matrix:
-            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                                 verbose=verbose, clean=clean):
-                if k > j:
-                    continue
-                if j not in bads1 and k not in bads2:
-                    write(c, j, k, v)
-        else:
-            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                                 verbose=verbose, clean=clean):
-                if j not in bads1 and k not in bads2:
-                    write(c, j, k, v)
+        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                             verbose=verbose, clean=clean):
+            if j not in bads1 and k not in bads2:
+                write(c, j, k, v)
 
     fnames = {}
     if append_to_tar:

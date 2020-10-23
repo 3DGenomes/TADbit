@@ -9,6 +9,7 @@ from subprocess import Popen
 from itertools  import product
 
 import numpy as np
+import copy
 from scipy      import interpolate
 
 try:
@@ -16,6 +17,8 @@ try:
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib.ticker    import FuncFormatter
+    
+    plt.rcParams["mpl_toolkits.legacy_colorbar"] = False
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -717,7 +720,7 @@ def plot_2d_optimization_result(result,
     result = result.transpose(trans)
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
-    cmap = plt.get_cmap(cmap)
+    cmap = copy.copy(plt.get_cmap(cmap))
     cmap.set_bad('w', 1.)
 
     # defines axes
@@ -1314,7 +1317,7 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
        the second to the color bar
     """
     if bad_color is not None:
-        kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
+        kwargs['cmap'] = copy.copy(plt.get_cmap(kwargs.get('cmap', None)))
         kwargs['cmap'].set_bad(bad_color, 1.)
 
     if not isinstance(matrix, (np.ndarray, np.generic)):
