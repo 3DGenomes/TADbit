@@ -18,7 +18,8 @@ try:
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib.ticker    import FuncFormatter
     
-    plt.rcParams["mpl_toolkits.legacy_colorbar"] = False
+    if "mpl_toolkits.legacy_colorbar" in plt.rcParams:
+        plt.rcParams["mpl_toolkits.legacy_colorbar"] = False
 except ImportError:
     warn('matplotlib not found\n')
 
