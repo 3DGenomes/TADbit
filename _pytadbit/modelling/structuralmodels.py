@@ -18,7 +18,7 @@ from os.path                          import exists
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
-from copy                             import deepcopy
+from copy                             import deepcopy, copy
 
 from numpy                            import exp as np_exp
 from numpy                            import median as np_median
@@ -49,6 +49,7 @@ from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
 from pytadbit.utils.extraviews        import tad_coloring
 from pytadbit.utils.extraviews        import tad_border_coloring
 from pytadbit.utils.extraviews        import color_residues
+from pytadbit.mapping.analyze         import scc
 from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
 from pytadbit.aligner3d               import aligner3d_wrapper
@@ -1211,7 +1212,6 @@ class StructuralModels(object):
             simplefilter("ignore", category=RuntimeWarning)
             distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                      average=False)
-
         # write consistencies to file
         if savedata:
             out = open(savedata, 'w')
@@ -1222,7 +1222,7 @@ class StructuralModels(object):
                     ['nan\tnan' if part >= len(distsk[c]) else
                      (str(round(distsk[c][part], 3)) + '\t' +
                       str(round(errorp[c][part] - round(distsk[c][part], 3))))
-                     if distsk[c][part] else 'nan\tnan'
+                     if distsk[c][part] and not isnan(distsk[c][part]) else 'nan\tnan'
                      for c in steps])))
             out.close()
         if plot:
@@ -1597,7 +1597,7 @@ class StructuralModels(object):
                     ['nan\tnan' if part >= len(radsk[c]) else
                      (str(round(radsk[c][part], 3)) + '\t' +
                       str(round(errorp[c][part] - round(radsk[c][part], 3))))
-                     if radsk[c][part] else 'nan\tnan'
+                     if radsk[c][part] and not isnan(radsk[c][part]) else 'nan\tnan'
                      for c in steps])))
             out.close()
 
@@ -1644,7 +1644,7 @@ class StructuralModels(object):
             masked_array, mask=masked_array < self._config['upfreq'])
         masked_array_bot = ma.array (
             masked_array, mask=self._config['lowfreq'] < masked_array)
-        cmap = viridis
+        cmap = copy(viridis)
         cmap.set_bad('w', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
@@ -1656,7 +1656,7 @@ class StructuralModels(object):
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the normalized Hi-C count')
-        cbar = ax.figure.colorbar(ims, cmap=cmap)
+        cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Z-score value')
 
         ax = plt.axes([.38, 0.11, .28, .61])
@@ -1752,7 +1752,6 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
-
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
@@ -1810,6 +1809,8 @@ class StructuralModels(object):
         elif corr == 'chi2':
             corr = chisquare(array(moddata), array(oridata))
             corr = 1. / corr[0], corr[1]
+        elif corr == 'scc':
+            corr = scc(model_matrix, self._original_data, max_dist=int(len(model_matrix)/2))
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
@@ -1824,7 +1825,7 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        cmap = plt.get_cmap('viridis')
+        cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
                          vmin=0, vmax=1, cmap=cmap,
@@ -1909,7 +1910,7 @@ class StructuralModels(object):
             # axmidl.patch.set_visible(False)
         ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
-        cmap = plt.get_cmap('viridis')
+        cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         with errstate(divide='ignore'):
             ims = ax.imshow(log2(self._original_data), origin='lower',

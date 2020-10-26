@@ -9,6 +9,7 @@ from subprocess import Popen
 from itertools  import product
 
 import numpy as np
+import copy
 from scipy      import interpolate
 
 try:
@@ -16,6 +17,9 @@ try:
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib.ticker    import FuncFormatter
+    
+    if "mpl_toolkits.legacy_colorbar" in plt.rcParams:
+        plt.rcParams["mpl_toolkits.legacy_colorbar"] = False
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -578,10 +582,12 @@ def plot_3d_optimization_result(result,
     # transpose results
     result = result.transpose(trans)
 
-    wax = [my_round(i, 3) for i in axes_range[0]]
-    zax = [my_round(i, 3) for i in axes_range[1]]
-    xax = [my_round(i, 3) for i in axes_range[3]]
-    yax = [my_round(i, 3) for i in axes_range[2]]
+    round_decs = 6
+
+    wax = [my_round(i, round_decs) for i in axes_range[0]]
+    zax = [my_round(i, round_decs) for i in axes_range[1]]
+    xax = [my_round(i, round_decs) for i in axes_range[3]]
+    yax = [my_round(i, round_decs) for i in axes_range[2]]
     sort_result = sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
                           for i in range(len(wax))
                           for j in range(len(zax))
@@ -715,7 +721,7 @@ def plot_2d_optimization_result(result,
     result = result.transpose(trans)
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
-    cmap = plt.get_cmap(cmap)
+    cmap = copy.copy(plt.get_cmap(cmap))
     cmap.set_bad('w', 1.)
 
     # defines axes
@@ -725,14 +731,15 @@ def plot_2d_optimization_result(result,
     else:
         vmin = result.min()
         vmax = result.max()
-
+        
+    round_decs = 6
     # Here we round the values in axes_range and pass from the
     # 5 parameters to the cartesian axes names.
-    vax = [my_round(i, 3) for i in axes_range[0]] # scale
-    wax = [my_round(i, 3) for i in axes_range[1]] # kbending
-    zax = [my_round(i, 3) for i in axes_range[2]] # maxdist
-    yax = [my_round(i, 3) for i in axes_range[3]] # lowfreq
-    xax = [my_round(i, 3) for i in axes_range[4]] # upfreq
+    vax = [my_round(i, round_decs) for i in axes_range[0]] # scale
+    wax = [my_round(i, round_decs) for i in axes_range[1]] # kbending
+    zax = [my_round(i, round_decs) for i in axes_range[2]] # maxdist
+    yax = [my_round(i, round_decs) for i in axes_range[3]] # lowfreq
+    xax = [my_round(i, round_decs) for i in axes_range[4]] # upfreq
 
     # This part marks the set of best correlations that the
     # user wants to be highlighted in the plot
@@ -831,7 +838,7 @@ def plot_2d_optimization_result(result,
                                     {'ha':'center', 'va':'center'}, size=8)
 
                 grid[cell].text(len(xax) / 2. - 0.5, len(yax)+0.25,
-                                str(my_round(zax[column], 3)),
+                                str(my_round(zax[column], round_decs)),
                                 {'ha':'center', 'va':'center'}, size=8)
 
             cell += 1
@@ -842,9 +849,9 @@ def plot_2d_optimization_result(result,
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
         grid[cell-1].text(len(xax) + 1.0, len(yax) / 2.,
-                          str(my_round(vax[row[0]], 3)) + '\n' +
-                          str(my_round(wax[row[1]], 3)) + '\n' +
-                          str(my_round(dcutoff, 3)),
+                          str(my_round(vax[row[0]], round_decs)) + '\n' +
+                          str(my_round(wax[row[1]], round_decs)) + '\n' +
+                          str(my_round(dcutoff, round_decs)),
                           {'ha':'center', 'va':'center'},
                           rotation=90, size=8)
 
@@ -864,8 +871,8 @@ def plot_2d_optimization_result(result,
 
     grid.axes_llc.set_xticks(list(range(0, len(xax), 2)))
     grid.axes_llc.set_yticks(list(range(0, len(yax), 2)))
-    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2], size=9)
-    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2], size=9)
+    grid.axes_llc.set_xticklabels([my_round(i, round_decs) for i in xax][::2], size=9)
+    grid.axes_llc.set_yticklabels([my_round(i, round_decs) for i in yax][::2], size=9)
     grid.axes_llc.set_xlabel(axes[4], size=9)
     grid.axes_llc.set_ylabel(axes[3], size=9)
 
@@ -1311,7 +1318,7 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
        the second to the color bar
     """
     if bad_color is not None:
-        kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
+        kwargs['cmap'] = copy.copy(plt.get_cmap(kwargs.get('cmap', None)))
         kwargs['cmap'].set_bad(bad_color, 1.)
 
     if not isinstance(matrix, (np.ndarray, np.generic)):
