@@ -607,7 +607,7 @@ class HiC_data(dict):
             start1 = start2 = 0
             end1   = end2   = len(self)
         out = open(fname, 'w')
-        out.write('# MASKED %s\n' % (' '.join([str(k - start1)
+        out.write('# MASKED %s\n' % (','.join([str(k - start1)
                                                for k in list(self.bads.keys())
                                                if start1 <= k <= end1])))
         rownam = ['%s\t%d-%d' % (k[0],
