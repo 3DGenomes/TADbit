@@ -698,9 +698,9 @@ class StructuralModels(object):
                             for _ in range(self.nloci)]) for c in cutoff])
         # remove (or not) interactions from bad columns
         if show_bad_columns:
-            wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
+            wloci = [i for i in range(self.nloci) if self._zeros[i]]
         else:
-            wloci = [i for i in xrange(self.nloci)]
+            wloci = [i for i in range(self.nloci)]
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
