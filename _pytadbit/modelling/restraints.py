@@ -1,7 +1,10 @@
+import numpy as np
+import heapq
 from math           import fabs, pow as power
 from collections    import OrderedDict
-
+from random         import random, uniform, shuffle
 from scipy          import polyfit
+from scipy.stats    import exponnorm
 
 class HiCBasedRestraints(object):
 
@@ -302,6 +305,229 @@ class HiCBasedRestraints(object):
             restraints[tuple(sorted((i, j)))] = restraint_names[RestraintType], dist, kforce
         return restraints
 
+class ProbabilityBasedRestraints(object):
+    
+    def __init__(self, restraints):
+        self.restraints=restraints
+    
+    def get_hicbased_restraints(self):
+        return self.restraints
+    
+class ProbabilityBasedRestraintsList(object):
+
+    """
+    This class contains distance restraints based on probability distributions.
+
+    :param nloci: number of particles to model (may not all be present in
+       zscores)
+    :param particle_radius: radius of each particle in the model.
+    :param None config: a dictionary containing the standard
+       parameters used to generate the models. The dictionary should contain
+       the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
+       seen by doing:
+
+       ::
+
+         from pytadbit.modelling.CONFIG import CONFIG
+
+         where CONFIG is a dictionary of dictionaries to be passed to this function:
+
+       ::
+
+         CONFIG = {
+          'dmel_01': {
+              # Paramaters for the Hi-C dataset from:
+              'reference' : 'victor corces dataset 2013',
+
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
+
+              # Space occupied by a nucleotide (nm)
+              'scale'     : 0.005
+
+              # Strength of the bending interaction
+              'kbending'     : 0.0, # OPTIMIZATION:
+
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
+
+              # Minimum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+
+              # Maximum threshold used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values greater than upfreq
+              # and less than lowfreq will be included, while all the others will be rejected
+              'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
+
+              }
+          }
+    :param 1 close_bins: number of particles away (i.e. the bin number
+       difference) a particle pair must be in order to be considered as
+       neighbors (e.g. 1 means consecutive particles)
+    :param None remove_rstrn: list of particles which must not have restrains
+
+
+    """
+    def __init__(self, nloci, particle_radius, scale, kforce, n_models, dist, pairs,
+                 pair_predictions, resolution_images, hic_mat, chromosomes, close_bins=1,
+                 min_seqdist=0, remove_rstrn=[]):
+
+        self.particle_radius       = particle_radius
+        self.nloci = nloci
+        self.scale = scale
+        self.nnkforce = kforce
+        self.min_seqdist = min_seqdist
+        self.chromosomes = OrderedDict()
+        self.dist = dist
+        self.remove_rstrn = remove_rstrn
+        self.n_models = n_models
+        
+        if chromosomes:
+            if isinstance(chromosomes,dict):
+                self.chromosomes[chromosomes['crm']] = chromosomes['end'] - chromosomes['start'] + 1
+            else:
+                tot = 0
+                for k in chromosomes:
+                    tot += k['end'] - k['start'] + 1
+                    self.chromosomes[k['crm']] = tot
+        else:
+            self.chromosomes['UNKNOWN'] = nloci
+
+        self.pair_bounds = {}
+        self.pair_distribution = []
+        for rand_init in range(self.n_models):
+            locs_prob = sorted(list(set([p[0] for p in pairs]+[p[1] for p in pairs])))
+            pair_distr = {}
+            list_pairs = [(i,pair) for i, pair in enumerate(pairs)]
+
+            for i,pair in list_pairs:
+                if abs(pair[0]-pair[1])>1:
+                    continue
+                a, b = pair[0], pair[1]
+                pair_distr[(a,b)] = dist.rvs(K=pair_predictions[i][0],
+                                            loc=pair_predictions[i][1],
+                                            scale=pair_predictions[i][2],
+                                            size=1)[0]/scale
+            shuffle(list_pairs)
+            
+            for i,pair in list_pairs:
+                if abs(pair[0]-pair[1])<2:
+                    continue
+                a, b = pair[0], pair[1]
+
+                lst_dist = dist.rvs(K=pair_predictions[i][0],
+                         loc=pair_predictions[i][1],
+                         scale=pair_predictions[i][2],
+                         size=1)
+                constr_pair = False
+                for l in locs_prob:
+                    if (a,l) in pair_distr and (l,b) in pair_distr:
+                        constr_pair = True
+                        break
+
+                if not constr_pair:
+                    pair_distr[pair] = lst_dist[0]/scale
+                else:
+                    self.pair_bounds[pair] = max(lst_dist)/scale
+
+            self.pair_distribution.append(pair_distr)
+            print('Generating restraints for model %d\n'%rand_init)
+    def get_probability_restraints(self, rand_init):
+
+        # ProbabilitybasedRestraints is a list of restraints returned by this function.
+        # Each entry of the list is a list of 5 elements describing the details of the restraint:
+        # 0 - particle_i
+        # 1 - particle_j
+        # 2 - type_of_restraint = Harmonic or HarmonicLowerBound or HarmonicUpperBound
+        # 3 - the kforce of the restraint
+        # 4 - the equilibrium (or maximum or minimum respectively) distance associated to the restraint
+    
+        ProbBasedRestraints = [] 
+        nlocis = list(sorted(set(range(self.nloci)) - set(self.remove_rstrn)))
+        for ni, i in enumerate(nlocis):
+            chr1 = [k for k,v in list(self.chromosomes.items()) if v > i][0]
+            for j in nlocis[ni+1:]:
+                chr2 = [k for k,v in list(self.chromosomes.items()) if v > j][0]
+                if chr1 != chr2:
+                    continue
+                seqdist = abs(j - i)
+    
+                # 1 - CASE OF TWO CONSECUTIVE LOCI (NEAREST NEIGHBOR PARTICLES)
+                if seqdist == 1 and seqdist > self.min_seqdist:
+                    if chr1 != chr2:
+                        continue
+                    if (i,j) in self.pair_distribution[rand_init]:
+                        RestraintType = "Harmonic"
+                        dist = self.pair_distribution[rand_init][(i,j)]
+                    #elif (i,j) in self.pair_bounds:
+                    #    RestraintType = "NeighborHarmonicUpperBound"
+                    #    dist = self.pair_bounds[(i,j)]
+                    kforce = self.nnkforce*5
+    
+                # 3 - CASE OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
+                if seqdist >  2 and seqdist > self.min_seqdist:
+                    
+                    if (i,j) in self.pair_distribution[rand_init]:
+                        RestraintType = "Harmonic"
+                        dist = self.pair_distribution[rand_init][(i,j)]
+                    #elif (i,j) in self.pair_bounds:
+                    #    RestraintType = "HarmonicUpperBound"
+                    #    dist = self.pair_bounds[(i,j)]
+                    kforce = self.nnkforce
+                        #continue
+                ProbBasedRestraints.append([i, j, RestraintType, kforce, dist])
+
+        return ProbBasedRestraints
+    
+    def _get_restraints(self):
+        """
+        Same function as addAllHarmonic but just to get restraints
+        """
+        restraint_names = {'None'               : None,
+                           'Harmonic'           : 'a',
+                           'NeighborHarmonic'   : 'n',
+                           'HarmonicUpperBound' : 'u',
+                           'NeighborHarmonicUpperBound' : 'u'}
+
+        restraints = {(i,j):[] for i in range(self.nloci) for j in range(i+1,self.nloci)}
+        for rand_init in range(self.n_models):
+            restraints_model = {(i,j):(RestraintType, kforce, dist) 
+                                for i, j, RestraintType, kforce, dist in self.get_probability_restraints(rand_init)}
+            for pair in restraints_model:
+                restraints[pair].append((restraint_names[restraints_model[pair][0]],
+                                         restraints_model[pair][2],
+                                         restraints_model[pair][1]))
+        return restraints
+    
+    def get_nearest_neighbors_restraint_distance(self, particle_radius):
+        # When p1 and p2 have a contact propensity lower than upfreq they are simply connected to each other
+        #p1 = model['particles'].get_particle(i)
+        #p2 = model['particles'].get_particle(j)
+        #dist = p1.get_value(model['radius']) + p2.get_value(model['radius'])
+        RestraintType = "NeighborHarmonicUpperBound"
+
+        dist = 6.0 * particle_radius
+        return RestraintType , dist
+
+    def get_second_nearest_neighbors_restraint_distance(self, particle_radius):
+        # IMP COMMAND: Consider the particles i, j and the particle between i and j
+        #p1      = model['particles'].get_particle(i)
+        #p2      = model['particles'].get_particle(j)
+        #pmiddle = model['particles'].get_particle(j-1)
+
+        # The equilibrium distance is the sum of the radii of particles p1 and p2, and of the diameter of particle pmiddle
+        RestraintType = "HarmonicUpperBound"
+        dist = 12.0 * particle_radius
+        #dist = p1.get_value(model['radius']) + p2.get_value(model['radius']) + 2.0 * pmiddle.get_value(model['radius'])
+        #print p1.get_value(model['radius']) , p2.get_value(model['radius']) , pmiddle.get_value(model['radius'])
+
+        #print RestraintType , dist
+        return RestraintType , dist
+
+        
+
 #Function to translate the Zscore value into distances and kforce values
 def distance(Zscore, slope, intercept):
     """
@@ -316,6 +542,18 @@ def k_force(Zscore):
     experimental value.
     """
     return power(fabs(Zscore), 0.5)
+
+def bounded_exponnorm(K, loc, scale, a, b):
+
+    # y = (x - loc) / scale    lognorm.pdf(y, s) / scale
+    nrm=exponnorm(K,loc=loc,scale=scale).cdf(b)-exponnorm(K,loc=loc,scale=scale).cdf(a)
+    #exponnorm_a = exponnorm.pdf(a, K, loc=loc, scale=scale)
+    #exponnorm_b = exponnorm.pdf(b, K, loc=loc, scale=scale)
+    
+    y=np.random.rand()*(nrm)+exponnorm(K,loc=loc,scale=scale).cdf(a)
+    x=exponnorm(K,loc=loc,scale=scale).ppf(y)
+
+    return x
 
 class TADbitModelingOutOfBound(Exception):
     pass
