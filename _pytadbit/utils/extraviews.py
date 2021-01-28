@@ -1435,3 +1435,131 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
                              (t_start + j, t_start    ), color='k')
 
     return axe1, axe2
+
+
+def format_HiC_axes(axe1, start1, end1, start2, end2, reso, regions,
+                 section_pos, sections, xtick_rotation, triangular=False):
+    if len(regions) <= 2:
+        pltbeg1 = 0 if start1 is None else start1
+        pltend1 = sections[regions[0]] if end1 is None else end1
+        pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                   0 if start2 is None else start2)
+        pltend2 = (pltend1 if len(regions) == 1 else
+                   sections[regions[-1]] if end2 is None else end2)
+        axe1.set_xlabel('{}:{:,}-{:,}'.format(
+            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+        if not triangular:
+            axe1.set_ylabel('{}:{:,}-{:,}'.format(
+                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+        def format_xticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg1)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        def format_yticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg2)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
+        if triangular:
+            axe1.set_yticks([])
+
+        labels = axe1.get_xticklabels()
+        plt.setp(labels, rotation=xtick_rotation,
+                 ha='left' if xtick_rotation else 'center')
+    else:
+        vals = [0]
+        keys = []
+        total = 0
+        for crm in section_pos:
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
+            keys.append(crm)
+        axe1.set_yticks(vals)
+        axe1.set_yticklabels('')
+        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                         for i in range(len(vals) - 1)],
+                         minor=True)
+        axe1.set_yticklabels(keys, minor=True)
+        for t in axe1.yaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+
+        axe1.set_xticks(vals)
+        axe1.set_xticklabels('')
+        axe1.set_xticks([float(vals[i]+vals[i+1])/2
+                         for i in range(len(vals) - 1)],
+                        minor=True)
+        axe1.set_xticklabels(keys, minor=True)
+        for t in axe1.xaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+        axe1.set_xlabel('Chromosomes')
+        if not triangular:
+            axe1.set_ylabel('Chromosomes')
+def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
+                 section_pos, sections, xtick_rotation, triangular=False):
+    if len(regions) <= 2:
+        pltbeg1 = 0 if start1 is None else start1
+        pltend1 = sections[regions[0]] if end1 is None else end1
+        pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                   0 if start2 is None else start2)
+        pltend2 = (pltend1 if len(regions) == 1 else
+                   sections[regions[-1]] if end2 is None else end2)
+        axe1.set_xlabel('{}:{:,}-{:,}'.format(
+            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+        if not triangular:
+            axe1.set_ylabel('{}:{:,}-{:,}'.format(
+                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+        def format_xticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg1)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        def format_yticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg2)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
+        if triangular:
+            axe1.set_yticks([])
+
+        labels = axe1.get_xticklabels()
+        plt.setp(labels, rotation=xtick_rotation,
+                 ha='left' if xtick_rotation else 'center')
+    else:
+        vals = [0]
+        keys = []
+        total = 0
+        for crm in section_pos:
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
+            keys.append(crm)
+        axe1.set_yticks(vals)
+        axe1.set_yticklabels('')
+        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                         for i in range(len(vals) - 1)],
+                         minor=True)
+        axe1.set_yticklabels(keys, minor=True)
+        for t in axe1.yaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+
+        axe1.set_xticks(vals)
+        axe1.set_xticklabels('')
+        axe1.set_xticks([float(vals[i]+vals[i+1])/2
+                         for i in range(len(vals) - 1)],
+                        minor=True)
+        axe1.set_xticklabels(keys, minor=True)
+        for t in axe1.xaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+        axe1.set_xlabel('Chromosomes')
+        if not triangular:
+            axe1.set_ylabel('Chromosomes')
