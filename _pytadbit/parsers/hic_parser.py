@@ -12,7 +12,10 @@ from io                              import IOBase
 from collections                     import OrderedDict
 from warnings                        import warn
 from math                            import sqrt, isnan
-from pickle                          import load
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
 
 from pysam                           import AlignmentFile
 
