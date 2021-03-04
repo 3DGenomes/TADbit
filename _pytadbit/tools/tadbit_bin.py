@@ -68,6 +68,7 @@ def run(opts):
     check_options(opts)
     launch_time = time.localtime()
     param_hash = digest_parameters(opts, extra=['quiet'])
+    biases = None
 
     if opts.zrange:
         vmin = float(opts.zrange.split(',')[0])
