@@ -13,7 +13,10 @@ from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
 from random                          import random
-from pickle                          import load
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
