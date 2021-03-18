@@ -406,7 +406,7 @@ class ProbabilityBasedRestraintsList(object):
                 if abs(pair[0]-pair[1])>1:
                     continue
                 a, b = pair[0], pair[1]
-                pair_distr[(a,b)] = dist.rvs(K=pair_predictions[i][0],
+                pair_distr[(a,b)] = dist.rvs(K=2**(pair_predictions[i][0]),
                                             loc=pair_predictions[i][1],
                                             scale=pair_predictions[i][2],
                                             size=1)[0]/scale
@@ -417,7 +417,7 @@ class ProbabilityBasedRestraintsList(object):
                     continue
                 a, b = pair[0], pair[1]
 
-                lst_dist = dist.rvs(K=pair_predictions[i][0],
+                lst_dist = dist.rvs(K=2**(pair_predictions[i][0]),
                          loc=pair_predictions[i][1],
                          scale=pair_predictions[i][2],
                          size=1)
@@ -467,7 +467,7 @@ class ProbabilityBasedRestraintsList(object):
                     kforce = self.nnkforce*5
     
                 # 3 - CASE OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
-                if seqdist >  2 and seqdist > self.min_seqdist:
+                if seqdist >=  2 and seqdist > self.min_seqdist:
                     
                     if (i,j) in self.pair_distribution[rand_init]:
                         RestraintType = "Harmonic"
