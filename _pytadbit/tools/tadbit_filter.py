@@ -70,7 +70,17 @@ def run(opts):
         except ZeroDivisionError:
             warn('WARNING: cannot compute fragment length, too few '
                  'dangling-ends. Setting median length to 400 nt.')
+            median = max_f = mad = 0
+        if mad < 50:
+            warn('WARNING: fragment length too short ({}). '
+                 'Setting median length to 400 nt.'.format(mad))
             median, max_f, mad = 400, 100, 1000
+        if opts.median:
+            median = opts.median
+        if opts.max_f:
+            max_f = opts.max_f
+        if opts.mad:
+            mad = opts.mad
 
         print('  - median insert size =', median)
         print('  - double median absolution of insert size =', mad)
@@ -422,6 +432,18 @@ def populate_args(parser):
                          action='store', default=5, type=int,
                          help ='''[%(default)s] to exclude read-ends falling too
                          close from RE site (pseudo-dangling-ends)''')
+
+    filter_.add_argument('--mad', dest='mad', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''MAD fragment length normally computed from observed distribution''')
+
+    filter_.add_argument('--max_f', dest='max_f', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''Maximum fragment length normally computed from observed distribution''')
+
+    filter_.add_argument('--median', dest='median', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''Median fragment length normally computed from observed distribution''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
