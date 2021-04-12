@@ -4,7 +4,11 @@
 from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
-from pickle                          import load, dump, HIGHEST_PROTOCOL
+try:
+    from pickle5                      import load  # python < 3.8
+except ImportError:
+    from pickle                       import load
+from pickle                           import dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn, catch_warnings, simplefilter    
