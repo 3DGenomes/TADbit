@@ -1211,6 +1211,9 @@ class StructuralModels(object):
            generated (1 column per step + 1 for particle number).
         :param True plot: e.g. if False, only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1243,6 +1246,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def _get_interactions(self, models, cutoff):
         interactions = [[] for _ in range(self.nloci)]
