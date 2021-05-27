@@ -1104,6 +1104,10 @@ class StructuralModels(object):
            micrometers) *5-* a list of number of (accessibles, inaccessible) for
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
+
+           if ploting, returns values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         cluster = cluster or -1
         if models:
@@ -1147,7 +1151,7 @@ class StructuralModels(object):
         #elif not axe:
         #    plt.show()
         #plt.close('all')
-
+        return accper, errorp, errorn
 
     def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
@@ -1296,6 +1300,9 @@ class StructuralModels(object):
            otherwise, the median.
         :param True plot: e.g. only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1328,6 +1335,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def model_consistency(self, cutoffs=None, models=None,
                           cluster=None, axe=None, savefig=None, savedata=None,
@@ -1456,6 +1464,8 @@ class StructuralModels(object):
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
         ::
 
@@ -1521,6 +1531,8 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
+        return radsk, errorp, errorn
+
     def walking_angle(self, models=None, cluster=None, steps=(1, 3), signed=True,
                       savefig=None, savedata=None, axe=None, plot=True,
                       error=False):
@@ -1548,6 +1560,9 @@ class StructuralModels(object):
         :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
+
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
 
         ::
@@ -1614,6 +1629,7 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
 
+        return radsk, errorp, errorn
         #if savefig:
         #    tadbit_savefig(savefig)
         #elif not axe:
