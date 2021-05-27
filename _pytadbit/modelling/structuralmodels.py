@@ -3043,9 +3043,10 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
+            plt.close('all')
         elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
 
 
 class ClusterOfModels(dict):
