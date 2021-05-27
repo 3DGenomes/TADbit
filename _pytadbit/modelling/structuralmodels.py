@@ -2988,7 +2988,7 @@ class StructuralModels(object):
                     s=40,
                     color=[(0.15, 0.15, 0.15) if i else (0.7, 0.7, 0.7)
                            for i in self._zeros], clip_on=False,
-                    zorder=100, edgecolor='k')
+                    zorder=100, alpha=0.75)
         axe.set_ylim((where, axe.get_ylim()[1]))
 
     def _generic_per_particle_plot(self, steps, distsk, error, errorp, errorn,
