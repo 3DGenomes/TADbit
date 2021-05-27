@@ -1429,9 +1429,11 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
-        elif show:
+            plt.close('all')
+        elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
+        return consistencies
 
     def walking_dihedral(self, models=None, cluster=None, steps=(1, 3),
                          span=(-2, 1, 0, 1, 3), error=False,
@@ -2773,8 +2775,8 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
-    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
-                               plot=True):
+    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, 
+                               savedata=None, plot=True):
         """
         Calculates the persistence length (Lp) of given section of the model.
         Persistence length is calculated according to [Bystricky2004]_ :
