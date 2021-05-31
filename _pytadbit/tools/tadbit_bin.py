@@ -20,6 +20,7 @@ from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
+import matplotlib
 from numpy                           import zeros_like
 from numpy                           import array
 from numpy                           import ma, log, log2
@@ -36,7 +37,6 @@ from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db, retry
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
 from pytadbit.utils.extraviews       import plot_HiC_matrix
-
 
 DESC = 'bin Hi-C data into matrices'
 

@@ -262,6 +262,7 @@ def read_read_nofrags(r, _, __):
     except ValueError:
         raise KeyError()
     positive = strand == '+'
+    crm = crm.split()[0]
     len_seq  = len(seq)
     if positive:
         pos = int(pos)

@@ -458,7 +458,7 @@ def _read_half_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                 if pos1 > pos2:
                     continue
             else:
-                if section_pos.index(crm1) > section_pos.index(crm2):
+                if pos1 > pos2:
                     continue
                 crm = ''
             try:
