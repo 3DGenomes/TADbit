@@ -41,6 +41,27 @@ def is_cooler(fname, resolution=None):
         pass
     return False
 
+def parse_header(fname, resolution=None):
+    """
+    Read matrix header stored in cooler
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+    
+    :returns: Ordereddictionary of chromosome ans sizes 
+    """
+
+    with h5py.File(fname, "r") as f:
+
+        resolution = resolution or list(f['resolutions'].keys())[0]
+        root_grp = f['resolutions'][str(resolution)]
+
+        chrom = root_grp["chroms"]["name"].value
+        lens = root_grp["chroms"]["length"].value
+        chroms = OrderedDict(zip(chrom, lens))
+    
+    return chroms
+
 def parse_cooler(fname, resolution=None, normalized=False,
                  raw_values = False):
     """

@@ -263,7 +263,6 @@ def populate_args(parser):
     rfiltr = parser.add_argument_group('Read filtering options')
     normpt = parser.add_argument_group('Normalization options')
     outopt = parser.add_argument_group('Output options')
-    pltopt = parser.add_argument_group('Plotting options')
 
     oblopt.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
@@ -327,10 +326,6 @@ def populate_args(parser):
                         default=False,
                         help='''To store row names in the output text matrix.
                         WARNING: when non-matrix, results in two extra columns''')
-
-    pltopt.add_argument('--transform', dest='transform', action='store',
-                        default='log2', choices=['log2', 'log', 'none'],
-                        help='''[%(default)s] can be any of [%(choices)s]''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
                         default=None, help='''Coordinate of the region to
