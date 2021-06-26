@@ -322,7 +322,7 @@ def load_parameters_fromdb(opts, what='bam'):
             # get the JOBid of the parsing job
             cur.execute("""
             select distinct Id from JOBs
-            where Type = 'Filter' or Type = 'Merge'
+            where Type = 'Filter' or Type = 'Merge' or Type = 'Import'
             """)
             jobids = cur.fetchall()
             if len(jobids) > 1:

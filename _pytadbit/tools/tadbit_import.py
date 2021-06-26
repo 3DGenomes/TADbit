@@ -11,6 +11,7 @@ from argparse                        import HelpFormatter
 from multiprocessing                 import cpu_count
 from os                              import path, system, remove
 from collections                     import OrderedDict
+from pickle                          import dump, load, HIGHEST_PROTOCOL
 from subprocess                      import Popen, PIPE
 import time
 import logging
@@ -27,7 +28,9 @@ from pytadbit.utils.sqlite_utils     import add_path, get_path_id, print_db
 from pytadbit.utils.sqlite_utils     import get_jobid, digest_parameters, retry
 from pytadbit.parsers.hic_bam_parser import printime
 from pytadbit.parsers.hic_bam_parser import _map2sam_mid
+from pytadbit.mapping.analyze        import plot_distance_vs_interactions
 from pytadbit.mapping.filter         import MASKED
+from pytadbit.utils.extraviews       import nicer
 
 DESC = 'import Hi-C data to TADbit toy BAM'
 
@@ -88,7 +91,8 @@ def run(opts):
         sections.extend([(region1, i) for i in range(start1//opts.reso,
                                                      (end1//opts.reso))])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
-    
+    bias_file = None
+    badcol = {}
     if opts.format == 'text':
         with gzopen(opts.input) as f_thing:
             matrix = abc_reader(f_thing, size, start1//opts.reso if start1 else None)
@@ -100,10 +104,26 @@ def run(opts):
             raise Exception('''ERROR: The size of the specified region is
                             different from the data in the matrix''')
     elif opts.format == 'cooler':
-        matrix, size, _, masked, sym = parse_cooler(opts.input,
-                                                    opts.reso if opts.reso > 1 else None,
-                                                    False)
+        matrix, weights, size, header = parse_cooler(opts.input,
+                                                     opts.reso if opts.reso > 1 else None,
+                                                     normalized = True,
+                                                     raw_values = True)
+        masked={}
         size_mat = size
+        if len(set(weights)) > 1:
+            printime('Transforming cooler weights to biases')
+            outdir_norm = path.join(opts.workdir, '04_normalization')
+            mkdir(outdir_norm)
+
+            bias_file = path.join(outdir_norm, 'biases_%s_%s.pickle' % (
+                nicer(opts.reso).replace(' ', ''), param_hash))
+            out = open(bias_file, 'wb')
+            badcol.update((i, True) for i, m in enumerate(weights) if m == 0)
+            dump({'biases'    : dict((k, b if b > 0 else float('nan')) for k, b in enumerate(weights)),
+                  'decay'     : {},
+                  'badcol'    : badcol,
+                  'resolution': opts.reso}, out, HIGHEST_PROTOCOL)
+            out.close()
     
     hic = HiC_data(matrix, size_mat, dict_sec=dict_sec,
                    chromosomes=chroms, masked=masked,
@@ -112,7 +132,7 @@ def run(opts):
     #from pytadbit.mapping.analyze import hic_map
     #hic_map(hic, normalized=False, focus='chr1', show=True, cmap='viridis')
     
-    
+    printime('Creating BAM file')
     outbam = path.join(opts.workdir, '03_filtered_reads',
                        'intersection_%s' % param_hash)
 
@@ -121,8 +141,8 @@ def run(opts):
 
     finish_time = time.localtime()
     # save all job information to sqlite DB
-    save_to_db(opts, total_counts, outbam + '.bam', 
-               launch_time, finish_time)
+    save_to_db(opts, total_counts, size_mat, bias_file, len(badcol),
+               outbam + '.bam', launch_time, finish_time)
 
 def abc_reader(f, size, beg):
     """
@@ -257,7 +277,8 @@ def create_BAMhic(hic, ncpus, outbam, chromosomes, reso,
     return total_counts
 
 @retry(lite.OperationalError, tries=20, delay=2)
-def save_to_db(opts, count, outbam, launch_time, finish_time):
+def save_to_db(opts, count, ncolumns, bias_file, nbad_columns,
+               outbam, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -356,12 +377,60 @@ def save_to_db(opts, count, outbam, launch_time, finish_time):
                    'valid-pairs', count, '', jobid))
         except lite.IntegrityError:
             print('WARNING: already filtered')
+        
+        if bias_file:    
+            cur.execute("""SELECT name FROM sqlite_master WHERE
+                           type='table' AND name='NORMALIZE_OUTPUTs'""")
+            if not cur.fetchall():
+                cur.execute("""
+                create table NORMALIZE_OUTPUTs
+                   (Id integer primary key,
+                    JOBid int,
+                    Input int,
+                    N_columns int,
+                    N_filtered int,
+                    BAM_filter int,
+                    Cis_percentage_Raw real,
+                    Cis_percentage_Norm real,
+                    Slope_700kb_10Mb real,
+                    Resolution int,
+                    Normalization text,
+                    Factor int,
+                    unique (JOBid))""")
+            try:
+                opts.normalization = 'custom'
+                parameters = digest_parameters(opts, get_md5=False)
+                param_hash = digest_parameters(opts, get_md5=True )
+                cur.execute("""
+                insert into JOBs
+                (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
+                values
+                (NULL,       '%s',        '%s',        '%s', 'Normalize',           '%s')
+                """ % (parameters,
+                       time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+                       time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
+            except lite.IntegrityError:
+                pass
+            jobid = get_jobid(cur)
+            add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
+            input_bed = get_path_id(cur, outbam, opts.workdir)
+            try:
+                cur.execute("""
+                insert into NORMALIZE_OUTPUTs
+                (Id  , JOBid,     Input, N_columns,   N_filtered, BAM_filter, Cis_percentage_Raw, Cis_percentage_Norm, Slope_700kb_10Mb,   Resolution,      Normalization,      Factor)
+                values
+                (NULL,    %d,        %d,        %d,           %d,         %d,                 %f,                  %f,               %f,           %d,               '%s',          %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns, 0, 0, 0, 0, opts.reso, 'custom', 0))
+            except lite.OperationalError:
+                print('WARNING: Normalized table not written!!!')
         print_db(cur, 'PATHs')
         #print_db(cur, 'MAPPED_OUTPUTs')
         #print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
         print_db(cur, 'INTERSECTION_OUTPUTs')
         print_db(cur, 'FILTER_OUTPUTs')
+        if bias_file:
+            print_db(cur, 'NORMALIZE_OUTPUTs')
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
