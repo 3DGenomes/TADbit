@@ -13,6 +13,7 @@ from sys                             import stdout
 from pickle                          import load
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
+from subprocess                      import Popen, PIPE
 
 from pysam                           import AlignmentFile
 
@@ -119,7 +120,7 @@ def run(opts):
 
     norm = 'norm' if opts.norm else 'raw'
     
-    if opts.format == 'matrix':
+    if opts.format == 'matrix' or opts.format == 'hic':
         bamfile = AlignmentFile(mreads, 'rb')
         bam_refs = bamfile.references
         bam_lengths = bamfile.lengths
@@ -135,11 +136,6 @@ def run(opts):
                                                      for bam_ref_idx in bam_refs_idx]]
         sections = OrderedDict(list(zip(bam_refs,
                                    [x for x in bam_lengths])))
-        total = 0
-        section_pos = OrderedDict()
-        for crm in sections:
-            section_pos[crm] = (total, total + sections[crm])
-            total += sections[crm]
         printime('Getting %s matrices' % norm)
         matrix, bads1, bads2, regions, name, bin_coords = get_matrix(
             mreads, opts.reso,
@@ -156,37 +152,91 @@ def run(opts):
         b1, e1 = 0, e1 - b1
         b2, e2 = 0, e2 - b2
 
-        if opts.row_names:
-            starts = [start1, start2]
-            ends = [end1, end2]
-            row_names = (
-                (reg, p + 1 , p + opts.reso)
-                for r, reg in enumerate(regions)
-                for p in range(starts[r] if r < len(starts)
-                               and starts[r] else 0,
-                               ends[r] if r < len(ends)
-                               and ends[r] else sections[reg],
-                               opts.reso))
-
-        printime(' - Writing: %s' % norm)
-        out = open(opts.out, 'w')
-        for reg in regions:
-            out.write('# CRM %s\t%d\n' % (reg, sections[reg]))
-        if region2:
-            out.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
-            out.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+        if opts.format == 'matrix':
+            if opts.row_names:
+                starts = [start1, start2]
+                ends = [end1, end2]
+                row_names = (
+                    (reg, p + 1 , p + opts.reso)
+                    for r, reg in enumerate(regions)
+                    for p in range(starts[r] if r < len(starts)
+                                   and starts[r] else 0,
+                                   ends[r] if r < len(ends)
+                                   and ends[r] else sections[reg],
+                                   opts.reso))
+    
+            printime(' - Writing: %s' % norm)
+            out = open(opts.out, 'w')
+            for reg in regions:
+                out.write('# CRM %s\t%d\n' % (reg, sections[reg]))
+            if region2:
+                out.write('# BADROWS %s\n' % (','.join([str(b) for b in bads1])))
+                out.write('# BADCOLS %s\n' % (','.join([str(b) for b in bads2])))
+            else:
+                out.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
+            if opts.row_names:
+                out.write('\n'.join('%s\t%d\t%d\t' % (next(row_names)) +
+                                    '\t'.join(str(matrix.get((i, j), 0))
+                                              for i in range(b1, e1))
+                                    for j in range(b2, e2)) + '\n')
+            else:
+                out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0))
+                                              for i in range(b1, e1))
+                                    for j in range(b2, e2)) + '\n')
+            out.close()
         else:
-            out.write('# MASKED %s\n' % (','.join([str(b) for b in bads1])))
-        if opts.row_names:
-            out.write('\n'.join('%s\t%d\t%d\t' % (next(row_names)) +
-                                '\t'.join(str(matrix.get((i, j), 0))
-                                          for i in range(b1, e1))
-                                for j in range(b2, e2)) + '\n')
-        else:
-            out.write('\n'.join('\t'.join(str(matrix.get((i, j), 0))
-                                          for i in range(b1, e1))
-                                for j in range(b2, e2)) + '\n')
-        out.close()
+            printime(' - Writing: %s' % norm)
+            tmp_chromsize = path.join(tmpdir,'hic_%s.chrom.sizes'% param_hash)
+            out = open(tmp_chromsize, 'w')
+            for reg in regions:
+                out.write('%s\t%d\n' % (reg, sections[reg]))
+            out.close()
+            tmpfl = path.join(tmpdir,'hic_export_%s.tsv'% param_hash)
+            out = open(tmpfl, 'w')
+            out_ln = '0\t%s\t%d\t0\t1\t%s\t%d\t1\t1%f'if opts.norm else '0\t%s\t%d\t0\t1\t%s\t%d\t1\t1%d'                
+            if region1:
+                starts = [start1, start2]
+                ends = [end1, end2]
+                row_names = [(reg, pos+1) for r, reg in enumerate(regions)
+                             for pos in range(starts[r] if r < len(starts)
+                                            and starts[r] else 0,
+                                            ends[r] if r < len(ends)
+                                            and ends[r] else sections[reg],
+                                            opts.reso)]
+                out.write('\n'.join(out_ln % (row_names[i][0],
+                                          row_names[i][1],
+                                          row_names[j][0],
+                                          row_names[j][1],
+                                          matrix.get((i,j),0))
+                                    for i in range(b1, e1)
+                                    for j in range(i, e2)))
+            else:
+                totals = OrderedDict()
+                total_num = 0
+                for c in sections:
+                    totals[c] = (total_num, total_num + sections[c] // opts.reso + 1)
+                    total_num += sections[c] // opts.reso + 1
+                
+                for crm1_id, crm1 in enumerate(sections):
+                    b1, e1 = totals[crm1]
+                    row_names1 = dict((b1+ipos,pos+1) for ipos,pos in enumerate(range(0,sections[crm1],opts.reso)))
+                    for crm2 in list(sections.keys())[crm1_id:]:
+                        b2, e2 = totals[crm2]
+                        row_names2 = dict((b2+ipos,pos+1) for ipos,pos in enumerate(range(0,sections[crm2],opts.reso)))
+                        out.write('\n'.join(out_ln % (crm1,row_names1[i],
+                                                      crm2,row_names2[j],
+                                                      matrix.get((i,j),0))
+                                    for i in range(b1, e1)
+                                    for j in range(max(b2,i), e2)))
+            
+            out.close()
+            do_norm = '-n' if opts.norm else ''
+            _ = Popen('java -Xmx32g -jar %s pre -j %d %s %s %s %s'%(opts.juicerjar,
+                                                         opts.cpus,
+                                                         do_norm,
+                                                         tmpfl,
+                                                         opts.out,
+                                                         tmp_chromsize), shell=True, universal_newlines=True).communicate()
     elif opts.format == 'text':
         printime('Getting and writing matrix to text format')
         fnames = write_matrix(
@@ -223,7 +273,8 @@ def run(opts):
     if clean:
         printime('Cleaning')
         system('rm -rf %s '% tmpdir)
-    
+
+
 def check_options(opts):
     mkdir(opts.workdir)
 
@@ -233,6 +284,10 @@ def check_options(opts):
     if not path.exists(opts.workdir):
         raise IOError('ERROR: workdir not found.')
 
+    if opts.format=='hic':
+        if not opts.juicerjar:
+            raise IOError('ERROR: juicer jar file needed for "hic" export.')
+            
     # for LUSTRE file system....
     if 'tmpdb' in opts and opts.tmpdb:
         dbdir = opts.tmpdb
@@ -274,7 +329,7 @@ def populate_args(parser):
                         help='''resolution at which to output matrices''')
     
     oblopt.add_argument('--format', dest='format', action='store',
-                        default='text', choices=['text', 'matrix', 'cooler'],
+                        default='text', choices=['text', 'matrix', 'cooler', 'hic'],
                         help='''[%(default)s] can be any of [%(choices)s]''')
 
     oblopt.add_argument('-o', '--output', dest='out', metavar="STR",
@@ -321,6 +376,12 @@ def populate_args(parser):
                         default=None, type=str,
                         help='''[fasta header] chromosome name(s). Order of chromosomes
                         in the output matrices.''')
+
+    glopts.add_argument('--juicerjar', dest='juicerjar', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''path to the juicer tools jar file needed to export
+                        matrices to hic format (check https://github.com/aidenlab/juicer/wiki/Download).
+                        Note that you also need java available in the path.''')
 
     outopt.add_argument('--rownames', dest='row_names', action='store_true',
                         default=False,
