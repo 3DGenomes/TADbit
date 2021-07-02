@@ -250,7 +250,7 @@ def run(opts):
             nchunks=opts.nchunks, verbose=not opts.quiet,
             extra=param_hash, cooler=False, clean=clean,
             chr_order=opts.chr_name)
-        rename(fnames.values()[0],opts.out)
+        rename(list(fnames.values())[0],opts.out)
     elif opts.format == 'cooler':
         printime('Getting and writing matrix to cooler format')
         fnames = write_matrix(

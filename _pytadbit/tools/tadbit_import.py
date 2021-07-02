@@ -32,6 +32,11 @@ from pytadbit.mapping.analyze        import plot_distance_vs_interactions
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.utils.extraviews       import nicer
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 DESC = 'import Hi-C data to TADbit toy BAM'
 
 def run(opts):
