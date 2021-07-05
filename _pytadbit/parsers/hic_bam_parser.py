@@ -8,7 +8,10 @@ from builtins   import next
 
 from future import standard_library
 standard_library.install_aliases()
-from pickle                       import load, dump
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
 from time                         import sleep, time
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
