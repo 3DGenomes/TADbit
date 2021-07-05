@@ -17,9 +17,7 @@ try:
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib.ticker    import FuncFormatter
-    
-    if "mpl_toolkits.legacy_colorbar" in plt.rcParams:
-        plt.rcParams["mpl_toolkits.legacy_colorbar"] = False
+
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -877,9 +875,9 @@ def plot_2d_optimization_result(result,
     grid.axes_llc.set_ylabel(axes[3], size=9)
 
     # Color bar settings
-    grid.cbar_axes[0].colorbar(im)
-    grid.cbar_axes[0].set_ylabel('Correlation value', size=9)
-    grid.cbar_axes[0].tick_params(labelsize=9)
+    cb = plt.colorbar(im, cax=grid.cbar_axes[0])
+    cb.ax.set_ylabel('Correlation value', size=9)
+    cb.ax.tick_params(labelsize=9)
 
     title = 'Optimal IMP parameters\n'
     heatmap.suptitle(title, size=12)
