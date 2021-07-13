@@ -4,7 +4,11 @@
 from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
-from pickle                          import load, dump, HIGHEST_PROTOCOL
+try:
+    from pickle5                      import load  # python < 3.8
+except ImportError:
+    from pickle                       import load
+from pickle                           import dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn, catch_warnings, simplefilter    
@@ -1100,6 +1104,10 @@ class StructuralModels(object):
            micrometers) *5-* a list of number of (accessibles, inaccessible) for
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
+
+           if ploting, returns values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         cluster = cluster or -1
         if models:
@@ -1143,7 +1151,7 @@ class StructuralModels(object):
         #elif not axe:
         #    plt.show()
         #plt.close('all')
-
+        return accper, errorp, errorn
 
     def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
@@ -1207,6 +1215,9 @@ class StructuralModels(object):
            generated (1 column per step + 1 for particle number).
         :param True plot: e.g. if False, only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1239,6 +1250,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def _get_interactions(self, models, cutoff):
         interactions = [[] for _ in range(self.nloci)]
@@ -1288,6 +1300,9 @@ class StructuralModels(object):
            otherwise, the median.
         :param True plot: e.g. only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1320,6 +1335,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def model_consistency(self, cutoffs=None, models=None,
                           cluster=None, axe=None, savefig=None, savedata=None,
@@ -1413,9 +1429,11 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
-        elif show:
+            plt.close('all')
+        elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
+        return consistencies
 
     def walking_dihedral(self, models=None, cluster=None, steps=(1, 3),
                          span=(-2, 1, 0, 1, 3), error=False,
@@ -1448,6 +1466,8 @@ class StructuralModels(object):
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
         ::
 
@@ -1513,6 +1533,8 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
+        return radsk, errorp, errorn
+
     def walking_angle(self, models=None, cluster=None, steps=(1, 3), signed=True,
                       savefig=None, savedata=None, axe=None, plot=True,
                       error=False):
@@ -1540,6 +1562,9 @@ class StructuralModels(object):
         :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
+
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
 
         ::
@@ -1606,6 +1631,7 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
 
+        return radsk, errorp, errorn
         #if savefig:
         #    tadbit_savefig(savefig)
         #elif not axe:
@@ -2749,8 +2775,8 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
-    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
-                               plot=True):
+    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, 
+                               savedata=None, plot=True):
         """
         Calculates the persistence length (Lp) of given section of the model.
         Persistence length is calculated according to [Bystricky2004]_ :
@@ -2984,7 +3010,7 @@ class StructuralModels(object):
                     s=40,
                     color=[(0.15, 0.15, 0.15) if i else (0.7, 0.7, 0.7)
                            for i in self._zeros], clip_on=False,
-                    zorder=100, edgecolor='k')
+                    zorder=100, alpha=0.75)
         axe.set_ylim((where, axe.get_ylim()[1]))
 
     def _generic_per_particle_plot(self, steps, distsk, error, errorp, errorn,
@@ -3039,9 +3065,10 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
+            plt.close('all')
         elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
 
 
 class ClusterOfModels(dict):

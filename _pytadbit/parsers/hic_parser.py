@@ -12,7 +12,10 @@ from io                              import IOBase
 from collections                     import OrderedDict
 from warnings                        import warn
 from math                            import sqrt, isnan
-from pickle                          import load
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
 
 from pysam                           import AlignmentFile
 
@@ -439,7 +442,6 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         elif isinstance(thing, file_types):
             parser = parser or (abc_reader if __is_abc(thing) else autoreader)
             matrix, size, header, masked, sym = parser(thing)
-            print(header)
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
