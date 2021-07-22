@@ -26,6 +26,9 @@ from pytadbit.utils.sqlite_utils     import digest_parameters
 
 DESC = 'export Hi-C data to other formats'
 
+ZOOMS_COOLER = [10000, 25000, 50000, 100000, 250000, 500000,
+                1000000, 2500000, 5000000, 10000000]
+
 def run(opts):
     check_options(opts)
     param_hash = digest_parameters(opts, extra=['quiet'])
@@ -264,6 +267,28 @@ def run(opts):
             nchunks=opts.nchunks, verbose=not opts.quiet,
             extra=param_hash, cooler=True, clean=clean,
             chr_order=opts.chr_name)
+        for zoom_c in ZOOMS_COOLER:
+            if opts.reso >= zoom_c:
+                continue
+            if start1 is not None and end1:
+                if end1 - start1 < zoom_c:
+                    continue
+            if start2 is not None and end2:
+                if end2 - start2 < zoom_c:
+                    continue
+            printime('Building cooler zoom %d'%zoom_c)
+            _ = write_matrix(
+                mreads, zoom_c,
+                None,
+                outdir, filter_exclude=opts.filter,
+                normalizations=['raw'],
+                region1=region1, start1=start1, end1=end1,
+                region2=region2, start2=start2, end2=end2,
+                tmpdir=tmpdir, append_to_tar=None, ncpus=opts.cpus,
+                nchunks=opts.nchunks, verbose=not opts.quiet,
+                extra=param_hash, cooler=True,
+                cooler_name=fnames['NRM' if opts.norm else 'RAW'],
+                clean=clean, chr_order=opts.chr_name)
         rename(fnames['NRM' if opts.norm else 'RAW'],opts.out)
         if 'NRM' in fnames and not opts.norm:
             remove(fnames['NRM'])

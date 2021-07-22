@@ -896,7 +896,8 @@ def write_matrix(inbam, resolution, biases, outdir,
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
                  half_matrix=True, nchunks=100, tmpdir='.', append_to_tar=None,
-                 ncpus=8, cooler=False, row_names=False, chr_order=None, verbose=True):
+                 ncpus=8, cooler=False, cooler_name=None, row_names=False,
+                 chr_order=None, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -931,6 +932,8 @@ def write_matrix(inbam, resolution, biases, outdir,
     :param None append_to_tar: path to a TAR file were generated matrices will
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
+    :param False cooler: generate cooler file
+    :param None cooler_name: append to existing multi-resolution cooler
     :param True verbose: speak
     :param False row_names: Writes geneomic coocrdinates instead of bins.
        WARNING: results in two extra columns
@@ -1018,15 +1021,21 @@ def write_matrix(inbam, resolution, biases, outdir,
         if 'decay' in normalizations or 'raw&decay' in normalizations:
             raise Exception('ERROR: decay and raw&decay matrices cannot be exported '
                 'to cooler format. Cooler only accepts weights per column/row')
-        fnam = 'raw_%s_%s%s.mcool' % (name,
-                                    nicer(resolution).replace(' ', ''),
-                                    ('_' + extra) if extra else '')
-        if os.path.exists(os.path.join(outdir, fnam)):
-            os.remove(os.path.join(outdir, fnam))
-        out_raw = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+        if cooler_name:
+            if not os.path.exists(cooler_name):
+                raise Exception('ERROR: cooler file does not exist.\n')
+            out_raw = cooler_file(cooler_name, resolution, sections, regions)
+            outfiles.append(cooler_name)
+        else:
+            fnam = 'raw_%s_%s%s.mcool' % (name,
+                                        nicer(resolution).replace(' ', ''),
+                                        ('_' + extra) if extra else '')
+            if os.path.exists(os.path.join(outdir, fnam)):
+                os.remove(os.path.join(outdir, fnam))
+            out_raw = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+            outfiles.append((os.path.join(outdir, fnam), fnam))
         out_raw.create_bins()
         out_raw.prepare_matrix(start_bin1, start_bin2)
-        outfiles.append((os.path.join(outdir, fnam), fnam))
     else:
         if 'raw' in normalizations:
             fnam = 'raw_%s_%s%s.abc' % (name,
@@ -1211,7 +1220,7 @@ def write_matrix(inbam, resolution, biases, outdir,
     else:
         if cooler:
             fnames['RAW'] = out_raw.name
-            if 'norm' in normalizations:
+            if 'norm' in normalizations and not cooler_name:
                 fnam = 'nrm_%s_%s%s.mcool' % (name,
                                             nicer(resolution).replace(' ', ''),
                                             ('_' + extra) if extra else '')

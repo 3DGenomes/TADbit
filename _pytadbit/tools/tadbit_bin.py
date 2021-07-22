@@ -48,7 +48,7 @@ def get_sections(mreads, chr_name):
     bam_lengths = bamfile.lengths
     if chr_name:
         bam_refs_idx = [bam_refs.index(chr_ord)
-                        for chr_ord in opts.chr_name if chr_ord in bam_refs]
+                        for chr_ord in chr_name if chr_ord in bam_refs]
         if not bam_refs_idx :
             raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
                 Found %s in bam file \n''' % (' '.join(bam_refs)))
