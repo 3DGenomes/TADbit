@@ -884,7 +884,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in list(self.bads.keys())
+                                                       for k in self.bads
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,
@@ -1173,7 +1173,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in list(self.bads.keys())
+                                                       for k in self.bads
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,

@@ -23,6 +23,7 @@ from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
+from numpy                           import zeros_like
 from numpy                           import array
 from numpy                           import ma, log, log2
 from matplotlib                      import pyplot as plt
@@ -250,6 +251,12 @@ def run(opts):
                 matrix = array([array([matrix.get((i, j), 0)
                                        for i in range(b1, e1)])
                                 for j in range(b2, e2)])
+                m = zeros_like(matrix)
+                for bad1 in bads1:
+                    m[:,bad1] = 1
+                    for bad2 in bads2:
+                        m[bad2,:] = 1
+                matrix = ma.masked_array(matrix, m)
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s%s.%s' % (
                     'nrm' if norm == 'norm' else norm[:3], name,
