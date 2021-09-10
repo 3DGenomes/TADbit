@@ -180,7 +180,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         create table PARSED_OUTPUTs
            (Id integer primary key,
             PATHid int,
-            Total_interactions int,
+            Total_uniquely_mapped int,
             Multiples text,
             unique (PATHid))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -240,7 +240,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             try:
                 cur.execute("""
                 insert into PARSED_OUTPUTs
-                (Id  , PATHid, Total_interactions, Multiples)
+                (Id  , PATHid, Total_uniquely_mapped, Multiples)
                 values
                 (NULL,     %d,      %d,        '%s')
                 """ % (get_path_id(cur, outfiles[count], opts.workdir),

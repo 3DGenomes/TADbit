@@ -1395,11 +1395,11 @@ class Experiment(object):
         if where == 'up':
             for i in range(int(end - start)):
                 for j in range(i, int(end - start)):
-                    matrix[i][j] = np.NaN
+                    matrix[i][j] = np.nan if normalized else 0
         elif where == 'down':
             for i in range(int(end - start)):
                 for j in range(i + 1):
-                    matrix[i][j] = np.NaN
+                    matrix[i][j] = np.nan if normalized else 0
         with np.errstate(divide='ignore', invalid='ignore'):
             matrix = np.ma.masked_where(np.isnan(matrix), fun(matrix))
         if relative:
