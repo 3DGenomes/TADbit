@@ -418,6 +418,7 @@ def populate_args(parser):
                         choices=['Vanilla', 'ICE', 'SQRT', 'oneD', 'custom'],
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters. Choices: %(choices)s''')
+
     normpt.add_argument('--biases_path', dest='biases_path', type=str,
                         default=None, help='''biases file to compute decay.
                         REQUIRED with "custom" normalization. Format: single

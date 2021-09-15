@@ -95,7 +95,7 @@ def run(opts):
             rich_in_A=rich_in_A, show_compartment_labels=rich_in_A is not None,
             savecorr=cmprt_dir if opts.savecorr else None,
             max_ev=n_evs,
-            ev_index=opts.ev_index,
+            ev_index=opts.ev_index, smoothing_window=opts.smoothing_window,
             vmin=None if opts.fix_corr_scale else 'auto',
             vmax=None if opts.fix_corr_scale else 'auto')
 
@@ -501,6 +501,14 @@ def populate_args(parser):
                         action='store', default=3, type=int,
                         help='''[%(default)s] Number of eigenvectors to
                         store. if "-1" all eigenvectors will be calculated''')
+
+    cmopts.add_argument('--smoothing_window', dest='smoothing_window', metavar="INT",
+                        action='store', default=0, type=int,
+                        help='''[%(default)s] window size for smoothing the chomosomic
+                        matrix before getting eigenvectors. The smooth is done 
+                        using median_filter from  scipy.ndimage.
+                        The parameter is passed as `size` to the median_filter 
+                        function.''')
 
     cmopts.add_argument('--ev_index', dest='ev_index', nargs='+',
                         type=int, metavar='INT', default=None,
