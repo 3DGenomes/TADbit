@@ -540,3 +540,59 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         len(badcol), countZ, countL, countU, size, float(len(badcol)) / size * 100))
 
     return badcol
+
+
+def filter_by_local_ratio(hic_data, min_ratio=1, min_count=None, 
+                          base_position=0, next_position=1, last_position=None):
+    """
+
+    :param hic_data: HiCdata object
+    :param 1 cut_ratio: ratio of cis/trans interactions. Bins with lower than 
+       cut_ratio interactions will be pre-discarded. Pre-discarded bins at this
+       stage will also be used to define another cut-off: the minimum number of 
+       interactions expected by bin, this cut-off will be defined as the 95 
+       percentile of pre-discarded bins.
+    :param None min_count: minimum interactions required per bin. By default 
+        will be estimated from the distributiion of interaction in bins with 
+        low ratio (defined as percentile 95 of interactions in this set).
+    :param 0 base_position: start of the interval defining cis-interactions
+    :param 1 next_position: end of the interval defining cis-interactions, 
+       and start of the interval defining trans-interactions 
+       (ideally it should correspond to 1 Mb).
+    :param 5 last_position: end of the interval defining trans-interactions
+       (by default it 5 times the value of `next_position`).
+
+    """
+
+    size = len(hic_data)
+
+    ratio = {}
+    nears = {}
+
+    for beg, end in hic_data.section_pos.values():
+        for i in range(beg, end - last_position):
+            near = sum(hic_data[i, i + j] for j in range(base_position, next_position))
+            away = sum(hic_data[i, i + j] for j in range(next_position, last_position))
+            try:
+                ratio[i] = near / away
+                nears[i] = near
+            except ZeroDivisionError:
+                pass
+        # if we are at the end of the chromosome we look for interactions backward
+        for i in range(end - last_position, end):
+            near = sum(hic_data[i - j, i] for j in range(base_position, next_position))
+            away = sum(hic_data[i - j, i] for j in range(next_position, last_position))
+            try:
+                ratio[i] = near / away
+                nears[i] = near
+            except ZeroDivisionError:
+                pass
+
+    # define filter for minimum interactions per bin
+    if min_count is not None:
+        min_count = np.percentile(
+            [nears[k] for k in range(size) 
+             if ratio.get(k, 0) < min_ratio and nears.get(k, 0) >= 10], 95)
+    
+    return dict((k, True) for k in range(size) 
+                if ratio.get(k, 0) < min_ratio or nears[k] < min_count)

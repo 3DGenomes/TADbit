@@ -35,7 +35,7 @@ from pytadbit.parsers.hic_bam_parser      import printime, print_progress
 from pytadbit.parsers.hic_bam_parser      import filters_to_bin
 from pytadbit.parsers.bed_parser          import parse_mappability_bedGraph
 from pytadbit.utils.extraviews            import nicer
-from pytadbit.utils.hic_filtering         import filter_by_cis_percentage
+from pytadbit.utils.hic_filtering         import filter_by_local_ratio
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
@@ -762,8 +762,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         raise Exception("ERROR: only one chromosome can't filter by "
                         "cis-percentage, set min_count instead")
     elif min_count is None and len(bamfile.references) > 1:
-        badcol = filter_by_cis_percentage(
-            cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
+        badcol = filter_by_local_ratio(
+            hic_data=hic_data, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
             size=total, savefig=None)
     else:
         print('      -> too few interactions defined as less than %9d '
