@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Installing TADbit on GNU/Linux &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +31,8 @@
         <li class="right" >
           <a href="index.html" title="Welcome to TADbit’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installing TADbit on GNU/Linux</a></li> 
       </ul>
     </div>  
 
@@ -40,53 +41,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installing-tadbit-on-gnu-linux">
-<h1><a class="toc-backref" href="#id1">Installing TADbit on GNU/Linux</a><a class="headerlink" href="#installing-tadbit-on-gnu-linux" title="Permalink to this headline">¶</a></h1>
-<div class="contents topic" id="contents">
-<p class="topic-title">Contents</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="#installing-tadbit-on-gnu-linux" id="id1">Installing TADbit on GNU/Linux</a></p>
-<ul>
-<li><p><a class="reference internal" href="#dependencies" id="id2">Dependencies</a></p>
-<ul>
-<li><p><a class="reference internal" href="#conda" id="id3">Conda</a></p></li>
-<li><p><a class="reference internal" href="#python-libraries" id="id4">Python libraries</a></p></li>
-<li><p><a class="reference internal" href="#imp-3d-modeling" id="id5">IMP - 3D modeling</a></p>
-<ul>
-<li><p><a class="reference internal" href="#from-the-repositories" id="id6">From the repositories</a></p></li>
-<li><p><a class="reference internal" href="#from-source" id="id7">From source</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#mcl-clustering" id="id8">MCL - clustering</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#gem-mapper" id="id9">GEM Mapper</a></p></li>
-<li><p><a class="reference internal" href="#dryhic-for-oned-normalization" id="id10">DryHiC for oneD normalization</a></p></li>
-<li><p><a class="reference internal" href="#dsrc-fastq-compressor" id="id11">DSRC FASTQ compressor</a></p>
-<ul>
-<li><p><a class="reference internal" href="#chimera-visualization" id="id12">Chimera - visualization</a></p></li>
-<li><p><a class="reference internal" href="#liftover" id="id13">LiftOver</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#tadbit" id="id14">TADbit</a></p>
-<ul>
-<li><p><a class="reference internal" href="#conda-builds" id="id15">Conda builds</a></p></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*</p>
-</div>
-<p><strong>TADbit requires python2 &gt;= 2.6 or python3 &gt;= 3.6 as well as several dependencies that
-are listed below.</strong></p>
-<div class="section" id="dependencies">
-<h2><a class="toc-backref" href="#id2">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="conda">
-<h3><a class="toc-backref" href="#id3">Conda</a><a class="headerlink" href="#conda" title="Permalink to this headline">¶</a></h3>
+  <section id="installing-tadbit-on-gnu-linux">
+<h1>Installing TADbit on GNU/Linux<a class="headerlink" href="#installing-tadbit-on-gnu-linux" title="Permalink to this headline">¶</a></h1>
+<p><strong>TADbit requires python2 &gt;= 2.6 or python3 &gt;= 3.6 as well as several
+dependencies that are listed below.</strong></p>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<section id="conda">
+<h3>Conda<a class="headerlink" href="#conda" title="Permalink to this headline">¶</a></h3>
 <p>Conda (<a class="reference external" href="http://conda.pydata.org/docs/index.html">http://conda.pydata.org/docs/index.html</a>) is a package manager,
 mainly hosting python programs, that is very useful when no root access
 is available and the softwares have complicated dependencies.</p>
@@ -145,21 +107,24 @@ installing: requests-2.19.1-py27_0 ...
 installing: conda-4.5.11-py27_0 ...
 installation finished.</pre>
 <pre class="ansi-block literal-block">Python 2.7.15 :: Anaconda, Inc.</pre>
-</div>
-<div class="section" id="python-libraries">
-<h3><a class="toc-backref" href="#id4">Python libraries</a><a class="headerlink" href="#python-libraries" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="python-libraries">
+<h3>Python libraries<a class="headerlink" href="#python-libraries" title="Permalink to this headline">¶</a></h3>
 <p><strong>Required:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">scipy</span>
 <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span>
-<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">matplotlib</span>
+</pre></div>
+</div>
+<p>Optional packages (but <strong>highly</strong> recommended):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">matplotlib</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>Alternative install</strong>, you can install <em>python-setuptools</em>
-and use easy_install to get these packages (e.g.
-“<code class="docutils literal notranslate"><span class="pre">easy_install</span> <span class="pre">scipy</span></code>”).</p>
+<p><strong>Alternative install</strong>, you can install <em>python-setuptools</em></p>
 </div>
+<p>and use easy_install to get these packages
+(e.g. “<code class="docutils literal notranslate"><span class="pre">easy_install</span> <span class="pre">scipy</span></code>”).</p>
 <p>With conda you can install most of the needed dependencies:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
@@ -179,11 +144,11 @@ conda install -y -q jupyter                                    <span class="c1">
 conda install -y -q -c bioconda sra-tools                      <span class="c1"># to download raw data from released experiment</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="imp-3d-modeling">
-<h3><a class="toc-backref" href="#id5">IMP - 3D modeling</a><a class="headerlink" href="#imp-3d-modeling" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="from-the-repositories">
-<h4><a class="toc-backref" href="#id6">From the repositories</a><a class="headerlink" href="#from-the-repositories" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="imp-3d-modeling">
+<h3>IMP - 3D modeling<a class="headerlink" href="#imp-3d-modeling" title="Permalink to this headline">¶</a></h3>
+<section id="from-the-repositories">
+<h4>From the repositories<a class="headerlink" href="#from-the-repositories" title="Permalink to this headline">¶</a></h4>
 <p>Since version 2.5 IMP is available in several repositories, like Ubuntu</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">imp</span>
 </pre></div>
@@ -193,14 +158,14 @@ conda install -y -q -c bioconda sra-tools                      <span class="c1">
 </pre></div>
 </div>
 <p>These options may be easier than the source compilation.</p>
-</div>
-<div class="section" id="from-source">
-<h4><a class="toc-backref" href="#id7">From source</a><a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="from-source">
+<h4>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h4>
 <p>Check <a class="reference external" href="https://integrativemodeling.org/download-linux.html">https://integrativemodeling.org/download-linux.html</a></p>
-</div>
-</div>
-<div class="section" id="mcl-clustering">
-<h3><a class="toc-backref" href="#id8">MCL - clustering</a><a class="headerlink" href="#mcl-clustering" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="mcl-clustering">
+<h3>MCL - clustering<a class="headerlink" href="#mcl-clustering" title="Permalink to this headline">¶</a></h3>
 <p>MCL is the program used for clustering the 3D models generated by IMP.
 It can be downloaded from <a class="reference external" href="http://micans.org/mcl/">http://micans.org/mcl/</a>; on Debian/Ubuntu
 machines it can be automatically installed with:</p>
@@ -214,12 +179,21 @@ machines it can be automatically installed with:</p>
 <p><em>Note: if the MCL executable is not found by TADbit, an alternative
 clustering method will be used. Nevertheless we strongly recommend to
 use MCL.</em></p>
+</section>
+</section>
+<section id="gem-mapper">
+<h2>GEM Mapper<a class="headerlink" href="#gem-mapper" title="Permalink to this headline">¶</a></h2>
+<p>The default mapper in TADbit is GEM, but bowtie2 and hisat2 are also
+supported.</p>
+<p>GEM version 3, bowtie2 and hisat2 are available in bioconda.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
+
+conda -y -q -c bioconda gem3-mapper
+conda -y -q -c bioconda bowtie2
+conda -y -q -c bioconda hisat2
+</pre></div>
 </div>
-</div>
-<div class="section" id="gem-mapper">
-<h2><a class="toc-backref" href="#id9">GEM Mapper</a><a class="headerlink" href="#gem-mapper" title="Permalink to this headline">¶</a></h2>
-<p>The default mapper in TADbit is GEM, but bowtie2 and hisat2 are also supported.</p>
-<p>To install GEM version 2, go to the download page:
+<p>If you prefer the old good GEM version 2, go to the download page:
 <a class="reference external" href="https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/">https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/</a>
 and download the <code class="docutils literal notranslate"><span class="pre">i3</span></code> version (the other version is for older
 computers, and you usually won’t have to use it).</p>
@@ -229,14 +203,6 @@ wget -nv -O GEM.tbz2 https://sourceforge.net/projects/gemlibrary/files/gem-libra
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">2019-01-15 14:12:09 URL:https://netcologne.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2 [33847526/33847526] -&gt; &quot;GEM.tbz2&quot; [1]</pre>
-<p>GEM version 3, bowtie2 and hisat2 are available in bioconda.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
-
-conda -y -q -c bioconda gem3-mapper
-conda -y -q -c bioconda bowtie2
-conda -y -q -c bioconda hisat2
-</pre></div>
-</div>
 <p>Uncompress the archive:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
@@ -290,9 +256,9 @@ rm -rf GEM-binaries-Linux-x86_64-core_i3-20121106-022124
 rm -f GEM.tbz2
 </pre></div>
 </div>
-</div>
-<div class="section" id="dryhic-for-oned-normalization">
-<h2><a class="toc-backref" href="#id10">DryHiC for oneD normalization</a><a class="headerlink" href="#dryhic-for-oned-normalization" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dryhic-for-oned-normalization">
+<h2>DryHiC for oneD normalization<a class="headerlink" href="#dryhic-for-oned-normalization" title="Permalink to this headline">¶</a></h2>
 <p>Install dryhic from: <a class="reference external" href="https://github.com/qenvio/dryhic">https://github.com/qenvio/dryhic</a></p>
 <p>From an R console type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="s2">&quot;devtools&quot;</span><span class="p">)</span>
@@ -370,9 +336,9 @@ installing to /home/fransua/R/x86_64-pc-linux-gnu-library/3.4/dryhic/libs
 ** building package indices
 ** testing if installed package can be loaded
 * DONE (dryhic)</pre>
-</div>
-<div class="section" id="dsrc-fastq-compressor">
-<h2><a class="toc-backref" href="#id11">DSRC FASTQ compressor</a><a class="headerlink" href="#dsrc-fastq-compressor" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dsrc-fastq-compressor">
+<h2>DSRC FASTQ compressor<a class="headerlink" href="#dsrc-fastq-compressor" title="Permalink to this headline">¶</a></h2>
 <p>DSRC is a FASTQ compressor, it’s not needed, but we use it as the size
 of the files is significantly smaller than using gunzip (&gt;30%), and,
 more importantly, the access to them can be parallelized, and is much
@@ -395,16 +361,16 @@ chmod +x dsrc
 mv dsrc ~/miniconda2/bin/
 </pre></div>
 </div>
-<div class="section" id="chimera-visualization">
-<h3><a class="toc-backref" href="#id12">Chimera - visualization</a><a class="headerlink" href="#chimera-visualization" title="Permalink to this headline">¶</a></h3>
+<section id="chimera-visualization">
+<h3>Chimera - visualization<a class="headerlink" href="#chimera-visualization" title="Permalink to this headline">¶</a></h3>
 <p>Chimera is a program used for visualization and analysis of molecular
 structures. It is used in TADbit to visualize the generated 3D models.
 Chimera is available at: <a class="reference external" href="http://www.cgl.ucsf.edu/chimera/">http://www.cgl.ucsf.edu/chimera/</a></p>
 <p><em>This software is only needed for the visualization of 3D models from
 inside TADbit.</em></p>
-</div>
-<div class="section" id="liftover">
-<h3><a class="toc-backref" href="#id13">LiftOver</a><a class="headerlink" href="#liftover" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="liftover">
+<h3>LiftOver<a class="headerlink" href="#liftover" title="Permalink to this headline">¶</a></h3>
 <p>TADbit provides a wrapper for the LiftOver tool [Fujita2011]_ (download
 it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admin/exe/">http://hgdownload.cse.ucsc.edu/admin/exe/</a> ).</p>
 <p>This can be used to ease the conversion of genomic TAD coordinates
@@ -413,10 +379,10 @@ it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admi
 <p class="admonition-title">Note</p>
 <p>A ‘chain’ file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/">http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/</a></p>
 </div>
-</div>
-</div>
-<div class="section" id="tadbit">
-<h2><a class="toc-backref" href="#id14">TADbit</a><a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="tadbit">
+<h2>TADbit<a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h2>
 <p>Once all the needed library/software have been installed, TADbit can be
 downloaded, unpacked and installed as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="mi">3</span><span class="n">DGenomes</span><span class="o">/</span><span class="n">tadbit</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">O</span> <span class="n">tadbit</span><span class="o">.</span><span class="n">zip</span>
@@ -445,19 +411,36 @@ successfully.</p>
 <span class="n">python</span> <span class="n">test_all</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<div class="section" id="conda-builds">
-<h3><a class="toc-backref" href="#id15">Conda builds</a><a class="headerlink" href="#conda-builds" title="Permalink to this headline">¶</a></h3>
-<p>Alternatively we regularly build a conda package in bioconda. The packages come without IMP and with gem v3 as the default mapper</p>
+<section id="conda-builds">
+<h3>Conda builds<a class="headerlink" href="#conda-builds" title="Permalink to this headline">¶</a></h3>
+<p>Alternatively we regularly build a conda package in bioconda. The
+packages come without IMP and with gem v3 as the default mapper</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
 conda install -c bioconda tadbit
 </pre></div>
 </div>
+<p>If you want to install TADbit with IMP in conda this line will create a
+environment with them:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
+
+conda create -n tadbit <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 r-base<span class="o">=</span><span class="m">3</span>.6.1 r-essentials<span class="o">=</span><span class="m">3</span>.6 r-devtools imp <span class="nv">samtools</span><span class="o">=</span><span class="m">1</span>.12 <span class="nv">jupyter_client</span><span class="o">=</span><span class="m">6</span>.1 tadbit -c conda-forge -c salilab -c bioconda
+</pre></div>
 </div>
+<p>If you wish then to have the last version of TADbit from github remove
+the TADbit conda package leaving the dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
+
+conda remove tadbit --force
+</pre></div>
 </div>
-</div>
+<p>And install TADbit from source as explained before.</p>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -505,12 +488,12 @@ conda install -c bioconda tadbit
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -527,13 +510,14 @@ conda install -c bioconda tadbit
         <li class="right" >
           <a href="index.html" title="Welcome to TADbit’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">TADbit 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installing TADbit on GNU/Linux</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

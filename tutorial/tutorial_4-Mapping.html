@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Iterative vs fragment-based mapping &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Iterative vs fragment-based mapping</a></li> 
       </ul>
     </div>  
 
@@ -41,7 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="iterative-vs-fragment-based-mapping">
+  <section id="iterative-vs-fragment-based-mapping">
 <h1>Iterative vs fragment-based mapping<a class="headerlink" href="#iterative-vs-fragment-based-mapping" title="Permalink to this headline">¶</a></h1>
 <p>Iterative mapping first proposed by <a class="reference external" href="#cite-Imakaev2012a">(Imakaev et al.,
 2012)</a>, allows to map usually a high number of
@@ -55,19 +56,21 @@ the longest part of the read <a class="reference external" href="#cite-Wingett20
 <p>Finally, an intermediate approach, <em>fragment-based</em>, consists in mapping
 full length reads first, and than splitting unmapped reads at the
 ligation sites <a class="reference external" href="#cite-Serra2017">(Serra et al. 2017)</a>.</p>
-<div class="figure align-default" id="id1">
+<figure class="align-default" id="id1">
 <img alt="mapping strategies" src="../_images/mapping.png" />
-<p class="caption"><span class="caption-text">mapping strategies</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<div class="section" id="advantages-of-iterative-mapping">
+<figcaption>
+<p><span class="caption-text">mapping strategies</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="advantages-of-iterative-mapping">
 <h2>Advantages of iterative mapping<a class="headerlink" href="#advantages-of-iterative-mapping" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>It’s the only solution when no restriction enzyme has been used
 (i.e. micro-C)</p></li>
 <li><p>Can be faster when few windows (2 or 3) are used</p></li>
 </ul>
-</div>
-<div class="section" id="advantages-of-fragment-based-mapping">
+</section>
+<section id="advantages-of-fragment-based-mapping">
 <h2>Advantages of fragment-based mapping<a class="headerlink" href="#advantages-of-fragment-based-mapping" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Generally faster</p></li>
@@ -80,9 +83,9 @@ difference is usually canceled or reversed when looking for
 al. 2012)</a>, performance are very similar to
 Bowtie2, and in some cases slightly better.</p>
 <p><em>For now TADbit is only compatible with GEM2.</em></p>
-</div>
-</div>
-<div class="section" id="mapping">
+</section>
+</section>
+<section id="mapping">
 <h1>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.full_mapper</span> <span class="kn">import</span> <span class="n">full_mapping</span>
 </pre></div>
@@ -415,7 +418,7 @@ title = {{The GEM mapper: fast, accurate and versatile alignment by filtration}}
 year = {2012}
 }
 
---><div class="section" id="references">
+--><section id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p>[^](#ref-1) Imakaev, Maxim V and Fudenberg, Geoffrey and McCord, Rachel
 Patton and Naumova, Natalia and Goloborodko, Anton and Lajoie, Bryan R
@@ -437,10 +440,11 @@ the fly chromatin colors</em>.
 <p>[^](#ref-5) Marco-Sola, Santiago and Sammeth, Michael and Guigó, Roderic
 and Ribeca, Paolo. 2012. <em>The GEM mapper: fast, accurate and versatile
 alignment by filtration</em>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -484,12 +488,12 @@ alignment by filtration</em>.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -507,13 +511,14 @@ alignment by filtration</em>.</p>
           <a href="tutorial_3-Hi-C_quality_check.html" title="Hi-C quality check"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Iterative vs fragment-based mapping</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

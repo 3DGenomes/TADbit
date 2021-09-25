@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Comparison of Hi-C experiments &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Comparison of Hi-C experiments</a></li> 
       </ul>
     </div>  
 
@@ -41,11 +42,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="comparison-of-hi-c-experiments">
+  <section id="comparison-of-hi-c-experiments">
 <h1>Comparison of Hi-C experiments<a class="headerlink" href="#comparison-of-hi-c-experiments" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="comparison-between-replicates">
+<section id="comparison-between-replicates">
 <h2>Comparison between replicates<a class="headerlink" href="#comparison-between-replicates" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="load-previous-data">
+<section id="load-previous-data">
 <h3>Load previous data<a class="headerlink" href="#load-previous-data" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">eig_correlate_matrices</span><span class="p">,</span> <span class="n">correlate_matrices</span><span class="p">,</span> <span class="n">get_reproducibility</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
@@ -56,8 +57,8 @@
 <span class="n">bias_path</span> <span class="o">=</span> <span class="s1">&#39;results/fragment/</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">/03_filtering/valid_reads12_</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">_Vanilla_</span><span class="si">{2}</span><span class="s1">kb.biases&#39;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="mouse-b-cell">
+</section>
+<section id="mouse-b-cell">
 <h3>Mouse B cell<a class="headerlink" href="#mouse-b-cell" title="Permalink to this headline">¶</a></h3>
 <p>We load the hic_data object from the BAM file</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
@@ -103,7 +104,7 @@
    .......... .......... ..                                  122/122</pre>
 <p>We compare the interactions of the two Hi-C matrices at a given
 distance.</p>
-<div class="section" id="the-spearman-rank-correlation-of-the-matrix-diagonals">
+<section id="the-spearman-rank-correlation-of-the-matrix-diagonals">
 <h4>The Spearman rank correlation of the matrix diagonals<a class="headerlink" href="#the-spearman-rank-correlation-of-the-matrix-diagonals" title="Permalink to this headline">¶</a></h4>
 <p>In the plot we represent the Spearman rank correlation of the diagonals
 of the matrices starting from the main diagonal until the diagonal at
@@ -175,8 +176,8 @@ interpreted in a way similar to the standard correlation</p>
    .......... .......... .......... .......... ..........     50/117
    .......... .......... .......... .......... ..........    100/117
    .......... .......                                        117/117</pre>
-</div>
-<div class="section" id="the-correlation-of-the-eigenvectors">
+</section>
+<section id="the-correlation-of-the-eigenvectors">
 <h4>The correlation of the eigenvectors<a class="headerlink" href="#the-correlation-of-the-eigenvectors" title="Permalink to this headline">¶</a></h4>
 <p>Since the eigenvectors of a matrix capture its internal correlations
 [26], two matrices with highly correlation of eigenvectors are
@@ -200,8 +201,8 @@ considered to have similar structure.</p>
 0.019 0.017 0.006 0.034 0.989 0.039
 
 0.000 0.010 0.007 0.018 0.045 0.931</pre>
-</div>
-<div class="section" id="the-reproducibility-score-q">
+</section>
+<section id="the-reproducibility-score-q">
 <h4>The reproducibility score (Q)<a class="headerlink" href="#the-reproducibility-score-q" title="Permalink to this headline">¶</a></h4>
 <p>Computed as in HiC-spector
 (<a class="reference external" href="https://doi.org/10.1093/bioinformatics/btx152">https://doi.org/10.1093/bioinformatics/btx152</a>), it is also based on
@@ -212,9 +213,9 @@ similarity) to 1 (identity).</p>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">Reproducibility score: 0.8629</pre>
-</div>
-</div>
-<div class="section" id="mouse-ips-cell">
+</section>
+</section>
+<section id="mouse-ips-cell">
 <h3>Mouse iPS cell<a class="headerlink" href="#mouse-ips-cell" title="Permalink to this headline">¶</a></h3>
 <p>We load the hic_data object from the BAM file</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
@@ -257,7 +258,7 @@ similarity) to 1 (identity).</p>
    .......... .......... ..                                  122/122</pre>
 <p>We compare the interactions of the two Hi-C matrices at a given
 distance.</p>
-<div class="section" id="id1">
+<section id="id1">
 <h4>The Spearman rank correlation of the matrix diagonals<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <p>In the plot we represent the Spearman rank correlation of the diagonals
 of the matrices starting from the main diagonal until the diagonal at
@@ -317,8 +318,8 @@ interpreted in a way similar to the standard correlation</p>
    .......... .......... .......... .......... ..........     50/117
    .......... .......... .......... .......... ..........    100/117
    .......... .......                                        117/117</pre>
-</div>
-<div class="section" id="id2">
+</section>
+<section id="id2">
 <h4>The correlation of the eigenvectors<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <p>Since the eigenvectors of a matrix capture its internal correlations
 [26], two matrices with highly correlation of eigenvectors are
@@ -342,8 +343,8 @@ considered to have similar structure.</p>
 0.006 0.007 0.031 0.028 0.985 0.079
 
 0.002 0.008 0.021 0.015 0.081 0.954</pre>
-</div>
-<div class="section" id="id3">
+</section>
+<section id="id3">
 <h4>The reproducibility score (Q)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <p>Computed as in HiC-spector
 (<a class="reference external" href="https://doi.org/10.1093/bioinformatics/btx152">https://doi.org/10.1093/bioinformatics/btx152</a>), it is also based on
@@ -354,12 +355,12 @@ similarity) to 1 (identity).</p>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">Reproducibility score: 0.5979</pre>
-</div>
-</div>
-</div>
-<div class="section" id="comparison-between-cell-types">
+</section>
+</section>
+</section>
+<section id="comparison-between-cell-types">
 <h2>Comparison between cell types<a class="headerlink" href="#comparison-between-cell-types" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="replicate-1">
+<section id="replicate-1">
 <h3>Replicate 1<a class="headerlink" href="#replicate-1" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">hic_data1</span> <span class="o">=</span> <span class="n">hic_data2</span> <span class="o">=</span> <span class="kc">None</span>
@@ -472,8 +473,8 @@ similarity) to 1 (identity).</p>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">Reproducibility score: 0.2864</pre>
-</div>
-<div class="section" id="replicate-2">
+</section>
+<section id="replicate-2">
 <h3>Replicate 2<a class="headerlink" href="#replicate-2" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reso</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">hic_data1</span> <span class="o">=</span> <span class="n">hic_data2</span> <span class="o">=</span> <span class="kc">None</span>
@@ -585,9 +586,9 @@ similarity) to 1 (identity).</p>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">Reproducibility score: 0.3852</pre>
-</div>
-</div>
-<div class="section" id="merge-hi-c-experiments">
+</section>
+</section>
+<section id="merge-hi-c-experiments">
 <h2>Merge Hi-C experiments<a class="headerlink" href="#merge-hi-c-experiments" title="Permalink to this headline">¶</a></h2>
 <p>Once agreed that experiments are similar, they can be merged.</p>
 <p>Here is a simple way to merge valid pairs. Arguably we may want to merge
@@ -628,8 +629,8 @@ non-replicates.</p>
 </div>
 <pre class="ansi-block literal-block">- Mergeing experiments
 - Indexing new BAM file</pre>
-</div>
-<div class="section" id="normalizing-merged-data">
+</section>
+<section id="normalizing-merged-data">
 <h2>Normalizing merged data<a class="headerlink" href="#normalizing-merged-data" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">hic_map</span>
 </pre></div>
@@ -1453,10 +1454,11 @@ rescaling to factor 1
   - getting the sum of the matrix
     =&gt; 26205.477
   - rescaling biases</pre>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -1493,12 +1495,12 @@ rescaling to factor 1
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1516,13 +1518,14 @@ rescaling to factor 1
           <a href="tutorial_8-Compartments_and_TADs_detection.html" title="Compartments and TADs detection"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Comparison of Hi-C experiments</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>TAD clustering &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="reference_tadbit.html" title="TAD detection functions"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">TAD clustering</a></li> 
       </ul>
     </div>  
 
@@ -41,11 +42,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tad-clustering">
+  <section id="tad-clustering">
 <h1>TAD clustering<a class="headerlink" href="#tad-clustering" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="pytadbit.tad_clustering.tad_cmo.optimal_cmo">
-<code class="sig-prename descclassname">pytadbit.tad_clustering.tad_cmo.</code><code class="sig-name descname">optimal_cmo</code><span class="sig-paren">(</span><em class="sig-param">hic1</em>, <em class="sig-param">hic2</em>, <em class="sig-param">num_v=None</em>, <em class="sig-param">max_num_v=None</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">method='frobenius'</em>, <em class="sig-param">long_nw=True</em>, <em class="sig-param">long_dist=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tad_clustering/tad_cmo.html#optimal_cmo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.tad_clustering.tad_cmo.optimal_cmo">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.tad_clustering.tad_cmo.</span></span><span class="sig-name descname"><span class="pre">optimal_cmo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hic1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hic2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frobenius'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tad_clustering/tad_cmo.html#optimal_cmo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the optimal contact map overlap between 2 matrices</p>
 <dl class="simple">
 <dt>TODO: make the selection of number of eigen vectors automatic or relying on</dt><dd><p>the summed contribution (e.g. select the EVs that sum 80% of the info)</p>
@@ -77,9 +78,10 @@ Spearman correlation Rho value and pvalue.</p>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -122,12 +124,12 @@ Spearman correlation Rho value and pvalue.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -145,13 +147,14 @@ Spearman correlation Rho value and pvalue.</p>
           <a href="reference_tadbit.html" title="TAD detection functions"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">TAD clustering</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

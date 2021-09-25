@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Modelling a region of the chromatin &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="tutorial_10-Modeling_parameters_optimization.html" title="Experimental data assessment and model parameters optimisation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Modelling a region of the chromatin</a></li> 
       </ul>
     </div>  
 
@@ -41,9 +42,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="modelling-a-region-of-the-chromatin">
+  <section id="modelling-a-region-of-the-chromatin">
 <h1>Modelling a region of the chromatin<a class="headerlink" href="#modelling-a-region-of-the-chromatin" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="load-previous-data">
+<section id="load-previous-data">
 <h2>Load previous data<a class="headerlink" href="#load-previous-data" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_bam</span>
@@ -112,8 +113,8 @@
 <span class="n">PSC</span><span class="o">.</span><span class="n">load_norm_data</span><span class="p">([</span><span class="n">hic_data2</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr3&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="modeling">
+</section>
+<section id="modeling">
 <h2>Modeling<a class="headerlink" href="#modeling" title="Permalink to this headline">¶</a></h2>
 <p>We use the best parameters obtained from the optimization process to
 produce an ensemble of models.</p>
@@ -181,8 +182,8 @@ model improves during the MOnte Carlo optimization:</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_23_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_23_0.png" />
-</div>
-<div class="section" id="structural-models">
+</section>
+<section id="structural-models">
 <h2>Structural Models<a class="headerlink" href="#structural-models" title="Permalink to this headline">¶</a></h2>
 <p>The definition of the “best models” can be changed at any time. Only the
 best models will be used in the analysis.</p>
@@ -278,11 +279,11 @@ visualization of the 3D structure</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;chimera&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="model-analysis">
+<section id="model-analysis">
 <h3>Model analysis<a class="headerlink" href="#model-analysis" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="align-models">
+</section>
+</section>
+<section id="align-models">
 <h2>Align models<a class="headerlink" href="#align-models" title="Permalink to this headline">¶</a></h2>
 <p>In the Montecarlo simulation each of the models is built starting from a
 random initial conformation. Therefore models are not aligned in a
@@ -298,8 +299,8 @@ given froup of models.It first clusters models based on structural
 comparison (dRMSD). Differential contact map between each possible pair
 of clusters is shown in the resulting graph. This allows us to detect
 common sets of contacts in the ensemble.</p>
-</div>
-<div class="section" id="deconvolve">
+</section>
+<section id="deconvolve">
 <h2>Deconvolve<a class="headerlink" href="#deconvolve" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_PSC</span><span class="o">.</span><span class="n">deconvolve</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">represent_models</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">n_best_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
@@ -314,8 +315,8 @@ common sets of contacts in the ensemble.</p>
    Cluster #7 has 2 models [top model: 396]
    Cluster #8 has 2 models [top model: 152]</pre>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_46_1.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_46_1.png" />
-</div>
-<div class="section" id="clustering">
+</section>
+<section id="clustering">
 <h2>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h2>
 <p>The clustering of the models by Markov Cluster Algorith (MCL) or Ward
 can be based on different statistics measures (score, rmsd, drmsd or
@@ -377,8 +378,8 @@ Total number of clusters: 11
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_53_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_53_0.png" />
-</div>
-<div class="section" id="consistency">
+</section>
+<section id="consistency">
 <h2>Consistency<a class="headerlink" href="#consistency" title="Permalink to this headline">¶</a></h2>
 <p>Model consistency gives a measure of the variability of the particles
 accross a set of models. Particles in the same position accross
@@ -394,12 +395,11 @@ than the given cutoff.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_57_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_57_0.png" />
-</div>
-<div class="section" id="dna-density-plots">
+</section>
+<section id="dna-density-plots">
 <h2>DNA density plots<a class="headerlink" href="#dna-density-plots" title="Permalink to this headline">¶</a></h2>
-  <p>
-
-From the 3D models, the DNA density (or local compactness) can be<p>calculated as the ratio of the bin size (in base pairs) and the
+<p><p>From the 3D models, the DNA density (or local compactness) can be
+calculated as the ratio of the bin size (in base pairs) and the
 distances between consequtive particles in the models. The higher the
 density the more compact DNA for the region. As this measure varies
 dramatically from particle to particle, one can calculate it using
@@ -427,22 +427,20 @@ consecutives beads.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_63_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_63_0.png" />
-</div>
-<div class="section" id="walking-angle">
+</section>
+<section id="walking-angle">
 <h2>Walking Angle<a class="headerlink" href="#walking-angle" title="Permalink to this headline">¶</a></h2>
-  <p>
-
-Walking_angle plots the angle between triplets of contiguous particles.<p>The higher are these values the straighter are the models.</p>
+<p><p>Walking_angle plots the angle between triplets of contiguous particles.
+The higher are these values the straighter are the models.</p>
 </p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">walking_angle</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_66_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_66_0.png" />
-</div>
-<div class="section" id="particles-interactions">
+</section>
+<section id="particles-interactions">
 <h2>Particles interactions<a class="headerlink" href="#particles-interactions" title="Permalink to this headline">¶</a></h2>
-  <p>
-
-We can plot for each particle the number of interactions (particles<p>closer than the given cutoff)</p>
+<p><p>We can plot for each particle the number of interactions (particles
+closer than the given cutoff)</p>
 </p><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models_B</span><span class="o">.</span><span class="n">interactions</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -451,13 +449,12 @@ We can plot for each particle the number of interactions (particles<p>closer tha
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_70_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_70_0.png" />
-</div>
-<div class="section" id="accessibility">
+</section>
+<section id="accessibility">
 <h2>Accessibility<a class="headerlink" href="#accessibility" title="Permalink to this headline">¶</a></h2>
-  <p>
-
-The accessibility is calculated by considering a mesh surface around<p>the model and checking if each point of this mesh could be replaced by
-an object (i.e. a protein) represented as a sphere of a given radius.</p>
+<p><p>The accessibility is calculated by considering a mesh surface around the
+model and checking if each point of this mesh could be replaced by an
+object (i.e. a protein) represented as a sphere of a given radius.</p>
 </p><p><p>Outer part of the model can be excluded from the estimation of
 accessible surface because contacts from this outer part to particles
 outside the model are unknown. To exclude the outer contour a sphere
@@ -471,8 +468,8 @@ proceding to the accessibility calculation.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_11-3D_Models_production_and_analysis_74_0.png" src="../_images/tutorial_11-3D_Models_production_and_analysis_74_0.png" />
-</div>
-<div class="section" id="calculating-distances-between-particles">
+</section>
+<section id="calculating-distances-between-particles">
 <h2>Calculating distances between particles<a class="headerlink" href="#calculating-distances-between-particles" title="Permalink to this headline">¶</a></h2>
 <p>To inspect the distance between two particles in the models we can use
 the median_3d_dist function which give us not only the median distance
@@ -574,10 +571,11 @@ inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/
   if isinstance(my_descr['start'], list) else my_descr['start'])))
 /home/dcastillo/miniconda2/envs/py3_tadbit/lib/python3.7/site-packages/pytadbit/modelling/structuralmodels.py:2563: UserWarning: WARNING: chrom_end variable wasn't set, setting it to the position in the experiment matrix (36000000)
   if isinstance(my_descr['end'], list) else my_descr['end'])))</pre>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -614,12 +612,12 @@ inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -637,13 +635,14 @@ inspection with TADkit (<a class="reference external" href="http://sgt.cnag.cat/
           <a href="tutorial_10-Modeling_parameters_optimization.html" title="Experimental data assessment and model parameters optimisation"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Modelling a region of the chromatin</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>From FASTQ to matrix &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="index.html" title="Reference Guide"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">From FASTQ to matrix</a></li> 
       </ul>
     </div>  
 
@@ -41,13 +42,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="from-fastq-to-matrix">
+  <section id="from-fastq-to-matrix">
 <h1>From FASTQ to matrix<a class="headerlink" href="#from-fastq-to-matrix" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="mapping">
+<section id="mapping">
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="pytadbit.mapping.full_mapper.full_mapping">
-<code class="sig-prename descclassname">pytadbit.mapping.full_mapper.</code><code class="sig-name descname">full_mapping</code><span class="sig-paren">(</span><em class="sig-param">mapper_index_path</em>, <em class="sig-param">fastq_path</em>, <em class="sig-param">out_map_dir</em>, <em class="sig-param">mapper='gem'</em>, <em class="sig-param">r_enz=None</em>, <em class="sig-param">frag_map=True</em>, <em class="sig-param">min_seq_len=15</em>, <em class="sig-param">windows=None</em>, <em class="sig-param">add_site=True</em>, <em class="sig-param">clean=False</em>, <em class="sig-param">get_nread=False</em>, <em class="sig-param">mapper_binary=None</em>, <em class="sig-param">mapper_params=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.full_mapper.full_mapping">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.full_mapper.</span></span><span class="sig-name descname"><span class="pre">full_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapper_index_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastq_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_map_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_enz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frag_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_seq_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_nread</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper_binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps FASTQ reads to an indexed reference genome. Mapping can be done either
 without knowledge of the restriction enzyme used, or for experiments
 performed without one, like Micro-C (iterative mapping), or using the
@@ -101,12 +102,12 @@ a path and the number of reads processed</p></li>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="quality-check-and-plotting">
+</section>
+<section id="quality-check-and-plotting">
 <h2>Quality check and plotting<a class="headerlink" href="#quality-check-and-plotting" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.hic_map">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">hic_map</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">resolution=None</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">masked=None</em>, <em class="sig-param">by_chrom=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">focus=None</em>, <em class="sig-param">clim=None</em>, <em class="sig-param">perc_clim=None</em>, <em class="sig-param">cmap='jet'</em>, <em class="sig-param">pdf=False</em>, <em class="sig-param">decay=True</em>, <em class="sig-param">perc=20</em>, <em class="sig-param">name=None</em>, <em class="sig-param">decay_resolution=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.hic_map">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">hic_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_chrom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perc_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>function to retrieve data from HiC-data object. Data can be stored as
 a square matrix, or drawn using matplotlib</p>
 <dl class="field-list simple">
@@ -167,15 +168,15 @@ Default is equal to resolution of the matrix.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.insert_sizes">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">insert_sizes</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">nreads=None</em>, <em class="sig-param">max_size=99.9</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">xlog=False</em>, <em class="sig-param">stats=('median'</em>, <em class="sig-param">'perc_max')</em>, <em class="sig-param">too_large=10000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#insert_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.insert_sizes" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.insert_sizes">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">insert_sizes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nreads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">99.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('median',</span> <span class="pre">'perc_max')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too_large</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#insert_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.insert_sizes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deprecated function, use fragment_size</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.correlate_matrices">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">correlate_matrices</code><span class="sig-paren">(</span><em class="sig-param">hic_data1</em>, <em class="sig-param">hic_data2</em>, <em class="sig-param">max_dist=10</em>, <em class="sig-param">intra=False</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">min_dist=1</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">remove_bad_columns=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.correlate_matrices">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">correlate_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hic_data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hic_data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_bad_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Compare the interactions of two Hi-C matrices at a given distance,</dt><dd><p>with Spearman rank correlation.</p>
 </dd>
@@ -209,9 +210,9 @@ deviation of SCC</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.plot_strand_bias_by_distance">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">plot_strand_bias_by_distance</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">nreads=1000000</em>, <em class="sig-param">valid_pairs=True</em>, <em class="sig-param">half_step=20</em>, <em class="sig-param">half_len=2000</em>, <em class="sig-param">full_step=500</em>, <em class="sig-param">full_len=50000</em>, <em class="sig-param">savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.plot_strand_bias_by_distance">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">plot_strand_bias_by_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nreads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">half_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">half_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_strand_bias_by_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_strand_bias_by_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Classify reads into four categories depending on the strand on which each
 of its end is mapped, and plots the proportion of each of these categories
 in function of the genomic distance between them.</p>
@@ -256,9 +257,9 @@ mapped on the same restriction fragment.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.eig_correlate_matrices">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">eig_correlate_matrices</code><span class="sig-paren">(</span><em class="sig-param">hic_data1</em>, <em class="sig-param">hic_data2</em>, <em class="sig-param">nvect=6</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">remove_bad_columns=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#eig_correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.eig_correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.eig_correlate_matrices">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">eig_correlate_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hic_data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hic_data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_bad_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#eig_correlate_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.eig_correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the interactions of two Hi-C matrices using their 6 first
 eigenvectors, with Pearson correlation</p>
 <dl class="field-list simple">
@@ -281,9 +282,9 @@ and exclude them from the comparison</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">plot_distance_vs_interactions</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">min_diff=1</em>, <em class="sig-param">max_diff=1000</em>, <em class="sig-param">show=False</em>, <em class="sig-param">genome_seq=None</em>, <em class="sig-param">resolution=None</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">plot_each_cell=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">plot_distance_vs_interactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome_seq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_each_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the number of interactions observed versus the genomic distance between
 the mapped ends of the read. The slope is expected to be around -1, in
 logarithmic scale and between 700 kb and 10 Mb (according to the prediction
@@ -314,9 +315,9 @@ will be represented, otherwise each pair of interactions will be plotted.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.plot_iterative_mapping">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">plot_iterative_mapping</code><span class="sig-paren">(</span><em class="sig-param">fnam1</em>, <em class="sig-param">fnam2</em>, <em class="sig-param">total_reads=None</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_iterative_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_iterative_mapping" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.plot_iterative_mapping">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">plot_iterative_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fnam2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_reads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_iterative_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_iterative_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the number of reads mapped at each step of the mapping process (in the
 case of the iterative mapping, each step is mapping process with a given
 size of fragments).</p>
@@ -338,9 +339,9 @@ of the file name will determine the desired format).</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.analyze.plot_genomic_distribution">
-<code class="sig-prename descclassname">pytadbit.mapping.analyze.</code><code class="sig-name descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">first_read=None</em>, <em class="sig-param">resolution=10000</em>, <em class="sig-param">ylim=None</em>, <em class="sig-param">yscale=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">chr_names=None</em>, <em class="sig-param">nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.analyze.plot_genomic_distribution">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.analyze.</span></span><span class="sig-name descname"><span class="pre">plot_genomic_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chr_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nreads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the number of reads in bins along the genome (or along a given
 chromosome).</p>
 <dl class="field-list simple">
@@ -365,9 +366,9 @@ them the need to be plotted (this option may last even more than default)</p></l
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.fastq_utils.quality_plot">
-<code class="sig-prename descclassname">pytadbit.utils.fastq_utils.</code><code class="sig-name descname">quality_plot</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">r_enz=None</em>, <em class="sig-param">nreads=inf</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">paired=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.fastq_utils.quality_plot">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.fastq_utils.</span></span><span class="sig-name descname"><span class="pre">quality_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_enz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nreads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paired</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme
 (RE) name is provided, can also represent the distribution of digested and
 undigested RE sites and estimate an expected proportion of dangling-ends.</p>
@@ -392,12 +393,12 @@ reads with at least a ligation site.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="filtering">
+</section>
+<section id="filtering">
 <h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="pytadbit.mapping.restriction_enzymes.map_re_sites">
-<code class="sig-prename descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="sig-name descname">map_re_sites</code><span class="sig-paren">(</span><em class="sig-param">enzyme_name</em>, <em class="sig-param">genome_seq</em>, <em class="sig-param">frag_chunk=100000</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#map_re_sites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.map_re_sites" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.restriction_enzymes.map_re_sites">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.restriction_enzymes.</span></span><span class="sig-name descname"><span class="pre">map_re_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enzyme_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frag_chunk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#map_re_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.map_re_sites" title="Permalink to this definition">¶</a></dt>
 <dd><p>map all restriction enzyme (RE) sites of a given enzyme in a genome.
 Position of a RE site is defined as the genomic coordinate of the first
 nucleotide after the first cut (genomic coordinate starts at 1).</p>
@@ -426,16 +427,16 @@ sites, each chromosome is splitted into chunks.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.restriction_enzymes.repaired">
-<code class="sig-prename descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="sig-name descname">repaired</code><span class="sig-paren">(</span><em class="sig-param">r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#repaired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.repaired" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.restriction_enzymes.repaired">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.restriction_enzymes.</span></span><span class="sig-name descname"><span class="pre">repaired</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_enz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#repaired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.repaired" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the resulting sequence after reparation of two digested and repaired
 ends, marking dangling ends.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.get_intersection">
-<code class="sig-prename descclassname">pytadbit.mapping.</code><code class="sig-name descname">get_intersection</code><span class="sig-paren">(</span><em class="sig-param">fname1</em>, <em class="sig-param">fname2</em>, <em class="sig-param">out_path</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">compress=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping.html#get_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.get_intersection" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.get_intersection">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.</span></span><span class="sig-name descname"><span class="pre">get_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping.html#get_intersection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.get_intersection" title="Permalink to this definition">¶</a></dt>
 <dd><dl>
 <dt>Merges the two files corresponding to each reads sides. Reads found in both</dt><dd><p>files are merged and written in an output file.</p>
 </dd>
@@ -477,9 +478,9 @@ fragment cought together, can be 3, 4, 5..)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.merge_2d_beds">
-<code class="sig-prename descclassname">pytadbit.mapping.</code><code class="sig-name descname">merge_2d_beds</code><span class="sig-paren">(</span><em class="sig-param">path1</em>, <em class="sig-param">path2</em>, <em class="sig-param">outpath</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping.html#merge_2d_beds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.merge_2d_beds" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.merge_2d_beds">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.</span></span><span class="sig-name descname"><span class="pre">merge_2d_beds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping.html#merge_2d_beds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.merge_2d_beds" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Merge two result files (file resulting from get_intersection or from</dt><dd><p>the filtering) into one.</p>
 </dd>
@@ -497,9 +498,9 @@ fragment cought together, can be 3, 4, 5..)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.filter.filter_reads">
-<code class="sig-prename descclassname">pytadbit.mapping.filter.</code><code class="sig-name descname">filter_reads</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">output=None</em>, <em class="sig-param">max_molecule_length=500</em>, <em class="sig-param">over_represented=0.005</em>, <em class="sig-param">max_frag_size=100000</em>, <em class="sig-param">min_frag_size=100</em>, <em class="sig-param">re_proximity=5</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">min_dist_to_re=750</em>, <em class="sig-param">strict_duplicates=False</em>, <em class="sig-param">fast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#filter_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.filter_reads" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.filter.filter_reads">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.filter.</span></span><span class="sig-name descname"><span class="pre">filter_reads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_molecule_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">over_represented</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_frag_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_frag_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">re_proximity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist_to_re</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">750</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#filter_reads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.filter.filter_reads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter mapped pair of reads in order to remove experimental artifacts (e.g.
 dangling-ends, self-circle, PCR artifacts…)</p>
 <dl class="simple">
@@ -568,9 +569,9 @@ a set of read IDs to be removed</p>
 <p><em>Note: Filtering is not exclusive, one read can be filtered several times.</em></p>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.mapping.filter.apply_filter">
-<code class="sig-prename descclassname">pytadbit.mapping.filter.</code><code class="sig-name descname">apply_filter</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">outfile</em>, <em class="sig-param">masked</em>, <em class="sig-param">filters=None</em>, <em class="sig-param">reverse=False</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#apply_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.apply_filter" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.mapping.filter.apply_filter">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.mapping.filter.</span></span><span class="sig-name descname"><span class="pre">apply_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#apply_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.mapping.filter.apply_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new file with reads filtered</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -592,10 +593,11 @@ reads filtered, not the valid pairs.</p></li>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -643,12 +645,12 @@ reads filtered, not the valid pairs.</p></li>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -666,13 +668,14 @@ reads filtered, not the valid pairs.</p></li>
           <a href="index.html" title="Reference Guide"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">From FASTQ to matrix</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

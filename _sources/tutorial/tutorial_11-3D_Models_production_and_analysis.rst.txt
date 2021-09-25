@@ -522,7 +522,7 @@ DNA density plots
 
    <p>
 
- From the 3D models, the DNA density (or local compactness) can be
+From the 3D models, the DNA density (or local compactness) can be
 calculated as the ratio of the bin size (in base pairs) and the
 distances between consequtive particles in the models. The higher the
 density the more compact DNA for the region. As this measure varies
@@ -592,7 +592,7 @@ Walking Angle
 
    <p>
 
- Walking_angle plots the angle between triplets of contiguous particles.
+Walking_angle plots the angle between triplets of contiguous particles.
 The higher are these values the straighter are the models.
 
 .. raw:: html
@@ -615,7 +615,7 @@ Particles interactions
 
    <p>
 
- We can plot for each particle the number of interactions (particles
+We can plot for each particle the number of interactions (particles
 closer than the given cutoff)
 
 .. raw:: html
@@ -647,9 +647,9 @@ Accessibility
 
    <p>
 
- The accessibility is calculated by considering a mesh surface around
-the model and checking if each point of this mesh could be replaced by
-an object (i.e. a protein) represented as a sphere of a given radius.
+The accessibility is calculated by considering a mesh surface around the
+model and checking if each point of this mesh could be replaced by an
+object (i.e. a protein) represented as a sphere of a given radius.
 
 .. raw:: html
 

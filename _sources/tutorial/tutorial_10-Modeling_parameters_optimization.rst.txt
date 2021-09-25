@@ -157,9 +157,7 @@ Z-scores.
 
 
 
-|image0|
-
-.. |image0| image:: ../nbpictures/mmp_score.png
+.. image:: ../nbpictures/mmp_score.png
 
 Data Transformation and scoring function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,9 +194,7 @@ oscillator at an equilibrium distance, while those below the lower-bound
 cutoff are maintained further than an equilibrium distance by a lower
 bound harmonic oscillator.
 
-|image0|
-
-.. |image0| image:: ../nbpictures/tadbit_restraints.png
+.. image:: ../nbpictures/tadbit_restraints.png
 
 Optimization of parameters
 --------------------------
@@ -224,9 +220,7 @@ assigned maximum distance (Harmonic upper bound). Pairs of beads which
 interaction fall in between lowfreq and upfreq are not penalized except
 if they are neighbours (Harmonic)
 
-|image0|
-
-.. |image0| image:: ../nbpictures/tadbit_distance_freq_fitting.png
+.. image:: ../nbpictures/tadbit_distance_freq_fitting.png
 
 In the parameter optimization step we are going to give a set of ranges
 for the different search parameters. For each possible combination
@@ -240,9 +234,7 @@ interaction experiment by means of a Spearman correlation coefficient.
 The sets having higher correlation coefficients are those that best
 represents the original data.
 
-|image0|
-
-.. |image0| image:: ../nbpictures/Contact_map.png
+.. image:: ../nbpictures/Contact_map.png
 
 .. code:: ipython3
 

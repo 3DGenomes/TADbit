@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Compartments and TADs detection &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Compartments and TADs detection</a></li> 
       </ul>
     </div>  
 
@@ -41,7 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="compartments-and-tads-detection">
+  <section id="compartments-and-tads-detection">
 <h1>Compartments and TADs detection<a class="headerlink" href="#compartments-and-tads-detection" title="Permalink to this headline">¶</a></h1>
 <p>Here, we present the analysis to detect the compartments in Mouse B and
 iPS cells. In this example, we will use the GC-content (guanine-cytosine
@@ -65,9 +66,9 @@ open and close chromatine.</p>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">Loading cached genome</pre>
-<div class="section" id="compartments">
+<section id="compartments">
 <h2>Compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mouse-b-cells">
+<section id="mouse-b-cells">
 <h3>Mouse B cells<a class="headerlink" href="#mouse-b-cells" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_B&#39;</span>
 </pre></div>
@@ -100,8 +101,8 @@ open and close chromatine.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_10_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_10_0.png" />
-</div>
-<div class="section" id="mouse-ips-cells">
+</section>
+<section id="mouse-ips-cells">
 <h3>Mouse iPS cells<a class="headerlink" href="#mouse-ips-cells" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span>   <span class="o">=</span> <span class="s1">&#39;mouse_PSC&#39;</span>
 </pre></div>
@@ -134,8 +135,8 @@ open and close chromatine.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_15_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_15_0.png" />
-</div>
-<div class="section" id="compare">
+</section>
+<section id="compare">
 <h3>Compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
 <p>The assignments of the compartments for the two cell types are stored in
 two different files:</p>
@@ -248,8 +249,8 @@ nan nan     nan
     <span class="n">diff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ev1_B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ev1_PSC</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="spot-changes-in-activity">
+</section>
+<section id="spot-changes-in-activity">
 <h3>Spot changes in activity<a class="headerlink" href="#spot-changes-in-activity" title="Permalink to this headline">¶</a></h3>
 <p>Plot the difference between each eigenvector along chromosome</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
@@ -267,8 +268,8 @@ nan nan     nan
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_29_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_29_0.png" />
-</div>
-<div class="section" id="correlate-eigenvectors">
+</section>
+<section id="correlate-eigenvectors">
 <h3>Correlate eigenvectors<a class="headerlink" href="#correlate-eigenvectors" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ev1_B</span><span class="p">)):</span>
@@ -285,9 +286,9 @@ nan nan     nan
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_31_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_31_0.png" />
-</div>
-</div>
-<div class="section" id="tads">
+</section>
+</section>
+<section id="tads">
 <h2>TADs<a class="headerlink" href="#tads" title="Permalink to this headline">¶</a></h2>
 <p>Now, we move to the TADs detection. In this notebook we will detect TAD
 borders at 100kbp resolution.</p>
@@ -360,10 +361,10 @@ An example of consistency between TAD borders is shown in the following graph. T
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_39_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_39_0.png" />
-<div class="section" id="tad-caller-algorithms">
+<section id="tad-caller-algorithms">
 <h3>TAD caller algorithms<a class="headerlink" href="#tad-caller-algorithms" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="tadbit">
+</section>
+<section id="tadbit">
 <h3>TADbit<a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h3>
 <p>TADbit is the original TAD caller algorithm TADbit is a breakpoint
 detection algorithm that returns the optimal segmentation of the
@@ -390,8 +391,8 @@ decreases like a power-law with the linear distance on the chromosome.</p>
 </div>
 <pre class="ansi-block literal-block">[Experiment mouse_B (resolution: 100 kb, TADs: 96, Hi-C rows: 1601, normalized: visibility),
  Experiment mouse_PSC (resolution: 100 kb, TADs: 118, Hi-C rows: 1601, normalized: visibility)]</pre>
-</div>
-<div class="section" id="topdom">
+</section>
+<section id="topdom">
 <h3>TopDom<a class="headerlink" href="#topdom" title="Permalink to this headline">¶</a></h3>
 <p>TopDom identifies TAD borders based on the assumption that contact
 frequencies between regions upstream and downstream of a border are
@@ -411,8 +412,8 @@ accuracy of the border detection
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_52_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_52_0.png" />
-</div>
-<div class="section" id="insulation-score">
+</section>
+<section id="insulation-score">
 <h3>Insulation score<a class="headerlink" href="#insulation-score" title="Permalink to this headline">¶</a></h3>
 <p>Insulation score (Crane et al. 2015 <a class="reference external" href="https://doi.org/10.1038/nature14450">https://doi.org/10.1038/nature14450</a>)
 can be used to build an insulation profile of the genome and, with a
@@ -498,9 +499,9 @@ methods, but we can easily plot it:</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_65_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_65_0.png" />
-</div>
-</div>
-<div class="section" id="comparison-of-tad-borders">
+</section>
+</section>
+<section id="comparison-of-tad-borders">
 <h2>Comparison of TAD borders<a class="headerlink" href="#comparison-of-tad-borders" title="Permalink to this headline">¶</a></h2>
 <p>The TAD borders can be aligned, using a simple reciprocal best hit
 strategy:</p>
@@ -518,7 +519,7 @@ the confidence of the TAD border call.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_8-Compartments_and_TADs_detection_71_0.png" src="../_images/tutorial_8-Compartments_and_TADs_detection_71_0.png" />
-<div class="section" id="statistical-significance-of-the-tad-borders-alignments">
+<section id="statistical-significance-of-the-tad-borders-alignments">
 <h3>Statistical significance of the TAD borders alignments<a class="headerlink" href="#statistical-significance-of-the-tad-borders-alignments" title="Permalink to this headline">¶</a></h3>
 <p>In order to asses how well two experiments align, or how conserved are
 the TAD borders between two experiments, we can compare the overlap
@@ -547,14 +548,14 @@ borders conserved in the first experiment:</p>
 </div>
 <pre class="ansi-block literal-block">Alignment score: 0.470, p-value: 0.0000
   proportion of borders of T0 found in T60: 0.872, of T60 in T0 0.898</pre>
-</div>
-<div class="section" id="save-chromosome-object-with-tad-definition">
+</section>
+<section id="save-chromosome-object-with-tad-definition">
 <h3>Save Chromosome object (with TAD definition)<a class="headerlink" href="#save-chromosome-object-with-tad-definition" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crm</span><span class="o">.</span><span class="n">save_chromosome</span><span class="p">(</span><span class="s1">&#39;results/fragment/chr3.tdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="extra-choosing-the-best-resolution-to-call-tad-borders">
+</section>
+<section id="extra-choosing-the-best-resolution-to-call-tad-borders">
 <h3>Extra: choosing the best resolution to call TAD borders<a class="headerlink" href="#extra-choosing-the-best-resolution-to-call-tad-borders" title="Permalink to this headline">¶</a></h3>
 <p>TopDom and the methodology based on insulation score are relatively fast
 computationally and allow to call TAD borders at very high resolution.
@@ -1087,11 +1088,12 @@ chromosomes:</p>
 <p>In the case of these experiments it seems that looking for TAD borders
 bellow 50 kb is dangerous, as very few are reproducible. Calling TAD
 borders at 100 kb resolution might be here a good idea.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -1128,12 +1130,12 @@ borders at 100 kb resolution might be here a good idea.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1151,13 +1153,14 @@ borders at 100 kb resolution might be here a good idea.</p>
           <a href="tutorial_7-Bin_filtering_and_normalization.html" title="Bin filtering and normalization"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Compartments and TADs detection</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

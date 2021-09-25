@@ -1,18 +1,19 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Experimental data assessment and model parameters optimisation &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +33,8 @@
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Experimental data assessment and model parameters optimisation</a></li> 
       </ul>
     </div>  
 
@@ -41,9 +43,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="experimental-data-assessment-and-model-parameters-optimisation">
+  <section id="experimental-data-assessment-and-model-parameters-optimisation">
 <h1>Experimental data assessment and model parameters optimisation<a class="headerlink" href="#experimental-data-assessment-and-model-parameters-optimisation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="data-preparation">
+<section id="data-preparation">
 <h2>Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
 <p>The first step to generate three-dimensional (3D) models of a specific
 genomic regions is to filter columns with low counts and with no
@@ -128,8 +130,8 @@ columns will be modelled, but will have no experimental data applied.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" src="../_images/tutorial_10-Modeling_parameters_optimization_13_0.png" />
-</div>
-<div class="section" id="data-modellability-assessment-via-mmp-score">
+</section>
+<section id="data-modellability-assessment-via-mmp-score">
 <h2>Data modellability assessment via MMP score<a class="headerlink" href="#data-modellability-assessment-via-mmp-score" title="Permalink to this headline">¶</a></h2>
 <p>We can use the Matrix Modeling Potential (MMP) score (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4402535/">Trussart M. et
 al. Nature Communication,
@@ -150,9 +152,9 @@ Z-scores.</p>
  0.7885888244416531,
  0.6736346044021908,
  0.9006021702003049)</pre>
-<p><img alt="image0" src="../_images/Contact_map.png" /></p>
-</div>
-<div class="section" id="data-transformation-and-scoring-function">
+<img alt="../_images/mmp_score.png" src="../_images/mmp_score.png" />
+</section>
+<section id="data-transformation-and-scoring-function">
 <h2>Data Transformation and scoring function<a class="headerlink" href="#data-transformation-and-scoring-function" title="Permalink to this headline">¶</a></h2>
 <p>This step is automatically done in TADbit. A a weight is generated for
 each pair of interactions proportional to their interaction count as in
@@ -182,8 +184,8 @@ frequencies above the upper-bound cutoff are restrained by a harmonic
 oscillator at an equilibrium distance, while those below the lower-bound
 cutoff are maintained further than an equilibrium distance by a lower
 bound harmonic oscillator.</p>
-<p><img alt="image0" src="../_images/Contact_map.png" /></p>
-<div class="section" id="optimization-of-parameters">
+<img alt="../_images/tadbit_restraints.png" src="../_images/tadbit_restraints.png" />
+<section id="optimization-of-parameters">
 <h3>Optimization of parameters<a class="headerlink" href="#optimization-of-parameters" title="Permalink to this headline">¶</a></h3>
 <p>We need to identified empirically (via a grid-search optimisation) the
 optimal parameters for the mdoelling procedure:</p>
@@ -205,7 +207,7 @@ penalized if they are closer than their assigned minimum distance
 assigned maximum distance (Harmonic upper bound). Pairs of beads which
 interaction fall in between lowfreq and upfreq are not penalized except
 if they are neighbours (Harmonic)</p>
-<p><img alt="image0" src="../_images/Contact_map.png" /></p>
+<img alt="../_images/tadbit_distance_freq_fitting.png" src="../_images/tadbit_distance_freq_fitting.png" />
 <p>In the parameter optimization step we are going to give a set of ranges
 for the different search parameters. For each possible combination
 TADbit will produce a set of models.</p>
@@ -216,7 +218,7 @@ in the schema below. The contact map is then compared with the Hi-C
 interaction experiment by means of a Spearman correlation coefficient.
 The sets having higher correlation coefficients are those that best
 represents the original data.</p>
-<p><img alt="image0" src="../_images/Contact_map.png" /></p>
+<img alt="../_images/Contact_map.png" src="../_images/Contact_map.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
                                    <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
                                    <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
@@ -495,11 +497,12 @@ xx        0.01    0               2250    0       0.3     2.0     0.8967</pre>
  'dcutoff': 2.0,
  'reference': '',
  'kforce': 5}</pre>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -536,12 +539,12 @@ xx        0.01    0               2250    0       0.3     2.0     0.8967</pre>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -559,13 +562,14 @@ xx        0.01    0               2250    0       0.3     2.0     0.8967</pre>
           <a href="tutorial_9-Compare_and_merge_Hi-C_experiments.html" title="Comparison of Hi-C experiments"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Experimental data assessment and model parameters optimisation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Parsers &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="reference_clustering.html" title="TAD clustering"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Parsers</a></li> 
       </ul>
     </div>  
 
@@ -41,11 +42,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="parsers">
+  <section id="parsers">
 <h1>Parsers<a class="headerlink" href="#parsers" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="pytadbit.parsers.hic_parser.read_matrix">
-<code class="sig-prename descclassname">pytadbit.parsers.hic_parser.</code><code class="sig-name descname">read_matrix</code><span class="sig-paren">(</span><em class="sig-param">things</em>, <em class="sig-param">parser=None</em>, <em class="sig-param">hic=True</em>, <em class="sig-param">resolution=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#read_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.read_matrix" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.parsers.hic_parser.read_matrix">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.parsers.hic_parser.</span></span><span class="sig-name descname"><span class="pre">read_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">things</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#read_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.read_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and checks a matrix from a file (using
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.parser.hic_parser.autoreader()</span></code>) or a list.</p>
 <dl class="field-list simple">
@@ -79,9 +80,9 @@ returns number or rows</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.parsers.hic_parser.load_hic_data_from_reads">
-<code class="sig-prename descclassname">pytadbit.parsers.hic_parser.</code><code class="sig-name descname">load_hic_data_from_reads</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">resolution</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#load_hic_data_from_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.load_hic_data_from_reads" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.parsers.hic_parser.load_hic_data_from_reads">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.parsers.hic_parser.</span></span><span class="sig-name descname"><span class="pre">load_hic_data_from_reads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#load_hic_data_from_reads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.load_hic_data_from_reads" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -97,9 +98,9 @@ index does not fit in memory</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.parsers.genome_parser.parse_fasta">
-<code class="sig-prename descclassname">pytadbit.parsers.genome_parser.</code><code class="sig-name descname">parse_fasta</code><span class="sig-paren">(</span><em class="sig-param">f_names</em>, <em class="sig-param">chr_names=None</em>, <em class="sig-param">chr_filter=None</em>, <em class="sig-param">chr_regexp=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">save_cache=True</em>, <em class="sig-param">reload_cache=False</em>, <em class="sig-param">only_length=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.parsers.genome_parser.parse_fasta">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.parsers.genome_parser.</span></span><span class="sig-name descname"><span class="pre">parse_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chr_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chr_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chr_regexp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a list of fasta files, or just one fasta.</p>
 <p>WARNING: The order is important</p>
 <dl class="field-list simple">
@@ -123,9 +124,9 @@ as values (sequence in upper case)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.parsers.sam_parser.parse_sam">
-<code class="sig-prename descclassname">pytadbit.parsers.sam_parser.</code><code class="sig-name descname">parse_sam</code><span class="sig-paren">(</span><em class="sig-param">f_names1</em>, <em class="sig-param">f_names2=None</em>, <em class="sig-param">out_file1=None</em>, <em class="sig-param">out_file2=None</em>, <em class="sig-param">genome_seq=None</em>, <em class="sig-param">re_name=None</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">clean=True</em>, <em class="sig-param">mapper=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/sam_parser.html#parse_sam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.sam_parser.parse_sam" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.parsers.sam_parser.parse_sam">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.parsers.sam_parser.</span></span><span class="sig-name descname"><span class="pre">parse_sam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_names1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_names2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome_seq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">re_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/sam_parser.html#parse_sam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.parsers.sam_parser.parse_sam" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse sam/bam file using pysam tools.</p>
 <dl class="simple">
 <dt>Keep a summary of the results into 2 tab-separated files that will contain 6</dt><dd><p>columns: read ID, Chromosome, position, strand (either 0 or 1), mapped
@@ -154,9 +155,9 @@ Guessed from file by default.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.parsers.tad_parser.parse_tads">
-<code class="sig-prename descclassname">pytadbit.parsers.tad_parser.</code><code class="sig-name descname">parse_tads</code><span class="sig-paren">(</span><em class="sig-param">handler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/tad_parser.html#parse_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.tad_parser.parse_tads" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.parsers.tad_parser.parse_tads">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.parsers.tad_parser.</span></span><span class="sig-name descname"><span class="pre">parse_tads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/tad_parser.html#parse_tads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.parsers.tad_parser.parse_tads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a tab separated value file that contains the list of TADs of a given
 experiment. This file might have been generated whith the
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pytadbit.tadbit.print_result_R()</span></code> or with the R binding for tadbit</p>
@@ -179,9 +180,10 @@ experiment. This file might have been generated whith the
 </div>
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -224,12 +226,12 @@ experiment. This file might have been generated whith the
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -247,13 +249,14 @@ experiment. This file might have been generated whith the
           <a href="reference_clustering.html" title="TAD clustering"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Parsers</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

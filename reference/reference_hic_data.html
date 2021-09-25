@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>HiC_data class &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="reference_experiment.html" title="Experiment class"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiC_data class</a></li> 
       </ul>
     </div>  
 
@@ -41,15 +42,15 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="hic-data-class">
+  <section id="hic-data-class">
 <h1>HiC_data class<a class="headerlink" href="#hic-data-class" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="pytadbit.hic_data.HiC_data">
-<em class="property">class </em><code class="sig-prename descclassname">pytadbit.hic_data.</code><code class="sig-name descname">HiC_data</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">size</em>, <em class="sig-param">chromosomes=None</em>, <em class="sig-param">dict_sec=None</em>, <em class="sig-param">resolution=1</em>, <em class="sig-param">masked=None</em>, <em class="sig-param">symmetricized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pytadbit.hic_data.</span></span><span class="sig-name descname"><span class="pre">HiC_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chromosomes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetricized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>This may also hold the print/write-to-file matrix functions</p>
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.add_sections">
-<code class="sig-name descname">add_sections</code><span class="sig-paren">(</span><em class="sig-param">lengths</em>, <em class="sig-param">chr_names=None</em>, <em class="sig-param">binned=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.add_sections">
+<span class="sig-name descname"><span class="pre">add_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chr_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add genomic coordinate to HiC_data object by getting them from a FASTA
 file containing chromosome sequences. Orders matters.</p>
 <dl class="field-list simple">
@@ -63,9 +64,9 @@ file containing chromosome sequences. Orders matters.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.add_sections_from_fasta">
-<code class="sig-name descname">add_sections_from_fasta</code><span class="sig-paren">(</span><em class="sig-param">fasta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections_from_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections_from_fasta" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.add_sections_from_fasta">
+<span class="sig-name descname"><span class="pre">add_sections_from_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fasta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.add_sections_from_fasta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.add_sections_from_fasta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add genomic coordinate to HiC_data object by getting them from a FASTA
 file containing chromosome sequences</p>
 <dl class="field-list simple">
@@ -75,9 +76,9 @@ file containing chromosome sequences</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.cis_trans_ratio">
-<code class="sig-name descname">cis_trans_ratio</code><span class="sig-paren">(</span><em class="sig-param">normalized=False</em>, <em class="sig-param">exclude=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">equals=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.cis_trans_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.cis_trans_ratio">
+<span class="sig-name descname"><span class="pre">cis_trans_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.cis_trans_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Counts the number of interactions occurring within chromosomes (cis) with
 respect to the total number of interactions</p>
 <dl class="field-list simple">
@@ -101,9 +102,9 @@ in Human classic dilution Hi-C with HindIII as restriction enzyme.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.filter_columns">
-<code class="sig-name descname">filter_columns</code><span class="sig-paren">(</span><em class="sig-param">draw_hist=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">perc_zero=99</em>, <em class="sig-param">by_mean=True</em>, <em class="sig-param">min_count=None</em>, <em class="sig-param">silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.filter_columns" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.filter_columns">
+<span class="sig-name descname"><span class="pre">filter_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">draw_hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perc_zero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.filter_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.filter_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artifactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts. Filtered out columns will be
@@ -128,9 +129,9 @@ filtering… This option is slightly slower.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.find_compartments">
-<code class="sig-name descname">find_compartments</code><span class="sig-paren">(</span><em class="sig-param">crms=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">savecorr=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">ev_index=None</em>, <em class="sig-param">rich_in_A=None</em>, <em class="sig-param">format='png'</em>, <em class="sig-param">savedir=None</em>, <em class="sig-param">max_ev=3</em>, <em class="sig-param">show_compartment_labels=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.find_compartments">
+<span class="sig-name descname"><span class="pre">find_compartments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savecorr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rich_in_A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_compartment_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for A/B compartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
@@ -203,9 +204,9 @@ prediction of A/B compartments (positive is A).
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.find_compartments_beta">
-<code class="sig-name descname">find_compartments_beta</code><span class="sig-paren">(</span><em class="sig-param">crms=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">savedata=None</em>, <em class="sig-param">savecorr=None</em>, <em class="sig-param">show=False</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">how=''</em>, <em class="sig-param">label_compartments='hmm'</em>, <em class="sig-param">log=None</em>, <em class="sig-param">max_mean_size=10000</em>, <em class="sig-param">ev_index=None</em>, <em class="sig-param">rich_in_A=None</em>, <em class="sig-param">max_ev=3</em>, <em class="sig-param">show_compartment_labels=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments_beta" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.find_compartments_beta">
+<span class="sig-name descname"><span class="pre">find_compartments_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savecorr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_compartments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hmm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_mean_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rich_in_A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_compartment_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.find_compartments_beta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.find_compartments_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for A/B compartments in each chromosome of the Hi-C matrix.
 Hi-C matrix is normalized by the number interaction expected at a given
 distance, and by visibility (one iteration of ICE). A correlation matrix
@@ -274,9 +275,9 @@ compartment borders for each chromosome (keys are chromosome names)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.get_hic_data_as_csr">
-<code class="sig-name descname">get_hic_data_as_csr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_hic_data_as_csr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_hic_data_as_csr" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.get_hic_data_as_csr">
+<span class="sig-name descname"><span class="pre">get_hic_data_as_csr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_hic_data_as_csr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_hic_data_as_csr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -285,9 +286,9 @@ compartment borders for each chromosome (keys are chromosome names)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.get_matrix">
-<code class="sig-name descname">get_matrix</code><span class="sig-paren">(</span><em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">masked=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_matrix" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.get_matrix">
+<span class="sig-name descname"><span class="pre">get_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.get_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.get_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -310,9 +311,9 @@ columns</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.load_biases">
-<code class="sig-name descname">load_biases</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.load_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.load_biases" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.load_biases">
+<span class="sig-name descname"><span class="pre">load_biases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.load_biases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.load_biases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load biases, decay and bad columns from pickle file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -321,9 +322,9 @@ columns</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.normalize_hic">
-<code class="sig-name descname">normalize_hic</code><span class="sig-paren">(</span><em class="sig-param">iterations=0</em>, <em class="sig-param">max_dev=0.1</em>, <em class="sig-param">silent=False</em>, <em class="sig-param">sqrt=False</em>, <em class="sig-param">factor=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.normalize_hic">
+<span class="sig-name descname"><span class="pre">normalize_hic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sqrt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.normalize_hic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data.</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
 the calculated weight.</p>
@@ -342,9 +343,9 @@ per cell (excludes filtered, or bad, out columns)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.save_biases">
-<code class="sig-name descname">save_biases</code><span class="sig-paren">(</span><em class="sig-param">fnam</em>, <em class="sig-param">protocol=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.save_biases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.save_biases" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.save_biases">
+<span class="sig-name descname"><span class="pre">save_biases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.save_biases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.save_biases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save biases, decay and bad columns in pickle format (to be loaded by
 the function load_hic_data_from_bam)</p>
 <dl class="field-list simple">
@@ -354,9 +355,9 @@ the function load_hic_data_from_bam)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.sum">
-<code class="sig-name descname">sum</code><span class="sig-paren">(</span><em class="sig-param">bias=None</em>, <em class="sig-param">bads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.sum" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.sum">
+<span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum Hi-C data matrix
 WARNING: parameters are not meant to be used by external users</p>
 <dl class="field-list simple">
@@ -372,9 +373,9 @@ WARNING: parameters are not meant to be used by external users</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.write_compartments">
-<code class="sig-name descname">write_compartments</code><span class="sig-paren">(</span><em class="sig-param">savedata</em>, <em class="sig-param">chroms=None</em>, <em class="sig-param">ev_nums=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_compartments" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.write_compartments">
+<span class="sig-name descname"><span class="pre">write_compartments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savedata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev_nums</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_compartments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_compartments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write compartments to a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -388,9 +389,9 @@ to chromosome name will disappear in non default case)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.write_cooler">
-<code class="sig-name descname">write_cooler</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_cooler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_cooler" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.write_cooler">
+<span class="sig-name descname"><span class="pre">write_cooler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_cooler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_cooler" title="Permalink to this definition">¶</a></dt>
 <dd><p>writes the hic_data to a cooler file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -399,9 +400,9 @@ to chromosome name will disappear in non default case)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.write_coord_table">
-<code class="sig-name descname">write_coord_table</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em>, <em class="sig-param">format='BED'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_coord_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_coord_table" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.write_coord_table">
+<span class="sig-name descname"><span class="pre">write_coord_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BED'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_coord_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_coord_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>writes a coordinate table to a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -427,9 +428,9 @@ chr2:333-444        chr1:111-222            55</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.write_matrix">
-<code class="sig-name descname">write_matrix</code><span class="sig-paren">(</span><em class="sig-param">fname</em>, <em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_matrix" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.write_matrix">
+<span class="sig-name descname"><span class="pre">write_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.write_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.write_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>writes the matrix to a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -446,9 +447,9 @@ region</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.hic_data.HiC_data.yield_matrix">
-<code class="sig-name descname">yield_matrix</code><span class="sig-paren">(</span><em class="sig-param">focus=None</em>, <em class="sig-param">diagonal=True</em>, <em class="sig-param">normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.yield_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.yield_matrix" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.hic_data.HiC_data.yield_matrix">
+<span class="sig-name descname"><span class="pre">yield_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/hic_data.html#HiC_data.yield_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.hic_data.HiC_data.yield_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yields a matrix line by line.
 Bad row/columns are returned as null row/columns.</p>
 <dl class="field-list simple">
@@ -471,9 +472,10 @@ region</p></li>
 
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -516,12 +518,12 @@ region</p></li>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -539,13 +541,14 @@ region</p></li>
           <a href="reference_experiment.html" title="Experiment class"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiC_data class</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
