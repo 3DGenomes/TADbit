@@ -335,7 +335,7 @@ def load_parameters_fromdb(opts):
                 if path.exists(fname1 + '.gz'):
                     fname1 += '.gz'
                 else:
-                    raise IOError('ERROR: unput file_handling does not exist')
+                    raise IOError('ERROR: input file_handling does not exist')
         else:
             # fetch path to parsed BED files
             cur.execute("""
