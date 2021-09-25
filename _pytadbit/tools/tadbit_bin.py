@@ -13,15 +13,16 @@ from sys                             import stdout
 from shutil                          import copyfile
 from string                          import ascii_letters
 from random                          import random
-from pickle                          import load
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
 from warnings                        import warn
 from multiprocessing                 import cpu_count
 from collections                     import OrderedDict
 import time
 
 import sqlite3 as lite
-import matplotlib
-from numpy                           import zeros_like
 from numpy                           import array
 from numpy                           import ma, log, log2
 from matplotlib                      import pyplot as plt
@@ -36,9 +37,34 @@ from pytadbit.parsers.tad_parser     import parse_tads
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db, retry
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
-from pytadbit.utils.extraviews       import plot_HiC_matrix
+from pytadbit.utils.extraviews       import plot_HiC_matrix, format_HiC_axes
 
 DESC = 'bin Hi-C data into matrices'
+
+
+def get_sections(mreads, chr_name):
+    bamfile = AlignmentFile(mreads, 'rb')
+    bam_refs = bamfile.references
+    bam_lengths = bamfile.lengths
+    if chr_name:
+        bam_refs_idx = [bam_refs.index(chr_ord)
+                        for chr_ord in chr_name if chr_ord in bam_refs]
+        if not bam_refs_idx :
+            raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
+                Found %s in bam file \n''' % (' '.join(bam_refs)))
+        bam_refs = [bam_ref for bam_ref in [bam_refs[bam_ref_idx]
+                                                for bam_ref_idx in bam_refs_idx]]
+        bam_lengths = [bam_len for bam_len in [bam_lengths[bam_ref_idx]
+                                                    for bam_ref_idx in bam_refs_idx]]
+    sections = OrderedDict(list(zip(bam_refs, [x for x in bam_lengths])))
+    total = 0
+    section_pos = OrderedDict()
+    for crm in sections:
+        section_pos[crm] = (total, total + sections[crm])
+        total += sections[crm]
+
+    return sections, section_pos
+
 
 def run(opts):
     check_options(opts)
@@ -56,6 +82,7 @@ def run(opts):
         opts.figsize = list(map(float, opts.figsize.split(',')))
 
     clean = True  # change for debug
+    biases = None
     if opts.bam:
         mreads = path.realpath(opts.bam)
         if not opts.biases and all(v != 'raw' for v in opts.normalizations):
@@ -153,26 +180,7 @@ def run(opts):
     out_plots = {}
 
     if opts.matrix or opts.plot:
-        bamfile = AlignmentFile(mreads, 'rb')
-        bam_refs = bamfile.references
-        bam_lengths = bamfile.lengths
-        if opts.chr_name:
-            bam_refs_idx = [bam_refs.index(chr_ord)
-                            for chr_ord in opts.chr_name if chr_ord in bam_refs]
-            if not bam_refs_idx :
-                raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
-                    Found %s in bam file \n''' % (' '.join(bam_refs)))
-            bam_refs = [bam_ref for bam_ref in [bam_refs[bam_ref_idx]
-                                                  for bam_ref_idx in bam_refs_idx]]
-            bam_lengths = [bam_len for bam_len in [bam_lengths[bam_ref_idx]
-                                                     for bam_ref_idx in bam_refs_idx]]
-        sections = OrderedDict(list(zip(bam_refs,
-                                   [x for x in bam_lengths])))
-        total = 0
-        section_pos = OrderedDict()
-        for crm in sections:
-            section_pos[crm] = (total, total + sections[crm])
-            total += sections[crm]
+        sections, section_pos = get_sections(mreads, opts.chr_name)
         for norm in opts.normalizations:
             norm_string = ('RAW' if norm == 'raw' else 'NRM'
                            if norm == 'norm' else 'DEC')
@@ -241,12 +249,6 @@ def run(opts):
                 matrix = array([array([matrix.get((i, j), 0)
                                        for i in range(b1, e1)])
                                 for j in range(b2, e2)])
-                m = zeros_like(matrix)
-                for bad1 in bads1:
-                    m[:,bad1] = 1
-                    for bad2 in bads2:
-                        m[bad2,:] = 1
-                matrix = ma.masked_array(matrix, m)
                 printime(' - Plotting: %s' % norm)
                 fnam = '%s_%s_%s%s%s.%s' % (
                     'nrm' if norm == 'norm' else norm[:3], name,
@@ -268,8 +270,8 @@ def run(opts):
                              log if opts.transform == 'log' else lambda x: x)
                 tads=None
                 if opts.tad_def and not region2:
-                    tads, _ = parse_tads(opts.tad_def)
-                    if start1:
+                    tads = load_tads_fromdb(opts)
+                    if tads and start1:
                         tads = dict([(t, tads[t]) for t in tads
                              if  (int(tads[t]['start']) >= start1 // opts.reso
                                    and int(tads[t]['end']) <= end1 // opts.reso)])
@@ -284,9 +286,9 @@ def run(opts):
                     tad_def=tads)
                 ax1.set_title('Region: %s, normalization: %s, resolution: %s' % (
                     name, norm, nicer(opts.reso)), y=1.05)
-                _format_axes(ax1, start1, end1, start2, end2, opts.reso,
-                             regions, section_pos, sections,
-                             opts.xtick_rotation, triangular=False)
+                format_HiC_axes(ax1, start1, end1, start2, end2, opts.reso,
+                                regions, section_pos, sections,
+                                opts.xtick_rotation, triangular=False)
                 if opts.interactive:
                     plt.show()
                     plt.close('all')
@@ -314,71 +316,6 @@ def run(opts):
         printime('Saving to DB')
         finish_time = time.localtime()
         save_to_db(opts, launch_time, finish_time, out_files, out_plots)
-
-
-def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
-                 section_pos, sections, xtick_rotation, triangular=False):
-    if len(regions) <= 2:
-        pltbeg1 = 0 if start1 is None else start1
-        pltend1 = sections[regions[0]] if end1 is None else end1
-        pltbeg2 = (pltbeg1 if len(regions) == 1 else
-                   0 if start2 is None else start2)
-        pltend2 = (pltend1 if len(regions) == 1 else
-                   sections[regions[-1]] if end2 is None else end2)
-        axe1.set_xlabel('{}:{:,}-{:,}'.format(
-            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
-        if not triangular:
-            axe1.set_ylabel('{}:{:,}-{:,}'.format(
-                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
-
-        def format_xticks(tickstring, _=None):
-            tickstring = int(tickstring * reso + pltbeg1)
-            return nicer(tickstring if tickstring else 1,
-                         comma=',', allowed_decimals=1)
-
-        def format_yticks(tickstring, _=None):
-            tickstring = int(tickstring * reso + pltbeg2)
-            return nicer(tickstring if tickstring else 1,
-                         comma=',', allowed_decimals=1)
-
-        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
-        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
-        if triangular:
-            axe1.set_yticks([])
-
-        labels = axe1.get_xticklabels()
-        plt.setp(labels, rotation=xtick_rotation,
-                 ha='left' if xtick_rotation else 'center')
-    else:
-        vals = [0]
-        keys = []
-        total = 0
-        for crm in section_pos:
-            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
-            vals.append(total)
-            keys.append(crm)
-        axe1.set_yticks(vals)
-        axe1.set_yticklabels('')
-        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
-                         for i in range(len(vals) - 1)],
-                         minor=True)
-        axe1.set_yticklabels(keys, minor=True)
-        for t in axe1.yaxis.get_minor_ticks():
-            t.tick1line.set_visible(False)
-            t.tick2line.set_visible(False)
-
-        axe1.set_xticks(vals)
-        axe1.set_xticklabels('')
-        axe1.set_xticks([float(vals[i]+vals[i+1])/2
-                         for i in range(len(vals) - 1)],
-                        minor=True)
-        axe1.set_xticklabels(keys, minor=True)
-        for t in axe1.xaxis.get_minor_ticks():
-            t.tick1line.set_visible(False)
-            t.tick2line.set_visible(False)
-        axe1.set_xlabel('Chromosomes')
-        if not triangular:
-            axe1.set_ylabel('Chromosomes')
 
 
 @retry(lite.OperationalError, tries=20, delay=2)
@@ -660,7 +597,8 @@ def populate_args(parser):
 
     pltopt.add_argument('--tad_def', dest='tad_def', action='store',
                         default=None,
-                        help='''tsv file with tad definition, columns:
+                        help='''jobid with the TAD segmentation, alternatively 
+                        a tsv file with tad definition, columns:
                         #    start    end    score    density''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
@@ -800,3 +738,41 @@ def load_parameters_fromdb(opts):
                 raise Exception('ERROR: more than one item in the database')
             mreads = fetched[0][0]
         return biases, mreads
+
+def load_tads_fromdb(opts):
+    tads=None
+    try:
+        tad_job_id = int(opts.tad_def)
+        if opts.tmpdb:
+            dbfile = opts.tmpdb
+        else:
+            dbfile = path.join(opts.workdir, 'trace.db')
+        con = lite.connect(dbfile)
+        with con:
+            cur = con.cursor()
+            try:
+                cur.execute("""
+                select distinct paths.path,SEGMENT_OUTPUTs.resolution from paths
+                inner join SEGMENT_OUTPUTs on SEGMENT_OUTPUTs.JOBid = paths.JOBid
+                where SEGMENT_OUTPUTs.TADs is not null and paths.jobid = %s
+                """ % (tad_job_id))
+                tads_res = cur.fetchall()
+                if not tads_res:
+                    warn("""WARNING: tad definition job not found""")
+                    return None
+                else:
+                    tads_path = path.join(opts.workdir,tads_res[0][0])
+                    if not path.exists(tads_path):
+                        raise IOError('ERROR: tad definition file_handling does not exist')
+                    tads_reso = int(tads_res[0][1])
+                    tads, _ = parse_tads(tads_path)
+                    if tads_reso != opts.reso:
+                        for pos in range(len(tads)):
+                            tads[pos]['start'] = int((tads_reso/opts.reso)*tads[pos]['start'])
+                            tads[pos]['end'] = int((tads_reso/opts.reso)*tads[pos]['end'])
+                            tads[pos]['brk'] = int((tads_reso/opts.reso)*tads[pos]['brk'])
+            except IndexError:
+                warn("""WARNING: tad definition job not found""")
+    except TypeError:
+        tads, _ = parse_tads(opts.tad_def)
+    return tads

@@ -5,6 +5,7 @@
 """
 from __future__ import print_function
 
+import numpy as np
 from copy                                import deepcopy as copy
 from sys                                 import stderr
 from io                                  import IOBase
@@ -16,7 +17,7 @@ from pytadbit                            import HiC_data
 from pytadbit.parsers.hic_parser         import read_matrix
 from pytadbit.utils.extraviews           import nicer
 from pytadbit.utils.extraviews           import tadbit_savefig
-from pytadbit.utils.tadmaths             import zscore, nozero_log_matrix
+from pytadbit.utils.tadmaths             import zscore
 from pytadbit.utils.normalize_hic        import iterative
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
@@ -129,11 +130,11 @@ class Experiment(object):
 
        ::
 
-         chrT_001	chrT_002	chrT_003	chrT_004
-         chrT_001	629	164	88	105
-         chrT_002	164	612	175	110
-         chrT_003	88	175	437	100
-         chrT_004	105	110	100	278
+         chrT_001    chrT_002    chrT_003    chrT_004
+         chrT_001    629    164    88    105
+         chrT_002    164    612    175    110
+         chrT_003    88    175    437    100
+         chrT_004    105    110    100    278
 
        the output of parser('example.tsv') would be be:
        ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
@@ -561,11 +562,11 @@ class Experiment(object):
 
            ::
 
-             chrT_001	chrT_002	chrT_003	chrT_004
-             chrT_001	629	164	88	105
-             chrT_002	86	612	175	110
-             chrT_003	159	216	437	105
-             chrT_004	100	111	146	278
+             chrT_001    chrT_002    chrT_003    chrT_004
+             chrT_001    629    164    88    105
+             chrT_002    86    612    175    110
+             chrT_003    159    216    437    105
+             chrT_004    100    111    146    278
 
            the output of parser('example.tsv') would be:
            ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
@@ -605,11 +606,11 @@ class Experiment(object):
 
            ::
 
-             chrT_001	chrT_002	chrT_003	chrT_004
-             chrT_001	12.5	164	8.8	0.5
-             chrT_002	8.6	61.2	1.5	1.1
-             chrT_003	15.9	21.6	3.7	0.5
-             chrT_004	0.0	1.1	1.6	2.8
+             chrT_001    chrT_002    chrT_003    chrT_004
+             chrT_001    12.5    164    8.8    0.5
+             chrT_002    8.6    61.2    1.5    1.1
+             chrT_003    15.9    21.6    3.7    0.5
+             chrT_004    0.0    1.1    1.6    2.8
 
         :param None resolution: resolution of the experiment in the file; it
            will be adjusted to the resolution of the experiment. By default the
@@ -1387,33 +1388,29 @@ class Experiment(object):
                 matrix = [[hic_data[0][i+size*j]\
                            for i in range(size)] \
                           for j in range(size)]
+        if isinstance(cmap, basestring):
+            cmap = plt.get_cmap(cmap).copy()
+            cmap.set_bad('darkgrey', 0)
+        matrix = np.array(matrix)
         if where == 'up':
             for i in range(int(end - start)):
                 for j in range(i, int(end - start)):
-                    matrix[i][j] = vmin
-            alphas = array([0, 0] + [1] * 256 + [0])
-            jet._init()
-            jet._lut[:, -1] = alphas
+                    matrix[i][j] = np.nan if normalized else 0
         elif where == 'down':
             for i in range(int(end - start)):
                 for j in range(i + 1):
-                    matrix[i][j] = vmin
-            alphas = array([0, 0] + [1] * 256 + [0])
-            jet._init()
-            jet._lut[:,-1] = alphas
-
-        if isinstance(cmap, basestring):
-            cmap = plt.get_cmap(cmap)
-            cmap.set_bad('darkgrey', 1)
+                    matrix[i][j] = np.nan if normalized else 0
+        with np.errstate(divide='ignore', invalid='ignore'):
+            matrix = np.ma.masked_where(np.isnan(matrix), fun(matrix))
         if relative:
-            img = axe.imshow(nozero_log_matrix(matrix, fun), origin='lower', vmin=vmin, vmax=vmax,
+            img = axe.imshow(matrix, origin='lower', vmin=vmin, vmax=vmax,
                              interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,
                                      int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5))
         else:
-            img = axe.imshow(nozero_log_matrix(matrix, fun), origin='lower',
+            img = axe.imshow(matrix, origin='lower',
                              interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,

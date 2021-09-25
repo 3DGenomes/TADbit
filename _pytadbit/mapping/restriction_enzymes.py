@@ -269,10 +269,10 @@ def identify_re(fnam, nreads=100000):
     bestks = []
     best_pv = 1
     for pv, k in sorted((binom_test(pats[k]['count'], nreads, 0.25**len(k), alternative='greater'), k)
-                        for k in pats if pats[k]['count'])[:10]:
-        # print k, pv
-        if pv <= best_pv:
-            best_pv = pv
+                        for k in pats if pats[k]['count'])[:20]:        
+        if pv <= best_pv or pv < 1e-100:
+            if pv <= best_pv:
+                best_pv = pv
             bestks.append(k)
     # some times several patterns are equally probable (pv=0.0), in this case
     # we take the longest pattern that has a unique length.
