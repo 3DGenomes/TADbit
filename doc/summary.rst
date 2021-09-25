@@ -166,35 +166,35 @@ HiC_data class
 ++++++++++++++
     This may also hold the print/write-to-file matrix functions
 
-      - `add_sections <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences. Orders matters.
+      - `add_sections <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.add_sections>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences. Orders matters.
 
-      - `add_sections_from_fasta <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences
+      - `add_sections_from_fasta <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.add_sections_from_fasta>`_: Add genomic coordinate to HiC_data object by getting them from a FASTA                                             file containing chromosome sequences
 
-      - `cis_trans_ratio <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio>`_: Counts the number of interactions occurring within chromosomes (cis) with                                             respect to the total number of interactions
+      - `cis_trans_ratio <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.cis_trans_ratio>`_: Counts the number of interactions occurring within chromosomes (cis) with                                             respect to the total number of interactions
 
-      - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
+      - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
 
-      - `find_compartments_beta <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments_beta>`_ [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
+      - `find_compartments_beta <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.find_compartments_beta>`_ [#first]_ [#second]_: Search for A/B compartments in each chromosome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromosome names.
 
-      - `get_hic_data_as_csr <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr>`_: Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary
+      - `get_hic_data_as_csr <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.get_hic_data_as_csr>`_: Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary
 
-      - `get_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix>`_: returns a matrix.
+      - `get_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.get_matrix>`_: returns a matrix.
 
-      - `load_biases <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.load_biases>`_: Load biases, decay and bad columns from pickle file
+      - `load_biases <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.load_biases>`_: Load biases, decay and bad columns from pickle file
 
-      - `save_biases <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.save_biases>`_: Save biases, decay and bad columns in pickle format (to be loaded by                                             the function load_hic_data_from_bam)
+      - `save_biases <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.save_biases>`_: Save biases, decay and bad columns in pickle format (to be loaded by                                             the function load_hic_data_from_bam)
 
-      - `sum <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.sum>`_: Sum Hi-C data matrix                                             WARNING: parameters are not meant to be used by external users
+      - `sum <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.sum>`_: Sum Hi-C data matrix                                             WARNING: parameters are not meant to be used by external users
 
-      - `write_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_compartments>`_ [#second]_: Write compartments to a file.
+      - `write_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_compartments>`_ [#second]_: Write compartments to a file.
 
-      - write_cooler:                        writes the hic_data to a cooler file.
+      - `write_cooler <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_cooler>`_: writes the hic_data to a cooler file.
 
-      - `write_coord_table <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_coord_table>`_: writes a coordinate table to a file.
+      - `write_coord_table <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_coord_table>`_: writes a coordinate table to a file.
 
-      - `write_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix>`_: writes the matrix to a file.
+      - `write_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_matrix>`_: writes the matrix to a file.
 
-      - `yield_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix>`_: Yields a matrix line by line.                                             Bad row/columns are returned as null row/columns.
+      - `yield_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.yield_matrix>`_: Yields a matrix line by line.                                             Bad row/columns are returned as null row/columns.
 
 Mapping module
 --------------
@@ -263,11 +263,6 @@ Mapping restriction_enzymes module
 
    - map_re_sites_nochunk:                   map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                                                                                                                       In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-Modelling imp_modelling module
-------------------------------
-
-   - `generate_3d_models <http://3dgenomes.github.io/TADbit/reference/reference_modelling_structuralmodels.html#pytadbit.modelling.imp_modelling.generate_3d_models>`_ [#second]_: This function generates three-dimensional models starting from Hi-C data.                                             The final analysis will be performed on the n_keep top models.
-
 Modelling impmodel module
 -------------------------
 
@@ -280,27 +275,6 @@ IMPmodel class
     A container for the IMP modeling results.
 
       - `objective_function <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impmodel.html#pytadbit.modelling.impmodel.IMPmodel.objective_function>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step.
-
-Modelling impoptimizer module
------------------------------
-
-IMPoptimizer class
-++++++++++++++++++
-    This class optimizes a set of parameters (scale, kbending, maxdist, lowfreq, and
-    upfreq) in order to maximize the correlation between the contact matrix computed on
-    the generted models (generated by IMP) and the input contact map.
-
-      - `get_best_parameters_dict <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.get_best_parameters_dict>`_: 
-
-      - `load_from_file <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file>`_: Loads the optimized parameters from a file generated with the function:                                             pytadbit.modelling.impoptimizer.IMPoptimizer.write_result.                                             This function does not overwrite the parameters that were already                                             loaded or calculated.
-
-      - `load_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.load_grid_search>`_: Loads one file or a list of files containing pre-calculated Structural                                             Models (keep_models parameter used). And correlate each set of models                                             with real data. Useful to run different correlation on the same data                                             avoiding to re-calculate each time the models.
-
-      - `plot_2d <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
-
-      - `run_grid_search <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             kbending, maxdist, lowfreq and upfreq) in the given ranges of values.                                             The range can be expressed as a list.
-
-      - `write_result <http://3dgenomes.github.io/TADbit/reference/reference_modelling_impoptimizer.html#pytadbit.modelling.impoptimizer.IMPoptimizer.write_result>`_: This function writes a log file of all the values tested for each                                             parameter, and the resulting correlation value.                                                                                          This file can be used to load or merge data a posteriori using                                             the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file
 
 Modelling structuralmodel module
 --------------------------------
@@ -442,6 +416,8 @@ Parsers cooler_parser module
    - is_cooler:                              Check if file is a cooler and contains the wanted resolution
 
    - parse_cooler:                           Read matrix stored in cooler
+
+   - parse_header:                           Read matrix header stored in cooler
 
    - rlencode:                               Run length encoding.                                             Based on http://stackoverflow.com/a/32681075, which is based on the rle                                             function from R.                                                                                          Parameters                                             ----------                                             x : 1D array_like                                             Input array to encode                                             dropna: bool, optional                                             Drop all runs of NaNs.                                                                                          Returns                                             -------                                             start positions, run lengths, run values
 
