@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>IMPmodel class &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="reference_modelling_impoptimizer.html" title="IMPoptimizer class"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">IMPmodel class</a></li> 
       </ul>
     </div>  
 
@@ -41,9 +42,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <dl class="function">
-<dt id="pytadbit.modelling.impmodel.load_impmodel_from_cmm">
-<code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em class="sig-param">f_name</em>, <em class="sig-param">rand_init=None</em>, <em class="sig-param">radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+  <dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.modelling.impmodel.load_impmodel_from_cmm">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.modelling.impmodel.</span></span><span class="sig-name descname"><span class="pre">load_impmodel_from_cmm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">marker_set</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
   <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7347.50964739&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7743.92836303&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-8283.39749204&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.00990099009901&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.990099009901&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">/&gt;</span>
@@ -68,9 +69,9 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.modelling.impmodel.load_impmodel_from_xyz">
-<code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em class="sig-param">f_name</em>, <em class="sig-param">rand_init=None</em>, <em class="sig-param">radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.modelling.impmodel.load_impmodel_from_xyz">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.modelling.impmodel.</span></span><span class="sig-name descname"><span class="pre">load_impmodel_from_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ID              : some identifier</span>
 <span class="c1"># SPECIES         : None</span>
@@ -101,11 +102,11 @@
 </dl>
 </dd></dl>
 
-<div class="section" id="impmodel-class">
+<section id="impmodel-class">
 <h1>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="pytadbit.modelling.impmodel.IMPmodel">
-<em class="property">class </em><code class="sig-prename descclassname">pytadbit.modelling.impmodel.</code><code class="sig-name descname">IMPmodel</code><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pytadbit.modelling.impmodel.IMPmodel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pytadbit.modelling.impmodel.</span></span><span class="sig-name descname"><span class="pre">IMPmodel</span></span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container for the IMP modeling results. The container is a dictionary
 with the following keys:</p>
 <ul class="simple">
@@ -114,9 +115,9 @@ with the following keys:</p>
 <li><p>rand_init: Random number generator feed (needed for model reproducibility)</p></li>
 <li><p>x, y, z: 3D coordinates of each particles. Each represented as a list</p></li>
 </ul>
-<dl class="method">
-<dt id="pytadbit.modelling.impmodel.IMPmodel.objective_function">
-<code class="sig-name descname">objective_function</code><span class="sig-paren">(</span><em class="sig-param">log=False</em>, <em class="sig-param">smooth=True</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.modelling.impmodel.IMPmodel.objective_function">
+<span class="sig-name descname"><span class="pre">objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/modelling/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.modelling.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function plots the objective function value per each Monte-Carlo
 step.</p>
 <dl class="field-list simple">
@@ -136,9 +137,10 @@ of the file name will determine the desired format).</p></li>
 
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -181,12 +183,12 @@ of the file name will determine the desired format).</p></li>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -204,13 +206,14 @@ of the file name will determine the desired format).</p></li>
           <a href="reference_modelling_impoptimizer.html" title="IMPoptimizer class"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">IMPmodel class</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

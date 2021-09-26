@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Filtering &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Filtering</a></li> 
       </ul>
     </div>  
 
@@ -41,12 +42,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="filtering">
+  <section id="filtering">
 <h1>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h1>
-<div class="figure align-default" id="id1">
+<figure class="align-default" id="id1">
 <img alt="Filters" src="../_images/Filters.jpeg" />
-<p class="caption"><span class="caption-text">Filters</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Filters</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Pairs of mapped read-ends are filtered in order to keep only valid
 pairs. The filters available in TADbit are these one: 1.
 <strong>Self-circle</strong>: both read-ends are mapped to the same RE fragment in
@@ -82,7 +85,7 @@ minimum_distance_to_RE parameter should be larger than the
 <span class="n">rep</span> <span class="o">=</span> <span class="s1">&#39;rep1&#39;</span>  <span class="c1"># or rep2</span>
 </pre></div>
 </div>
-<div class="section" id="filter-out-dangling-ends-and-self-circles">
+<section id="filter-out-dangling-ends-and-self-circles">
 <h2>Filter out dangling ends and self-circles<a class="headerlink" href="#filter-out-dangling-ends-and-self-circles" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">filter_reads</span>
 </pre></div>
@@ -115,8 +118,8 @@ should be large enough in order to contain almost all the fragments.</p>
   10-             random breaks :      308,512 (  0.35%)</pre>
 <p>This generates a dictionary with the different filters and the reads
 affected by each.</p>
-</div>
-<div class="section" id="apply-filters-on-the-data">
+</section>
+<section id="apply-filters-on-the-data">
 <h2>Apply filters on the data<a class="headerlink" href="#apply-filters-on-the-data" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">apply_filter</span>
 
@@ -127,7 +130,7 @@ affected by each.</p>
 </div>
 <pre class="ansi-block literal-block">saving to file 66,612,427 reads without.</pre>
 <pre class="ansi-block literal-block">66612427</pre>
-<div class="section" id="evaluate-changes">
+<section id="evaluate-changes">
 <h3>Evaluate changes<a class="headerlink" href="#evaluate-changes" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">hic_map</span>
 
@@ -147,7 +150,7 @@ affected by each.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_6-Filtering_mapped_reads_15_0.png" src="../_images/tutorial_6-Filtering_mapped_reads_15_0.png" />
-<div class="section" id="save-to-bam">
+<section id="save-to-bam">
 <h4>Save to BAM<a class="headerlink" href="#save-to-bam" title="Permalink to this headline">¶</a></h4>
 <p>Working with TSV (tab-separated-value file format) files is very slow.
 For the next part of the tutorial we will be using BAM
@@ -185,12 +188,13 @@ are the strand orientation of the left and right read-end</p>
                 <span class="n">frmt</span><span class="o">=</span><span class="s1">&#39;mid&#39;</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -234,12 +238,12 @@ are the strand orientation of the left and right read-end</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -257,13 +261,14 @@ are the strand orientation of the left and right read-end</p>
           <a href="tutorial_5-Parsing_mapped_reads.html" title="Load mapped read-ends and generate a matrix"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Filtering</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

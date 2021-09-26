@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Alignment class &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="reference_aligner.html" title="Boundary Aligner"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Alignment class</a></li> 
       </ul>
     </div>  
 
@@ -41,15 +42,15 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="alignment-class">
+  <section id="alignment-class">
 <h1>Alignment class<a class="headerlink" href="#alignment-class" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="pytadbit.alignment.Alignment">
-<em class="property">class </em><code class="sig-prename descclassname">pytadbit.alignment.</code><code class="sig-name descname">Alignment</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">alignment</em>, <em class="sig-param">experiments</em>, <em class="sig-param">consensus</em>, <em class="sig-param">score=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pytadbit.alignment.</span></span><span class="sig-name descname"><span class="pre">Alignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consensus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alignment of TAD borders</p>
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param">focus=None</em>, <em class="sig-param">extras=None</em>, <em class="sig-param">ymax=None</em>, <em class="sig-param">ali_colors=('grey'</em>, <em class="sig-param">)</em>, <em class="sig-param">normalized=True</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">shape='ellipse'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.draw" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.draw">
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ali_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('grey',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ellipse'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw alignments as a plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -73,9 +74,9 @@ of the file name will determine the desired format).</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.get_column">
-<code class="sig-name descname">get_column</code><span class="sig-paren">(</span><em class="sig-param">cond1</em>, <em class="sig-param">cond2=None</em>, <em class="sig-param">min_num=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.get_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.get_column" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.get_column">
+<span class="sig-name descname"><span class="pre">get_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cond1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cond2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.get_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.get_column" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of column responding to a given characteristic.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -116,27 +117,27 @@ element is the list of boundaries in this column.</p>
 </div>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.itercolumns">
-<code class="sig-name descname">itercolumns</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.itercolumns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.itercolumns" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.itercolumns">
+<span class="sig-name descname"><span class="pre">itercolumns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.itercolumns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.itercolumns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over columns in the alignment</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.iteritems">
-<code class="sig-name descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.iteritems" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.iteritems">
+<span class="sig-name descname"><span class="pre">iteritems</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.iteritems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.iteritems" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over experiment names and aligned boundaries</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.itervalues">
-<code class="sig-name descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.itervalues" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.itervalues">
+<span class="sig-name descname"><span class="pre">itervalues</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.itervalues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.itervalues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over experiment names and aligned boundaries</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytadbit.alignment.Alignment.write_alignment">
-<code class="sig-name descname">write_alignment</code><span class="sig-paren">(</span><em class="sig-param">names=None</em>, <em class="sig-param">xpers=None</em>, <em class="sig-param">string=False</em>, <em class="sig-param">title=''</em>, <em class="sig-param">ftype='ansi'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.write_alignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.write_alignment" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pytadbit.alignment.Alignment.write_alignment">
+<span class="sig-name descname"><span class="pre">write_alignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xpers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ansi'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#Alignment.write_alignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.Alignment.write_alignment" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Print alignment of TAD boundaries between different experiments.</dt><dd><p>Alignments are displayed with colors according to the TADbit
 confidence score for each boundary.</p>
@@ -156,9 +157,9 @@ confidence score for each boundary.</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="pytadbit.alignment.TAD">
-<em class="property">class </em><code class="sig-prename descclassname">pytadbit.alignment.</code><code class="sig-name descname">TAD</code><span class="sig-paren">(</span><em class="sig-param">thing</em>, <em class="sig-param">i</em>, <em class="sig-param">exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#TAD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.TAD" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pytadbit.alignment.TAD">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pytadbit.alignment.</span></span><span class="sig-name descname"><span class="pre">TAD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#TAD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.TAD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class of TADs, used only within Alignment objects.
 It is directly inheriting from python dict.
 a TAD these keys:</p>
@@ -175,9 +176,9 @@ a TAD these keys:</p>
 </div></blockquote>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.alignment.randomization_test">
-<code class="sig-prename descclassname">pytadbit.alignment.</code><code class="sig-name descname">randomization_test</code><span class="sig-paren">(</span><em class="sig-param">xpers</em>, <em class="sig-param">score=None</em>, <em class="sig-param">num=1000</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">max_dist=100000</em>, <em class="sig-param">rnd_method='interpolate'</em>, <em class="sig-param">r_size=None</em>, <em class="sig-param">method='reciprocal'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#randomization_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.randomization_test" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.alignment.randomization_test">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.alignment.</span></span><span class="sig-name descname"><span class="pre">randomization_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xpers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnd_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interpolate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reciprocal'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#randomization_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.randomization_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the probability that original alignment is better than an
 alignment of randomized boundaries.</p>
 <dl class="field-list simple">
@@ -199,9 +200,9 @@ method uses directly the set of observed TADs and shuffle them (see
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.alignment.generate_rnd_tads">
-<code class="sig-prename descclassname">pytadbit.alignment.</code><code class="sig-name descname">generate_rnd_tads</code><span class="sig-paren">(</span><em class="sig-param">chromosome_len</em>, <em class="sig-param">distr</em>, <em class="sig-param">start=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#generate_rnd_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.generate_rnd_tads" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.alignment.generate_rnd_tads">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.alignment.</span></span><span class="sig-name descname"><span class="pre">generate_rnd_tads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chromosome_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#generate_rnd_tads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.generate_rnd_tads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates random TADs over a chromosome of a given size according to a given
 distribution of lengths of TADs.</p>
 <dl class="field-list simple">
@@ -219,9 +220,9 @@ distribution of lengths of TADs.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.alignment.generate_shuffle_tads">
-<code class="sig-prename descclassname">pytadbit.alignment.</code><code class="sig-name descname">generate_shuffle_tads</code><span class="sig-paren">(</span><em class="sig-param">tads</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#generate_shuffle_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.alignment.generate_shuffle_tads" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.alignment.generate_shuffle_tads">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.alignment.</span></span><span class="sig-name descname"><span class="pre">generate_shuffle_tads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tads</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/alignment.html#generate_shuffle_tads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.alignment.generate_shuffle_tads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a shuffle version of a given list of TADs</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -233,9 +234,10 @@ distribution of lengths of TADs.</p>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -278,12 +280,12 @@ distribution of lengths of TADs.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -301,13 +303,14 @@ distribution of lengths of TADs.</p>
           <a href="reference_aligner.html" title="Boundary Aligner"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Alignment class</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

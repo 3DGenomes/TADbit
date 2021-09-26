@@ -1,18 +1,19 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Utilities &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +33,8 @@
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Utilities</a></li> 
       </ul>
     </div>  
 
@@ -41,11 +43,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="utilities">
+  <section id="utilities">
 <h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="pytadbit.get_dependencies_version">
-<code class="sig-prename descclassname">pytadbit.</code><code class="sig-name descname">get_dependencies_version</code><span class="sig-paren">(</span><em class="sig-param">dico=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit.html#get_dependencies_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.get_dependencies_version" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.get_dependencies_version">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.</span></span><span class="sig-name descname"><span class="pre">get_dependencies_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dico</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit.html#get_dependencies_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.get_dependencies_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check versions of TADbit and all dependencies, as well and retrieves system
 info. May be used to ensure reproducibility.</p>
 <dl class="field-list simple">
@@ -55,9 +57,9 @@ info. May be used to ensure reproducibility.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.tadmaths.calinski_harabasz">
-<code class="sig-prename descclassname">pytadbit.utils.tadmaths.</code><code class="sig-name descname">calinski_harabasz</code><span class="sig-paren">(</span><em class="sig-param">scores</em>, <em class="sig-param">clusters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/tadmaths.html#calinski_harabasz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.tadmaths.calinski_harabasz" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.tadmaths.calinski_harabasz">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.tadmaths.</span></span><span class="sig-name descname"><span class="pre">calinski_harabasz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/tadmaths.html#calinski_harabasz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.tadmaths.calinski_harabasz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of the CH score <a class="reference internal" href="../biblio.html#calinskiharabasz1974" id="id1"><span>[CalinskiHarabasz1974]</span></a>, that has shown to be
 one the most accurate way to compare clustering methods
 <a class="reference internal" href="../biblio.html#milligancooper1985" id="id2"><span>[MilliganCooper1985]</span></a> <a class="reference internal" href="../biblio.html#tibshirani2001" id="id3"><span>[Tibshirani2001]</span></a>.</p>
@@ -83,9 +85,9 @@ list of models</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.plot_3d_optimization_result">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_3d_optimization_result</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">axes=('scale'</em>, <em class="sig-param">'maxdist'</em>, <em class="sig-param">'upfreq'</em>, <em class="sig-param">'lowfreq')</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.plot_3d_optimization_result">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">plot_3d_optimization_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('scale',</span> <span class="pre">'maxdist',</span> <span class="pre">'upfreq',</span> <span class="pre">'lowfreq')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_optimization_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Displays a three dimensional scatter plot representing the result of the
 optimization.</p>
 <dl class="field-list simple">
@@ -100,9 +102,9 @@ w, z, y or x axe.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.plot_2d_optimization_result">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_2d_optimization_result</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">axes=('scale'</em>, <em class="sig-param">'kbending'</em>, <em class="sig-param">'maxdist'</em>, <em class="sig-param">'lowfreq'</em>, <em class="sig-param">'upfreq')</em>, <em class="sig-param">dcutoff=None</em>, <em class="sig-param">show_best=0</em>, <em class="sig-param">skip=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">clim=None</em>, <em class="sig-param">cmap='inferno'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.plot_2d_optimization_result">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">plot_2d_optimization_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('scale',</span> <span class="pre">'kbending',</span> <span class="pre">'maxdist',</span> <span class="pre">'lowfreq',</span> <span class="pre">'upfreq')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inferno'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization. In the optimization
 up to 5 parameters can be optimized: ‘scale’, ‘kbending’, ‘maxdist’, ‘lowfreq’, and ‘upfreq’.
 The maps will be divided in different pages depending on the ‘scale’ and ‘kbending’ values.
@@ -133,9 +135,9 @@ of the file name will automatically determine the desired format.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.compare_models">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">compare_models</code><span class="sig-paren">(</span><em class="sig-param">sm1</em>, <em class="sig-param">sm2</em>, <em class="sig-param">cutoff=150</em>, <em class="sig-param">models1=None</em>, <em class="sig-param">cluster1=None</em>, <em class="sig-param">models2=None</em>, <em class="sig-param">cluster2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#compare_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.compare_models" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.compare_models">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">compare_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sm1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">models1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">models2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#compare_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.compare_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the difference of contact maps of two group of structural models.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -154,9 +156,9 @@ cluster number ‘cluster’</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.color_residues">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">color_residues</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.color_residues">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">color_residues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to color residues from blue to red.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -168,9 +170,9 @@ cluster number ‘cluster’</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.tad_coloring">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">tad_coloring</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">mstart=None</em>, <em class="sig-param">mend=None</em>, <em class="sig-param">tads=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.tad_coloring">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">tad_coloring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mstart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_coloring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TADs from blue to red (first to last TAD). TAD borders are displayed
 in scale of grey, from light to dark grey (again first to last border)</p>
 <dl class="field-list simple">
@@ -186,9 +188,9 @@ in scale of grey, from light to dark grey (again first to last border)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.tad_border_coloring">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">tad_border_coloring</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">mstart=None</em>, <em class="sig-param">mend=None</em>, <em class="sig-param">tads=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_border_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.tad_border_coloring">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">tad_border_coloring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mstart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_border_coloring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TAD borders from blue to red (bad to good score). TAD are displayed
 in scale of grey, from light to dark grey (first to last particle in the
 TAD)</p>
@@ -205,9 +207,9 @@ TAD)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.plot_3d_model">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">plot_3d_model</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">label=False</em>, <em class="sig-param">axe=None</em>, <em class="sig-param">thin=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">show_axe=False</em>, <em class="sig-param">azimuth=-90</em>, <em class="sig-param">elevation=0.0</em>, <em class="sig-param">color='index'</em>, <em class="sig-param">smooth=0.001</em>, <em class="sig-param">particle_size=50</em>, <em class="sig-param">alpha_part=0.5</em>, <em class="sig-param">lw_main=3</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.plot_3d_model">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">plot_3d_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elevation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_part</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw_main</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
 using matplotlib</p>
 <dl class="field-list simple">
@@ -252,9 +254,9 @@ Each r, g, b between 0 and 1.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.extraviews.chimera_view">
-<code class="sig-prename descclassname">pytadbit.utils.extraviews.</code><code class="sig-name descname">chimera_view</code><span class="sig-paren">(</span><em class="sig-param">cmm_files</em>, <em class="sig-param">chimera_bin='chimera'</em>, <em class="sig-param">chimera_cmd=None</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">center_of_mass=False</em>, <em class="sig-param">gyradius=False</em>, <em class="sig-param">align=True</em>, <em class="sig-param">grid=False</em>, <em class="sig-param">highlight='all'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#chimera_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.chimera_view" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.extraviews.chimera_view">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.extraviews.</span></span><span class="sig-name descname"><span class="pre">chimera_view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmm_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chimera_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chimera'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chimera_cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_of_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gyradius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#chimera_view"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.extraviews.chimera_view" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a list of .cmm files with Chimera (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>)
 to view models.</p>
 <dl class="field-list simple">
@@ -276,9 +278,9 @@ Can be either ‘all’, or a model number</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
-<code class="sig-prename descclassname">pytadbit.utils.hic_filtering.</code><code class="sig-name descname">hic_filtering_for_modelling</code><span class="sig-paren">(</span><em class="sig-param">matrx</em>, <em class="sig-param">silent=False</em>, <em class="sig-param">perc_zero=90</em>, <em class="sig-param">auto=True</em>, <em class="sig-param">min_count=None</em>, <em class="sig-param">draw_hist=False</em>, <em class="sig-param">savefig=None</em>, <em class="sig-param">diagonal=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.hic_filtering.</span></span><span class="sig-name descname"><span class="pre">hic_filtering_for_modelling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perc_zero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artifactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; and columns with NaN values (in this case NaN will be replaced
@@ -309,9 +311,9 @@ calculation of the z-score</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.file_handling.magic_open">
-<code class="sig-prename descclassname">pytadbit.utils.file_handling.</code><code class="sig-name descname">magic_open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">cpus=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#magic_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.magic_open" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.file_handling.magic_open">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.file_handling.</span></span><span class="sig-name descname"><span class="pre">magic_open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#magic_open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.file_handling.magic_open" title="Permalink to this definition">¶</a></dt>
 <dd><p>To read uncompressed zip gzip bzip2 or tar.xx files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -323,9 +325,9 @@ calculation of the z-score</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.file_handling.get_free_space_mb">
-<code class="sig-prename descclassname">pytadbit.utils.file_handling.</code><code class="sig-name descname">get_free_space_mb</code><span class="sig-paren">(</span><em class="sig-param">folder</em>, <em class="sig-param">div=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#get_free_space_mb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.file_handling.get_free_space_mb" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.file_handling.get_free_space_mb">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.file_handling.</span></span><span class="sig-name descname"><span class="pre">get_free_space_mb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/file_handling.html#get_free_space_mb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.file_handling.get_free_space_mb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return folder/drive free space (in bytes)</p>
 <p>Based on stackoverflow answer: <a class="reference external" href="http://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python">http://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python</a></p>
 <dl class="field-list simple">
@@ -338,9 +340,9 @@ calculation of the z-score</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">calc_eqv_rmsd</code><span class="sig-paren">(</span><em class="sig-param">models</em>, <em class="sig-param">beg</em>, <em class="sig-param">end</em>, <em class="sig-param">zeros</em>, <em class="sig-param">dcutoff=200</em>, <em class="sig-param">one=False</em>, <em class="sig-param">what='score'</em>, <em class="sig-param">normed=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">calc_eqv_rmsd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zeros</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">what</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'score'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the RMSD, dRMSD, the number of equivalent positions and a score
 combining these three measures. The measure are done between a group of
 models in a one against all manner.</p>
@@ -373,9 +375,9 @@ pairwise model comparison.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.square_distance">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">square_distance</code><span class="sig-paren">(</span><em class="sig-param">part1</em>, <em class="sig-param">part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#square_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.square_distance" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.square_distance">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">square_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#square_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.square_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the square distance between two particles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -390,9 +392,9 @@ pairwise model comparison.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.distance">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param">part1</em>, <em class="sig-param">part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.distance" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.distance">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the distance between two particles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -407,9 +409,9 @@ pairwise model comparison.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.angle_between_3_points">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">angle_between_3_points</code><span class="sig-paren">(</span><em class="sig-param">point1</em>, <em class="sig-param">point2</em>, <em class="sig-param">point3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.angle_between_3_points">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">angle_between_3_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>      <span class="n">A</span>
@@ -444,15 +446,15 @@ pairwise model comparison.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.dihedral">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">dihedral</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em>, <em class="sig-param">c</em>, <em class="sig-param">d</em>, <em class="sig-param">e</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.dihedral" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.dihedral">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">dihedral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#dihedral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates dihedral angle between 4 points in 3D (array with x,y,z)</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.generate_circle_points">
-<code class="sig-prename descclassname">pytadbit.utils.three_dim_stats.</code><code class="sig-name descname">generate_circle_points</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">u</em>, <em class="sig-param">v</em>, <em class="sig-param">w</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_circle_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_circle_points" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pytadbit.utils.three_dim_stats.generate_circle_points">
+<span class="sig-prename descclassname"><span class="pre">pytadbit.utils.three_dim_stats.</span></span><span class="sig-name descname"><span class="pre">generate_circle_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_circle_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_circle_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns list of 3d coordinates of points on a circle using the
 Rodrigues rotation formula.</p>
 <p>see <em>Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions</em>
@@ -479,9 +481,10 @@ for details</p>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -524,12 +527,12 @@ for details</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -547,13 +550,14 @@ for details</p>
           <a href="reference_modelling_structuralmodels.html" title="StructuralModels class"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Utilities</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

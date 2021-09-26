@@ -1,18 +1,18 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Retrieve HiC dataset from NCBI &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +32,8 @@
           <a href="../tutorial.html" title="Tutorials"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Retrieve HiC dataset from NCBI</a></li> 
       </ul>
     </div>  
 
@@ -41,7 +42,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="retrieve-hic-dataset-from-ncbi">
+  <section id="retrieve-hic-dataset-from-ncbi">
 <h1>Retrieve HiC dataset from NCBI<a class="headerlink" href="#retrieve-hic-dataset-from-ncbi" title="Permalink to this headline">¶</a></h1>
 <p>We will use data from <a class="reference external" href="#cite-ralph">(Stadhouders R, Vidal E, Serra F, Di Stefano B
 et al. 2018)</a>, which comes from mouse cells where Hi-C
@@ -61,19 +62,19 @@ one per read-end (this step is long and can take <strong>up to 6 hours</strong>)
 
 mkdir -p FASTQs
 
-fastq-dump -A SRR5344921 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+fastq-dump SRR5344921 --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
 mv FASTQs/SRR5344921_1.fastq FASTQs/mouse_B_rep1_1.fastq
 mv FASTQs/SRR5344921_2.fastq FASTQs/mouse_B_rep1_2.fastq
 
-fastq-dump -A SRR5344925 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+fastq-dump SRR5344925 --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
 mv FASTQs/SRR5344925_1.fastq FASTQs/mouse_B_rep2_1.fastq
 mv FASTQs/SRR5344925_2.fastq FASTQs/mouse_B_rep2_2.fastq
 
-fastq-dump -A SRR5344969 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs
+fastq-dump SRR5344969 --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs
 mv FASTQs/SRR5344969_1.fastq FASTQs/mouse_PSC_rep1_1.fastq
 mv FASTQs/SRR5344969_2.fastq FASTQs/mouse_PSC_rep1_2.fastq
 
-fastq-dump -A SRR5344973 -DQ <span class="s1">&#39;+&#39;</span> --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
+fastq-dump SRR5344973 --defline-seq <span class="s1">&#39;@$ac.$si&#39;</span> -X <span class="m">100000000</span> --split-files --outdir FASTQs/
 mv FASTQs/SRR5344973_1.fastq FASTQs/mouse_PSC_rep2_1.fastq
 mv FASTQs/SRR5344973_2.fastq FASTQs/mouse_PSC_rep2_2.fastq
 </pre></div>
@@ -88,15 +89,13 @@ Read 100000000 spots for SRR5344973
 Written 100000000 spots for SRR5344973</pre>
 <p>Files are renamed for convenience.</p>
 <p><em>Note: the parameter used here for fastq-dump are for generating simple
-FASTQ files, -DQ ‘+’ tells to put a single plus sign as header of the
-quality input, ``–defline-seq ‘&#64;$ac.$si’`` reduces the information in
-the headers to the accession number and the read id, ``–split-files``
-is to separate both read-ends in different files, finally
-``-X 100000000`` is to download only the first 100 Million reads of each
-replicate</em></p>
+FASTQ files, ``–defline-seq ‘&#64;$ac.$si’`` reduces the information in the
+headers to the accession number and the read id, ``–split-files`` is to
+separate both read-ends in different files, finally ``-X 100000000`` is
+to download only the first 100 Million reads of each replicate</em></p>
 <p><em>Note: alternatively you can also directly download the FASTQ from
 http://www.ebi.ac.uk/</em></p>
-<div class="section" id="compression">
+<section id="compression">
 <h2>Compression<a class="headerlink" href="#compression" title="Permalink to this headline">¶</a></h2>
 <p>Each of these 8 files, contains 100M reads of 75 nucleotides each, and
 occupies ~17 Gb (total 130 Gb).</p>
@@ -121,8 +120,8 @@ original size, and dsrc ensures fast reading of the compressed data</strong>)</p
 than dsrc compressed files)</em> - <em>using bzip2 instead reduces size to ~31
 Gb (occupies ~15% more than dsrc compressed files)</em></p>
 <p><em>Both are much slower to generate and read</em></p>
-</div>
-<div class="section" id="cleanup">
+</section>
+<section id="cleanup">
 <h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
@@ -136,18 +135,19 @@ rm -f FASTQs/mouse_PSC_rep2_1.fastq
 rm -f FASTQs/mouse_PSC_rep2_2.fastq
 </pre></div>
 </div>
-</div>
-<div class="section" id="references">
+</section>
+<section id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p>[^](#ref-1) Stadhouders R, Vidal E, Serra F, Di Stefano B et al. 2018.
 <em>Transcription factors orchestrate dynamic interplay between genome
 topology and gene regulation during cell reprogramming</em>.</p>
 <p>[^](#ref-4) Roguski, :raw-latex:<a href="#id1"><span class="problematic" id="id2">`</span></a>Lukasz <a href="#id3"><span class="problematic" id="id4">`</span></a>and Deorowicz, Sebastian.
 2014. <em>DSRC 2—Industry-oriented compression of FASTQ files</em>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -191,12 +191,12 @@ topology and gene regulation during cell reprogramming</em>.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -214,13 +214,14 @@ topology and gene regulation during cell reprogramming</em>.</p>
           <a href="../tutorial.html" title="Tutorials"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">TADbit 1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Retrieve HiC dataset from NCBI</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,18 +1,17 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pytadbit.modelling.structuralmodels &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -25,7 +24,8 @@
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.modelling.structuralmodels</a></li> 
       </ul>
     </div>  
 
@@ -41,7 +41,11 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">future</span> <span class="kn">import</span> <span class="n">standard_library</span>
 <span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
-<span class="kn">from</span> <span class="nn">pickle</span>                          <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span><span class="p">,</span> <span class="n">HIGHEST_PROTOCOL</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pickle5</span>                      <span class="kn">import</span> <span class="n">load</span>  <span class="c1"># python &lt; 3.8</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pickle</span>                       <span class="kn">import</span> <span class="n">load</span>
+<span class="kn">from</span> <span class="nn">pickle</span>                           <span class="kn">import</span> <span class="n">dump</span><span class="p">,</span> <span class="n">HIGHEST_PROTOCOL</span>
 <span class="kn">from</span> <span class="nn">subprocess</span>                       <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
 <span class="kn">from</span> <span class="nn">math</span>                             <span class="kn">import</span> <span class="n">acos</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span>
 <span class="kn">from</span> <span class="nn">warnings</span>                         <span class="kn">import</span> <span class="n">warn</span><span class="p">,</span> <span class="n">catch_warnings</span><span class="p">,</span> <span class="n">simplefilter</span>    
@@ -55,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">itertools</span>                        <span class="kn">import</span> <span class="n">combinations</span>
 <span class="kn">from</span> <span class="nn">uuid</span>                             <span class="kn">import</span> <span class="n">uuid5</span><span class="p">,</span> <span class="n">UUID</span>
 <span class="kn">from</span> <span class="nn">hashlib</span>                          <span class="kn">import</span> <span class="n">md5</span>
-<span class="kn">from</span> <span class="nn">copy</span>                             <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">copy</span>                             <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
 
 <span class="kn">from</span> <span class="nn">numpy</span>                            <span class="kn">import</span> <span class="n">exp</span> <span class="k">as</span> <span class="n">np_exp</span>
 <span class="kn">from</span> <span class="nn">numpy</span>                            <span class="kn">import</span> <span class="n">median</span> <span class="k">as</span> <span class="n">np_median</span>
@@ -695,7 +699,7 @@
         <span class="k">return</span> <span class="n">d</span></div>
 
 <div class="viewcode-block" id="StructuralModels.get_contact_matrix"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.get_contact_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_contact_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                           <span class="n">distance</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                           <span class="n">distance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_bad_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a matrix with the number of interactions observed below a given</span>
 <span class="sd">        cutoff distance.</span>
@@ -711,6 +715,7 @@
 <span class="sd">           will be a dictionnary of matrices (keys being square cutoffs)</span>
 <span class="sd">        :param False distance: returns the distance matrix of all_angles against</span>
 <span class="sd">           all_angles particles instead of a contact_map matrix using the cutoff</span>
+<span class="sd">        :param True show_bad_columns: show bad columns in contact map</span>
 
 <span class="sd">        :returns: matrix frequency of interaction</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -732,7 +737,11 @@
         <span class="n">cutoff</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cutoff</span><span class="p">]</span>
         <span class="n">matrix</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="p">[[</span><span class="mf">0.</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)]</span>
                             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cutoff</span><span class="p">])</span>
-        <span class="n">wloci</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="c1"># remove (or not) interactions from bad columns</span>
+        <span class="k">if</span> <span class="n">show_bad_columns</span><span class="p">:</span>
+            <span class="n">wloci</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wloci</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)]</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">mdl</span><span class="p">]</span> <span class="k">for</span> <span class="n">mdl</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
 
         <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
@@ -980,7 +989,7 @@
                                  <span class="n">tool</span><span class="o">=</span><span class="s1">&#39;plot&#39;</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_label_position</span><span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Cluster #</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span>
-                             <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">),</span>
+                             <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">.5</span><span class="p">),</span>
                              <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ax</span><span class="p">]:</span>
                     <span class="n">item</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
@@ -1132,6 +1141,10 @@
 <span class="sd">           micrometers) *5-* a list of number of (accessibles, inaccessible) for</span>
 <span class="sd">           each particle (percentage burried can be infered afterwards by</span>
 <span class="sd">           accessible/(accessible+inaccessible) )</span>
+
+<span class="sd">           if ploting, returns values to be plotted (list of lists, one per window), and the same</span>
+<span class="sd">           for upper and lower error lines</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cluster</span> <span class="o">=</span> <span class="n">cluster</span> <span class="ow">or</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">if</span> <span class="n">models</span><span class="p">:</span>
@@ -1169,13 +1182,13 @@
         <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Accesibility per particle&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_generic_per_particle_plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">accper</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span>
                                         <span class="n">errorn</span><span class="p">,</span> <span class="n">savefig</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
-                                        <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+                                        <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="c1">#if savefig:</span>
         <span class="c1">#    tadbit_savefig(savefig)</span>
         <span class="c1">#elif not axe:</span>
         <span class="c1">#    plt.show()</span>
         <span class="c1">#plt.close(&#39;all&#39;)</span>
-
+        <span class="k">return</span> <span class="n">accper</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span></div>
 
     <span class="k">def</span> <span class="nf">_get_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">use_mass_center</span><span class="p">):</span>
         <span class="n">dists</span> <span class="o">=</span> <span class="p">[[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)]</span> <span class="o">*</span> <span class="n">interval</span>
@@ -1239,6 +1252,9 @@
 <span class="sd">           generated (1 column per step + 1 for particle number).</span>
 <span class="sd">        :param True plot: e.g. if False, only saves data. No plotting done</span>
 
+<span class="sd">        :returns: values to be plotted (list of lists, one per window), and the same</span>
+<span class="sd">           for upper and lower error lines</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="p">)</span>
@@ -1249,7 +1265,6 @@
             <span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
             <span class="n">distsk</span><span class="p">,</span> <span class="n">errorn</span><span class="p">,</span> <span class="n">errorp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windowize</span><span class="p">(</span><span class="n">dists</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
                                                      <span class="n">average</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
         <span class="c1"># write consistencies to file</span>
         <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -1260,7 +1275,7 @@
                     <span class="p">[</span><span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span> <span class="k">if</span> <span class="n">part</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">else</span>
                      <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span>
                       <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">errorp</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">],</span> <span class="mi">3</span><span class="p">))))</span>
-                     <span class="k">if</span> <span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span>
+                     <span class="k">if</span> <span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">isnan</span><span class="p">(</span><span class="n">distsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span>
                      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">])))</span>
             <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
@@ -1271,7 +1286,8 @@
             <span class="c1">#                                 xlabel=xlabel, ylabel=ylabel, title=title)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_generic_per_particle_plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">distsk</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span>
                                             <span class="n">errorn</span><span class="p">,</span> <span class="n">savefig</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
-                                            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span></div>
+                                            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">distsk</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span></div>
 
     <span class="k">def</span> <span class="nf">_get_interactions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">):</span>
         <span class="n">interactions</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)]</span>
@@ -1321,6 +1337,9 @@
 <span class="sd">           otherwise, the median.</span>
 <span class="sd">        :param True plot: e.g. only saves data. No plotting done</span>
 
+<span class="sd">        :returns: values to be plotted (list of lists, one per window), and the same</span>
+<span class="sd">           for upper and lower error lines</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="p">)</span>
@@ -1352,7 +1371,8 @@
             <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Interactions per particle&#39;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_generic_per_particle_plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">distsk</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span>
                                             <span class="n">errorn</span><span class="p">,</span> <span class="n">savefig</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
-                                            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span></div>
+                                            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">distsk</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span></div>
 
 <div class="viewcode-block" id="StructuralModels.model_consistency"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.model_consistency">[docs]</a>    <span class="k">def</span> <span class="nf">model_consistency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1446,9 +1466,11 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.77</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">consistencies</span></div>
 
 <div class="viewcode-block" id="StructuralModels.walking_dihedral"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.walking_dihedral">[docs]</a>    <span class="k">def</span> <span class="nf">walking_dihedral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
                          <span class="n">span</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1481,6 +1503,8 @@
 <span class="sd">        :param None savedata: path to a file where to save the angle data</span>
 <span class="sd">           generated (1 column per step + 1 for particle number).</span>
 
+<span class="sd">        :returns: values to be plotted (list of lists, one per window), and the same</span>
+<span class="sd">           for upper and lower error lines</span>
 
 <span class="sd">        ::</span>
 
@@ -1544,7 +1568,9 @@
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">radsk</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span></div>
 
 <div class="viewcode-block" id="StructuralModels.walking_angle"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.walking_angle">[docs]</a>    <span class="k">def</span> <span class="nf">walking_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                       <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1573,6 +1599,9 @@
 <span class="sd">        :param True plot: e.g. if False, only saves data. No plotting done</span>
 <span class="sd">        :param None savedata: path to a file where to save the angle data</span>
 <span class="sd">           generated (1 column per step + 1 for particle number).</span>
+
+<span class="sd">        :returns: values to be plotted (list of lists, one per window), and the same</span>
+<span class="sd">           for upper and lower error lines</span>
 
 
 <span class="sd">        ::</span>
@@ -1635,10 +1664,11 @@
                     <span class="p">[</span><span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span> <span class="k">if</span> <span class="n">part</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">else</span>
                      <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span>
                       <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">errorp</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">],</span> <span class="mi">3</span><span class="p">))))</span>
-                     <span class="k">if</span> <span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span>
+                     <span class="k">if</span> <span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">isnan</span><span class="p">(</span><span class="n">radsk</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">part</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;nan</span><span class="se">\t</span><span class="s1">nan&#39;</span>
                      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">])))</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
+        <span class="k">return</span> <span class="n">radsk</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span></div>
         <span class="c1">#if savefig:</span>
         <span class="c1">#    tadbit_savefig(savefig)</span>
         <span class="c1">#elif not axe:</span>
@@ -1682,7 +1712,7 @@
             <span class="n">masked_array</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">masked_array</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;upfreq&#39;</span><span class="p">])</span>
         <span class="n">masked_array_bot</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span> <span class="p">(</span>
             <span class="n">masked_array</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;lowfreq&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">masked_array</span><span class="p">)</span>
-        <span class="n">cmap</span> <span class="o">=</span> <span class="n">viridis</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">viridis</span><span class="p">)</span>
         <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">))</span>
@@ -1694,10 +1724,10 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Particles&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Particles&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Z-scores of the normalized Hi-C count&#39;</span><span class="p">)</span>
-        <span class="n">cbar</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ims</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ims</span><span class="p">)</span>
         <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Z-score value&#39;</span><span class="p">)</span>
 
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">([</span><span class="o">.</span><span class="mi">38</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="o">.</span><span class="mi">28</span><span class="p">,</span> <span class="o">.</span><span class="mi">61</span><span class="p">])</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">([</span><span class="mf">.38</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="mf">.28</span><span class="p">,</span> <span class="mf">.61</span><span class="p">])</span>
         <span class="n">zdata</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
                               <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
                                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span><span class="o">.</span><span class="n">keys</span><span class="p">())]))</span>
@@ -1709,7 +1739,7 @@
                                     <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
         <span class="n">k2</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">normaltest</span><span class="p">(</span><span class="n">zdata</span><span class="p">)</span>
         <span class="n">normfit</span> <span class="o">=</span> <span class="n">sc_norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">zdata</span><span class="p">,</span> <span class="n">np_mean</span><span class="p">(</span><span class="n">zdata</span><span class="p">),</span> <span class="n">np_std</span><span class="p">(</span><span class="n">zdata</span><span class="p">))</span>
-        <span class="n">normplot</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">zdata</span><span class="p">,</span> <span class="n">normfit</span><span class="p">,</span> <span class="s1">&#39;:o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">normplot</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">zdata</span><span class="p">,</span> <span class="n">normfit</span><span class="p">,</span> <span class="s1">&#39;:o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.4</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
                 <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
@@ -1756,14 +1786,14 @@
                 <span class="p">((</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> D&#39;Agostino Pearson&#39;s normality test $K^2$=</span><span class="si">%.2f</span><span class="s2"> pv=</span><span class="si">%.3f</span><span class="s2">&quot;</span>
                   <span class="o">%</span> <span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">pv</span><span class="p">))</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)],</span>
                 <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.013</span><span class="p">,</span> <span class="mf">1.3</span> <span class="o">+</span> <span class="p">(</span><span class="o">.</span><span class="mi">03</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)))</span>
+                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.013</span><span class="p">,</span> <span class="mf">1.3</span> <span class="o">+</span> <span class="p">(</span><span class="mf">.03</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)))</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">normplot</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">labels</span> <span class="o">+</span> <span class="p">[</span>
                 <span class="s2">&quot;Fitted normal distribution&quot;</span> <span class="o">+</span>
                 <span class="p">((</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> D&#39;Agostino Pearson&#39;s normality test $K^2$=</span><span class="si">%.2f</span><span class="s2"> pv=</span><span class="si">%.3f</span><span class="s2">&quot;</span>
                   <span class="o">%</span> <span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">pv</span><span class="p">))</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)],</span>
                 <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.013</span><span class="p">,</span> <span class="mf">1.3</span> <span class="o">+</span> <span class="p">(</span><span class="o">.</span><span class="mi">03</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)))</span>
+                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.013</span><span class="p">,</span> <span class="mf">1.3</span> <span class="o">+</span> <span class="p">(</span><span class="mf">.03</span> <span class="k">if</span> <span class="n">do_normaltest</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)))</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Z-scores&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Proportion of particles&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;lowfreq&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">height1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
@@ -1778,7 +1808,7 @@
                       <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Blues&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Particles&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Particles&#39;</span><span class="p">)</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">([</span><span class="o">.</span><span class="mi">42</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="o">.</span><span class="mi">48</span><span class="p">,</span> <span class="o">.</span><span class="mi">79</span><span class="p">])</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">([</span><span class="mf">.42</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="mf">.48</span><span class="p">,</span> <span class="mf">.79</span><span class="p">])</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Binary representation of Z-scores used in the &#39;</span> <span class="o">+</span>
                      <span class="s1">&#39;computation of restraints&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Binary representation of Z-scores used in the &#39;</span> <span class="o">+</span>
@@ -1793,7 +1823,8 @@
 <div class="viewcode-block" id="StructuralModels.correlate_with_real_data"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.correlate_with_real_data">[docs]</a>    <span class="k">def</span> <span class="nf">correlate_with_real_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">corr</span><span class="o">=</span><span class="s1">&#39;spearman&#39;</span><span class="p">,</span> <span class="n">midplot</span><span class="o">=</span><span class="s1">&#39;hexbin&#39;</span><span class="p">,</span>
-                                 <span class="n">log_corr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">contact_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                 <span class="n">log_corr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">contact_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">show_bad_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plots the result of a correlation between a given group of models and</span>
 <span class="sd">        original Hi-C data.</span>
@@ -1814,6 +1845,8 @@
 <span class="sd">           appearance</span>
 <span class="sd">        :param None contact_matrix: input a contact matrix instead of computing</span>
 <span class="sd">           it from the models</span>
+<span class="sd">        :param True show_bad_columns: Wether to hide or not bad columns in the </span>
+<span class="sd">            contact map</span>
 
 <span class="sd">        :returns: correlation coefficient rho, between the two</span>
 <span class="sd">           matrices. A rho value greater than 0.7 indicates a very good</span>
@@ -1825,11 +1858,12 @@
             <span class="n">model_matrix</span> <span class="o">=</span> <span class="n">contact_matrix</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">model_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_contact_matrix</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="n">models</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span>
-                                                   <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)</span>
+                                                   <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span> 
+                                                   <span class="n">show_bad_columns</span><span class="o">=</span><span class="n">show_bad_columns</span><span class="p">)</span>
         <span class="n">oridata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">moddata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">if</span> <span class="n">z</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">off_diag</span><span class="p">:])</span> <span class="k">if</span> <span class="n">z</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">))[</span><span class="n">i</span> <span class="o">+</span> <span class="n">off_diag</span><span class="p">:]</span> <span class="k">if</span> <span class="n">z</span><span class="p">):</span>
                 <span class="n">oriv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">oriv</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">isnan</span><span class="p">(</span><span class="n">oriv</span><span class="p">):</span>
                     <span class="k">continue</span>
@@ -1863,7 +1897,7 @@
                      <span class="n">size</span><span class="o">=</span><span class="s1">&#39;x-large&#39;</span><span class="p">)</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
         <span class="c1"># imshow of the modeled data</span>
-        <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;viridis&#39;</span><span class="p">))</span>
         <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s1">&#39;darkgrey&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">ims</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">model_matrix</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
                          <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
@@ -1889,7 +1923,7 @@
         <span class="c1"># slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)</span>
         <span class="k">if</span> <span class="n">midplot</span> <span class="o">==</span> <span class="s1">&#39;classic&#39;</span><span class="p">:</span>
             <span class="n">lnr</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">+</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">array</span> <span class="p">(</span><span class="n">moddata</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                          <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">7</span><span class="p">)</span>
+                          <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.7</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">lnr</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;p-value: </span><span class="si">%.3f</span><span class="s1">, R: </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p_value</span><span class="p">,</span> <span class="n">r_value</span><span class="p">)])</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">oridata</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Modelled data&#39;</span><span class="p">)</span>
@@ -1898,7 +1932,7 @@
             <span class="n">hb</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">oridata</span><span class="p">,</span> <span class="n">mincnt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                            <span class="n">gridsize</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Spectral_r</span><span class="p">)</span>
             <span class="n">lnr</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">+</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">array</span> <span class="p">(</span><span class="n">moddata</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                          <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">7</span><span class="p">)</span>
+                          <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.7</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span>
                 <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">roportion of models with a particle pair closer than cutoff&#39;</span> <span class="o">%</span> <span class="p">(</span>
                     <span class="s1">&#39;Log p&#39;</span> <span class="k">if</span> <span class="n">log_corr</span> <span class="k">else</span> <span class="s1">&#39;P&#39;</span><span class="p">))</span>
@@ -1931,24 +1965,24 @@
             <span class="n">axbott</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Proportion of models with a particle pair &#39;</span> <span class="o">+</span>
                               <span class="s1">&#39; interacting&#39;</span><span class="p">)</span>
             <span class="n">axmidl</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.44</span><span class="p">,</span> <span class="mf">0.18</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">])</span>
-            <span class="n">axbott</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">axbott</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.2</span><span class="p">)</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">_</span>  <span class="o">=</span> <span class="n">histogram</span><span class="p">([</span><span class="n">i</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;-inf&#39;</span> <span class="k">else</span> <span class="mf">0.</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">oridata</span><span class="p">],</span>
                               <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
             <span class="n">axleft</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">linspace</span><span class="p">(</span><span class="n">minval</span><span class="p">,</span> <span class="n">maxval</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span>
-                        <span class="n">height</span><span class="o">=</span><span class="p">(</span><span class="n">maxval</span> <span class="o">-</span> <span class="n">minval</span><span class="p">)</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="n">height</span><span class="o">=</span><span class="p">(</span><span class="n">maxval</span> <span class="o">-</span> <span class="n">minval</span><span class="p">)</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.2</span><span class="p">)</span>
             <span class="n">axleft</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">minval</span> <span class="o">-</span>
                              <span class="p">(</span><span class="n">maxval</span> <span class="o">-</span> <span class="n">minval</span><span class="p">)</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span> <span class="n">maxval</span> <span class="o">+</span>
                              <span class="p">(</span><span class="n">maxval</span> <span class="o">-</span> <span class="n">minval</span><span class="p">)</span> <span class="o">/</span> <span class="mi">20</span><span class="p">))</span>
-            <span class="n">axmidl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">oridata</span><span class="p">,</span> <span class="s1">&#39;k.&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">axmidl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">oridata</span><span class="p">,</span> <span class="s1">&#39;k.&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.3</span><span class="p">)</span>
             <span class="n">axmidl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">moddata</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">+</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">array</span> <span class="p">(</span><span class="n">moddata</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                        <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">7</span><span class="p">)</span>
+                        <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.7</span><span class="p">)</span>
             <span class="n">axmidl</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">axleft</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
             <span class="n">axmidl</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">axbott</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
             <span class="n">axmidl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
             <span class="c1"># axmidl.patch.set_visible(False)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Real versus modelled data&#39;</span><span class="p">)</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
-        <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;viridis&#39;</span><span class="p">))</span>
         <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s1">&#39;darkgrey&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
             <span class="n">ims</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_data</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span>
@@ -2145,8 +2179,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sqrmdl</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))</span>
                 <span class="n">cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sqrmdl</span> <span class="o">+</span>
-                                 <span class="p">(</span><span class="mf">0.0</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrmdl</span><span class="p">)</span> <span class="o">==</span> <span class="n">sqrmdl</span> <span class="k">else</span> <span class="o">.</span><span class="mi">5</span><span class="p">)))</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrmdl</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+                                 <span class="p">(</span><span class="mf">0.0</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrmdl</span><span class="p">)</span> <span class="o">==</span> <span class="n">sqrmdl</span> <span class="k">else</span> <span class="mf">.5</span><span class="p">)))</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrmdl</span> <span class="o">+</span> <span class="mf">.5</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">pltshow</span><span class="p">:</span>
                     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
@@ -2778,8 +2812,8 @@
         <span class="k">if</span> <span class="n">get_path</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">path_f</span></div>
 
-<div class="viewcode-block" id="StructuralModels.get_persistence_length"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.get_persistence_length">[docs]</a>    <span class="k">def</span> <span class="nf">get_persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                               <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="StructuralModels.get_persistence_length"><a class="viewcode-back" href="../../../reference/reference_modelling_structuralmodels.html#pytadbit.modelling.structuralmodels.StructuralModels.get_persistence_length">[docs]</a>    <span class="k">def</span> <span class="nf">get_persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                               <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates the persistence length (Lp) of given section of the model.</span>
 <span class="sd">        Persistence length is calculated according to [Bystricky2004]_ :</span>
@@ -3013,7 +3047,7 @@
                     <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)</span>
                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">],</span> <span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">zorder</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
         <span class="n">axe</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">where</span><span class="p">,</span> <span class="n">axe</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
 
     <span class="k">def</span> <span class="nf">_generic_per_particle_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">distsk</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">errorp</span><span class="p">,</span> <span class="n">errorn</span><span class="p">,</span>
@@ -3068,9 +3102,10 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.77</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">ClusterOfModels</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
@@ -3082,6 +3117,7 @@
         <span class="k">return</span> <span class="n">out</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -3103,12 +3139,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -3121,13 +3157,14 @@
              >index</a></li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.modelling.structuralmodels</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

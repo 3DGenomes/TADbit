@@ -1,18 +1,17 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pytadbit.experiment &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -25,7 +24,8 @@
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.experiment</a></li> 
       </ul>
     </div>  
 
@@ -42,6 +42,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">copy</span>                                <span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
 <span class="kn">from</span> <span class="nn">sys</span>                                 <span class="kn">import</span> <span class="n">stderr</span>
 <span class="kn">from</span> <span class="nn">io</span>                                  <span class="kn">import</span> <span class="n">IOBase</span>
@@ -53,7 +54,7 @@
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>         <span class="kn">import</span> <span class="n">read_matrix</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>           <span class="kn">import</span> <span class="n">nicer</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>           <span class="kn">import</span> <span class="n">tadbit_savefig</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>             <span class="kn">import</span> <span class="n">zscore</span><span class="p">,</span> <span class="n">nozero_log_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>             <span class="kn">import</span> <span class="n">zscore</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span>        <span class="kn">import</span> <span class="n">iterative</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span>        <span class="kn">import</span> <span class="n">hic_filtering_for_modelling</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.tad_parser</span>         <span class="kn">import</span> <span class="n">parse_tads</span>
@@ -166,11 +167,11 @@
 
 <span class="sd">       ::</span>
 
-<span class="sd">         chrT_001	chrT_002	chrT_003	chrT_004</span>
-<span class="sd">         chrT_001	629	164	88	105</span>
-<span class="sd">         chrT_002	164	612	175	110</span>
-<span class="sd">         chrT_003	88	175	437	100</span>
-<span class="sd">         chrT_004	105	110	100	278</span>
+<span class="sd">         chrT_001    chrT_002    chrT_003    chrT_004</span>
+<span class="sd">         chrT_001    629    164    88    105</span>
+<span class="sd">         chrT_002    164    612    175    110</span>
+<span class="sd">         chrT_003    88    175    437    100</span>
+<span class="sd">         chrT_004    105    110    100    278</span>
 
 <span class="sd">       the output of parser(&#39;example.tsv&#39;) would be be:</span>
 <span class="sd">       ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,</span>
@@ -598,11 +599,11 @@
 
 <span class="sd">           ::</span>
 
-<span class="sd">             chrT_001	chrT_002	chrT_003	chrT_004</span>
-<span class="sd">             chrT_001	629	164	88	105</span>
-<span class="sd">             chrT_002	86	612	175	110</span>
-<span class="sd">             chrT_003	159	216	437	105</span>
-<span class="sd">             chrT_004	100	111	146	278</span>
+<span class="sd">             chrT_001    chrT_002    chrT_003    chrT_004</span>
+<span class="sd">             chrT_001    629    164    88    105</span>
+<span class="sd">             chrT_002    86    612    175    110</span>
+<span class="sd">             chrT_003    159    216    437    105</span>
+<span class="sd">             chrT_004    100    111    146    278</span>
 
 <span class="sd">           the output of parser(&#39;example.tsv&#39;) would be:</span>
 <span class="sd">           ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,</span>
@@ -642,11 +643,11 @@
 
 <span class="sd">           ::</span>
 
-<span class="sd">             chrT_001	chrT_002	chrT_003	chrT_004</span>
-<span class="sd">             chrT_001	12.5	164	8.8	0.5</span>
-<span class="sd">             chrT_002	8.6	61.2	1.5	1.1</span>
-<span class="sd">             chrT_003	15.9	21.6	3.7	0.5</span>
-<span class="sd">             chrT_004	0.0	1.1	1.6	2.8</span>
+<span class="sd">             chrT_001    chrT_002    chrT_003    chrT_004</span>
+<span class="sd">             chrT_001    12.5    164    8.8    0.5</span>
+<span class="sd">             chrT_002    8.6    61.2    1.5    1.1</span>
+<span class="sd">             chrT_003    15.9    21.6    3.7    0.5</span>
+<span class="sd">             chrT_004    0.0    1.1    1.6    2.8</span>
 
 <span class="sd">        :param None resolution: resolution of the experiment in the file; it</span>
 <span class="sd">           will be adjusted to the resolution of the experiment. By default the</span>
@@ -1424,33 +1425,29 @@
                 <span class="n">matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>\
                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span> \
                           <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s1">&#39;darkgrey&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
-                    <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmin</span>
-            <span class="n">alphas</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">jet</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
-            <span class="n">jet</span><span class="o">.</span><span class="n">_lut</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphas</span>
+                    <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">normalized</span> <span class="k">else</span> <span class="mi">0</span>
         <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                    <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmin</span>
-            <span class="n">alphas</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">jet</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
-            <span class="n">jet</span><span class="o">.</span><span class="n">_lut</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphas</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
-            <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
-            <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s1">&#39;darkgrey&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">normalized</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">relative</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">nozero_log_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">fun</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
                              <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">nozero_log_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">fun</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span>
                              <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -1485,7 +1482,7 @@
                            <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s1">&#39;end&#39;</span>  <span class="p">])</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
                           <span class="ow">or</span> <span class="ow">not</span> <span class="n">start</span><span class="p">)])</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">tads</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">t_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">t_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mf">.5</span>
             <span class="n">t_end</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>   <span class="o">+</span> <span class="mf">1.5</span>
             <span class="n">nwidth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">4</span>
             <span class="k">if</span> <span class="n">where</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">]:</span>
@@ -1659,6 +1656,7 @@
     <span class="c1">#     return dens</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -1680,12 +1678,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1698,13 +1696,14 @@
              >index</a></li>
         <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.experiment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

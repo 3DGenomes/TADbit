@@ -1,18 +1,17 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pytadbit.hic_data &#8212; TADbit 1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/forkme_nature.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/forkme_nature.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/black-on-white.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -25,7 +24,8 @@
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.hic_data</a></li> 
       </ul>
     </div>  
 
@@ -87,7 +87,7 @@
     <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rel_tol</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)),</span> <span class="n">abs_tol</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="HiC_data"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data">[docs]</a><span class="k">class</span> <span class="nc">HiC_data</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data">[docs]</a><span class="k">class</span> <span class="nc">HiC_data</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This may also hold the print/write-to-file matrix functions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -199,7 +199,7 @@
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">))</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
-<div class="viewcode-block" id="HiC_data.get_hic_data_as_csr"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_hic_data_as_csr">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_data_as_csr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.get_hic_data_as_csr"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.get_hic_data_as_csr">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_data_as_csr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a scipy sparse matrix in Compressed Sparse Row format of the Hi-C data in the dictionary</span>
 
@@ -216,7 +216,7 @@
 
         <span class="k">return</span> <span class="n">csr_matrix</span><span class="p">((</span><span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="HiC_data.add_sections_from_fasta"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta">[docs]</a>    <span class="k">def</span> <span class="nf">add_sections_from_fasta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fasta</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.add_sections_from_fasta"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.add_sections_from_fasta">[docs]</a>    <span class="k">def</span> <span class="nf">add_sections_from_fasta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fasta</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add genomic coordinate to HiC_data object by getting them from a FASTA</span>
 <span class="sd">        file containing chromosome sequences</span>
@@ -249,7 +249,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_size2</span> <span class="o">=</span> <span class="n">size</span><span class="o">**</span><span class="mi">2</span></div>
 
-<div class="viewcode-block" id="HiC_data.add_sections"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections">[docs]</a>    <span class="k">def</span> <span class="nf">add_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">binned</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.add_sections"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.add_sections">[docs]</a>    <span class="k">def</span> <span class="nf">add_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">binned</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add genomic coordinate to HiC_data object by getting them from a FASTA</span>
 <span class="sd">        file containing chromosome sequences. Orders matters.</span>
@@ -285,7 +285,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_size2</span> <span class="o">=</span> <span class="n">size</span><span class="o">**</span><span class="mi">2</span></div>
 
-<div class="viewcode-block" id="HiC_data.cis_trans_ratio"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">[docs]</a>    <span class="k">def</span> <span class="nf">cis_trans_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.cis_trans_ratio"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.cis_trans_ratio">[docs]</a>    <span class="k">def</span> <span class="nf">cis_trans_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="n">equals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Counts the number of interactions occurring within chromosomes (cis) with</span>
@@ -351,7 +351,7 @@
         <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.</span></div>
 
-<div class="viewcode-block" id="HiC_data.filter_columns"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.filter_columns"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
                        <span class="n">by_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call filtering function, to remove artifactual columns in a given Hi-C</span>
@@ -383,7 +383,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1"> columns with poor signal&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">),</span>
                                                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span></div>
 
-<div class="viewcode-block" id="HiC_data.sum"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.sum"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum Hi-C data matrix</span>
 <span class="sd">        WARNING: parameters are not meant to be used by external users</span>
@@ -413,7 +413,7 @@
     <span class="k">def</span> <span class="nf">normalize_expected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">expected</span> <span class="o">=</span> <span class="n">expected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="HiC_data.normalize_hic"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.normalize_hic"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                       <span class="n">sqrt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the Hi-C data.</span>
@@ -448,7 +448,7 @@
             <span class="n">bias</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">b</span><span class="p">,</span> <span class="n">bias</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">*</span> <span class="n">target</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bias</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span></div>
 
-<div class="viewcode-block" id="HiC_data.save_biases"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.save_biases">[docs]</a>    <span class="k">def</span> <span class="nf">save_biases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fnam</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.save_biases"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.save_biases">[docs]</a>    <span class="k">def</span> <span class="nf">save_biases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fnam</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save biases, decay and bad columns in pickle format (to be loaded by</span>
 <span class="sd">        the function load_hic_data_from_bam)</span>
@@ -464,7 +464,7 @@
              <span class="n">protocol</span> <span class="k">if</span> <span class="n">protocol</span> <span class="k">else</span> <span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HiC_data.load_biases"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.load_biases">[docs]</a>    <span class="k">def</span> <span class="nf">load_biases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fnam</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.load_biases"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.load_biases">[docs]</a>    <span class="k">def</span> <span class="nf">load_biases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fnam</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load biases, decay and bad columns from pickle file</span>
 
@@ -484,7 +484,7 @@
                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span>
 
-<div class="viewcode-block" id="HiC_data.write_coord_table"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_coord_table">[docs]</a>    <span class="k">def</span> <span class="nf">write_coord_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.write_coord_table"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_coord_table">[docs]</a>    <span class="k">def</span> <span class="nf">write_coord_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;BED&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        writes a coordinate table to a file.</span>
@@ -576,7 +576,7 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: format &quot;</span><span class="si">%s</span><span class="s1">&quot; not found</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">format</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HiC_data.write_cooler"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_cooler">[docs]</a>    <span class="k">def</span> <span class="nf">write_cooler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.write_cooler"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_cooler">[docs]</a>    <span class="k">def</span> <span class="nf">write_cooler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        writes the hic_data to a cooler file.</span>
 
@@ -611,7 +611,7 @@
             <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bads</span> <span class="k">else</span> <span class="mf">0.</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">)]</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HiC_data.write_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">write_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.write_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">write_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        writes the matrix to a file.</span>
 
@@ -644,7 +644,7 @@
             <span class="n">start1</span> <span class="o">=</span> <span class="n">start2</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">end1</span>   <span class="o">=</span> <span class="n">end2</span>   <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# MASKED </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">start1</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# MASKED </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">start1</span><span class="p">)</span>
                                                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
                                                <span class="k">if</span> <span class="n">start1</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">end1</span><span class="p">])))</span>
         <span class="n">rownam</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -664,7 +664,7 @@
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HiC_data.get_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.get_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.get_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">masked</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        returns a matrix.</span>
@@ -768,7 +768,7 @@
             <span class="n">end1</span>   <span class="o">=</span> <span class="n">end2</span>   <span class="o">=</span> <span class="n">siz</span>
         <span class="k">return</span> <span class="n">start1</span><span class="p">,</span> <span class="n">start2</span><span class="p">,</span> <span class="n">end1</span><span class="p">,</span> <span class="n">end2</span>
 
-<div class="viewcode-block" id="HiC_data.find_compartments"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments">[docs]</a>    <span class="k">def</span> <span class="nf">find_compartments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.find_compartments"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.find_compartments">[docs]</a>    <span class="k">def</span> <span class="nf">find_compartments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">savecorr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ev_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">rich_in_A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">savedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">max_ev</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">show_compartment_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1079,7 +1079,7 @@
 
         <span class="k">return</span> <span class="n">firsts</span><span class="p">,</span> <span class="n">richA_stats</span></div>
 
-<div class="viewcode-block" id="HiC_data.find_compartments_beta"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments_beta">[docs]</a>    <span class="k">def</span> <span class="nf">find_compartments_beta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="HiC_data.find_compartments_beta"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.find_compartments_beta">[docs]</a>    <span class="k">def</span> <span class="nf">find_compartments_beta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">savecorr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                           <span class="n">label_compartments</span><span class="o">=</span><span class="s1">&#39;hmm&#39;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_mean_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
                           <span class="n">ev_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rich_in_A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_ev</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">show_compartment_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1509,7 +1509,7 @@
             <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
                 <span class="n">cmprt</span><span class="p">[</span><span class="s1">&#39;dens&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
 
-<div class="viewcode-block" id="HiC_data.write_compartments"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_compartments">[docs]</a>    <span class="k">def</span> <span class="nf">write_compartments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">savedata</span><span class="p">,</span> <span class="n">chroms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ev_nums</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.write_compartments"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.write_compartments">[docs]</a>    <span class="k">def</span> <span class="nf">write_compartments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">savedata</span><span class="p">,</span> <span class="n">chroms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ev_nums</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write compartments to a file.</span>
 
@@ -1537,7 +1537,7 @@
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="HiC_data.yield_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">yield_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.yield_matrix"><a class="viewcode-back" href="../../reference/reference_hic_data.html#pytadbit.hic_data.HiC_data.yield_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">yield_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Yields a matrix line by line.</span>
 <span class="sd">        Bad row/columns are returned as null row/columns.</span>
@@ -1793,6 +1793,7 @@
     <span class="k">return</span> <span class="n">score</span> <span class="o">+</span> <span class="n">tt</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">prop</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -1814,12 +1815,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1832,13 +1833,14 @@
              >index</a></li>
         <li class="nav-item nav-item-0"><a href="../../index.html">TADbit 1.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytadbit.hic_data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Oct 21, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Last updated on Sep 25, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
