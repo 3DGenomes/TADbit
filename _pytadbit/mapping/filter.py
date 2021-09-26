@@ -100,8 +100,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
                     del filter_handlers[k]
             current = set([v for v, _ in list(filter_handlers.values())])
     if verbose:
-        print('    saving to file {:,} reads {}.'.format(
-            count, 'with' if reverse else 'without'))
+        print('    saving to file {:,} {} reads.'.format(
+            count, 'filtered' if reverse else 'valid'))
     out.close()
     fhandler.close()
     return count

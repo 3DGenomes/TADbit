@@ -576,11 +576,15 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     bam.close()
 
     sections = []
-    for crm in genome_seq:
-        len_crm = genome_seq[crm]
-        sections.extend([(crm, i) for i in range(len_crm)])
-
-    size = sum(genome_seq.values())
+    if region:
+        size = genome_seq[region]
+        sections.extend([(region, i) for i in range(size)])
+    else:
+        for crm in genome_seq:
+            len_crm = genome_seq[crm]
+            sections.extend([(crm, i) for i in range(len_crm)])
+    
+        size = sum(genome_seq.values())
 
     chromosomes = {region: genome_seq[region]} if region else genome_seq
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
@@ -596,13 +600,19 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                                 biases['resolution'], resolution))
         if region:
             chrom_start = 0
+            chrom_end = 0
             for crm in genome_seq:
                 if crm == region:
+                    chrom_end = chrom_start + genome_seq[crm]
                     break
                 len_crm = genome_seq[crm]
                 chrom_start += len_crm
-            imx.bads     = dict((b - chrom_start, biases['badcol'][b]) for b in biases['badcol'])
-            imx.bias     = dict((b - chrom_start, biases['biases'][b]) for b in biases['biases'])
+            imx.bias  = dict((k - chrom_start, v)
+                          for k, v in biases.get('biases', {}).items()
+                          if chrom_start <= k < chrom_end)
+            imx.bads  = dict((k - chrom_start, v)
+                          for k, v in biases.get('badcol', {}).items()
+                          if chrom_start <= k < chrom_end)
         else:
             imx.bads     = biases['badcol']
             imx.bias     = biases['biases']

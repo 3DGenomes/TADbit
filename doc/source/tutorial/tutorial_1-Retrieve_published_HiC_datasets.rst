@@ -27,19 +27,19 @@ one per read-end (this step is long and can take **up to 6 hours**):
     
     mkdir -p FASTQs
     
-    fastq-dump -A SRR5344921 -DQ '+' --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
+    fastq-dump SRR5344921 --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
     mv FASTQs/SRR5344921_1.fastq FASTQs/mouse_B_rep1_1.fastq
     mv FASTQs/SRR5344921_2.fastq FASTQs/mouse_B_rep1_2.fastq
     
-    fastq-dump -A SRR5344925 -DQ '+' --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
+    fastq-dump SRR5344925 --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
     mv FASTQs/SRR5344925_1.fastq FASTQs/mouse_B_rep2_1.fastq
     mv FASTQs/SRR5344925_2.fastq FASTQs/mouse_B_rep2_2.fastq
     
-    fastq-dump -A SRR5344969 -DQ '+' --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs
+    fastq-dump SRR5344969 --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs
     mv FASTQs/SRR5344969_1.fastq FASTQs/mouse_PSC_rep1_1.fastq
     mv FASTQs/SRR5344969_2.fastq FASTQs/mouse_PSC_rep1_2.fastq
     
-    fastq-dump -A SRR5344973 -DQ '+' --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
+    fastq-dump SRR5344973 --defline-seq '@$ac.$si' -X 100000000 --split-files --outdir FASTQs/
     mv FASTQs/SRR5344973_1.fastq FASTQs/mouse_PSC_rep2_1.fastq
     mv FASTQs/SRR5344973_2.fastq FASTQs/mouse_PSC_rep2_2.fastq
 
@@ -59,12 +59,10 @@ one per read-end (this step is long and can take **up to 6 hours**):
 Files are renamed for convenience.
 
 *Note: the parameter used here for fastq-dump are for generating simple
-FASTQ files, -DQ ‘+’ tells to put a single plus sign as header of the
-quality input, ``--defline-seq ‘@$ac.$si’`` reduces the information in
-the headers to the accession number and the read id, ``--split-files``
-is to separate both read-ends in different files, finally
-``-X 100000000`` is to download only the first 100 Million reads of each
-replicate*
+FASTQ files, ``--defline-seq ‘@$ac.$si’`` reduces the information in the
+headers to the accession number and the read id, ``--split-files`` is to
+separate both read-ends in different files, finally ``-X 100000000`` is
+to download only the first 100 Million reads of each replicate*
 
 *Note: alternatively you can also directly download the FASTQ from
 http://www.ebi.ac.uk/*

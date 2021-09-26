@@ -1,13 +1,8 @@
 Installing TADbit on GNU/Linux
 ==============================
 
-.. contents::
-
-.. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
-
-
-**TADbit requires python2 >= 2.6 or python3 >= 3.6 as well as several dependencies that
-are listed below.**
+**TADbit requires python2 >= 2.6 or python3 >= 3.6 as well as several
+dependencies that are listed below.**
 
 Dependencies
 ------------
@@ -25,7 +20,7 @@ installer from http://conda.pydata.org/miniconda.html
 .. code:: bash
 
     %%bash
-
+    
     wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
 
 
@@ -43,7 +38,7 @@ Alternatively you can also use this oneliner:
 .. code:: bash
 
     %%bash
-
+    
     bash miniconda.sh -b -p $HOME/miniconda2
 
 
@@ -102,18 +97,23 @@ Python libraries
 
    apt-get install python-scipy
    apt-get install python-numpy
+
+Optional packages (but **highly** recommended):
+
+::
+
    apt-get install python-matplotlib
 
 .. note:: **Alternative install**, you can install *python-setuptools*
-    and use easy_install to get these packages (e.g.
-    “``easy_install scipy``”).
+and use easy_install to get these packages
+(e.g. “``easy_install scipy``”).
 
 With conda you can install most of the needed dependencies:
 
 .. code:: bash
 
     %%bash
-
+    
     ## required
     conda config --add channels bioconda
     conda config --add channels conda-forge
@@ -124,10 +124,10 @@ With conda you can install most of the needed dependencies:
     conda install -y -q pysam
     conda install -y -q matplotlib-base
     conda install -y -q scipy
-	
+    
     ## optional
     conda install -y -q jupyter                                    # this notebook :)
-    conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment    
+    conda install -y -q -c bioconda sra-tools                      # to download raw data from released experiment
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
@@ -178,9 +178,20 @@ use MCL.*
 GEM Mapper
 ----------
 
-The default mapper in TADbit is GEM, but bowtie2 and hisat2 are also supported.
+The default mapper in TADbit is GEM, but bowtie2 and hisat2 are also
+supported.
 
-To install GEM version 2, go to the download page:
+GEM version 3, bowtie2 and hisat2 are available in bioconda.
+
+.. code:: bash
+
+    %%bash
+    
+    conda -y -q -c bioconda gem3-mapper
+    conda -y -q -c bioconda bowtie2
+    conda -y -q -c bioconda hisat2
+
+If you prefer the old good GEM version 2, go to the download page:
 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/
 and download the ``i3`` version (the other version is for older
 computers, and you usually won’t have to use it).
@@ -188,7 +199,7 @@ computers, and you usually won’t have to use it).
 .. code:: bash
 
     %%bash
-
+    
     wget -nv -O GEM.tbz2 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2/download
 
 
@@ -196,22 +207,13 @@ computers, and you usually won’t have to use it).
 
     2019-01-15 14:12:09 URL:https://netcologne.dl.sourceforge.net/project/gemlibrary/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2 [33847526/33847526] -> "GEM.tbz2" [1]
 
-GEM version 3, bowtie2 and hisat2 are available in bioconda.
-
-.. code:: bash
-
-    %%bash
-
-    conda -y -q -c bioconda gem3-mapper
-    conda -y -q -c bioconda bowtie2
-    conda -y -q -c bioconda hisat2
 
 Uncompress the archive:
 
 .. code:: bash
 
     %%bash
-
+    
     tar -xjvf GEM.tbz2
 
 
@@ -253,13 +255,13 @@ And copy the needed binaries to somewhere in your PATH, like:
 .. code:: bash
 
     %%bash
-
+    
     rm -f GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/LICENCE
 
 .. code:: bash
 
     %%bash
-
+    
     cp GEM-binaries-Linux-x86_64-core_i3-20130406-045632/bin/* ~/miniconda2/bin/
 
 Cleanup
@@ -267,7 +269,7 @@ Cleanup
 .. code:: bash
 
     %%bash
-
+    
     rm -rf GEM-binaries-Linux-x86_64-core_i3-20121106-022124
     rm -f GEM.tbz2
 
@@ -289,38 +291,38 @@ From an R console type:
 .. code:: bash
 
     %%bash
-
+    
     R -e '
     install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic")'
 
 
 .. ansi-block::
 
-
+    
     R version 3.4.2 (2017-09-28) -- "Short Summer"
     Copyright (C) 2017 The R Foundation for Statistical Computing
     Platform: x86_64-pc-linux-gnu (64-bit)
-
+    
     R is free software and comes with ABSOLUTELY NO WARRANTY.
     You are welcome to redistribute it under certain conditions.
     Type 'license()' or 'licence()' for distribution details.
-
+    
       Natural language support but running in an English locale
-
+    
     R is a collaborative project with many contributors.
     Type 'contributors()' for more information and
     'citation()' on how to cite R or R packages in publications.
-
+    
     Type 'demo()' for some demos, 'help()' for on-line help, or
     'help.start()' for an HTML browser interface to help.
     Type 'q()' to quit R.
-
+    
     > install.packages("devtools", repos="http://cran.us.r-project.org"); devtools::install_github("qenvio/dryhic", force=TRUE)
     gfortran   -fpic  -g -O2 -fstack-protector-strong  -c fwdb.f -o fwdb.o
     gfortran   -fpic  -g -O2 -fstack-protector-strong  -c viterbi.f -o viterbi.o
     gcc -std=gnu99 -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o dryhic.so fwdb.o viterbi.o -lgfortran -lm -lquadmath -L/usr/lib/R/lib -lR
-    >
-    >
+    > 
+    > 
 
 
 .. ansi-block::
@@ -331,7 +333,7 @@ From an R console type:
     Content type 'application/x-gzip' length 486446 bytes (475 KB)
     ==================================================
     downloaded 475 KB
-
+    
     * installing *source* package ‘devtools’ ...
     ** package ‘devtools’ successfully unpacked and MD5 sums checked
     ** R
@@ -343,7 +345,7 @@ From an R console type:
     ** installing vignettes
     ** testing if installed package can be loaded
     * DONE (devtools)
-
+    
     The downloaded source packages are in
     	‘/tmp/Rtmp1j1AUG/downloaded_packages’
     Downloading GitHub repo qenvio/dryhic@master
@@ -351,8 +353,8 @@ From an R console type:
     Installing dryhic
     '/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
       CMD INSTALL '/tmp/Rtmp1j1AUG/devtools6acf4c30139e/qenvio-dryhic-764e0f0'  \
-      --library='/home/fransua/R/x86_64-pc-linux-gnu-library/3.4' --install-tests
-
+      --library='/home/fransua/R/x86_64-pc-linux-gnu-library/3.4' --install-tests 
+    
     * installing *source* package ‘dryhic’ ...
     ** libs
     installing to /home/fransua/R/x86_64-pc-linux-gnu-library/3.4/dryhic/libs
@@ -379,7 +381,7 @@ It can be downloaded from https://github.com/lrog/dsrc
 .. code:: bash
 
     %%bash
-
+    
     wget -nv http://sun.aei.polsl.pl/dsrc/download/2.0rc/dsrc
 
 
@@ -391,7 +393,7 @@ It can be downloaded from https://github.com/lrog/dsrc
 .. code:: bash
 
     %%bash
-
+    
     chmod +x dsrc
 
 And copy to somewhere in your PATH, like:
@@ -399,7 +401,7 @@ And copy to somewhere in your PATH, like:
 .. code:: bash
 
     %%bash
-
+    
     mv dsrc ~/miniconda2/bin/
 
 Chimera - visualization
@@ -458,16 +460,35 @@ To do so, move to the test directory and run:
 
    cd test
    python test_all.py
-   
+
 Conda builds
 ~~~~~~~~~~~~
 
-Alternatively we regularly build a conda package in bioconda. The packages come without IMP and with gem v3 as the default mapper
+Alternatively we regularly build a conda package in bioconda. The
+packages come without IMP and with gem v3 as the default mapper
 
 .. code:: bash
 
     %%bash
-
-    conda install -c bioconda tadbit
     
- 
+    conda install -c bioconda tadbit
+
+If you want to install TADbit with IMP in conda this line will create a
+environment with them:
+
+.. code:: bash
+
+    %%bash
+    
+    conda create -n tadbit python=3.7 r-base=3.6.1 r-essentials=3.6 r-devtools imp samtools=1.12 jupyter_client=6.1 tadbit -c conda-forge -c salilab -c bioconda
+
+If you wish then to have the last version of TADbit from github remove
+the TADbit conda package leaving the dependencies:
+
+.. code:: bash
+
+    %%bash
+    
+    conda remove tadbit --force
+
+And install TADbit from source as explained before.
