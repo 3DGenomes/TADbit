@@ -6,6 +6,7 @@ information needed
 
 """
 from __future__ import print_function
+
 from future import standard_library
 standard_library.install_aliases()
 from argparse                             import HelpFormatter
@@ -23,7 +24,8 @@ import sqlite3 as lite
 import time
 
 from pysam                                import AlignmentFile
-from numpy                                import nanmean, isnan, nansum, seterr
+from numpy                                import nanmean, isnan, nansum, nanpercentile, seterr
+from matplotlib                           import pyplot as plt
 
 from pytadbit                             import load_hic_data_from_bam
 from pytadbit.utils.sqlite_utils          import already_run, digest_parameters
@@ -35,7 +37,9 @@ from pytadbit.parsers.hic_bam_parser      import printime, print_progress
 from pytadbit.parsers.hic_bam_parser      import filters_to_bin
 from pytadbit.parsers.bed_parser          import parse_mappability_bedGraph
 from pytadbit.utils.extraviews            import nicer
-from pytadbit.utils.hic_filtering         import filter_by_local_ratio
+# from pytadbit.utils.hic_filtering         import filter_by_local_ratio
+from pytadbit.utils.hic_filtering         import plot_filtering
+# from pytadbit.utils.hic_filtering         import filter_by_zero_count
 from pytadbit.utils.normalize_hic         import oneD
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.parsers.genome_parser       import parse_fasta, get_gc_content
@@ -129,7 +133,7 @@ def run(opts):
         # for crm in refs:
         #     for pos in xrange(len(genome[crm]) / opts.reso + 1):
         #         out.write('%s\t%d\t%d\t%f\n' % (crm, pos * opts.reso, pos * opts.reso + opts.reso, mappability[i]))
-        #         i += 1
+        #         i += 1`
         # out.close()
         # compute GC content ~30 sec
         # TODO: read from DB
@@ -138,9 +142,11 @@ def run(opts):
         factor=1, outdir=outdir, extra_out=param_hash, ncpus=opts.cpus,
         normalization=opts.normalization, mappability=mappability,
         p_fit=opts.p_fit, cg_content=gc_content, n_rsites=n_rsites,
-        min_perc=opts.min_perc, max_perc=opts.max_perc, seed=opts.seed,
+        seed=opts.seed,
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
-        extra_bads=opts.badcols, biases_path=opts.biases_path)
+        extra_bads=opts.badcols, biases_path=opts.biases_path, 
+        cis_limit=opts.cis_limit, trans_limit=opts.trans_limit, 
+        min_ratio=opts.ratio_limit, fast_filter=opts.fast_filter)
 
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
                                 'interactions_vs_genomic-coords.png_%s_%s.png' % (
@@ -463,11 +469,6 @@ Mappability file can be generated with GEM (example from the genomic FASTA file 
                         the random picking of data when using the "prop_data"
                         parameter'''))
 
-    bfiltr.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
-                        action='store', default=95, type=float,
-                        help=('[%(default)s%%] maximum percentage of zeroes '
-                              'allowed per column.'))
-
     bfiltr.add_argument('--min_count', dest='min_count', metavar="INT",
                         action='store', default=None, type=float,
                         help=('''[%(default)s] minimum number of reads mapped to
@@ -475,25 +476,41 @@ Mappability file can be generated with GEM (example from the genomic FASTA file 
                         option overrides the perc_zero filtering... This option is
                         slightly slower.'''))
 
-    bfiltr.add_argument('--min_perc', dest='min_perc', metavar="INT",
-                        action='store', default=None, type=float,
-                        help=('''[%(default)s] lower percentile from which
-                        consider bins as good.'''))
+    bfiltr.add_argument('--cis_limit', dest='cis_limit', action='store',
+                        default=None, type=int,
+                        help='''Maximum distance in bins at which to consider an 
+                        interaction cis for the filtering. By default it is the 
+                        number of bins corresponding to 1Mb''')
 
+    bfiltr.add_argument('--trans_limit', dest='trans_limit', action='store',
+                        default=None, type=int,
+                        help='''Maximum distance in bins at which to consider an 
+                        interaction trans for the filtering. By default it is 
+                        five times the cis_limit (if also default, it would 
+                        correspond to the number of bins needed to reach 5Mb).''')
 
-    bfiltr.add_argument('--max_perc', dest='max_perc', metavar="INT",
-                        action='store', default=None, type=float,
-                        help=('''[%(default)s] upper percentile until which
-                        consider bins as good.'''))
+    bfiltr.add_argument('--ratio_limit', dest='ratio_limit', action='store',
+                        default=1.0, type=float,
+                        help='''[%(default)s] Minimum cis/trans (as defined with 
+                        cis_limit and trans_limit parameters) to filter out bins.''')
+
+    bfiltr.add_argument('--fast_filter', dest='fast_filter', action='store_true',
+                        default=False,
+                        help='''only filter according to min_count.''')
+
+    # bfiltr.add_argument('--min_perc', dest='min_perc', metavar="INT",
+    #                     action='store', default=None, type=float,
+    #                     help=('''[%(default)s] lower percentile from which
+    #                     consider bins as good.'''))
+
+    # bfiltr.add_argument('--max_perc', dest='max_perc', metavar="INT",
+    #                     action='store', default=None, type=float,
+    #                     help=('''[%(default)s] upper percentile until which
+    #                     consider bins as good.'''))
 
     bfiltr.add_argument('--filter_only', dest='filter_only', action='store_true',
                         default=False,
                         help='skip normalization')
-
-    bfiltr.add_argument('--fast_filter', dest='fast_filter', action='store_true',
-                        default=False,
-                        help='''only filter according to the percentage of zero
-                        count or minimum count of reads''')
 
     bfiltr.add_argument('-B', '--badcols', dest='badcols', nargs='+',
                         type=str, default=None, metavar='CHR:POS1-POS2',
@@ -571,7 +588,12 @@ def nice(reso):
 ## TODO: This should be handled in the hic bam parser
 
 def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
-                  resolution, outdir, extra_out,region, start, end):
+                        resolution, outdir, extra_out,region, start, end,
+                        next_position=1, last_position=None):
+    
+    if last_position is None:
+        last_position = next_position * 5
+    
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     try:
@@ -595,16 +617,26 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
         cisprc = {}
         for (i, j), v in dico.items():
             if all_bins[i][0] == all_bins[j][0]:
+                diff = abs(j - i)
                 try:
-                    cisprc[i][0] += v
-                    cisprc[i][1] += v
+                    cisprc[i][0] += v  # add to cis interactions
+                    cisprc[i][1] += v  # add to total interactions
+                    if diff <= next_position:
+                        cisprc[i][2] += v  # add to total interactions
+                    elif diff <= last_position:
+                        cisprc[i][3] += v  # add to total interactions
                 except KeyError:
-                    cisprc[i] = [v, v]
+                    if diff <= next_position:
+                        cisprc[i] = [v, v, v, 0]
+                    elif diff <= last_position:
+                        cisprc[i] = [v, v, 0, v]
+                    else:
+                        cisprc[i] = [v, v, 0, 0]
             else:
                 try:
-                    cisprc[i][1] += v
+                    cisprc[i][1] += v  # only add to total interactions
                 except KeyError:
-                    cisprc[i] = [0, v]
+                    cisprc[i] = [0, v, 0, 0]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'wb')
         dump(dico, out, HIGHEST_PROTOCOL)
@@ -621,7 +653,12 @@ def read_bam_frag_valid(inbam, filter_exclude, all_bins, sections,
 
 
 def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
-                         resolution, outdir, extra_out,region, start, end):
+                         resolution, outdir, extra_out,region, start, end,
+                         next_position=1, last_position=None):
+
+    if last_position is None:
+        last_position = next_position * 5
+
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     try:
@@ -646,17 +683,27 @@ def read_bam_frag_filter(inbam, filter_exclude, all_bins, sections,
                 dico[(pos1, pos2)] = 1
         cisprc = {}
         for (i, j), v in dico.items():
-            if all_bins[i][0] == all_bins[j][0]:
+            if all_bins[i][0] == all_bins[j][0]:  # same chromosome
+                diff = abs(j - i)
                 try:
-                    cisprc[i][0] += v
-                    cisprc[i][1] += v
+                    cisprc[i][0] += v  # add to cis interactions
+                    cisprc[i][1] += v  # add to total interactions
+                    if diff <= next_position:
+                        cisprc[i][2] += v  # add to total interactions
+                    elif diff <= last_position:
+                        cisprc[i][3] += v  # add to total interactions
                 except KeyError:
-                    cisprc[i] = [v, v]
+                    if diff <= next_position:
+                        cisprc[i] = [v, v, v, 0]
+                    elif diff <= last_position:
+                        cisprc[i] = [v, v, 0, v]
+                    else:
+                        cisprc[i] = [v, v, 0, 0]
             else:
                 try:
-                    cisprc[i][1] += v
+                    cisprc[i][1] += v  # only add to total interactions
                 except KeyError:
-                    cisprc[i] = [0, v]
+                    cisprc[i] = [0, v ,0, 0]
         out = open(path.join(outdir,
                              'tmp_%s:%d-%d_%s.pickle' % (region, start, end, extra_out)), 'wb')
         dump(dico, out, HIGHEST_PROTOCOL)
@@ -676,7 +723,8 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
              normalization='Vanilla', mappability=None, n_rsites=None,
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
-             max_njobs=100, min_perc=None, max_perc=None, extra_bads=None):
+             max_njobs=100, extra_bads=None, 
+             cis_limit=1, trans_limit=5, min_ratio=1.0, fast_filter=False):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(list(zip(bamfile.references,
                                [x // resolution + 1 for x in bamfile.lengths])))
@@ -726,6 +774,16 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
 
     # print '\n'.join(['%s %d %d' % (a, b, c) for a, b, c in zip(regs, begs, ends)])
     printime('  - Parsing BAM (%d chunks)' % (len(regs)))
+    # define limits for cis and trans interactions if not given
+    if cis_limit is None:
+        cis_limit = int(1_000_000 / resolution)
+    print('      -> cis interactions are defined as being bellow {}'.format(
+        nicer(cis_limit * resolution)))
+    if trans_limit is None:
+        trans_limit = cis_limit * 5
+    print('      -> trans interactions are defined as being bellow {}'.format(
+        nicer(trans_limit * resolution)))
+
     bins_dict = dict([(j, i) for i, j in enumerate(bins)])
     pool = mu.Pool(ncpus)
     procs = []
@@ -734,7 +792,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         procs.append(pool.apply_async(
             read_bam_frag, args=(inbam, filter_exclude, bins, bins_dict,
                                  resolution, outdir, extra_out,
-                                 region, start, end,)))
+                                 region, start, end, cis_limit, trans_limit)))
     pool.close()
     print_progress(procs)
     pool.join()
@@ -757,28 +815,62 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         cisprc.update(tmp_cisprc)
     stdout.write('\n')
 
+    # get cis/trans ratio
+    for k in cisprc:
+        try:
+            cisprc[k][3] = cisprc[k][2] / cisprc[k][3]
+        except ZeroDivisionError:
+            cisprc[k][3] = 0
+
+    # BIN FILTERINGS
     printime('  - Removing columns with too few or too much interactions')
-    if len(bamfile.references) == 1 and min_count is None:
-        raise Exception("ERROR: only one chromosome can't filter by "
-                        "cis-percentage, set min_count instead")
-    elif min_count is None and len(bamfile.references) > 1:
-        badcol = filter_by_local_ratio(
-            hic_data=hic_data, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
-            size=total, savefig=None)
+    
+    # define filter for minimum interactions per bin
+    if not fast_filter:
+        if min_count is None:
+            min_count = nanpercentile(
+                [cisprc[k][2] for k in range(total) 
+                if cisprc.get(k, [0, 0, 0, 0])[3] < min_ratio 
+                and cisprc.get(k, [0, 0, 0, 0])[2] >= 1], 95)  # harcoded parameter we are filtering
+                                                                # out bins with no interactions in cis
+
+        print('      -> too few interactions defined as less than %9d '
+               'interactions' % (min_count))
+        badcol = dict((k, True) for k in range(total) 
+                    if cisprc.get(k, [0, 0, 0, 0])[3] < min_ratio
+                    or cisprc[k][2] < min_count)
+        print('      -> removed %d columns of %d (%.1f%%)' % (
+            len(badcol), total, float(len(badcol)) / total * 100))
     else:
+    # if len(bamfile.references) == 1 and min_count is None:
+    #     raise Exception("ERROR: only one chromosome can't filter by "
+    #                     "cis-percentage, set min_count instead")
+    # elif min_count is None and len(bamfile.references) > 1:
+        # badcol = filter_by_cis_percentage(
+        #     cisprc, sigma=sigma, verbose=True, min_perc=min_perc, max_perc=max_perc,
+        #     size=total, savefig=None)
+
         print('      -> too few interactions defined as less than %9d '
                'interactions' % (min_count))
         badcol = {}
         countL = 0
         countZ = 0
         for c in range(total):
-            if cisprc.get(c, [0, 0])[1] < min_count:
-                badcol[c] = cisprc.get(c, [0, 0])[1]
+            if cisprc.get(c, [0, 0, 0, 0])[1] < min_count:
+                badcol[c] = cisprc.get(c, [0, 0, 0, 0])[1]
                 countL += 1
                 if not c in cisprc:
                     countZ += 1
         print('      -> removed %d columns (%d/%d null/high counts) of %d (%.1f%%)' % (
             len(badcol), countZ, countL, total, float(len(badcol)) / total * 100))
+
+    # Plot
+    plot_filtering(dict((k, cisprc[k][2]) for k in cisprc), 
+                   dict((k, cisprc[k][3]) for k in cisprc), total, min_count, min_ratio, 
+                   path.join(outdir, 'filtering_summary_plot_{}_{}.png'.format(nicer(resolution, sep=''),
+                    extra_out)),
+                   base_position=0, next_position=cis_limit, last_position=trans_limit, resolution=resolution,
+                   legend='Filtered {} of {} bins'.format(len(badcol), total))
 
     # no mappability will result in NaNs, better to filter out these columns
     if mappability:
@@ -800,7 +892,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
 
     printime('  - Rescaling sum of interactions per bins')
     size = len(bins)
-    biases = [float('nan') if k in badcol else cisprc.get(k, [0, 1.])[1]
+    biases = [float('nan') if k in badcol else cisprc.get(k, [0, 1., 0, 0])[1]
               for k in range(size)]
 
     if normalization == 'ICE':

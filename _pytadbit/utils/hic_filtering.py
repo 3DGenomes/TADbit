@@ -6,7 +6,7 @@ from __future__ import print_function
 from warnings                  import warn
 from sys                       import stderr
 from re                        import sub
-from pytadbit.utils.extraviews import tadbit_savefig
+from pytadbit.utils.extraviews import tadbit_savefig, nicer
 
 import numpy as np
 
@@ -566,6 +566,9 @@ def filter_by_local_ratio(hic_data, min_ratio=1, min_count=None,
 
     size = len(hic_data)
 
+    if last_position is None:
+        last_position = next_position * 5
+
     ratio = {}
     nears = {}
 
@@ -596,3 +599,33 @@ def filter_by_local_ratio(hic_data, min_ratio=1, min_count=None,
     
     return dict((k, True) for k in range(size) 
                 if ratio.get(k, 0) < min_ratio or nears[k] < min_count)
+
+def plot_filtering(nears, ratio, size, cut_count, cut_ratio, outfile,
+                   base_position=None, next_position=None, last_position=None,
+                    resolution=1, legend=''):
+    plt.figure(figsize=(8.5, 5.5))
+    axe = plt.subplot()
+    axe.set_position((0.12, 0.1, 0.55, 0.8))
+    pl = plt.plot([ratio.get(k, 0) for k in range(size)], [nears.get(k, 0) for k in range(size)], 
+                'k.', ms=1 if size > 50_000 else 2 if size > 20_000 else 3, 
+                alpha=0.01 if size > 200_000 else 0.1 if size > 50_000 else 0.2 if size > 20_000 else 0.3)
+    ylim = np.percentile(list(nears.values()), 95)
+    plt.ylim(0, ylim)
+    xlim = np.percentile(list(ratio.values()), 95)
+    plt.xlim(0, xlim)
+    fb = plt.fill_between([0, cut_ratio], ylim, color='tab:red', alpha=0.4, lw=0)
+    plt.fill_betweenx([0, cut_count], cut_ratio, xlim, color='tab:red', alpha=0.4, lw=0)
+    plt.ylabel('interactions per {} bin'.format(nicer(resolution)), size=12)
+    plt.xlabel('interaction ratio between {0}-{1} and {1}-{2}'.format(
+        nicer(resolution * base_position), nicer(resolution * next_position), nicer(resolution * last_position)),
+            size=12)
+    plt.text(xlim, cut_count, 'Minimum sum: {}'.format(cut_count), ha='right', va='bottom', size=11)
+    plt.text(cut_ratio, ylim, 'Minimum cis/trans ratio: {}'.format(cut_ratio), ha='left', va='top', size=11, 
+            rotation=90)
+    plt.title('Distribution of interaction\nsums and cis/trans ratio by {} bin'.format(nicer(resolution)), 
+            size=13)
+    plt.legend(pl + [fb], ['{} bin'.format(nicer(resolution)), 
+                        'Filtered space:\n low ratio or count'], 
+            bbox_to_anchor=(1, 0.9), frameon=False, fontsize=10, markerscale=4,
+            title=legend, title_fontsize=11)
+    plt.savefig(outfile)
