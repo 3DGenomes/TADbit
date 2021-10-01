@@ -15,6 +15,7 @@ except ImportError:
 from time                         import sleep, time
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
+from math                         import isnan
 from random                       import getrandbits
 from tarfile                      import open as taropen
 from io                           import StringIO
@@ -1226,8 +1227,10 @@ def write_matrix(inbam, resolution, biases, outdir,
                                             ('_' + extra) if extra else '')
                 copyfile(outfiles[0][0], os.path.join(outdir, fnam))
                 out_nrm = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
-                bias_data_row = [1./b if b > 0 else 0 for b in bias1]
-                bias_data_col = [1./b if b > 0 else 0 for b in bias2]
+                bias_data_row = [1./bias1[b] if not isnan(bias1[b]) and bias1[b] > 0 else 0
+                                 for b in range(len(bias1))]
+                bias_data_col = [1./bias2[b] if not isnan(bias2[b]) and bias2[b] > 0 else 0
+                                 for b in range(len(bias2))]
                 out_nrm.write_weights(bias_data_row, bias_data_col, *bin_coords)
                 outfiles.append((os.path.join(outdir, fnam), fnam))
                 fnames['NRM'] = os.path.join(outdir, fnam)
