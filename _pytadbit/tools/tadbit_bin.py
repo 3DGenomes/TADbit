@@ -40,7 +40,6 @@ from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db, retry
 from pytadbit.utils.extraviews       import tadbit_savefig, nicer
 from pytadbit.utils.extraviews       import plot_HiC_matrix, format_HiC_axes
 
-
 DESC = 'bin Hi-C data into matrices'
 
 
