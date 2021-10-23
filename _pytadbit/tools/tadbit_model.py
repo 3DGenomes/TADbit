@@ -360,9 +360,9 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                   optpar['scale'  ])
     muls = tuple(map(my_round, (m, u, l, s)))
     cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-    if path.exists(cfgfolder):
-        logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
-        return []
+    # if path.exists(cfgfolder):
+    #     logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
+    #     return []
     mkdir(cfgfolder)
     prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
     results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
