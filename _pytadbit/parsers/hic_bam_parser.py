@@ -704,11 +704,13 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
 
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.tsv' % (region, start, end))
-        for l in open(fname):
-            c, a, b, v = l.split('\t')
-            if include_chunk_count:
+        if include_chunk_count:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield countbin, c, int(a), int(b), int(v)
-            else:
+        else:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield c, int(a), int(b), int(v)
         if clean:
             os.system('rm -f %s' % fname)
