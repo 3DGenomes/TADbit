@@ -82,7 +82,7 @@ def run(opts):
         mkdir(cmprt_dir)
         if opts.fasta:
             print('  - Computing GC content to label compartments')
-            rich_in_A = get_gc_content(parse_fasta(opts.fasta, chr_filter=opts.crms), reso,
+            rich_in_A = get_gc_content(parse_fasta(opts.fasta, chr_filter=opts.crms, save_cache=False), reso,
                                        chromosomes=opts.crms,
                                        by_chrom=True, n_cpus=opts.cpus)
         elif opts.rich_in_A:
