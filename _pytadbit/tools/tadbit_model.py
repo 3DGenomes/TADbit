@@ -90,7 +90,7 @@ def convert_from_unicode(data):
         return type(data)(list(map(convert_from_unicode, data)))
     return data
 
-def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
+def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
     zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
@@ -147,7 +147,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
-        job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+        job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
         mkdir(job_dir)
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
@@ -302,11 +302,13 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
 
     return results_corr, modelsfile
 
+
 def my_round(num, val=4):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 
-def optimization_distributed(exp, opts, outdir, job_file_handler = None,
+
+def optimization_distributed(exp, opts, outdir, batch_job_hash, job_file_handler = None,
                              script_cmd = 'python', script_args = '', verbose=True):
     logging.info('\nOptimizing parameters...')
     if verbose:
@@ -320,7 +322,7 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
         if not path.exists(modelsfile):
             mkdir(cfgfolder)
-            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash)
 
     # get the best combination
     best = ({'corr': 0}, [0, 0, 0, 0, 0])
@@ -364,13 +366,13 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
     #     logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
     #     return []
     mkdir(cfgfolder)
-    prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+    prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash)
     results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
                                                job_file_handler=job_file_handler,
                                                exp=exp, script_cmd=script_cmd,
                                                script_args=script_args)
     if not job_file_handler:
-        rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
+        rename(modelsfile, path.join(outdir, batch_job_hash + '.models'))
     return results
 
 def run(opts):
@@ -462,7 +464,7 @@ def run(opts):
         # Optimization
         if opts.optimize:
             logging.info ('     o Optimizing parameters')
-            optpar, results = optimization_distributed(exp, opts, outdir,
+            optpar, results = optimization_distributed(exp, opts, outdir, batch_job_hash,
                                                        job_file_handler = job_file_handler,
                                                        script_cmd = opts.script_cmd,
                                                        script_args = opts.script_args)
