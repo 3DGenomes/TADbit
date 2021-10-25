@@ -519,7 +519,7 @@ def run(opts):
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
         outdir = path.join(opts.workdir,outdir)
-        models = load_structuralmodels(path.join(outdir,batch_job_hash+'.models'))
+        models = load_structuralmodels(path.join(outdir, '%s_%s.models' % (batch_job_hash, opts.rand)))
         opts.reso = models.description['resolution']
 
         logging.info('''
@@ -568,7 +568,7 @@ def run(opts):
                 continue
             break
         logging.info("\tSaving again the models this time with clusters...")
-        models.save_models(path.join(outdir, batch_job_hash+'.models'))
+        models.save_models(path.join(outdir, '%s_%s.models' % (batch_job_hash, opts.rand)))
         # Plot the clustering
         try:
             models.cluster_analysis_dendrogram(
