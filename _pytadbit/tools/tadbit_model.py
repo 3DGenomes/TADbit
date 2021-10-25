@@ -201,7 +201,7 @@ def run_distributed_job(job_dir, script_cmd , script_args):
     while not (path.exists(results_file) or path.exists(failed_flag)):
         time.sleep(1)
 
-def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
+def run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_handler = None,
                          exp = None, script_cmd = 'python',
                          script_args = '', verbose = True):
 
@@ -216,7 +216,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
         for n_job in range(n_jobs):
-            job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+            job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
             if job_file_handler:
                 scriptname = path.join(job_dir,'_tmp_optim.py')
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
@@ -232,7 +232,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         models = None
         for n_job in range(n_jobs):
             try:
-                job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+                job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
                 results_file = path.join(job_dir,'results.models')
                 if path.isfile(results_file):
                     results = load_structuralmodels(results_file)
@@ -329,7 +329,7 @@ def optimization_distributed(exp, opts, outdir, batch_job_hash, job_file_handler
     results = {}
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
         m, u, l, s = list(map(my_round, (m, u, l, s)))
-        muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler, 
+        muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_handler, 
                             script_cmd = script_cmd, script_args = script_args, verbose=verbose)
         if muls_results:
             results.update(muls_results)
@@ -367,7 +367,7 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
     #     return []
     mkdir(cfgfolder)
     prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash)
-    results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
+    results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash,
                                                job_file_handler=job_file_handler,
                                                exp=exp, script_cmd=script_cmd,
                                                script_args=script_args)
