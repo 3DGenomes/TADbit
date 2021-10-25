@@ -147,7 +147,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
-        job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
+        job_dir = path.join(dirname,'_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
         mkdir(job_dir)
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
@@ -207,7 +207,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_hand
 
     muls = tuple(map(my_round, (m, u, l, s)))
     dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-    modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
+    modelsfile = path.join(outdir, dirname, 'models_%s_%s_%s_%s.models' % muls)
 
     if path.exists(modelsfile):
         models = load_structuralmodels(modelsfile)
@@ -216,7 +216,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_hand
         pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
         for n_job in range(n_jobs):
-            job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
+            job_dir = path.join(dirname, '_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
             if job_file_handler:
                 scriptname = path.join(job_dir,'_tmp_optim.py')
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
@@ -232,7 +232,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_hand
         models = None
         for n_job in range(n_jobs):
             try:
-                job_dir = path.join(dirname,'_tmp_results_%s_%s' % (n_job, batch_job_hash))
+                job_dir = path.join(dirname, '_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
                 results_file = path.join(job_dir,'results.models')
                 if path.isfile(results_file):
                     results = load_structuralmodels(results_file)
