@@ -372,7 +372,7 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                                                exp=exp, script_cmd=script_cmd,
                                                script_args=script_args)
     if not job_file_handler:
-        rename(modelsfile, path.join(outdir, batch_job_hash + '.models'))
+        rename(modelsfile, path.join(outdir, batch_job_hash + '%s_%s.models' % (batch_job_hash, opts.rand)))
     return results
 
 def run(opts):
