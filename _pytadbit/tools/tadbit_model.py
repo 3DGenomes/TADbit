@@ -436,7 +436,7 @@ def run(opts):
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
                    if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
                    opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
                    opts.end - opts.beg))
         else:
@@ -447,7 +447,7 @@ def run(opts):
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
                    if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
                    nicer(opts.reso),
                    opts.end - opts.beg))
         # in case we are not going to run
