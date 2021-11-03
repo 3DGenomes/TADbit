@@ -554,7 +554,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
 
 def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                            filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
-                           region=None, verbose=True, clean=True):
+                           region=None, nchunks=100, verbose=True, clean=True):
     """
     :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -566,6 +566,9 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     :param (1, 2, 3, 4, 6, 7, 8, 9, 10) filter exclude: filters to define the
        set of valid pair of reads.
     :param None region: chromosome name, if None, all genome will be loaded
+    :param 100 nchunks: maximum number of chunks into which to cut the BAM
+    :param True verbose: speak
+    :param True clean: remove temps
 
     :returns: HiC_data object
     """
@@ -620,7 +623,8 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
 
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=clean,
-               ncpus=ncpus, dico=imx, region1=region, verbose=verbose)
+               ncpus=ncpus, nchunks=nchunks, dico=imx, region1=region,
+               verbose=verbose)
     imx._symmetricize()
     imx.symmetricized = True
 
