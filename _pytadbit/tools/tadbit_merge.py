@@ -27,7 +27,7 @@ from pytadbit.utils.sqlite_utils     import add_path, get_jobid, print_db
 from pytadbit.utils.sqlite_utils     import get_path_id, retry
 from pytadbit.utils.file_handling    import mkdir, which, magic_open
 from pytadbit.mapping.filter         import MASKED
-from pytadbit.parsers.hic_bam_parser import printime
+from pytadbit.utils                  import printime
 
 
 DESC = ('load two working directories with different Hi-C data samples and ' +

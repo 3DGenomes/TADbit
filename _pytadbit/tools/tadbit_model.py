@@ -180,7 +180,7 @@ except Exception as e:
     print(e)
     open(path.join("%s",'failed.flag'), 'a').close()
     ''' % (paramsfile, nloci, nmodels_per_job, nmodels_per_job,
-           n_job*opts.nmodels_per_job, job_dir,
+           n_job * opts.nmodels_per_job, job_dir,
            '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
            job_dir))
 
@@ -918,7 +918,7 @@ def populate_args(parser):
                         help='''In case input was not generated with the TADbit
                         tools''')
     glopts.add_argument('--rand', dest='rand', metavar="INT",
-                        type=str, default='1',
+                        type=str, default=1,
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')

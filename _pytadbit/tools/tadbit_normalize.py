@@ -33,7 +33,8 @@ from pytadbit.utils.sqlite_utils          import add_path, get_jobid, print_db, 
 from pytadbit.utils.file_handling         import mkdir
 from pytadbit.mapping.analyze             import plot_distance_vs_interactions
 from pytadbit.mapping.filter              import MASKED
-from pytadbit.parsers.hic_bam_parser      import printime, print_progress
+from pytadbit.utils                       import printime
+from pytadbit.parsers.hic_bam_parser      import print_progress
 from pytadbit.parsers.hic_bam_parser      import filters_to_bin
 from pytadbit.parsers.bed_parser          import parse_mappability_bedGraph
 from pytadbit.utils.extraviews            import nicer

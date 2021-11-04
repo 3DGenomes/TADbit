@@ -32,7 +32,8 @@ from pysam                           import AlignmentFile
 
 from pytadbit.mapping.filter         import MASKED
 from pytadbit.utils.file_handling    import mkdir
-from pytadbit.parsers.hic_bam_parser import filters_to_bin, printime
+from pytadbit.utils                  import printime
+from pytadbit.parsers.hic_bam_parser import filters_to_bin
 from pytadbit.parsers.hic_bam_parser import write_matrix, get_matrix
 from pytadbit.parsers.tad_parser     import parse_tads
 from pytadbit.utils.sqlite_utils     import already_run, digest_parameters

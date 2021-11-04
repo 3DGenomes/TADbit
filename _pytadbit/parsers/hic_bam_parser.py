@@ -12,14 +12,13 @@ try:
     from pickle5                     import load  # python < 3.8
 except ImportError:
     from pickle                      import load
-from time                         import sleep, time
+from time                         import sleep
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
 from random                       import getrandbits
 from tarfile                      import open as taropen
 from io                           import StringIO
 from shutil                       import copyfile
-import datetime
 from sys                          import stdout, stderr, exc_info, modules
 from distutils.version            import LooseVersion
 import os
@@ -32,6 +31,7 @@ except ImportError:
 
 from pysam                        import AlignmentFile
 
+from pytadbit.utils                 import printime
 from pytadbit.utils.file_handling   import mkdir, which
 from pytadbit.utils.extraviews      import nicer
 from pytadbit.mapping.filter        import MASKED
@@ -47,14 +47,6 @@ except NameError:
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
-
-
-def printime(msg):
-    print (msg +
-           (' ' * (79 - len(msg.replace('\n', '')))) +
-           '[' +
-           str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
-           ']')
 
 
 def print_progress(procs):

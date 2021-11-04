@@ -9,9 +9,10 @@ from argparse     import ArgumentParser
 
 from pysam                        import AlignmentFile
 
-from pytadbit.mapping.filter              import MASKED
-from pytadbit.parsers.hic_bam_parser      import filters_to_bin, printime
-from pytadbit.utils.file_handling         import magic_open
+from pytadbit.mapping.filter          import MASKED
+from pytadbit.parsers.hic_bam_parser  import filters_to_bin
+from pytadbit.utils                   import printime
+from pytadbit.utils.file_handling     import magic_open
 
 
 # def get_mapped_chunk(fhandler, nreads, ncpus):
