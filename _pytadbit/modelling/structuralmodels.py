@@ -42,6 +42,7 @@ from scipy.cluster.hierarchy          import linkage, fcluster
 from scipy.spatial.distance           import squareform
 
 from pytadbit                         import get_dependencies_version
+from pytadbit.utils                   import printime
 from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
@@ -205,7 +206,8 @@ class StructuralModels(object):
                        for k, v in list(self._config.items())]),
             len(self.clusters))
 
-    def _extend_models(self, models, nbest=None, different_stage=False):
+    def _extend_models(self, models, nbest=None, different_stage=False, 
+                       silent=False):
         """
         Add new models to structural models to current StructuralModel.
 
@@ -231,9 +233,10 @@ class StructuralModels(object):
         ids = set(self.__models[m]['rand_init'] for m in list(self.__models.keys()))
         for m in list(models.keys()):
             if models[m]['rand_init'] in ids:
-                warn(('WARNING: model with seed: %s already here (use '
-                      'different_stage=True, to force extesion)\n  '
-                      'SKIPPING...') % (m))
+                if not silent:
+                    warn(('WARNING: model with seed: %s already here (use '
+                        'different_stage=True, to force extesion)\n  '
+                        'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(list(models.values()) + list(self.__models.values()),
@@ -496,12 +499,16 @@ class StructuralModels(object):
             beg = int(float(beg + chrom_start) // self.resolution)
             end = int(float(end + chrom_start) // self.resolution)
         nloci = end - beg
+        if verbose:
+            printime('Computing Equivalent RMSD positions')
         scores = calc_eqv_rmsd(self.__models, beg, end, self._zeros, dcutoff,
                                what=what, normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
             method = 'ward'
+        if verbose:
+            printime('Clustering')
         # Initialize cluster definition of models:
         for model in self:
             model['cluster'] = 'Singleton'
@@ -575,6 +582,7 @@ class StructuralModels(object):
                 return clusters
             self.clusters = clusters
         if verbose:
+            printime('Done.')
             singletons = len([1 for m in self
                               if m['cluster'] == 'Singleton'])
             print(('Number of singletons excluded from clustering: %s (total' +
@@ -1390,7 +1398,7 @@ class StructuralModels(object):
                     [str(round(consistencies[c][part], 3)) for c in cutoffs])))
             out.close()
         if not plot:
-            return
+            return consistencies
         # plot
         show = False if axe else True
         axe = setup_plot(axe)
@@ -3073,8 +3081,8 @@ class StructuralModels(object):
 
 class ClusterOfModels(dict):
     def __str__(self):
-        out1 = '   Cluster #%s has %s models [top model: %s]\n'
-        out = 'Total number of clusters: %s\n%s' % (
+        out1 = '   Cluster #%3s has %4s models [top model: %6s]\n'
+        out = 'Total number of clusters: %4s\n%s' % (
             len(self),
             ''.join([out1 % (k, len(self[k]), self[k][0]) for k in self]))
         return out
