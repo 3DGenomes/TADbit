@@ -452,29 +452,32 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     if thin:
         if smooth is not False:
             tck, u= interpolate.splprep([x, y, z], s=smooth)
-            #here we generate the new interpolated dataset,
-            #increase the resolution by increasing the spacing, 500 in this example
-            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
+            # here we generate the new interpolated dataset,
+            # increase the resolution by increasing the spacing,
+            # 10 times as much points asparticles
+            xs, ys, zs = interpolate.splev(np.linspace(0, 1, len(x) * 10), tck)
             axe.plot(xs, ys, zs, color='black', lw=1, alpha=0.2)
         else:
             axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
     else:
         if smooth is not False:
             tck, u= interpolate.splprep([x, y, z], s=smooth)
-            #here we generate the new interpolated dataset,
-            #increase the resolution by increasing the spacing, 500 in this example
-            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
-            axe.plot(xs, ys, zs, color='lightgrey', lw=lw_main, alpha=0.8)
+            # here we generate the new interpolated dataset,
+            # increase the resolution by increasing the spacing,
+            # 10 times as much points asparticles
+            xs, ys, zs = interpolate.splev(np.linspace(0, 1, len(x) * 10), tck)
+            axe.plot(xs, ys, zs, color='tab:grey', lw=lw_main, alpha=0.6)
         else:
             for i in range(len(x)-1):
                 axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
-                         color=color[i], lw=lw_main)
-                if label:
-                    axe.text(x[i], y[i], z[i], str(i), size=7)
+                         color='tab:grey', lw=lw_main, alpha=0.6)
+        if label:
+            axe.text(x[i], y[i], z[i], str(i), size=7)
+        print('hola', x)
+        axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
         if label:
             for i in range(len(x)):
                 axe.text(x[i], y[i], z[i],str(i), size=7)
-        axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
     axe.pbaspect = [1,1,1]
     if show:
         if savefig:
@@ -729,7 +732,7 @@ def plot_2d_optimization_result(result,
     else:
         vmin = result.min()
         vmax = result.max()
-        
+
     round_decs = 6
     # Here we round the values in axes_range and pass from the
     # 5 parameters to the cartesian axes names.
