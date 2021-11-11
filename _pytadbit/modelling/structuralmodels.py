@@ -1126,12 +1126,16 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         acc = []
+        total = []
+        frees = []
         for model in models:
-            acc_vs_inacc = self[model].accessible_surface(
+            free, tot, _, _, acc_vs_inacc = self[model].accessible_surface(
                 radius, nump=nump, superradius=superradius,
-                include_edges=False)[-1]
+                include_edges=False)
             acc.append([(float(j) / (j + k))  if (j + k) else 0.0
                         for _, j, k in acc_vs_inacc])
+            frees.append(free)
+            total.append(tot)
         accper, errorn, errorp = self._windowize(list(zip(*acc)), steps, average=True)
         if savedata:
             out = open(savedata, 'w')
@@ -1146,7 +1150,7 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
         if not plot:
-            return  # stop here, we do not want to display anything
+            return accper, errorp, errorn, frees, total  # stop here, we do not want to display anything
         # plot
         ylabel = 'Accessibility to an object with a radius of %s nm ' % (radius)
         xlabel = 'Particle number'
@@ -1159,7 +1163,7 @@ class StructuralModels(object):
         #elif not axe:
         #    plt.show()
         #plt.close('all')
-        return accper, errorp, errorn
+        return accper, errorp, errorn, frees, total
 
     def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
