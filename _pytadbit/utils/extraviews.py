@@ -471,9 +471,6 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
             for i in range(len(x)-1):
                 axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
                          color='tab:grey', lw=lw_main, alpha=0.6)
-        if label:
-            axe.text(x[i], y[i], z[i], str(i), size=7)
-        print('hola', x)
         axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
         if label:
             for i in range(len(x)):

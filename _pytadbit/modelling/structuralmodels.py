@@ -22,7 +22,7 @@ from os.path                          import exists
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
-from copy                             import deepcopy, copy
+from copy                             import copy
 
 from numpy                            import exp as np_exp
 from numpy                            import median as np_median
@@ -51,9 +51,6 @@ from pytadbit.utils.tadmaths          import mean_none
 from pytadbit.utils.extraviews        import plot_3d_model, setup_plot
 from pytadbit.utils.extraviews        import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
-from pytadbit.utils.extraviews        import tad_coloring
-from pytadbit.utils.extraviews        import tad_border_coloring
-from pytadbit.utils.extraviews        import color_residues
 from pytadbit.mapping.analyze         import scc
 from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
@@ -2901,6 +2898,66 @@ class StructuralModels(object):
         plt.close('all')
 
         return persistence_length[0]
+
+    def remove_unwanted(self, rnd_factor=0):
+        """
+        INPLACE transform (x, y, z) coordinates of unrestrained particles in 3D models.
+        New coordinates will be extrapolated between first particles upstream
+        and downstream with restraint
+        
+        :param 0 rnd_factor: insert some noise in the placement of the particle
+        to create a more realistic representation.
+        
+        """
+        for m in self:
+            prev = None
+            X = []
+            Y = []
+            Z = []
+            for p in range(len(m)):
+                if not self._zeros[p]:
+                    X.append(None)
+                    Y.append(None)
+                    Z.append(None)
+                    continue
+                x = m['x'][p]
+                y = m['y'][p]
+                z = m['z'][p]
+                X.append(x)
+                Y.append(y)
+                Z.append(z)
+                if prev is None:  # case it's first particle
+                    for i in range(p): # we place other particles randomly around first particle with restraints
+                        X[i] = x + random() * rnd_factor
+                        Y[i] = y + random() * rnd_factor
+                        Z[i] = z + random() * rnd_factor
+                    prev = p
+                    continue
+                if prev != p - 1:  # there is a gap
+                    d = p - prev   # genomic distance in bins
+                    px = m['x'][prev]
+                    py = m['y'][prev]
+                    pz = m['z'][prev]
+                    dx = (x - px) / d
+                    dy = (y - py) / d
+                    dz = (z - pz) / d
+                    for n, i in enumerate(range(prev + 1, p), 1):
+                        X[i] = px + dx * n + random() * rnd_factor
+                        Y[i] = py + dy * n + random() * rnd_factor
+                        Z[i] = pz + dz * n + random() * rnd_factor
+                prev = p
+
+            if prev != p:  # case it's last particle
+                px = m['x'][prev]
+                py = m['y'][prev]
+                pz = m['z'][prev]
+                for i in range(prev + 1, len(m)):
+                    X[i] = px + random() * rnd_factor
+                    Y[i] = py + random() * rnd_factor
+                    Z[i] = pz + random() * rnd_factor
+            m['x'] = X
+            m['y'] = Y
+            m['z'] = Z
 
     def save_models(self, outfile, minimal=()):
         """
