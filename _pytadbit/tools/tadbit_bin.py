@@ -50,7 +50,7 @@ def get_sections(mreads, chr_name):
     bam_lengths = bamfile.lengths
     if chr_name:
         bam_refs_idx = [bam_refs.index(chr_ord)
-                        for chr_ord in opts.chr_name if chr_ord in bam_refs]
+                        for chr_ord in chr_name if chr_ord in bam_refs]
         if not bam_refs_idx :
             raise Exception('''ERROR: Wrong number of chromosomes in chr_order.
                 Found %s in bam file \n''' % (' '.join(bam_refs)))
@@ -278,8 +278,8 @@ def run(opts):
                              log if opts.transform == 'log' else lambda x: x)
                 tads=None
                 if opts.tad_def and not region2:
-                    tads, _ = parse_tads(opts.tad_def)
-                    if start1:
+                    tads = load_tads_fromdb(opts)
+                    if tads and start1:
                         tads = dict([(t, tads[t]) for t in tads
                              if  (int(tads[t]['start']) >= start1 // opts.reso
                                    and int(tads[t]['end']) <= end1 // opts.reso)])
@@ -605,7 +605,8 @@ def populate_args(parser):
 
     pltopt.add_argument('--tad_def', dest='tad_def', action='store',
                         default=None,
-                        help='''tsv file with tad definition, columns:
+                        help='''jobid with the TAD segmentation, alternatively 
+                        a tsv file with tad definition, columns:
                         #    start    end    score    density''')
 
     outopt.add_argument('-c', '--coord', dest='coord1',  metavar='',
@@ -745,3 +746,41 @@ def load_parameters_fromdb(opts):
                 raise Exception('ERROR: more than one item in the database')
             mreads = fetched[0][0]
         return biases, mreads
+
+def load_tads_fromdb(opts):
+    tads=None
+    try:
+        tad_job_id = int(opts.tad_def)
+        if opts.tmpdb:
+            dbfile = opts.tmpdb
+        else:
+            dbfile = path.join(opts.workdir, 'trace.db')
+        con = lite.connect(dbfile)
+        with con:
+            cur = con.cursor()
+            try:
+                cur.execute("""
+                select distinct paths.path,SEGMENT_OUTPUTs.resolution from paths
+                inner join SEGMENT_OUTPUTs on SEGMENT_OUTPUTs.JOBid = paths.JOBid
+                where SEGMENT_OUTPUTs.TADs is not null and paths.jobid = %s
+                """ % (tad_job_id))
+                tads_res = cur.fetchall()
+                if not tads_res:
+                    warn("""WARNING: tad definition job not found""")
+                    return None
+                else:
+                    tads_path = path.join(opts.workdir,tads_res[0][0])
+                    if not path.exists(tads_path):
+                        raise IOError('ERROR: tad definition file_handling does not exist')
+                    tads_reso = int(tads_res[0][1])
+                    tads, _ = parse_tads(tads_path)
+                    if tads_reso != opts.reso:
+                        for pos in range(len(tads)):
+                            tads[pos]['start'] = int((tads_reso/opts.reso)*tads[pos]['start'])
+                            tads[pos]['end'] = int((tads_reso/opts.reso)*tads[pos]['end'])
+                            tads[pos]['brk'] = int((tads_reso/opts.reso)*tads[pos]['brk'])
+            except IndexError:
+                warn("""WARNING: tad definition job not found""")
+    except TypeError:
+        tads, _ = parse_tads(opts.tad_def)
+    return tads

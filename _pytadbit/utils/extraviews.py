@@ -1296,13 +1296,13 @@ def add_subplot_axes(ax,rect,axisbg='w'):
     return subax
 
 
-def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
+def plot_HiC_matrix(in_matrix, bad_color=None, triangular=False, axe=None,
                     transform=np.log2, rescale_zeros=True, figsize=None,
                     tad_def=None, **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
 
-    :param matrix: list of lists with values to be plotted
+    :param in_matrix: list of lists with values to be plotted
     :param None bad_color: plots NaNs in a given color
     :param False triangular: representes only half matrix horizontally
     :param None figsize: tuple with the width and heigth of the wanted
@@ -1318,7 +1318,8 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
     if bad_color is not None:
         kwargs['cmap'] = copy.copy(plt.get_cmap(kwargs.get('cmap', None)))
         kwargs['cmap'].set_bad(bad_color, 1.)
-
+    
+    matrix = copy.copy(in_matrix)
     if not isinstance(matrix, (np.ndarray, np.generic)):
         matrix = np.asarray(matrix)
 

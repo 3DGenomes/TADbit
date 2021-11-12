@@ -554,7 +554,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
 
 def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                            filter_exclude=(1, 2, 3, 4, 6, 7, 8, 9, 10),
-                           region=None, verbose=True, clean=True):
+                           region=None, nchunks=100, verbose=True, clean=True):
     """
     :param fnam: TADbit-generated BAM file with read-ends1 and read-ends2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -566,6 +566,9 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     :param (1, 2, 3, 4, 6, 7, 8, 9, 10) filter exclude: filters to define the
        set of valid pair of reads.
     :param None region: chromosome name, if None, all genome will be loaded
+    :param 100 nchunks: maximum number of chunks into which to cut the BAM
+    :param True verbose: speak
+    :param True clean: remove temps
 
     :returns: HiC_data object
     """
@@ -576,11 +579,15 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
     bam.close()
 
     sections = []
-    for crm in genome_seq:
-        len_crm = genome_seq[crm]
-        sections.extend([(crm, i) for i in range(len_crm)])
-
-    size = sum(genome_seq.values())
+    if region:
+        size = genome_seq[region]
+        sections.extend([(region, i) for i in range(size)])
+    else:
+        for crm in genome_seq:
+            len_crm = genome_seq[crm]
+            sections.extend([(crm, i) for i in range(len_crm)])
+    
+        size = sum(genome_seq.values())
 
     chromosomes = {region: genome_seq[region]} if region else genome_seq
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
@@ -596,13 +603,19 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
                                 biases['resolution'], resolution))
         if region:
             chrom_start = 0
+            chrom_end = 0
             for crm in genome_seq:
                 if crm == region:
+                    chrom_end = chrom_start + genome_seq[crm]
                     break
                 len_crm = genome_seq[crm]
                 chrom_start += len_crm
-            imx.bads     = dict((b - chrom_start, biases['badcol'][b]) for b in biases['badcol'])
-            imx.bias     = dict((b - chrom_start, biases['biases'][b]) for b in biases['biases'])
+            imx.bias  = dict((k - chrom_start, v)
+                          for k, v in biases.get('biases', {}).items()
+                          if chrom_start <= k < chrom_end)
+            imx.bads  = dict((k - chrom_start, v)
+                          for k, v in biases.get('badcol', {}).items()
+                          if chrom_start <= k < chrom_end)
         else:
             imx.bads     = biases['badcol']
             imx.bias     = biases['biases']
@@ -610,7 +623,8 @@ def load_hic_data_from_bam(fnam, resolution, biases=None, tmpdir='.', ncpus=8,
 
     get_matrix(fnam, resolution, biases=None, filter_exclude=filter_exclude,
                normalization='raw', tmpdir=tmpdir, clean=clean,
-               ncpus=ncpus, dico=imx, region1=region, verbose=verbose)
+               ncpus=ncpus, nchunks=nchunks, dico=imx, region1=region,
+               verbose=verbose)
     imx._symmetricize()
     imx.symmetricized = True
 

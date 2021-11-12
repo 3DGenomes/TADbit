@@ -141,7 +141,7 @@ html_favicon = 'pictures/TADbit_icon.ico'
 html_static_path = ['_static']
 
 def setup(app):
-    app.add_stylesheet('black-on-white.css')
+    app.add_css_file('black-on-white.css')
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

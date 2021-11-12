@@ -1835,7 +1835,7 @@ class StructuralModels(object):
         oridata = []
         moddata = []
         for i in (v for v, z in enumerate(self._zeros) if z):
-            for j in (v for v, z in enumerate(self._zeros[i + off_diag:]) if z):
+            for j in (v for v, z in list(enumerate(self._zeros))[i + off_diag:] if z):
                 oriv = self._original_data[i][j]
                 if oriv <= 0 or isnan(oriv):
                     continue

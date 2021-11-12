@@ -41,6 +41,31 @@ def is_cooler(fname, resolution=None):
         pass
     return False
 
+def parse_header(fname, resolution=None):
+    """
+    Read matrix header stored in cooler
+
+    :param f: an iterable (typically an open file).
+    :param None resolution: matrix resolution.
+    
+    :returns: Ordereddictionary of chromosome ans sizes 
+    """
+
+    with h5py.File(fname, "r") as f:
+
+        resolution = resolution or list(f['resolutions'].keys())[0]
+        root_grp = f['resolutions'][str(resolution)]
+
+        chrom = root_grp["chroms"]["name"][()]
+        try:
+            chrom = [c.decode() for c in chrom]
+        except (UnicodeDecodeError, AttributeError):
+            chrom = [str(c) for c in chrom]
+        lens = root_grp["chroms"]["length"][()]
+        chroms = OrderedDict(zip(chrom, lens))
+    
+    return chroms
+
 def parse_cooler(fname, resolution=None, normalized=False,
                  raw_values = False):
     """
@@ -61,7 +86,7 @@ def parse_cooler(fname, resolution=None, normalized=False,
         resolution = resolution or list(f['resolutions'].keys())[0]
         root_grp = f['resolutions'][str(resolution)]
 
-        chrom = root_grp["chroms"]["name"].value
+        chrom = root_grp["chroms"]["name"][()]
         idregion = dict(list(zip(list(range(len(chrom))), [reg for reg in chrom])))
 
         try:
@@ -83,12 +108,12 @@ def parse_cooler(fname, resolution=None, normalized=False,
             size = len(header)
         masked = {}
         if normalized and "weight" in root_grp["bins"]:
-            weights = root_grp["bins"]["weight"].value
+            weights = root_grp["bins"]["weight"][()]
         else:
             weights = [1 for _ in range(size)]
-        bin1_id = root_grp["pixels"]["bin1_id"].value
-        bin2_id = root_grp["pixels"]["bin2_id"].value
-        counti = root_grp["pixels"]["count"].value
+        bin1_id = root_grp["pixels"]["bin1_id"][()]
+        bin2_id = root_grp["pixels"]["bin2_id"][()]
+        counti = root_grp["pixels"]["count"][()]
         num = int if not normalized else float
         if raw_values:
             items = [(int(row) + int(col) * size, num(val))

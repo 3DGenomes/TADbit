@@ -118,6 +118,10 @@ def run(opts):
         printime('  - Computing GC content per bin (removing Ns)')
         gc_content = get_gc_content(genome, opts.reso, chromosomes=refs,
                                     n_cpus=opts.cpus)
+        # pad mappability at the end if the size is close to gc_content
+        if len(mappability)<len(gc_content) and len(mappability)/len(gc_content) > 0.95:
+            mappability += [float('nan')] * (len(gc_content)-len(mappability))
+
         # compute r_sites ~30 sec
         # TODO: read from DB
         printime('  - Computing number of RE sites per bin (+/- 200 bp)')
@@ -329,7 +333,7 @@ def load_parameters_fromdb(opts, what='bam'):
             # get the JOBid of the parsing job
             cur.execute("""
             select distinct Id from JOBs
-            where Type = 'Filter' or Type = 'Merge'
+            where Type = 'Filter' or Type = 'Merge' or Type = 'Import'
             """)
             jobids = cur.fetchall()
             if len(jobids) > 1:
@@ -396,10 +400,6 @@ def populate_args(parser):
                         help='''[%(default)s] Define maximum number of jobs
                         for reading BAM file (set to higher numbers for large files
                         and low RAM memory).''')
-
-    glopts.add_argument('--force', dest='force', action='store_true',
-                        default=False,
-                        help='overwrite previously run job')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -900,7 +900,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
         printime('  - ICE normalization')
         hic_data = load_hic_data_from_bam(
             inbam, resolution, filter_exclude=filter_exclude,
-            tmpdir=outdir, ncpus=ncpus)
+            tmpdir=outdir, ncpus=ncpus, nchunks=max_njobs)
         hic_data.bads = badcol
         hic_data.normalize_hic(iterations=100, max_dev=0.000001)
         biases = hic_data.bias.copy()

@@ -71,10 +71,10 @@ def run(opts):
             warn('WARNING: cannot compute fragment length, too few '
                  'dangling-ends. Setting median length to 400 nt.')
             median = max_f = mad = 0
-        if mad < 50:
+        if median < 50:
             warn('WARNING: fragment length too short ({}). '
                  'Setting median length to 400 nt.'.format(mad))
-            median, max_f, mad = 400, 100, 1000
+            median, max_f, mad = 400, 100, 40
         if opts.median:
             median = opts.median
         if opts.max_f:
@@ -83,7 +83,7 @@ def run(opts):
             mad = opts.mad
 
         print('  - median insert size =', median)
-        print('  - double median absolution of insert size =', mad)
+        print('  - median absolution of insert size =', mad)
         print('  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f)
 
         max_mole = max_f # pseudo DEs
@@ -335,7 +335,7 @@ def load_parameters_fromdb(opts):
                 if path.exists(fname1 + '.gz'):
                     fname1 += '.gz'
                 else:
-                    raise IOError('ERROR: unput file_handling does not exist')
+                    raise IOError('ERROR: input file_handling does not exist')
         else:
             # fetch path to parsed BED files
             cur.execute("""
