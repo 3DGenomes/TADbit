@@ -2899,6 +2899,69 @@ class StructuralModels(object):
 
         return persistence_length[0]
 
+
+    def get_volumes(self, model_num=None, models=None, cluster=None, 
+                    grain_range=(10,80), cuts=3):
+        '''
+        Basically this is about computing the volume of these cubes:
+            _____    _____    _____
+       \\  /____/|  /____/|  /____/|
+        \\|     || |     || |     ||
+         \|::Pi:||=|:::::||=|:Pj::|\\
+          |_____|/ |_____|/ |_____|/\\
+                                     \\
+                                    
+        - Pi and Pj are two consecutive particles (or genomic loci). 
+        The number of cubes being equal of the number of cuts, and cubes are contiguous
+        meaning that the more cubes the smaller they will be (The minimum number of cubes is 2).
+
+        The 3D model is place into a cubic space of a known size. This space is then 
+        subdivided in cells, the number of subdivision corresponds to the 
+        GRAIN parameter (a grain of 10, means that each dimension of the space will 
+        be divided in 10).
+
+        Then we count the number of grid cell occupied by at least one part of a cube 
+        (representing a section of the chromatin).
+
+        The final resuts correspond to the number of occupied cell divided by the total
+        number of cells considerred (an multiplied by the volume of the total space).
+
+        All this computation is repeated for different grid sizes (grain) until convergence.
+        
+        Note: to speed-up process, the algorithm searches for periodicity of the measurement
+        according to grain size, and uses it to skip most of the computation.
+        
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
+        :params (10, 80) grain_range: range of grains (grid sizes) to search for optimal 
+           model volume
+        :param 3 cuts: number of cubes used to approximate the chromatin fiber.
+           WARNING:should be higher or equal 2.
+
+        :returns: List of volumes in cubic micrometers of the wanted structural models.
+        '''
+        cluster = cluster or -1
+        model_num = model_num or -1
+        if model_num > -1:
+            models = [model_num]
+        elif models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, basestring) else m['index'] for m in models]
+        elif cluster > -1 and len(self.clusters) > 0:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        volumes = []
+        for model_num in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            volumes.append(model.get_volume(grain_range=grain_range, cuts=cuts))
+        return volumes
+
     def remove_unwanted(self, rnd_factor=0):
         """
         INPLACE transform (x, y, z) coordinates of unrestrained particles in 3D models.

@@ -5,6 +5,11 @@
 """
 from __future__ import print_function
 
+from math                           import sqrt, pi
+import hashlib
+
+import numpy as np
+
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.three_dim_stats import generate_sphere_points
@@ -14,8 +19,6 @@ from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.tadmaths        import newton_raphson
 from pytadbit                       import __version__ as version
-from math                           import sqrt, pi
-import hashlib
 
 try:
     basestring
@@ -482,6 +485,144 @@ class StructuralModel(dict):
 
         return (possibles, outdot.count(False), area, total, acc_parts)
 
+    def get_volume(self, grain_range=(10, 80), cuts=3):
+        '''
+        Basically this is about computing the volume of these cubes:
+            _____    _____    _____
+       \\  /____/|  /____/|  /____/|
+        \\|     || |     || |     ||
+         \|::Pi:||=|:::::||=|:Pj::|\\
+          |_____|/ |_____|/ |_____|/\\
+                                     \\
+                                    
+        - Pi and Pj are two consecutive particles (or genomic loci). 
+        The number of cubes being equal of the number of cuts, and cubes are contiguous
+        meaning that the more cubes the smaller they will be (The minimum number of cubes is 2).
+
+        The 3D model is place into a cubic space of a known size. This space is then 
+        subdivided in cells, the number of subdivision corresponds to the 
+        GRAIN parameter (a grain of 10, means that each dimension of the space will 
+        be divided in 10).
+
+        Then we count the number of grid cell occupied by at least one part of a cube 
+        (representing a section of the chromatin).
+
+        The final resuts correspond to the number of occupied cell divided by the total
+        number of cells considerred (an multiplied by the volume of the total space).
+
+        All this computation is repeated for different grid sizes (grain) until convergence.
+        
+        Note: to speed-up process, the algorithm searches for periodicity of the measurement
+        according to grain size, and uses it to skip most of the computation.
+        
+        :params (10, 80) grain_range: range of grains (grid sizes) to search for optimal 
+        model volume
+        :param 3 cuts: number of cubes used to approximate the chromatin fiber.
+           WARNING:should be higher or equal 2.
+
+        :returns: Volume of the structural model in cubic micrometers
+
+        '''
+        if cuts < 2:
+            raise Exception('ERROR: number of cuts should be at least 2.')
+
+        size = len(self['x'])
+        
+        minx = min(self['x'])
+        maxx = max(self['x'])
+        miny = min(self['y'])
+        maxy = max(self['y'])
+        minz = min(self['z'])
+        maxz = max(self['z'])
+        
+        dx = abs(minx-maxx)
+        dy = abs(miny-maxy)
+        dz = abs(minz-maxz)
+        
+        maxd = max(dx, dy, dz)
+        
+        avg_radii = self.contour() / size / maxd / cuts
+        
+        results = []
+        grain = grain_range[0]
+        jump = 5  # to take advantage of periodicity and skip the computation of most grains
+        last_up_grain = None
+        while grain <= grain_range[1]:
+            grain_ratio = grain / maxd
+            # create intermediate points and transorfm coordinates to integers
+            X = [int((v - minx) * grain_ratio) for p in range(0, size - 1, cuts)
+                for v in np.linspace(self['x'][p], self['x'][p + 1], 2)] + [
+                int((self['x'][-1] - minx) / dx * grain)] * (size  % 2)
+            Y = [int((v - miny) * grain_ratio) for p in range(0, size - 1, cuts)
+                for v in np.linspace(self['y'][p], self['y'][p + 1], 2)] + [
+                int((self['y'][-1] - miny) / dy * grain)] * (size  % 2)
+            Z = [int((v - minz) * grain_ratio) for p in range(0, size - 1, cuts)
+                for v in np.linspace(self['z'][p], self['z'][p + 1], 2)] + [
+                int((self['z'][-1] - minz) / dz * grain)] * (size  % 2)
+            
+            # chromatin volume represented as cubes of radii proportional
+            #  to grid size (grain)
+            d0 = int(grain * avg_radii)
+            d1 = d0 + 1
+            
+            # the use of integers allow to check for cell occupancy 
+            # with simple set
+            occupied = set((kx, ky, kz) for x, y, z in zip(X, Y, Z)
+                           for kx in range(x - d0, x + d1) 
+                           for ky in range(y - d0, y + d1) 
+                           for kz in range(z - d0, z + d1))
+            
+            # final result for this grain size
+            ratio = len(occupied) / grain**3
+            
+            # speed up using periodicity trick:
+            try:
+                prev_ratio = results[-1]
+            except IndexError:
+                grain += 1
+                results.append(ratio)
+                continue
+            results.append(ratio)
+            if prev_ratio < ratio:
+                if jump <= 5:  # calculate periodicity interval
+                    try:
+                        jump = grain - last_up_grain - 2
+                    except TypeError:
+                        pass
+                    last_up_grain = grain
+                grain += jump
+                grain = min(grain, grain_range[1])
+            else:
+                grain += 1
+
+        # find local minima/maxima in periods
+        local_max = []
+        local_min = []
+        for n, v in enumerate(results[1:-1]):
+            if max(results[n:n + 3]) == v:
+                local_max.append((n + 1, v))
+            if min(results[n:n + 3]) == v:
+                local_min.append((n + 1, v))
+
+        if local_min[0][0] + 1 != local_max[0][0]:
+            local_max.pop(0)
+
+        # find intermediate points, just between minima and maxima
+        pairx = []
+        pairy = []
+        for (xd, yd), (xu, yu) in zip(local_min, local_max):
+            pairx.append((xd+xu)/2)
+            pairy.append((yd+yu)/2)
+        
+        # the last of these points is the best
+        final_ratio = pairy[-1]
+        
+        # DEBUG:
+        # return results, local_min, local_max, pairx, pairy
+
+        # return ratio multiplied by total Volume of space considered and
+        # converted to cubic micrometers
+        return final_ratio * dx * dy * dz / 1000**3
 
     def write_cmm(self, directory, color='index', rndname=True,
                   model_num=None, filename=None, **kwargs):
@@ -712,7 +853,7 @@ class StructuralModel(dict):
             else:
                 out_f = open('%s/model_%s_rnd%s.cmm' % (
                     directory, model_num, self['rand_init']), 'w')
-        out_f.write(out)
+        out_f.write(form.format(fil))
         out_f.close()
 
 
