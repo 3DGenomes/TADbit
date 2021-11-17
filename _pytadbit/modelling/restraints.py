@@ -2,7 +2,7 @@ import numpy as np
 import heapq
 from math           import fabs, pow as power
 from collections    import OrderedDict
-from random         import random, uniform, shuffle
+from random         import random, uniform, shuffle, sample
 from scipy          import polyfit
 from scipy.stats    import exponnorm
 
@@ -395,42 +395,57 @@ class ProbabilityBasedRestraintsList(object):
         else:
             self.chromosomes['UNKNOWN'] = nloci
 
-        self.pair_bounds = {}
+        locs_prob = sorted(list(set([p[0] for p in pairs]+[p[1] for p in pairs])))
+        list_pairs = [(i,pair) for i, pair in enumerate(pairs)]
+        #self.pair_loc = {p[1]:np.exp(pair_predictions[p[0]][0])
+        #                 for p in list_pairs}
+        
+        #self.close_pairs = [p for p in list_pairs if pair_predictions[p[0]][1] < 0.6*max_loc]
+        #self.far_pairs = [p[1] for p in list_pairs if pair_predictions[p[0]][1] >= 0.6*max_loc]
+        #self.far_pairs = [p[1] for p in list_pairs if pair_predictions[p[0]][0] < 1.25]
+        #self.far_pairs = []
+        lst_dist = [dist.rvs(K=pair_predictions[i][0],
+                         loc=pair_predictions[i][1],
+                         scale=pair_predictions[i][2],
+                         size=self.n_models)
+                             for i in range(len(pair_predictions))]
+        med_dists = [np.median(lst_dist[i]) for i in range(len(lst_dist))]
+        self.far_pairs = [p[1] for p in list_pairs if med_dists[p[0]] > np.median(med_dists)]
+        max_loc = max([p[1] for p in pair_predictions])
+        self.pair_loc = {p[1]:(max_loc - pair_predictions[p[0]][1])**2
+                         for p in list_pairs}
         self.pair_distribution = []
         for rand_init in range(self.n_models):
-            locs_prob = sorted(list(set([p[0] for p in pairs]+[p[1] for p in pairs])))
             pair_distr = {}
-            list_pairs = [(i,pair) for i, pair in enumerate(pairs)]
+            
+            # for i,pair in list_pairs:
+            #     if abs(pair[0]-pair[1])>1:
+            #         continue
+            #     a, b = pair[0], pair[1]
+            #     pair_distr[pair] = lst_dist[i][rand_init]/scale
+            #
 
-            for i,pair in list_pairs:
-                if abs(pair[0]-pair[1])>1:
-                    continue
-                a, b = pair[0], pair[1]
-                pair_distr[(a,b)] = dist.rvs(K=2**(pair_predictions[i][0]),
-                                            loc=pair_predictions[i][1],
-                                            scale=pair_predictions[i][2],
-                                            size=1)[0]/scale
+            #list_pairs = sample(list_pairs, int(len(pairs)*0.2))
+            #list_pairs = sample(close_pairs, int(len(close_pairs)*0.7)) + sample(far_pairs, int(len(far_pairs)*0.3))
+            #list_pairs =  sample(close_pairs, int(len(close_pairs)*0.7))
+            #list_pairs =  close_pairs
             shuffle(list_pairs)
             
             for i,pair in list_pairs:
-                if abs(pair[0]-pair[1])<2:
-                    continue
+                # if abs(pair[0]-pair[1])<2:
+                #     continue
                 a, b = pair[0], pair[1]
 
-                lst_dist = dist.rvs(K=2**(pair_predictions[i][0]),
-                         loc=pair_predictions[i][1],
-                         scale=pair_predictions[i][2],
-                         size=1)
                 constr_pair = False
                 for l in locs_prob:
                     if (a,l) in pair_distr and (l,b) in pair_distr:
                         constr_pair = True
                         break
-
+                #constr_pair = False
                 if not constr_pair:
-                    pair_distr[pair] = lst_dist[0]/scale
-                else:
-                    self.pair_bounds[pair] = max(lst_dist)/scale
+                    pair_distr[pair] = lst_dist[i][rand_init]/scale
+                    if pair in self.far_pairs:
+                        pair_distr[pair] = max(lst_dist[i])/scale
 
             self.pair_distribution.append(pair_distr)
             print('Generating restraints for model %d\n'%rand_init)
@@ -461,10 +476,8 @@ class ProbabilityBasedRestraintsList(object):
                     if (i,j) in self.pair_distribution[rand_init]:
                         RestraintType = "Harmonic"
                         dist = self.pair_distribution[rand_init][(i,j)]
-                    #elif (i,j) in self.pair_bounds:
-                    #    RestraintType = "NeighborHarmonicUpperBound"
-                    #    dist = self.pair_bounds[(i,j)]
-                    kforce = self.nnkforce*5
+                        kforce = self.nnkforce*self.pair_loc[(i,j)]
+                        ProbBasedRestraints.append([i, j, RestraintType, kforce, dist])
     
                 # 3 - CASE OF TWO NON-CONSECUTIVE PARTICLES SEQDIST > 2
                 if seqdist >=  2 and seqdist > self.min_seqdist:
@@ -472,12 +485,10 @@ class ProbabilityBasedRestraintsList(object):
                     if (i,j) in self.pair_distribution[rand_init]:
                         RestraintType = "Harmonic"
                         dist = self.pair_distribution[rand_init][(i,j)]
-                    #elif (i,j) in self.pair_bounds:
-                    #    RestraintType = "HarmonicUpperBound"
-                    #    dist = self.pair_bounds[(i,j)]
-                    kforce = self.nnkforce
-                        #continue
-                ProbBasedRestraints.append([i, j, RestraintType, kforce, dist])
+                        if (i,j) in self.far_pairs:
+                            RestraintType = "HarmonicUpperBound"
+                        kforce = self.nnkforce*self.pair_loc[(i,j)]
+                        ProbBasedRestraints.append([i, j, RestraintType, kforce, dist])
 
         return ProbBasedRestraints
     
@@ -489,7 +500,8 @@ class ProbabilityBasedRestraintsList(object):
                            'Harmonic'           : 'a',
                            'NeighborHarmonic'   : 'n',
                            'HarmonicUpperBound' : 'u',
-                           'NeighborHarmonicUpperBound' : 'u'}
+                           'NeighborHarmonicUpperBound' : 'u',
+                           'HarmonicLowerBound' : 'l'}
 
         restraints = {(i,j):[] for i in range(self.nloci) for j in range(i+1,self.nloci)}
         for rand_init in range(self.n_models):
