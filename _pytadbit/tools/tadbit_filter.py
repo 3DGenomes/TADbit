@@ -63,12 +63,27 @@ def run(opts):
         print('Get insert size...')
         hist_path = path.join(opts.workdir,
                               'histogram_fragment_sizes_%s.pdf' % param_hash)
-        median, max_f, mad = fragment_size(
-            reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
-            savefig=hist_path)
+        try:
+            median, max_f, mad = fragment_size(
+                reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
+                savefig=hist_path)
+        except ZeroDivisionError:
+            warn('WARNING: cannot compute fragment length, too few '
+                 'dangling-ends. Setting median length to 400 nt.')
+            median = max_f = mad = 0
+        if median < 50:
+            warn('WARNING: fragment length too short ({}). '
+                 'Setting median length to 400 nt.'.format(mad))
+            median, max_f, mad = 400, 100, 40
+        if opts.median:
+            median = opts.median
+        if opts.max_f:
+            max_f = opts.max_f
+        if opts.mad:
+            mad = opts.mad
 
         print('  - median insert size =', median)
-        print('  - double median absolution of insert size =', mad)
+        print('  - median absolution of insert size =', mad)
         print('  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f)
 
         max_mole = max_f # pseudo DEs
@@ -247,7 +262,6 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                 (NULL,     %d, '%s',  '%s',    '%s',    %d)
                 """ % (get_path_id(cur, mreads, opts.workdir),
                        'valid-pairs', n_valid_pairs, '', jobid))
-        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         if not opts.fast_fragment:
             print_db(cur, 'MAPPED_OUTPUTs')
@@ -321,7 +335,7 @@ def load_parameters_fromdb(opts):
                 if path.exists(fname1 + '.gz'):
                     fname1 += '.gz'
                 else:
-                    raise IOError('ERROR: unput file_handling does not exist')
+                    raise IOError('ERROR: input file_handling does not exist')
         else:
             # fetch path to parsed BED files
             cur.execute("""
@@ -418,6 +432,18 @@ def populate_args(parser):
                          action='store', default=5, type=int,
                          help ='''[%(default)s] to exclude read-ends falling too
                          close from RE site (pseudo-dangling-ends)''')
+
+    filter_.add_argument('--mad', dest='mad', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''MAD fragment length normally computed from observed distribution''')
+
+    filter_.add_argument('--max_f', dest='max_f', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''Maximum fragment length normally computed from observed distribution''')
+
+    filter_.add_argument('--median', dest='median', metavar="NUM",
+                         action='store', default=0, type=int,
+                         help ='''Median fragment length normally computed from observed distribution''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,

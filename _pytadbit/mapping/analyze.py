@@ -756,7 +756,7 @@ def fragment_size(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             to_return['first_decay'] = v - 10
             break
     else:
-        raise Exception('ERROR: not found')
+        raise ZeroDivisionError('ERROR: no dangling-ends found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
     to_return['mean'] = meanfr
@@ -1256,8 +1256,8 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
         axe.set_ylabel('Eigen Vectors exp. 2')
         axe.set_xticks(list(range(nvect)))
         axe.set_yticks(list(range(nvect)))
-        axe.set_xticklabels(list(range(1, nvect + 2)))
-        axe.set_yticklabels(list(range(1, nvect + 2)))
+        axe.set_xticklabels(list(range(1, nvect + 1)))
+        axe.set_yticklabels(list(range(1, nvect + 1)))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
 

@@ -9,6 +9,7 @@ from subprocess import Popen
 from itertools  import product
 
 import numpy as np
+import copy
 from scipy      import interpolate
 
 try:
@@ -16,6 +17,7 @@ try:
     from matplotlib           import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib.ticker    import FuncFormatter
+
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -450,29 +452,29 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     if thin:
         if smooth is not False:
             tck, u= interpolate.splprep([x, y, z], s=smooth)
-            #here we generate the new interpolated dataset,
-            #increase the resolution by increasing the spacing, 500 in this example
-            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
+            # here we generate the new interpolated dataset,
+            # increase the resolution by increasing the spacing,
+            # 10 times as much points asparticles
+            xs, ys, zs = interpolate.splev(np.linspace(0, 1, len(x) * 10), tck)
             axe.plot(xs, ys, zs, color='black', lw=1, alpha=0.2)
         else:
             axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
     else:
         if smooth is not False:
             tck, u= interpolate.splprep([x, y, z], s=smooth)
-            #here we generate the new interpolated dataset,
-            #increase the resolution by increasing the spacing, 500 in this example
-            xs, ys, zs = interpolate.splev(np.linspace(0,1,500), tck)
-            axe.plot(xs, ys, zs, color='lightgrey', lw=lw_main, alpha=0.8)
+            # here we generate the new interpolated dataset,
+            # increase the resolution by increasing the spacing,
+            # 10 times as much points asparticles
+            xs, ys, zs = interpolate.splev(np.linspace(0, 1, len(x) * 10), tck)
+            axe.plot(xs, ys, zs, color='tab:grey', lw=lw_main, alpha=0.6)
         else:
             for i in range(len(x)-1):
                 axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
-                         color=color[i], lw=lw_main)
-                if label:
-                    axe.text(x[i], y[i], z[i], str(i), size=7)
+                         color='tab:grey', lw=lw_main, alpha=0.6)
+        axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
         if label:
             for i in range(len(x)):
                 axe.text(x[i], y[i], z[i],str(i), size=7)
-        axe.scatter(x, y, z, color=color, s=particle_size, alpha=alpha_part)
     axe.pbaspect = [1,1,1]
     if show:
         if savefig:
@@ -717,7 +719,7 @@ def plot_2d_optimization_result(result,
     result = result.transpose(trans)
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
-    cmap = plt.get_cmap(cmap)
+    cmap = copy.copy(plt.get_cmap(cmap))
     cmap.set_bad('w', 1.)
 
     # defines axes
@@ -727,7 +729,7 @@ def plot_2d_optimization_result(result,
     else:
         vmin = result.min()
         vmax = result.max()
-        
+
     round_decs = 6
     # Here we round the values in axes_range and pass from the
     # 5 parameters to the cartesian axes names.
@@ -873,9 +875,9 @@ def plot_2d_optimization_result(result,
     grid.axes_llc.set_ylabel(axes[3], size=9)
 
     # Color bar settings
-    grid.cbar_axes[0].colorbar(im)
-    grid.cbar_axes[0].set_ylabel('Correlation value', size=9)
-    grid.cbar_axes[0].tick_params(labelsize=9)
+    cb = plt.colorbar(im, cax=grid.cbar_axes[0])
+    cb.ax.set_ylabel('Correlation value', size=9)
+    cb.ax.tick_params(labelsize=9)
 
     title = 'Optimal IMP parameters\n'
     heatmap.suptitle(title, size=12)
@@ -1294,13 +1296,13 @@ def add_subplot_axes(ax,rect,axisbg='w'):
     return subax
 
 
-def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
+def plot_HiC_matrix(in_matrix, bad_color=None, triangular=False, axe=None,
                     transform=np.log2, rescale_zeros=True, figsize=None,
                     tad_def=None, **kwargs):
     """
     Plot HiC matrix with histogram of values inside color bar.
 
-    :param matrix: list of lists with values to be plotted
+    :param in_matrix: list of lists with values to be plotted
     :param None bad_color: plots NaNs in a given color
     :param False triangular: representes only half matrix horizontally
     :param None figsize: tuple with the width and heigth of the wanted
@@ -1314,9 +1316,10 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
        the second to the color bar
     """
     if bad_color is not None:
-        kwargs['cmap'] = plt.get_cmap(kwargs.get('cmap', None))
+        kwargs['cmap'] = copy.copy(plt.get_cmap(kwargs.get('cmap', None)))
         kwargs['cmap'].set_bad(bad_color, 1.)
-
+    
+    matrix = copy.copy(in_matrix)
     if not isinstance(matrix, (np.ndarray, np.generic)):
         matrix = np.asarray(matrix)
 
@@ -1431,3 +1434,131 @@ def plot_HiC_matrix(matrix, bad_color=None, triangular=False, axe=None,
                              (t_start + j, t_start    ), color='k')
 
     return axe1, axe2
+
+
+def format_HiC_axes(axe1, start1, end1, start2, end2, reso, regions,
+                 section_pos, sections, xtick_rotation, triangular=False):
+    if len(regions) <= 2:
+        pltbeg1 = 0 if start1 is None else start1
+        pltend1 = sections[regions[0]] if end1 is None else end1
+        pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                   0 if start2 is None else start2)
+        pltend2 = (pltend1 if len(regions) == 1 else
+                   sections[regions[-1]] if end2 is None else end2)
+        axe1.set_xlabel('{}:{:,}-{:,}'.format(
+            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+        if not triangular:
+            axe1.set_ylabel('{}:{:,}-{:,}'.format(
+                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+        def format_xticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg1)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        def format_yticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg2)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
+        if triangular:
+            axe1.set_yticks([])
+
+        labels = axe1.get_xticklabels()
+        plt.setp(labels, rotation=xtick_rotation,
+                 ha='left' if xtick_rotation else 'center')
+    else:
+        vals = [0]
+        keys = []
+        total = 0
+        for crm in section_pos:
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
+            keys.append(crm)
+        axe1.set_yticks(vals)
+        axe1.set_yticklabels('')
+        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                         for i in range(len(vals) - 1)],
+                         minor=True)
+        axe1.set_yticklabels(keys, minor=True)
+        for t in axe1.yaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+
+        axe1.set_xticks(vals)
+        axe1.set_xticklabels('')
+        axe1.set_xticks([float(vals[i]+vals[i+1])/2
+                         for i in range(len(vals) - 1)],
+                        minor=True)
+        axe1.set_xticklabels(keys, minor=True)
+        for t in axe1.xaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+        axe1.set_xlabel('Chromosomes')
+        if not triangular:
+            axe1.set_ylabel('Chromosomes')
+def _format_axes(axe1, start1, end1, start2, end2, reso, regions,
+                 section_pos, sections, xtick_rotation, triangular=False):
+    if len(regions) <= 2:
+        pltbeg1 = 0 if start1 is None else start1
+        pltend1 = sections[regions[0]] if end1 is None else end1
+        pltbeg2 = (pltbeg1 if len(regions) == 1 else
+                   0 if start2 is None else start2)
+        pltend2 = (pltend1 if len(regions) == 1 else
+                   sections[regions[-1]] if end2 is None else end2)
+        axe1.set_xlabel('{}:{:,}-{:,}'.format(
+            regions[0] , pltbeg1 if pltbeg1 else 1, pltend1))
+        if not triangular:
+            axe1.set_ylabel('{}:{:,}-{:,}'.format(
+                regions[-1], pltbeg2 if pltbeg2 else 1, pltend2))
+
+        def format_xticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg1)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        def format_yticks(tickstring, _=None):
+            tickstring = int(tickstring * reso + pltbeg2)
+            return nicer(tickstring if tickstring else 1,
+                         comma=',', allowed_decimals=1)
+
+        axe1.xaxis.set_major_formatter(FuncFormatter(format_xticks))
+        axe1.yaxis.set_major_formatter(FuncFormatter(format_yticks))
+        if triangular:
+            axe1.set_yticks([])
+
+        labels = axe1.get_xticklabels()
+        plt.setp(labels, rotation=xtick_rotation,
+                 ha='left' if xtick_rotation else 'center')
+    else:
+        vals = [0]
+        keys = []
+        total = 0
+        for crm in section_pos:
+            total += (section_pos[crm][1]-section_pos[crm][0]) // reso + 1
+            vals.append(total)
+            keys.append(crm)
+        axe1.set_yticks(vals)
+        axe1.set_yticklabels('')
+        axe1.set_yticks([float(vals[i]+vals[i + 1]) / 2
+                         for i in range(len(vals) - 1)],
+                         minor=True)
+        axe1.set_yticklabels(keys, minor=True)
+        for t in axe1.yaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+
+        axe1.set_xticks(vals)
+        axe1.set_xticklabels('')
+        axe1.set_xticks([float(vals[i]+vals[i+1])/2
+                         for i in range(len(vals) - 1)],
+                        minor=True)
+        axe1.set_xticklabels(keys, minor=True)
+        for t in axe1.xaxis.get_minor_ticks():
+            t.tick1line.set_visible(False)
+            t.tick2line.set_visible(False)
+        axe1.set_xlabel('Chromosomes')
+        if not triangular:
+            axe1.set_ylabel('Chromosomes')

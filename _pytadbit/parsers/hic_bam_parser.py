@@ -8,15 +8,18 @@ from builtins   import next
 
 from future import standard_library
 standard_library.install_aliases()
-from pickle                      import load, dump
-from time                         import sleep, time
+try:
+    from pickle5                     import load  # python < 3.8
+except ImportError:
+    from pickle                      import load
+from time                         import sleep
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
+from math                         import isnan
 from random                       import getrandbits
 from tarfile                      import open as taropen
-from io                     import StringIO
+from io                           import StringIO
 from shutil                       import copyfile
-import datetime
 from sys                          import stdout, stderr, exc_info, modules
 from distutils.version            import LooseVersion
 import os
@@ -29,6 +32,7 @@ except ImportError:
 
 from pysam                        import AlignmentFile
 
+from pytadbit.utils                 import printime
 from pytadbit.utils.file_handling   import mkdir, which
 from pytadbit.utils.extraviews      import nicer
 from pytadbit.mapping.filter        import MASKED
@@ -44,14 +48,6 @@ except NameError:
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
-
-
-def printime(msg):
-    print (msg +
-           (' ' * (79 - len(msg.replace('\n', '')))) +
-           '[' +
-           str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
-           ']')
 
 
 def print_progress(procs):
@@ -123,14 +119,16 @@ def _map2sam_mid(line, flag):
     # trans contact?
     if rname != rnext:
         flag += 1024 # filter_keys['trans-chromosomic'] = 2**10
-    ci1 = l1
-    ci2 = l2
     # samtools skip these reads at position 1 see:
     # https://github.com/samtools/samtools/issues/1240
-    if int(pos) == 1: 
-        ci1 = "1M%d"%(int(l1)-1)
-    if int(pnext) == 1:
-        ci2 = "1M%d"%(int(l2)-1)
+    if pos == '1':
+        ci1 = "1M%d" % (int(l1) - 1)
+    else:
+        ci1 = l1
+    if pnext == '1':
+        ci2 = "1M%d" % (int(l2) - 1)
+    else:
+        ci2 = l2
     r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{11}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\t'
             'S1:i:{9}\tS2:i:{10}\n'
@@ -169,14 +167,16 @@ def _map2sam_long(line, flag):
     # trans contact?
     if rname != rnext:
         flag += 1024 # filter_keys['trans-chromosomic'] = 2**10
-    ci1 = l1
-    ci2 = l2
     # samtools skip these reads at position 1 see:
     # https://github.com/samtools/samtools/issues/1240
-    if int(pos) == 1: 
-        ci1 = "1M%d"%(int(l1)-1)
-    if int(pnext) == 1:
-        ci2 = "1M%d"%(int(l2)-1)
+    if pos == '1':
+        ci1 = "1M%d" % (int(l1) - 1)
+    else:
+        ci1 = l1
+    if pnext == '1':
+        ci2 = "1M%d" % (int(l2) - 1)
+    else:
+        ci2 = l2
     r1r2 = ('{0}\t{1}\t{2}\t{3}\t0\t{15}P\t{6}\t{7}\t{5}\t*\t*\t'
             'TC:i:{8}\tS1:i:{13}\tS2:i:{14}\t'
             'E1:i:{9}\tE2:i:{10}\tE3:i:{11}\tE4:i:{12}\n'
@@ -365,7 +365,63 @@ def get_filters(infile, masked):
 
 def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                    rand_hash, resolution, tmpdir, region, start, end,
-                   half=False, sum_columns=False):
+                   sum_columns=False):
+    bamfile = AlignmentFile(inbam, 'rb')
+    refs = bamfile.references
+    bam_start = start - 2
+    bam_start = max(0, bam_start)
+    try:
+        dico = {}
+        for r in bamfile.fetch(region=region,
+                               start=bam_start, end=end,  # coords starts at 0
+                               multiple_iterators=True):
+            if r.flag & filter_exclude:
+                continue
+            crm1 = r.reference_name
+            pos1 = r.reference_start + 1
+            crm2 = refs[r.mrnm]
+            pos2 = r.mpos + 1
+            try:
+                pos1 = sections1[(crm1, pos1 // resolution)]
+                pos2 = sections2[(crm2, pos2 // resolution)]
+            except KeyError:
+                continue  # not in the subset matrix we want
+            crm = crm1 * (crm1 == crm2)
+            try:
+                dico[(crm, pos1, pos2)] += 1
+            except KeyError:
+                dico[(crm, pos1, pos2)] = 1
+            # print '%-50s %5s %9s %5s %9s' % (r.query_name,
+            #                                  crm1, r.reference_start + 1,
+            #                                  crm2, r.mpos + 1)
+        out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
+                                '%s:%d-%d.tsv' % (region, start, end)), 'w')
+        out.write(''.join('%s\t%d\t%d\t%d\n' % (c, a, b, v)
+                          for (c, a, b), v in dico.items()))
+        out.close()
+        if sum_columns:
+            sumcol = {}
+            cisprc = {}
+            for (c, i, j), v in dico.items():
+                # out.write('%d\t%d\t%d\n' % (i, j, v))
+                try:
+                    sumcol[i] += v
+                    cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
+                except KeyError:
+                    sumcol[i]  = v
+                    cisprc[i]  = [0, 0]
+                    cisprc[i][all_bins[i][0] == all_bins[j][0]] += v
+            return sumcol, cisprc
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(e)
+        print(exc_type, fname, exc_tb.tb_lineno)
+
+
+def _read_half_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
+                        rand_hash, resolution, tmpdir, region, start, end,
+                        sum_columns=False):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
     bam_start = start - 2
@@ -388,16 +444,19 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             pos1 = r.reference_start + 1
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
-            if ((crm1 not in section_pos or crm2 not in section_pos) or
-                (section_pos.index(crm1) > section_pos.index(crm2)) or 
-                (crm1 == crm2 and pos1 > pos2)):
-                continue
             try:
                 pos1 = sections1[(crm1, pos1 // resolution)]
                 pos2 = sections2[(crm2, pos2 // resolution)]
             except KeyError:
                 continue  # not in the subset matrix we want
-            crm = crm1 * (crm1 == crm2)
+            if crm1 == crm2:
+                crm = crm1
+                if pos1 > pos2:
+                    continue
+            else:
+                if pos1 > pos2:
+                    continue
+                crm = ''
             try:
                 dico[(crm, pos1, pos2)] += 1
             except KeyError:
@@ -405,9 +464,6 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
             # print '%-50s %5s %9s %5s %9s' % (r.query_name,
             #                                  crm1, r.reference_start + 1,
             #                                  crm2, r.mpos + 1)
-        if not half:
-            for c, i, j in list(dico):
-                dico[(c, j, i)] = dico[(c, i, j)] 
         out = open(os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                                 '%s:%d-%d.tsv' % (region, start, end)), 'w')
         out.write(''.join('%s\t%d\t%d\t%d\n' % (c, a, b, v)
@@ -437,7 +493,7 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
              region1=None, start1=None, end1=None,
              region2=None, start2=None, end2=None, nchunks=100,
              tmpdir='.', verbose=True, normalize=False, max_size=None,
-             chr_order=None):
+             chr_order=None, half=False):
 
     bamfile = AlignmentFile(inbam, 'rb')
     bam_refs = bamfile.references
@@ -605,16 +661,17 @@ def read_bam(inbam, filter_exclude, resolution, ncpus=8,
     if not normalize:
         all_bins = []
     procs = []
+    read_bam_frag = _read_half_bam_frag if half else _read_bam_frag
     for i, (region, b, e) in enumerate(zip(regs, begs, ends)):
         if ncpus == 1:
-            _read_bam_frag(inbam, filter_exclude, all_bins,
-                           bins_dict1, bins_dict2, rand_hash,
-                           resolution, tmpdir, region, b, e,)
+            read_bam_frag(inbam, filter_exclude, all_bins,
+                          bins_dict1, bins_dict2, rand_hash,
+                          resolution, tmpdir, region, b, e)
         else:
             procs.append(pool.apply_async(
-                _read_bam_frag, args=(inbam, filter_exclude, all_bins,
-                                      bins_dict1, bins_dict2, rand_hash,
-                                      resolution, tmpdir, region, b, e,)))
+                read_bam_frag, args=(inbam, filter_exclude, all_bins,
+                                     bins_dict1, bins_dict2, rand_hash,
+                                     resolution, tmpdir, region, b, e,)))
     pool.close()
     if verbose:
         print_progress(procs)
@@ -640,11 +697,13 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
 
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.tsv' % (region, start, end))
-        for l in open(fname):
-            c, a, b, v = l.split('\t')
-            if include_chunk_count:
+        if include_chunk_count:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield countbin, c, int(a), int(b), int(v)
-            else:
+        else:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield c, int(a), int(b), int(v)
         if clean:
             os.system('rm -f %s' % fname)
@@ -817,7 +876,7 @@ def _generate_name(regions, starts, ends, resolution, chr_order=None):
         for i, region in enumerate(regions):
             try:
                 name.append('%s:%d-%d' % (region, starts[i] // resolution,
-                                        ends[i] // resolution))
+                                          ends[i] // resolution))
             except TypeError: # all chromosomes
                 name.append('%s' % (region))
         name = '_'.join(name)
@@ -832,7 +891,8 @@ def write_matrix(inbam, resolution, biases, outdir,
                  region1=None, start1=None, end1=None, clean=True,
                  region2=None, start2=None, end2=None, extra='',
                  half_matrix=True, nchunks=100, tmpdir='.', append_to_tar=None,
-                 ncpus=8, cooler=False, row_names=False, chr_order=None, verbose=True):
+                 ncpus=8, cooler=False, cooler_name=None, row_names=False,
+                 chr_order=None, verbose=True):
     """
     Writes matrix file from a BAM file containing interacting reads. The matrix
     will be extracted from the genomic BAM, the genomic coordinates of this
@@ -867,6 +927,8 @@ def write_matrix(inbam, resolution, biases, outdir,
     :param None append_to_tar: path to a TAR file were generated matrices will
        be written directly
     :param 8 ncpus: number of cpus to use to read the BAM file
+    :param False cooler: generate cooler file
+    :param None cooler_name: append to existing multi-resolution cooler
     :param True verbose: speak
     :param False row_names: Writes geneomic coocrdinates instead of bins.
        WARNING: results in two extra columns
@@ -895,7 +957,7 @@ def write_matrix(inbam, resolution, biases, outdir,
         region1=region1, start1=start1, end1=end1,
         region2=region2, start2=start2, end2=end2,
         tmpdir=tmpdir, nchunks=nchunks, chr_order=chr_order,
-        verbose=verbose)
+        verbose=verbose, half=half_matrix)
 
     if region1:
         regions = [region1]
@@ -954,15 +1016,21 @@ def write_matrix(inbam, resolution, biases, outdir,
         if 'decay' in normalizations or 'raw&decay' in normalizations:
             raise Exception('ERROR: decay and raw&decay matrices cannot be exported '
                 'to cooler format. Cooler only accepts weights per column/row')
-        fnam = 'raw_%s_%s%s.mcool' % (name,
-                                    nicer(resolution).replace(' ', ''),
-                                    ('_' + extra) if extra else '')
-        if os.path.exists(os.path.join(outdir, fnam)):
-            os.remove(os.path.join(outdir, fnam))
-        out_raw = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+        if cooler_name:
+            if not os.path.exists(cooler_name):
+                raise Exception('ERROR: cooler file does not exist.\n')
+            out_raw = cooler_file(cooler_name, resolution, sections, regions)
+            outfiles.append(cooler_name)
+        else:
+            fnam = 'raw_%s_%s%s.mcool' % (name,
+                                        nicer(resolution).replace(' ', ''),
+                                        ('_' + extra) if extra else '')
+            if os.path.exists(os.path.join(outdir, fnam)):
+                os.remove(os.path.join(outdir, fnam))
+            out_raw = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
+            outfiles.append((os.path.join(outdir, fnam), fnam))
         out_raw.create_bins()
         out_raw.prepare_matrix(start_bin1, start_bin2)
-        outfiles.append((os.path.join(outdir, fnam), fnam))
     else:
         if 'raw' in normalizations:
             fnam = 'raw_%s_%s%s.abc' % (name,
@@ -1120,32 +1188,18 @@ def write_matrix(inbam, resolution, biases, outdir,
     if 'raw&decay' in normalizations and not cooler:
         write = write_raw_and_expc(write)
 
-    # pull all sub-matrices and write full matrix
-    if region2 is not None:  # already half-matrix in this case
-        half_matrix = False
-
     if cooler:
         for ichunk, c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
                                                      verbose=verbose, clean=clean,
                                                      include_chunk_count=True):
-            if j > k:
-                continue
             if j not in bads1 and k not in bads2:
                 out_raw.write_iter(ichunk, j, k, v)
         out_raw.close()
     else:
-        if half_matrix:
-            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                                 verbose=verbose, clean=clean):
-                if k > j:
-                    continue
-                if j not in bads1 and k not in bads2:
-                    write(c, j, k, v)
-        else:
-            for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
-                                                 verbose=verbose, clean=clean):
-                if j not in bads1 and k not in bads2:
-                    write(c, j, k, v)
+        for c, j, k, v in _iter_matrix_frags(chunks, tmpdir, rand_hash,
+                                             verbose=verbose, clean=clean):
+            if j not in bads1 and k not in bads2:
+                write(c, j, k, v)
 
     fnames = {}
     if append_to_tar:
@@ -1161,14 +1215,16 @@ def write_matrix(inbam, resolution, biases, outdir,
     else:
         if cooler:
             fnames['RAW'] = out_raw.name
-            if 'norm' in normalizations:
+            if 'norm' in normalizations and not cooler_name:
                 fnam = 'nrm_%s_%s%s.mcool' % (name,
                                             nicer(resolution).replace(' ', ''),
                                             ('_' + extra) if extra else '')
                 copyfile(outfiles[0][0], os.path.join(outdir, fnam))
                 out_nrm = cooler_file(os.path.join(outdir, fnam), resolution, sections, regions)
-                bias_data_row = [1./b if b > 0 else 0 for b in bias1]
-                bias_data_col = [1./b if b > 0 else 0 for b in bias2]
+                bias_data_row = [1./bias1[b] if not isnan(bias1[b]) and bias1[b] > 0 else 0
+                                 for b in range(len(bias1))]
+                bias_data_col = [1./bias2[b] if not isnan(bias2[b]) and bias2[b] > 0 else 0
+                                 for b in range(len(bias2))]
                 out_nrm.write_weights(bias_data_row, bias_data_col, *bin_coords)
                 outfiles.append((os.path.join(outdir, fnam), fnam))
                 fnames['NRM'] = os.path.join(outdir, fnam)

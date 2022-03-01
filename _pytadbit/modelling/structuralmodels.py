@@ -4,7 +4,11 @@
 from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
-from pickle                          import load, dump, HIGHEST_PROTOCOL
+try:
+    from pickle5                      import load  # python < 3.8
+except ImportError:
+    from pickle                       import load
+from pickle                           import dump, HIGHEST_PROTOCOL
 from subprocess                       import Popen, PIPE
 from math                             import acos, degrees, pi, sqrt
 from warnings                         import warn, catch_warnings, simplefilter    
@@ -18,7 +22,7 @@ from os.path                          import exists
 from itertools                        import combinations
 from uuid                             import uuid5, UUID
 from hashlib                          import md5
-from copy                             import deepcopy
+from copy                             import copy
 
 from numpy                            import exp as np_exp
 from numpy                            import median as np_median
@@ -39,6 +43,7 @@ from scipy.cluster.hierarchy          import linkage, fcluster
 from scipy.spatial.distance           import squareform
 
 from pytadbit                         import get_dependencies_version
+from pytadbit.utils                   import printime
 from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
@@ -202,7 +207,8 @@ class StructuralModels(object):
                        for k, v in list(self._config.items())]),
             len(self.clusters))
 
-    def _extend_models(self, models, nbest=None, different_stage=False):
+    def _extend_models(self, models, nbest=None, different_stage=False, 
+                       silent=False):
         """
         Add new models to structural models to current StructuralModel.
 
@@ -228,9 +234,10 @@ class StructuralModels(object):
         ids = set(self.__models[m]['rand_init'] for m in list(self.__models.keys()))
         for m in list(models.keys()):
             if models[m]['rand_init'] in ids:
-                warn(('WARNING: model with seed: %s already here (use '
-                      'different_stage=True, to force extesion)\n  '
-                      'SKIPPING...') % (m))
+                if not silent:
+                    warn(('WARNING: model with seed: %s already here (use '
+                        'different_stage=True, to force extesion)\n  '
+                        'SKIPPING...') % (m))
                 del(models[m])
         new_models = {}
         for i, m in enumerate(sorted(list(models.values()) + list(self.__models.values()),
@@ -493,12 +500,16 @@ class StructuralModels(object):
             beg = int(float(beg + chrom_start) // self.resolution)
             end = int(float(end + chrom_start) // self.resolution)
         nloci = end - beg
+        if verbose:
+            printime('Computing Equivalent RMSD positions')
         scores = calc_eqv_rmsd(self.__models, beg, end, self._zeros, dcutoff,
                                what=what, normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
             method = 'ward'
+        if verbose:
+            printime('Clustering')
         # Initialize cluster definition of models:
         for model in self:
             model['cluster'] = 'Singleton'
@@ -572,6 +583,7 @@ class StructuralModels(object):
                 return clusters
             self.clusters = clusters
         if verbose:
+            printime('Done.')
             singletons = len([1 for m in self
                               if m['cluster'] == 'Singleton'])
             print(('Number of singletons excluded from clustering: %s (total' +
@@ -659,7 +671,7 @@ class StructuralModels(object):
         return d
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=None,
-                           distance=False):
+                           distance=False, show_bad_columns=True):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
@@ -675,6 +687,7 @@ class StructuralModels(object):
            will be a dictionnary of matrices (keys being square cutoffs)
         :param False distance: returns the distance matrix of all_angles against
            all_angles particles instead of a contact_map matrix using the cutoff
+        :param True show_bad_columns: show bad columns in contact map
 
         :returns: matrix frequency of interaction
         """
@@ -696,7 +709,11 @@ class StructuralModels(object):
         cutoff = [c**2 for c in cutoff]
         matrix = dict([(c, [[0. for _ in range(self.nloci)]
                             for _ in range(self.nloci)]) for c in cutoff])
-        wloci = [i for i in range(self.nloci) if self._zeros[i]]
+        # remove (or not) interactions from bad columns
+        if show_bad_columns:
+            wloci = [i for i in range(self.nloci) if self._zeros[i]]
+        else:
+            wloci = [i for i in range(self.nloci)]
         models = [self[mdl] for mdl in models]
 
         frac = 1.0 / len(models)
@@ -1097,6 +1114,10 @@ class StructuralModels(object):
            micrometers) *5-* a list of number of (accessibles, inaccessible) for
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
+
+           if ploting, returns values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         cluster = cluster or -1
         if models:
@@ -1107,12 +1128,16 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         acc = []
+        total = []
+        frees = []
         for model in models:
-            acc_vs_inacc = self[model].accessible_surface(
+            free, tot, _, _, acc_vs_inacc = self[model].accessible_surface(
                 radius, nump=nump, superradius=superradius,
-                include_edges=False)[-1]
+                include_edges=False)
             acc.append([(float(j) / (j + k))  if (j + k) else 0.0
                         for _, j, k in acc_vs_inacc])
+            frees.append(free)
+            total.append(tot)
         accper, errorn, errorp = self._windowize(list(zip(*acc)), steps, average=True)
         if savedata:
             out = open(savedata, 'w')
@@ -1127,7 +1152,7 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
         if not plot:
-            return  # stop here, we do not want to display anything
+            return accper, errorp, errorn, frees, total  # stop here, we do not want to display anything
         # plot
         ylabel = 'Accessibility to an object with a radius of %s nm ' % (radius)
         xlabel = 'Particle number'
@@ -1140,7 +1165,7 @@ class StructuralModels(object):
         #elif not axe:
         #    plt.show()
         #plt.close('all')
-
+        return accper, errorp, errorn, frees, total
 
     def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
@@ -1204,6 +1229,9 @@ class StructuralModels(object):
            generated (1 column per step + 1 for particle number).
         :param True plot: e.g. if False, only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1225,7 +1253,7 @@ class StructuralModels(object):
                     ['nan\tnan' if part >= len(distsk[c]) else
                      (str(round(distsk[c][part], 3)) + '\t' +
                       str(round(errorp[c][part] - round(distsk[c][part], 3))))
-                     if distsk[c][part] else 'nan\tnan'
+                     if distsk[c][part] and not isnan(distsk[c][part]) else 'nan\tnan'
                      for c in steps])))
             out.close()
         if plot:
@@ -1237,6 +1265,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def _get_interactions(self, models, cutoff):
         interactions = [[] for _ in range(self.nloci)]
@@ -1286,6 +1315,9 @@ class StructuralModels(object):
            otherwise, the median.
         :param True plot: e.g. only saves data. No plotting done
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
+
         """
         if isinstance(steps, int):
             steps = (steps, )
@@ -1318,6 +1350,7 @@ class StructuralModels(object):
             self._generic_per_particle_plot(steps, distsk, error, errorp,
                                             errorn, savefig, axe, xlabel=xlabel,
                                             ylabel=ylabel, title=title)
+        return distsk, errorp, errorn
 
     def model_consistency(self, cutoffs=None, models=None,
                           cluster=None, axe=None, savefig=None, savedata=None,
@@ -1372,7 +1405,7 @@ class StructuralModels(object):
                     [str(round(consistencies[c][part], 3)) for c in cutoffs])))
             out.close()
         if not plot:
-            return
+            return consistencies
         # plot
         show = False if axe else True
         axe = setup_plot(axe)
@@ -1411,9 +1444,11 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
-        elif show:
+            plt.close('all')
+        elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
+        return consistencies
 
     def walking_dihedral(self, models=None, cluster=None, steps=(1, 3),
                          span=(-2, 1, 0, 1, 3), error=False,
@@ -1446,6 +1481,8 @@ class StructuralModels(object):
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
 
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
         ::
 
@@ -1511,6 +1548,8 @@ class StructuralModels(object):
             plt.show()
         plt.close('all')
 
+        return radsk, errorp, errorn
+
     def walking_angle(self, models=None, cluster=None, steps=(1, 3), signed=True,
                       savefig=None, savedata=None, axe=None, plot=True,
                       error=False):
@@ -1538,6 +1577,9 @@ class StructuralModels(object):
         :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).
+
+        :returns: values to be plotted (list of lists, one per window), and the same
+           for upper and lower error lines
 
 
         ::
@@ -1600,10 +1642,11 @@ class StructuralModels(object):
                     ['nan\tnan' if part >= len(radsk[c]) else
                      (str(round(radsk[c][part], 3)) + '\t' +
                       str(round(errorp[c][part] - round(radsk[c][part], 3))))
-                     if radsk[c][part] else 'nan\tnan'
+                     if radsk[c][part] and not isnan(radsk[c][part]) else 'nan\tnan'
                      for c in steps])))
             out.close()
 
+        return radsk, errorp, errorn
         #if savefig:
         #    tadbit_savefig(savefig)
         #elif not axe:
@@ -1651,21 +1694,8 @@ class StructuralModels(object):
             masked_array, mask=masked_array < self._config['upfreq'])
         masked_array_bot = ma.array (
             masked_array, mask=self._config['lowfreq'] < masked_array)
-
-        # get back to previous error warnings
-        seterr(invalid=prevErrorSet['invalid'])
-
-        # color coding
-        if cmap == 'viridis':
-            lowf = plt.get_cmap('Purples')
-            upf = plt.get_cmap('summer')
-        else:
-            lowf = plt.get_cmap('Blues')
-            upf = plt.get_cmap('Reds')
-        cmap =  plt.get_cmap(cmap)
-        cmap.set_bad('white', 0.)
-        lowf.set_bad('white', 0.)
-        upf.set_bad('white', 0.)
+        cmap = copy(viridis)
+        cmap.set_bad('w', 1.)
         if not axe:
             fig = plt.figure(figsize=(25, 5.5))
         else:
@@ -1676,7 +1706,7 @@ class StructuralModels(object):
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the normalized Hi-C count')
-        cbar = ax.figure.colorbar(ims, cmap=cmap)
+        cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Z-score value')
 
         ax = plt.axes([.38, 0.11, .28, .61])
@@ -1775,7 +1805,8 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
-                                 log_corr=True, contact_matrix=None):
+                                 log_corr=True, contact_matrix=None,
+                                 show_bad_columns=True):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1796,6 +1827,8 @@ class StructuralModels(object):
            appearance
         :param None contact_matrix: input a contact matrix instead of computing
            it from the models
+        :param True show_bad_columns: Wether to hide or not bad columns in the 
+            contact map
 
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
@@ -1807,11 +1840,12 @@ class StructuralModels(object):
             model_matrix = contact_matrix
         else:
             model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
-                                                   cutoff=cutoff)
+                                                   cutoff=cutoff, 
+                                                   show_bad_columns=show_bad_columns)
         oridata = []
         moddata = []
         for i in (v for v, z in enumerate(self._zeros) if z):
-            for j in (v for v, z in enumerate(self._zeros[i + off_diag:]) if z):
+            for j in (v for v, z in list(enumerate(self._zeros))[i + off_diag:] if z):
                 oriv = self._original_data[i][j]
                 if oriv <= 0 or isnan(oriv):
                     continue
@@ -1846,7 +1880,7 @@ class StructuralModels(object):
                      size='x-large')
         ax = fig.add_subplot(131)
         # imshow of the modeled data
-        cmap = plt.get_cmap('viridis')
+        cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(model_matrix, origin='lower', interpolation="nearest",
                          vmin=0, vmax=1, cmap=cmap,
@@ -1931,7 +1965,7 @@ class StructuralModels(object):
             # axmidl.patch.set_visible(False)
         ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
-        cmap = plt.get_cmap('viridis')
+        cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         with errstate(divide='ignore'):
             ims = ax.imshow(log2(self._original_data), origin='lower',
@@ -2761,8 +2795,8 @@ class StructuralModels(object):
         if get_path:
             return path_f
 
-    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
-                               plot=True):
+    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, 
+                               savedata=None, plot=True):
         """
         Calculates the persistence length (Lp) of given section of the model.
         Persistence length is calculated according to [Bystricky2004]_ :
@@ -2875,6 +2909,129 @@ class StructuralModels(object):
         plt.close('all')
 
         return persistence_length[0]
+
+
+    def get_volumes(self, model_num=None, models=None, cluster=None, 
+                    grain_range=(10,80), cuts=3):
+        '''
+        Basically this is about computing the volume of these cubes:
+            _____    _____    _____
+       \\  /____/|  /____/|  /____/|
+        \\|     || |     || |     ||
+         \|::Pi:||=|:::::||=|:Pj::|\\
+          |_____|/ |_____|/ |_____|/\\
+                                     \\
+                                    
+        - Pi and Pj are two consecutive particles (or genomic loci). 
+        The number of cubes being equal of the number of cuts, and cubes are contiguous
+        meaning that the more cubes the smaller they will be (The minimum number of cubes is 2).
+
+        The 3D model is place into a cubic space of a known size. This space is then 
+        subdivided in cells, the number of subdivision corresponds to the 
+        GRAIN parameter (a grain of 10, means that each dimension of the space will 
+        be divided in 10).
+
+        Then we count the number of grid cell occupied by at least one part of a cube 
+        (representing a section of the chromatin).
+
+        The final resuts correspond to the number of occupied cell divided by the total
+        number of cells considerred (an multiplied by the volume of the total space).
+
+        All this computation is repeated for different grid sizes (grain) until convergence.
+        
+        Note: to speed-up process, the algorithm searches for periodicity of the measurement
+        according to grain size, and uses it to skip most of the computation.
+        
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
+        :params (10, 80) grain_range: range of grains (grid sizes) to search for optimal 
+           model volume
+        :param 3 cuts: number of cubes used to approximate the chromatin fiber.
+           WARNING:should be higher or equal 2.
+
+        :returns: List of volumes in cubic micrometers of the wanted structural models.
+        '''
+        cluster = cluster or -1
+        model_num = model_num or -1
+        if model_num > -1:
+            models = [model_num]
+        elif models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, basestring) else m['index'] for m in models]
+        elif cluster > -1 and len(self.clusters) > 0:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        volumes = []
+        for model_num in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            volumes.append(model.get_volume(grain_range=grain_range, cuts=cuts))
+        return volumes
+
+    def remove_unwanted(self, rnd_factor=0):
+        """
+        INPLACE transform (x, y, z) coordinates of unrestrained particles in 3D models.
+        New coordinates will be extrapolated between first particles upstream
+        and downstream with restraint
+        
+        :param 0 rnd_factor: insert some noise in the placement of the particle
+        to create a more realistic representation.
+        
+        """
+        for m in self:
+            prev = None
+            X = []
+            Y = []
+            Z = []
+            for p in range(len(m)):
+                if not self._zeros[p]:
+                    X.append(None)
+                    Y.append(None)
+                    Z.append(None)
+                    continue
+                x = m['x'][p]
+                y = m['y'][p]
+                z = m['z'][p]
+                X.append(x)
+                Y.append(y)
+                Z.append(z)
+                if prev is None:  # case it's first particle
+                    for i in range(p): # we place other particles randomly around first particle with restraints
+                        X[i] = x + random() * rnd_factor
+                        Y[i] = y + random() * rnd_factor
+                        Z[i] = z + random() * rnd_factor
+                    prev = p
+                    continue
+                if prev != p - 1:  # there is a gap
+                    d = p - prev   # genomic distance in bins
+                    px = m['x'][prev]
+                    py = m['y'][prev]
+                    pz = m['z'][prev]
+                    dx = (x - px) / d
+                    dy = (y - py) / d
+                    dz = (z - pz) / d
+                    for n, i in enumerate(range(prev + 1, p), 1):
+                        X[i] = px + dx * n + random() * rnd_factor
+                        Y[i] = py + dy * n + random() * rnd_factor
+                        Z[i] = pz + dz * n + random() * rnd_factor
+                prev = p
+
+            if prev != p:  # case it's last particle
+                px = m['x'][prev]
+                py = m['y'][prev]
+                pz = m['z'][prev]
+                for i in range(prev + 1, len(m)):
+                    X[i] = px + random() * rnd_factor
+                    Y[i] = py + random() * rnd_factor
+                    Z[i] = pz + random() * rnd_factor
+            m['x'] = X
+            m['y'] = Y
+            m['z'] = Z
 
     def save_models(self, outfile, minimal=()):
         """
@@ -2996,7 +3153,7 @@ class StructuralModels(object):
                     s=40,
                     color=[(0.15, 0.15, 0.15) if i else (0.7, 0.7, 0.7)
                            for i in self._zeros], clip_on=False,
-                    zorder=100, edgecolor='k')
+                    zorder=100, alpha=0.75)
         axe.set_ylim((where, axe.get_ylim()[1]))
 
     def _generic_per_particle_plot(self, steps, distsk, error, errorp, errorn,
@@ -3051,15 +3208,16 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
+            plt.close('all')
         elif not axe:
             plt.show()
-        plt.close('all')
+            plt.close('all')
 
 
 class ClusterOfModels(dict):
     def __str__(self):
-        out1 = '   Cluster #%s has %s models [top model: %s]\n'
-        out = 'Total number of clusters: %s\n%s' % (
+        out1 = '   Cluster #%3s has %4s models [top model: %6s]\n'
+        out = 'Total number of clusters: %4s\n%s' % (
             len(self),
             ''.join([out1 % (k, len(self[k]), self[k][0]) for k in self]))
         return out
