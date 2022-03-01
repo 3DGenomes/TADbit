@@ -292,6 +292,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
              'model'      : Model(),
              'particles'  : None,
              'restraints' : None} # 2.6.1 compat
+
     model['particles'] = ListSingletonContainer(model['model'],
         IMP.core.create_xyzr_particles(model['model'], len(globals.LOCI), globals.RADIUS, 100000/globals.SCALE))  # last number is box size
 
@@ -302,7 +303,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
 
     # OPTIONAL:Set the name of each particle
     for i in range(0, len(globals.LOCI)):
-        p = model['particles'].get_particle(i)
+        p = model['particles'].get(i)
         p.set_name(str(globals.LOCI[i]))
         #print p.get_name()
 
@@ -409,9 +410,9 @@ def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints
 
     harmonic = IMP.core.Harmonic(theta0, bending_kforce)
     for particle in range(0,len(globals.LOCI)-2):
-        p1  = model['particles'].get_particle(particle)
-        p2  = model['particles'].get_particle(particle+1)
-        p3  = model['particles'].get_particle(particle+2)
+        p1  = model['particles'].get(particle)
+        p2  = model['particles'].get(particle+1)
+        p3  = model['particles'].get(particle+2)
 
         try: # 2.6.1 compat
             brr = IMP.core.AngleRestraint(harmonic, p1, p2, p3)
@@ -461,7 +462,7 @@ def add_single_particle_restraints(model, single_particle_restraints):
         if int(restraint[0]) >= len(globals.LOCI):
             continue
 
-        p1 = model['particles'].get_particle(int(restraint[0]))
+        p1 = model['particles'].get(int(restraint[0]))
         pos = IMP.algebra.Vector3D(restraint[1])
 
         kforce = float(restraint[3])
@@ -489,8 +490,8 @@ def add_hicbased_restraints(model, HiCbasedRestraints): #, restraints):
     # Add the restraints contained in HiCbasedRestraints
     #print HiCbasedRestraints
     for restraint in HiCbasedRestraints:
-        p1 = model['particles'].get_particle(int(restraint[0]))
-        p2 = model['particles'].get_particle(int(restraint[1]))
+        p1 = model['particles'].get(int(restraint[0]))
+        p2 = model['particles'].get(int(restraint[1]))
 
         kforce = float(restraint[3])
         dist   = float(restraint[4])
