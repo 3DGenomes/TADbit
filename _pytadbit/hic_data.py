@@ -23,6 +23,7 @@ from scipy.special                  import gammaincc
 from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
 from scipy.sparse.linalg            import eigsh
 from scipy.sparse                   import csr_matrix
+from scipy.ndimage                  import median_filter
 
 from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.extraviews      import plot_compartments_summary
@@ -733,8 +734,9 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', ev_index=None,
-                          rich_in_A=None, format='png', savedir=None,
-                          max_ev=3, show_compartment_labels=False, **kwargs):
+                          rich_in_A=None, format='png', savedir=None, 
+                          max_ev=3, show_compartment_labels=False, 
+                          smoothing_window=0, **kwargs):
         """
         Search for A/B compartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -784,6 +786,10 @@ class HiC_data(dict):
            parameter a path to a BED or BED-Graph file with a list of genes or
            active epigenetic marks can be passed, and used instead of the mean
            interactions.
+        :param 0 smoothing_window: window size for smoothing the chomosomic matrix 
+           before getting eigenvectors. The smooth is done using median_filter from 
+           scipy.ndimage. The parameter is passed as `size` to the median_filter 
+           function.
         :param False show_compartment_labels: if True draw A and B compartment blocks.
 
         TODO: this is really slow...
@@ -884,7 +890,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in list(self.bads.keys())
+                                                       for k in self.bads
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,
@@ -912,6 +918,10 @@ class HiC_data(dict):
                         vals.append(str(matrix[row-badrows][col-badcols]))
                     out.write(rownam.pop(0) + '\t' +'\t'.join(vals) + '\n')
                 out.close()
+
+            if smoothing_window:
+                matrix = [[v for v in l] for l in median_filter(
+                    matrix, size=smoothing_window)]
 
             # get eigenvectors
             try:
@@ -1173,7 +1183,7 @@ class HiC_data(dict):
                            'w')
                 start1, end1 = self.section_pos[sec]
                 out.write('# MASKED %s\n' % (' '.join([str(k - start1)
-                                                       for k in list(self.bads.keys())
+                                                       for k in self.bads
                                                        if start1 <= k <= end1])))
                 rownam = ['%s\t%d-%d' % (k[0],
                                          k[1] * self.resolution,

@@ -6,7 +6,7 @@ from __future__ import print_function
 from warnings                  import warn
 from sys                       import stderr
 from re                        import sub
-from pytadbit.utils.extraviews import tadbit_savefig
+from pytadbit.utils.extraviews import tadbit_savefig, nicer
 
 import numpy as np
 
@@ -540,3 +540,92 @@ def filter_by_cis_percentage(cisprc, beg=0.3, end=0.8, sigma=2, verbose=False,
         len(badcol), countZ, countL, countU, size, float(len(badcol)) / size * 100))
 
     return badcol
+
+
+def filter_by_local_ratio(hic_data, min_ratio=1, min_count=None, 
+                          base_position=0, next_position=1, last_position=None):
+    """
+
+    :param hic_data: HiCdata object
+    :param 1 cut_ratio: ratio of cis/trans interactions. Bins with lower than 
+       cut_ratio interactions will be pre-discarded. Pre-discarded bins at this
+       stage will also be used to define another cut-off: the minimum number of 
+       interactions expected by bin, this cut-off will be defined as the 95 
+       percentile of pre-discarded bins.
+    :param None min_count: minimum interactions required per bin. By default 
+        will be estimated from the distributiion of interaction in bins with 
+        low ratio (defined as percentile 95 of interactions in this set).
+    :param 0 base_position: start of the interval defining cis-interactions
+    :param 1 next_position: end of the interval defining cis-interactions, 
+       and start of the interval defining trans-interactions 
+       (ideally it should correspond to 1 Mb).
+    :param 5 last_position: end of the interval defining trans-interactions
+       (by default it 5 times the value of `next_position`).
+
+    """
+
+    size = len(hic_data)
+
+    if last_position is None:
+        last_position = next_position * 5
+
+    ratio = {}
+    nears = {}
+
+    for beg, end in hic_data.section_pos.values():
+        for i in range(beg, end - last_position):
+            near = sum(hic_data[i, i + j] for j in range(base_position, next_position))
+            away = sum(hic_data[i, i + j] for j in range(next_position, last_position))
+            try:
+                ratio[i] = near / away
+                nears[i] = near
+            except ZeroDivisionError:
+                pass
+        # if we are at the end of the chromosome we look for interactions backward
+        for i in range(end - last_position, end):
+            near = sum(hic_data[i - j, i] for j in range(base_position, next_position))
+            away = sum(hic_data[i - j, i] for j in range(next_position, last_position))
+            try:
+                ratio[i] = near / away
+                nears[i] = near
+            except ZeroDivisionError:
+                pass
+
+    # define filter for minimum interactions per bin
+    if min_count is not None:
+        min_count = np.percentile(
+            [nears[k] for k in range(size) 
+             if ratio.get(k, 0) < min_ratio and nears.get(k, 0) >= 10], 95)
+    
+    return dict((k, True) for k in range(size) 
+                if ratio.get(k, 0) < min_ratio or nears[k] < min_count)
+
+def plot_filtering(nears, ratio, size, cut_count, cut_ratio, outfile,
+                   base_position=None, next_position=None, last_position=None,
+                    resolution=1, legend=''):
+    plt.figure(figsize=(8.5, 5.5))
+    axe = plt.subplot()
+    axe.set_position((0.12, 0.1, 0.55, 0.8))
+    pl = plt.plot([ratio.get(k, 0) for k in range(size)], [nears.get(k, 0) for k in range(size)], 
+                'k.', ms=1 if size > 50_000 else 2 if size > 20_000 else 3, 
+                alpha=0.01 if size > 500_000 else 0.05 if size > 200_000 else 0.1 if size > 50_000 else 0.2 if size > 20_000 else 0.3)
+    ylim = np.percentile(list(nears.values()), 95)
+    plt.ylim(0, ylim)
+    xlim = np.percentile(list(ratio.values()), 95)
+    plt.xlim(0, xlim)
+    fb = plt.fill_between([0, cut_ratio], ylim, color='tab:red', alpha=0.4, lw=0)
+    plt.fill_betweenx([0, cut_count], cut_ratio, xlim, color='tab:red', alpha=0.4, lw=0)
+    plt.ylabel('interactions per {} bin'.format(nicer(resolution)), size=12)
+    plt.xlabel('interaction ratio between {0}-{1} and {1}-{2}'.format(
+        nicer(resolution * base_position), nicer(resolution * next_position), nicer(resolution * last_position)),
+            size=12)
+    plt.text(xlim, cut_count, 'Minimum sum: {}'.format(cut_count), ha='right', va='bottom', size=11)
+    plt.text(cut_ratio, ylim, 'Minimum cis/trans ratio: {}'.format(cut_ratio), ha='left', va='top', size=11, 
+            rotation=90)
+    plt.title('Distribution of interaction\nsums and cis/trans ratio by {} bin'.format(nicer(resolution)), 
+            size=13)
+    plt.legend(pl + [fb], ['{} bin'.format(nicer(resolution)), 
+                        'Filtered space:\n low ratio or count'], 
+            bbox_to_anchor=(1, 0.9), frameon=False, fontsize=10, markerscale=4,
+            title=legend, title_fontsize=11)
+    plt.savefig(outfile)

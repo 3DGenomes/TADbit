@@ -12,7 +12,7 @@ try:
     from pickle5                     import load  # python < 3.8
 except ImportError:
     from pickle                      import load
-from time                         import sleep, time
+from time                         import sleep
 from collections                  import OrderedDict
 from subprocess                   import Popen, PIPE
 from math                         import isnan
@@ -20,7 +20,6 @@ from random                       import getrandbits
 from tarfile                      import open as taropen
 from io                           import StringIO
 from shutil                       import copyfile
-import datetime
 from sys                          import stdout, stderr, exc_info, modules
 from distutils.version            import LooseVersion
 import os
@@ -33,6 +32,7 @@ except ImportError:
 
 from pysam                        import AlignmentFile
 
+from pytadbit.utils                 import printime
 from pytadbit.utils.file_handling   import mkdir, which
 from pytadbit.utils.extraviews      import nicer
 from pytadbit.mapping.filter        import MASKED
@@ -48,14 +48,6 @@ except NameError:
 
 def filters_to_bin(filters):
     return sum((k in filters) * 2**(k-1) for k in MASKED)
-
-
-def printime(msg):
-    print (msg +
-           (' ' * (79 - len(msg.replace('\n', '')))) +
-           '[' +
-           str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
-           ']')
 
 
 def print_progress(procs):
@@ -705,11 +697,13 @@ def _iter_matrix_frags(chunks, tmpdir, rand_hash, clean=False, verbose=True,
 
         fname = os.path.join(tmpdir, '_tmp_%s' % (rand_hash),
                              '%s:%d-%d.tsv' % (region, start, end))
-        for l in open(fname):
-            c, a, b, v = l.split('\t')
-            if include_chunk_count:
+        if include_chunk_count:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield countbin, c, int(a), int(b), int(v)
-            else:
+        else:
+            for l in open(fname):
+                c, a, b, v = l.split('\t')
                 yield c, int(a), int(b), int(v)
         if clean:
             os.system('rm -f %s' % fname)

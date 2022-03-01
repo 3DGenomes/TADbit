@@ -90,7 +90,7 @@ def convert_from_unicode(data):
         return type(data)(list(map(convert_from_unicode, data)))
     return data
 
-def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
+def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg - opts.offset + 1,
                                                         opts.end - opts.offset)
     zeros = tuple([i not in zeros for i in range(opts.end - opts.beg)])
@@ -147,7 +147,7 @@ def prepare_distributed_jobs(exp, opts, m, u, l, s, outdir):
         nmodels_per_job = opts.nmodels_per_job
         if n_job == n_jobs - 1:
             nmodels_per_job -= n_last
-        job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+        job_dir = path.join(dirname,'_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
         mkdir(job_dir)
         scriptname = path.join(job_dir,'_tmp_optim.py')
         tmp = open(scriptname, 'w')
@@ -180,7 +180,7 @@ except Exception as e:
     print(e)
     open(path.join("%s",'failed.flag'), 'a').close()
     ''' % (paramsfile, nloci, nmodels_per_job, nmodels_per_job,
-           n_job*opts.nmodels_per_job, job_dir,
+           n_job * opts.nmodels_per_job, job_dir,
            '()' if n_job==0 else '["restraints", "zscores", "original_data"]',
            job_dir))
 
@@ -201,13 +201,13 @@ def run_distributed_job(job_dir, script_cmd , script_args):
     while not (path.exists(results_file) or path.exists(failed_flag)):
         time.sleep(1)
 
-def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
+def run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_handler = None,
                          exp = None, script_cmd = 'python',
                          script_args = '', verbose = True):
 
     muls = tuple(map(my_round, (m, u, l, s)))
     dirname = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-    modelsfile = path.join(outdir, dirname,'models_%s_%s_%s_%s.models' % muls)
+    modelsfile = path.join(outdir, dirname, 'models_%s_%s_%s_%s.models' % muls)
 
     if path.exists(modelsfile):
         models = load_structuralmodels(modelsfile)
@@ -216,7 +216,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         pool = Pool(processes=opts.cpus, maxtasksperchild=opts.concurrent_jobs)
         jobs = {}
         for n_job in range(n_jobs):
-            job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+            job_dir = path.join(dirname, '_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
             if job_file_handler:
                 scriptname = path.join(job_dir,'_tmp_optim.py')
                 job_file_handler.write('%s %s %s\n'%(script_cmd, script_args, scriptname))
@@ -232,7 +232,7 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
         models = None
         for n_job in range(n_jobs):
             try:
-                job_dir = path.join(dirname,'_tmp_results_%s' % n_job)
+                job_dir = path.join(dirname, '_tmp_results_%s_%s_%s' % (n_job, opts.rand, batch_job_hash))
                 results_file = path.join(job_dir,'results.models')
                 if path.isfile(results_file):
                     results = load_structuralmodels(results_file)
@@ -302,11 +302,13 @@ def run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler = None,
 
     return results_corr, modelsfile
 
+
 def my_round(num, val=4):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 
-def optimization_distributed(exp, opts, outdir, job_file_handler = None,
+
+def optimization_distributed(exp, opts, outdir, batch_job_hash, job_file_handler = None,
                              script_cmd = 'python', script_args = '', verbose=True):
     logging.info('\nOptimizing parameters...')
     if verbose:
@@ -320,14 +322,14 @@ def optimization_distributed(exp, opts, outdir, job_file_handler = None,
         modelsfile = path.join(cfgfolder,'models_%s_%s_%s_%s.models' % muls)
         if not path.exists(modelsfile):
             mkdir(cfgfolder)
-            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
+            prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash)
 
     # get the best combination
     best = ({'corr': 0}, [0, 0, 0, 0, 0])
     results = {}
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
         m, u, l, s = list(map(my_round, (m, u, l, s)))
-        muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, job_file_handler, 
+        muls_results, _ = run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash, job_file_handler, 
                             script_cmd = script_cmd, script_args = script_args, verbose=verbose)
         if muls_results:
             results.update(muls_results)
@@ -360,17 +362,17 @@ def run_distributed(exp, batch_job_hash, opts, outdir, optpar,
                   optpar['scale'  ])
     muls = tuple(map(my_round, (m, u, l, s)))
     cfgfolder = path.join(outdir, 'cfg_%s_%s_%s_%s' % muls)
-    if path.exists(cfgfolder):
-        logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
-        return []
+    # if path.exists(cfgfolder):
+    #     logging.info( '\nJob already run. Please use tadbit clean if you want to redo it.')
+    #     return []
     mkdir(cfgfolder)
-    prepare_distributed_jobs(exp, opts, m, u, l, s, outdir)
-    results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir,
+    prepare_distributed_jobs(exp, opts, m, u, l, s, outdir, batch_job_hash)
+    results, modelsfile = run_distributed_jobs(opts, m, u, l, s, outdir, batch_job_hash,
                                                job_file_handler=job_file_handler,
                                                exp=exp, script_cmd=script_cmd,
                                                script_args=script_args)
     if not job_file_handler:
-        rename(modelsfile, path.join(outdir,batch_job_hash+'.models'))
+        rename(modelsfile, path.join(outdir, batch_job_hash + '%s_%s.models' % (batch_job_hash, opts.rand)))
     return results
 
 def run(opts):
@@ -434,7 +436,7 @@ def run(opts):
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
                    if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
                    opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
                    opts.end - opts.beg))
         else:
@@ -445,7 +447,7 @@ def run(opts):
               'Preparing ' if opts.job_list else '',
                    ('Optimization\n        ' + '*' * (21 if opts.job_list else 11))
                    if opts.optimize else
-                   ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
+                   ('Modeling\n        ' + '*' * (18 if opts.job_list else 8)),
                    nicer(opts.reso),
                    opts.end - opts.beg))
         # in case we are not going to run
@@ -462,7 +464,7 @@ def run(opts):
         # Optimization
         if opts.optimize:
             logging.info ('     o Optimizing parameters')
-            optpar, results = optimization_distributed(exp, opts, outdir,
+            optpar, results = optimization_distributed(exp, opts, outdir, batch_job_hash,
                                                        job_file_handler = job_file_handler,
                                                        script_cmd = opts.script_cmd,
                                                        script_args = opts.script_args)
@@ -517,7 +519,7 @@ def run(opts):
         name = '{0}_{1}_{2}'.format(opts.crm if opts.crm else 'all',
                                     int(opts.beg), int(opts.end))
         outdir = path.join(opts.workdir,outdir)
-        models = load_structuralmodels(path.join(outdir,batch_job_hash+'.models'))
+        models = load_structuralmodels(path.join(outdir, '%s_%s.models' % (batch_job_hash, opts.rand)))
         opts.reso = models.description['resolution']
 
         logging.info('''
@@ -566,7 +568,7 @@ def run(opts):
                 continue
             break
         logging.info("\tSaving again the models this time with clusters...")
-        models.save_models(path.join(outdir, batch_job_hash+'.models'))
+        models.save_models(path.join(outdir, '%s_%s.models' % (batch_job_hash, opts.rand)))
         # Plot the clustering
         try:
             models.cluster_analysis_dendrogram(
@@ -916,7 +918,7 @@ def populate_args(parser):
                         help='''In case input was not generated with the TADbit
                         tools''')
     glopts.add_argument('--rand', dest='rand', metavar="INT",
-                        type=str, default='1',
+                        type=str, default=1,
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')
