@@ -2,7 +2,7 @@
 from __future__ import print_function
 from setuptools.command.install import install
 from distutils.core import setup, Extension
-from os import path, system
+from os import path, system, walk
 from io import open
 from re import sub
 from subprocess import Popen, PIPE
@@ -109,8 +109,11 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
             v = v.lower()
     return v
 
-
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
+
+tf_models_files = [(path.join('share/pytadbit',d),
+                    [path.join(d,f) for f in files if f[0]!='.'])
+                   for d, folders, files in walk('extras')]
 
 def main():
     # c module to find TADs
@@ -196,8 +199,7 @@ def main():
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
         scripts      = ['scripts/tadbit', 'scripts/normalize_oneD.R'],
-        data_files   = [(path.expanduser('~'),
-                         ['extras/.bash_completion'])],
+        data_files   = [(path.expanduser('~'),['extras/.bash_completion'])]+tf_models_files,
         cmdclass     = {'install': InstallCommand}
     )
 

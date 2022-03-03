@@ -39,6 +39,7 @@ from scipy.stats                      import spearmanr, pearsonr, chisquare
 from scipy.stats                      import kendalltau
 from scipy.stats                      import linregress
 from scipy.stats                      import normaltest, norm as sc_norm
+from scipy.sparse                     import issparse
 from scipy.cluster.hierarchy          import linkage, fcluster
 from scipy.spatial.distance           import squareform
 
@@ -1842,15 +1843,22 @@ class StructuralModels(object):
             model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
                                                    cutoff=cutoff, 
                                                    show_bad_columns=show_bad_columns)
+        if issparse(self._original_data):
+            self._original_data = self._original_data.tolil()
         oridata = []
         moddata = []
         for i in (v for v, z in enumerate(self._zeros) if z):
             for j in (v for v, z in list(enumerate(self._zeros))[i + off_diag:] if z):
-                oriv = self._original_data[i][j]
+                if issparse(self._original_data):
+                    oriv = self._original_data[i,j]
+                else:
+                    oriv = self._original_data[i][j]
                 if oriv <= 0 or isnan(oriv):
                     continue
                 oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
+        if issparse(self._original_data):
+            self._original_data = self._original_data.tocsr()
         # print oridata
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
@@ -1968,7 +1976,13 @@ class StructuralModels(object):
         cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         with errstate(divide='ignore'):
-            ims = ax.imshow(log2(self._original_data), origin='lower',
+            if issparse(self._original_data):
+                log2_data = self._original_data.tocsr()
+                log2_data.data = log2(log2_data.data)
+                log2_data = log2_data.todense()
+            else:
+                log2_data = log2(self._original_data)
+            ims = ax.imshow(log2_data, origin='lower',
                             interpolation="nearest", cmap=cmap,
                             extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Genomic bin')

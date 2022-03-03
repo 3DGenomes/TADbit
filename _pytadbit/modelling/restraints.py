@@ -423,6 +423,8 @@ class ProbabilityBasedRestraintsList(object):
                 self.med_loc[abs(p[1]-p[0])] = [self.pair_loc[p]]
         self.max_dists = {d:np.median(self.med_dists[d])/scale for d in self.med_dists}
         self.med_loc = {pd:np.median(self.med_loc[pd]) for pd in self.med_loc}
+        if 1 not in self.med_loc:
+            self.med_loc[1] = self.close_dist
         self.pair_distribution = []
         self.long_dists = []
         
@@ -448,7 +450,7 @@ class ProbabilityBasedRestraintsList(object):
             def update_progress(res):
                 print('Generated restraint for model %s'%(res['rand_init']))
             
-            pool = mu.Pool(n_cpus, maxtasksperchild=1)
+            pool = mu.Pool(n_cpus)
             jobs = {}
             for rand_init in range(self.n_models):
                 dist_mat = None

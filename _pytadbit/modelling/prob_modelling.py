@@ -181,7 +181,6 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
 
     globals.START = start
     globals.VERBOSE = verbose
-    globals.VERBOSE = 0.1
 
     mat_width = mat_height = binsAround*2+1
     if sparse_avail and issparse(hic_data):
@@ -258,10 +257,11 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
         pred_list_i = [pair_predictions_K[i],
                        pair_predictions_loc[i],
                        pair_predictions_scale[i]]
-        if all(pi >= 0.2 for pi in pred_list_i):
+        if all(pi >= 0.2 for pi in pred_list_i[1:]):
             valid_pairs.append(pairs[i])
             # correct too high K values
             pred_list_i[0] = 1.5 if pred_list_i[0] > 1.5 else pred_list_i[0]
+            pred_list_i[0] = 0.5 if pred_list_i[0] < 0.5 else pred_list_i[0]
             pair_predictions.append(pred_list_i)
         else:
             invalid_pairs.append(pairs[i])
@@ -388,13 +388,13 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
     bins_group = []
     pair_freqs = []
     for i in range(beg_far, end_far+1):
-        pairi= (int(i*reso_ratio)-beg,
+        pairi= (max(0, int(i*reso_ratio)-beg),
                 min(end-beg+1, int((i+1)*reso_ratio)-beg))
         bins_group.append(pairi)
         if all(p in region_zeros for p in range(pairi[0],pairi[1]+1)):
             continue
         for j in range(i+1, end_far+1):
-            pairj= (int(j*reso_ratio)-beg,
+            pairj= (max(0, int(j*reso_ratio)-beg),
                     min(end-beg, int((j+1)*reso_ratio)-beg))
             if all(p in region_zeros for p in range(pairj[0],pairj[1]+1)):
                 continue
@@ -422,16 +422,17 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
             pred_list_i = [float(pair_predictions_far_K[i]),
                            float(pair_predictions_far_loc[i]),
                            float(pair_predictions_far_scale[i])]
-            if all(pi >= 0.5 for pi in pred_list_i):    
+            if all(pi >= 0.5 for pi in pred_list_i[1:]):    
                 valid_pairs.append(pairs[i])
                 pred_list_i[0] = 1.5 if pred_list_i[0] > 1.5 else pred_list_i[0]
+                pred_list_i[0] = 0.5 if pred_list_i[0] < 0.5 else pred_list_i[0]
                 pair_predictions_far.append(pred_list_i)
     else:
         return None
     
     nloci = int((end_far - beg_far + 1))
     globals.LOCI  = list(range(nloci))
-    ProbRestraintsList = ProbabilityBasedRestraintsList(nloci, globals.RADIUS,
+    ProbRestraintsList = ProbabilityBasedRestraintsList(nloci, globals.RADIUS*reso_ratio,
                                                     globals.SCALE, CONFIG['kforce'],
                                                     n_models*2, dist, valid_pairs,
                                                     [], pair_predictions_far,
@@ -466,8 +467,7 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, ProbRestraintsList,
                                    bounding_restraints=None, use_HiC=True, use_confining_environment=True,
-                                   use_excluded_volume=True, single_particle_restraints=None,
-                                   initial_areas=None):
+                                   use_excluded_volume=True, single_particle_restraints=None):
     """
     Parallelize the
     :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
@@ -479,18 +479,15 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, ProbRestr
     def update_progress(res):
         if globals.VERBOSE > 0:
             print('Generated model %s'%(res['rand_init']))
-    pool = mu.Pool(n_cpus, maxtasksperchild=1)
+    pool = mu.Pool(n_cpus)
     jobs = {}
     for rand_init in range(globals.START, n_models + globals.START):
         ProbRestraints =  ProbabilityBasedRestraints(
                 ProbRestraintsList.get_probability_restraints(rand_init-globals.START))
-        initial_area=None
-        if initial_areas is not None:
-            initial_area=initial_areas.pop(0)
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
                                            args=(rand_init, ProbRestraints,
                                                  use_HiC,use_confining_environment, use_excluded_volume,
-                                                 single_particle_restraints,initial_area),
+                                                 single_particle_restraints),
                                            callback=update_progress)
 
     pool.close()

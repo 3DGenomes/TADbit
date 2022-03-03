@@ -572,7 +572,8 @@ class HiC_data(dict):
             out.write_iter(0, row, col, value)
         out.close()
         if normalized:
-            weights = [self.bias[i] if not i in self.bads else 0. for i in range(self.__size)]
+            weights = [1./self.bias[i] if not i in self.bads and self.bias[i] > 0  else 0. 
+                       for i in range(self.__size)]
             out.write_weights(weights, weights)
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
