@@ -131,13 +131,15 @@ installation finished.</pre>
 <span class="c1">## required</span>
 conda config --add channels bioconda
 conda config --add channels conda-forge
+conda create -n tadbit -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+conda activate tadbit
 conda install -y -q -c bioconda mcl
 conda install -y -q future
 conda install -y -q h5py
-conda install -y -q samtools
+conda install -y -q <span class="nv">samtools</span><span class="o">==</span><span class="m">1</span>.12
 conda install -y -q pysam
 conda install -y -q matplotlib-base
-conda install -y -q scipy
+conda install -y -q -c conda-forge scipy
 
 <span class="c1">## optional</span>
 conda install -y -q jupyter                                    <span class="c1"># this notebook :)</span>
@@ -154,7 +156,8 @@ conda install -y -q -c bioconda sra-tools                      <span class="c1">
 </pre></div>
 </div>
 <p>or in <a class="reference external" href="http://conda.pydata.org/docs/intro.html">anaconda</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">conda</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">salilab</span> <span class="n">imp</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">conda</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">salilab</span> <span class="n">imp</span> <span class="p">(</span><span class="n">python</span> <span class="mi">2</span> <span class="n">packages</span><span class="p">)</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">imp</span> <span class="p">(</span><span class="n">python</span> <span class="mi">3</span> <span class="n">packages</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>These options may be easier than the source compilation.</p>
@@ -387,8 +390,8 @@ it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admi
 downloaded, unpacked and installed as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="mi">3</span><span class="n">DGenomes</span><span class="o">/</span><span class="n">tadbit</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">O</span> <span class="n">tadbit</span><span class="o">.</span><span class="n">zip</span>
 <span class="n">unzip</span> <span class="n">tadbit</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">cd</span> <span class="n">tadbit</span><span class="o">-</span><span class="n">master</span>
-<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<span class="n">cd</span> <span class="n">TADbit</span><span class="o">-</span><span class="n">master</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -416,15 +419,16 @@ successfully.</p>
 <p>Alternatively we regularly build a conda package in bioconda. The
 packages come without IMP and with gem v3 as the default mapper</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
-
-conda install -c bioconda tadbit
+conda create -n tadbit -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+conda activate tadbit
+conda install -c bioconda <span class="nv">samtools</span><span class="o">==</span><span class="m">1</span>.12 tadbit
 </pre></div>
 </div>
 <p>If you want to install TADbit with IMP in conda this line will create a
 environment with them:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 
-conda create -n tadbit <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 r-base<span class="o">=</span><span class="m">3</span>.6.1 r-essentials<span class="o">=</span><span class="m">3</span>.6 r-devtools imp <span class="nv">samtools</span><span class="o">=</span><span class="m">1</span>.12 <span class="nv">jupyter_client</span><span class="o">=</span><span class="m">6</span>.1 tadbit -c conda-forge -c salilab -c bioconda
+conda create -n tadbit <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 r-base r-essentials r-devtools imp tadbit -c conda-forge -c bioconda
 </pre></div>
 </div>
 <p>If you wish then to have the last version of TADbit from github remove
@@ -516,7 +520,7 @@ conda remove tadbit --force
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright .
-      Last updated on Sep 26, 2021.
+      Last updated on Mar 07, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
