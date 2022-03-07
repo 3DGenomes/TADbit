@@ -42,8 +42,7 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
                        binsAround, resolution, short_restr_dist=1.5e6,
                        tf_model_far=None, resolution_far=None, far_restr_dist=1.5e6,
                        start=1, n_models=5000, n_keep=1000,
-                       n_cpus=1, keep_all=False,
-                       verbose=0, outfile=None, config=None,
+                       n_cpus=1, verbose=0, outfile=None, config=None,
                        experiment=None, coords=None, zeros=None,
                        container=None, use_HiC=True,
                        use_confining_environment=False,
@@ -58,12 +57,43 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
     The final analysis will be performed on the n_keep top models.
 
     :param hic_data: the dictionary of the of Hi-C pairwise interactions
+    :param beg: position of the matrix of the start of the region to model
+    :param end: position of the matrix of the end of the region to model
     :param dist: scipy.stats distribution for which the ML model has been trained
     :param tf_model: tensorflow model which input will be hic submatrices
+    :param binsAround: number of bins before and after the loci to form the submatrices
     :param resolution:  number of nucleotides per Hi-C bin. This will be the
        number of nucleotides in each model's particle
-    :param nloci: number of particles to model (may not all be present in
-       zscores)
+    :param 1.5e6: short_restr_dist: genomic distance below which pairs are restrained
+        using the short range tf_model
+    :param tf_model_far: tensorflow model which input will be hic values
+    :param resolutio_far:  number of nucleotides per Hi-C bin for the tf_model_far
+    :param 1.5e6: far_restr_dist: genomic distance above which pairs are restrained
+        using the long range tf_model
+    :param 1 start: random seed where to start the models
+    :param 5000 n_models: number of models to generate
+    :param 1000 n_keep: number of models used in the final analysis (usually
+       the top 20% of the generated models). The models are ranked according to
+       their objective function value (the lower the better)
+    :param False verbose: if set to True, information about the distance and force
+       between particles will be printed. If verbose is 0.5 than
+       constraints will be printed only for the first model calculated.
+    :param None config: a dictionary containing the standard
+       parameters used to generate the models. The dictionary should contain
+       the keys kforce, and scale. 
+       
+         CONFIG = {
+          # Paramaters for the Hi-C dataset from:
+          'reference' : 'example',
+
+          # Force applied to the restraints inferred to neighbor particles
+          'kforce'    : 5,
+
+          # Space occupied by a nucleotide (nm)
+          'scale'     : 0.005
+
+          }
+
     :param None experiment: experiment from which to do the modelling (used only
        for descriptive purpose)
     :param None coords: a dictionary or a list of dictionaries like:
@@ -73,61 +103,9 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
           'start': 14637,
           'end'  : 15689}
 
-    :param 5000 n_models: number of models to generate
-    :param 1000 n_keep: number of models used in the final analysis (usually
-       the top 20% of the generated models). The models are ranked according to
-       their objective function value (the lower the better)
-    :param False keep_all: whether or not to keep the discarded models (if
-       True, models will be stored under StructuralModels.bad_models)
-    :param 1 close_bins: number of particles away (i.e. the bin number
-       difference) a particle pair must be in order to be considered as
-       neighbors (e.g. 1 means consecutive particles)
+    :param None zeros: tuple with the same length as columns in the matrix where 
+        False mark the bad columns of the matrix (the ones with missing data)
     :param n_cpus: number of CPUs to use
-    :param False verbose: if set to True, information about the distance and force
-       between particles will be printed. If verbose is 0.5 than
-       constraints will be printed only for the first model calculated.
-    :param None values: the normalized Hi-C data in a list of lists (equivalent
-       to a square matrix)
-    :param None config: a dictionary containing the standard
-       parameters used to generate the models. The dictionary should contain
-       the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
-       seen by doing:
-
-       ::
-
-         from pytadbit.modelling.CONFIG import CONFIG
-
-         where CONFIG is a dictionary of dictionaries to be passed to this function:
-
-       ::
-
-         CONFIG = {
-          # Paramaters for the Hi-C dataset from:
-          'reference' : 'victor corces dataset 2013',
-
-          # Force applied to the restraints inferred to neighbor particles
-          'kforce'    : 5,
-
-          # Space occupied by a nucleotide (nm)
-          'scale'     : 0.005
-
-          # Strength of the bending interaction
-          'kbending'     : 0.0, # OPTIMIZATION:
-
-          # Maximum experimental contact distance
-          'maxdist'   : 600, # OPTIMIZATION: 500-1200
-
-          # Minimum thresholds used to decide which experimental values have to be
-          # included in the computation of restraints. Z-score values bigger than upfreq
-          # and less that lowfreq will be include, whereas all the others will be rejected
-          'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
-
-          # Maximum threshold used to decide which experimental values have to be
-          # included in the computation of restraints. Z-score values greater than upfreq
-          # and less than lowfreq will be included, while all the others will be rejected
-          'upfreq'    : 0.3 # OPTIMIZATION: min/max Z-score
-
-          }
     :param None container: restrains particle to be within a given object. Can
        only be a 'cylinder', which is, in fact a cylinder of a given height to
        which are added hemispherical ends. This cylinder is defined by a radius,
@@ -147,6 +125,10 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
                 type: 'Harmonic', 'HarmonicLowerBound', 'HarmonicUpperBound'
                 kforce: weigth of the restraint
                 radius (nm): radius of the sphere
+    :param None save_restraints_folder: to dump the restraints to individual files, one for each
+        model. Useful to parallelize the production.
+    :param True include_restraints_in_models: wheter to include the restraints in the resulting
+        models.
 
     :returns: a StructuralModels object
 
@@ -304,7 +286,7 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
     
     globals.LOCI  = list(range(nloci))
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models, n_keep, keep_all, ProbRestraintsList,
+        n_cpus, n_models, n_keep, ProbRestraintsList,
         use_HiC=use_HiC, use_confining_environment=use_confining_environment,
         use_excluded_volume=False,
         single_particle_restraints=single_particle_restraints)
@@ -465,16 +447,9 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
     
     return bins_group, distance_mats, positions   
 
-def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, ProbRestraintsList,
+def multi_process_model_generation(n_cpus, n_models, n_keep, ProbRestraintsList,
                                    bounding_restraints=None, use_HiC=True, use_confining_environment=True,
                                    use_excluded_volume=True, single_particle_restraints=None):
-    """
-    Parallelize the
-    :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
-
-    :param n_cpus: number of CPUs to use
-    :param n_models: number of models to generate
-    """
     
     def update_progress(res):
         if globals.VERBOSE > 0:
@@ -503,10 +478,6 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, ProbRestr
     for i, (_, m) in enumerate(
         sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
         models[i] = m
-    if keep_all:
-        for i, (_, m) in enumerate(
-        sorted(results, key=lambda x: x[1]['objfun'])[n_keep:]):
-            bad_models[i+n_keep] = m
     return models, bad_models
 
 def rebin(a, resolution, resolution_far):

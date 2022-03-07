@@ -335,17 +335,29 @@ class ProbabilityBasedRestraintsList(object):
     :param n_models: number of models to generate.
     :param dist: scipy.stats distribution for which the ML model has been trained
     :param pairs: list of pairs of bins to restrained
+    :param invalid_pairs: list of pairs of bins to avoid restraining
     :param pair_predictions: list of parameters of the functions defining the distribution of distances
         in the pairs
     :param resolution_images: resolution of the models
     :param chromosomes: for multi chromosome models. Dictionary with start and end bins
-    :param 1e6: restr_distance: genomic distance above which pairs are not restrained
+    :param None region_zeros: list of bin numbers with bad columns (the ones with missing data)
+    :param 1.5e6: short_restr_dist: genomic distance below which pairs are restrained
+        using the short range tf_model
+    :param 1.5e6: far_restr_dist: genomic distance above which pairs are restrained
+        using the long range tf_model
+    :param 1 n_cpus: number of CPUs to use
+    :param None bins_group: List of tuples indicating which bins in resolution
+         are included in the distance_mats (distance in distance_mats[i] correspond to bins in 
+         the range bins_group[i])
+    :param None distance_mats: distances of the low resolution models.
+    :param None save_restraints_folder: to dump the restraints to individual files, one for each
+        model. Useful to parallelize the production.
     :param 0.3: perc_restraints: percentage of restraints to apply per model
 
     """
     def __init__(self, nloci, particle_radius, scale, kforce, n_models, dist, pairs,
                  invalid_pairs, pair_predictions, resolution_images, chromosomes,
-                 region_zeros=[], short_restr_dist=1e6, far_restr_dist=3e6, perc_restraints=0.3,
+                 region_zeros=[], short_restr_dist=1.5e6, far_restr_dist=1.5e6, perc_restraints=0.3,
                  n_cpus=1, random_seed=1, bins_group=None, distance_mats=None,
                  save_restraints_folder=None):
 

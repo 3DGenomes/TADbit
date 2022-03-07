@@ -212,9 +212,12 @@ TADbit normalize
                             [--tmpdb PATH] [-C CPUS] [--normalize_only] [--noX]
                             [--normalization STR] [--biases_path BIASES_PATH] [--mappability PATH]
                             [--fasta PATH] [--renz STR] [--factor NUM] [--prop_data FLOAT]
-                            [--seed INT] [--perc_zeros FLOAT] [--min_count INT] [--min_perc INT]
-                            [--max_perc INT] [--filter_only] [--fast_filter]
+                            [--seed INT] [--min_count INT] [--cis_limit CIS_LIMIT]
+                            [--trans_limit TRANS_LIMIT] [--ratio_limit RATIO_LIMIT]
+                            [--cistrans_filter] [--filter_only]
                             [-B CHR:POS1-POS2 [CHR:POS1-POS2 ...]] [-F INT [INT ...]] [--valid]
+    
+    normalize Hi-C data and generates array of biases
     
     optional arguments:
       -h, --help               show this help message and exit
@@ -239,15 +242,22 @@ TADbit normalize
       --noX                    no display server (X screen)
     
     Bin filtering options:
-      --perc_zeros FLOAT       [95%] maximum percentage of zeroes allowed per column.
       --min_count INT          [None] minimum number of reads mapped to a bin (recommended value
                                could be 2500). If set this option overrides the perc_zero
                                filtering... This option is slightly slower.
-      --min_perc INT           [None] lower percentile from which consider bins as good.
-      --max_perc INT           [None] upper percentile until which consider bins as good.
+      --cis_limit CIS_LIMIT    Maximum distance in bins at which to consider an interaction cis for
+                               the filtering. By default it is the number of bins corresponding to
+                               1Mb
+      --trans_limit TRANS_LIMIT
+                               Maximum distance in bins at which to consider an interaction trans
+                               for the filtering. By default it is five times the cis_limit (if
+                               also default, it would correspond to the number of bins needed to
+                               reach 5Mb).
+      --ratio_limit RATIO_LIMIT
+                               [1.0] Minimum cis/trans (as defined with cis_limit and trans_limit
+                               parameters) to filter out bins.
+      --cistrans_filter        filter using cis-trans ratio.
       --filter_only            skip normalization
-      --fast_filter            only filter according to the percentage of zero count or minimum
-                               count of reads
       -B CHR:POS1-POS2 [CHR:POS1-POS2 ...], --badcols CHR:POS1-POS2 [CHR:POS1-POS2 ...]
                                extra regions to be added to bad-columns (ingenomic position). e.g.:
                                --badcols 1:150000000-160000000 2:1200000-1300000
@@ -457,17 +467,21 @@ TADbit model
     Generates 3D models given an input interaction matrix and a set of input parameters
     
     usage: tadbit model [-h] -w PATH [--input_matrix PATH] [--rand INT] [--nmodels INT]
-                        [--nkeep INT] [-j INT] [--optimization_id INT] [--fig_format STR] [--noX]
-                        [--corr STR] [--species STRING] [--assembly STRING] [--cell STRING]
-                        [--exp_type STRING] [--project STRING] [--crm NAME] [--beg INT] [--end INT]
-                        [--matrix_beg INT] [-r INT] [--perc_zero FLOAT] [--optimize] [--model]
-                        [--force] [--maxdist LIST [LIST ...]] [--upfreq LIST [LIST ...]]
-                        [--lowfreq LIST [LIST ...]] [--scale LIST [LIST ...]]
-                        [--dcutoff LIST [LIST ...]] [--analyze] [-C CPUS] [--job_list]
+                        [--nkeep INT] [-j INT] [--optimization_id INT] [--restart_id INT]
+                        [--fig_format STR] [--noX] [--corr STR] [--species STRING]
+                        [--assembly STRING] [--cell STRING] [--exp_type STRING] [--project STRING]
+                        [--crm NAME] [--beg INT] [--end INT] [--matrix_beg INT] [-r INT]
+                        [--perc_zero FLOAT] [--smooth_factor INT] [--optimize] [--model]
+                        [--model_ptadbit] [--force] [--maxdist LIST [LIST ...]]
+                        [--upfreq LIST [LIST ...]] [--lowfreq LIST [LIST ...]]
+                        [--scale LIST [LIST ...]] [--dcutoff LIST [LIST ...]]
+                        [--container LIST [LIST ...]] [--analyze] [-C CPUS] [--job_list]
                         [--nmodels_per_job INT] [--cpus_per_job INT] [--concurrent_jobs INT]
-                        [--timeout_job INT] [--script_cmd STR] [--script_args STR] [--tmpdb PATH]
-                        [--analyze_list INT [INT ...]] [--not_write_cmm] [--not_write_xyz]
-                        [--not_write_json]
+                        [--timeout_job INT] [--script_cmd STR] [--script_args STR]
+                        [--script_template STR] [--tmpdb PATH] [--analyze_list INT [INT ...]]
+                        [--not_write_cmm] [--not_write_xyz] [--not_write_json]
+    
+    Generates 3D models given an input interaction matrix and a set of input parameters
     
     optional arguments:
       -h, --help               show this help message and exit
@@ -482,6 +496,8 @@ TADbit model
       -j INT, --jobid INT      Use as input data generated by a job with a given jobid. Use tadbit
                                describe to find out which.
       --optimization_id INT    [None] ID of a pre-run optimization batch job
+      --restart_id INT         [None] ID of a job to be restarted, for example after building the
+                               models in a cluster
       --fig_format STR         file format and extension for figures and plots (can be any
                                supported by matplotlib, png, eps...)
       --noX                    no display server (X screen)
@@ -508,6 +524,7 @@ TADbit model
     Parameter optimization:
       --optimize               optimization run, store less info about models
       --model                  modelling run
+      --model_ptadbit          modelling run using pTADbit
       --force                  use input parameters, and skip any precalculated optimization
       --maxdist LIST [LIST ...]
                                range of numbers for maxdist, i.e. 400:1000:100 -- or just a number
@@ -526,6 +543,15 @@ TADbit model
                                (distance, in number of beads, from which to consider 2 beads as
                                being close), i.e. 1:1.5:0.5 -- Can also pass only one number -- or
                                a list of numbers
+      --container LIST [LIST ...]
+                               restrains particle to be within a given object. Can only be a
+                               'cylinder', which is, in fact a cylinder of a given height to which
+                               are added hemispherical ends. This cylinder is defined by a radius,
+                               its height (with a height of 0 the cylinder becomes a sphere) and
+                               the force applied to the restraint. E.g. for modeling E. coli genome
+                               (2 micrometers length and 0.5 micrometer of width), these values
+                               could be used: 'cylinder' 250 1500 50, and for a typical mammalian
+                               nuclei (6 micrometers diameter): 'cylinder' 3000 0 50
       --analyze                analyze models.
     
     Analysis:
@@ -541,6 +567,8 @@ TADbit model
       --not_write_json         [False] do not generate json file.
     
     Running jobs:
+      --smooth_factor INT      Hi-C matrix smoothing value of the mean kernel for pTADbit. Useful
+                               in case of using matrices with low sequencing depth
       -C CPUS, --cpu CPUS      [32] Maximum number of CPU cores available in the execution host. If
                                higher than 1, tasks with multi-threading capabilities will enabled
                                (if 0 all available) cores will be used
@@ -555,8 +583,11 @@ TADbit model
                                distributed mode.
       --script_cmd STR         Command to call the jobs in distributed mode.
       --script_args STR        Argumnets to script_cmd to call the jobs in distributed mode.
+      --script_template STR    Template to generate a file that script_cmd will call for each job
+                               in distributed mode. Each __file__ marker in the template will be
+                               replacedby the job file __name__ with the name and __dir__ with the
+                               folder.
       --tmpdb PATH             if provided uses this directory to manipulate the database
-
 
 TADbit merge
 ------------

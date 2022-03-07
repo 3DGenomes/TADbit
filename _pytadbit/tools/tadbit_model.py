@@ -502,10 +502,10 @@ def run_distributed_jobs_ptadbit(opts, dirname, batch_job_hash,
 
     if issparse(hic_mats):
         hic_mats = hic_mats.tocsr()
-        hic_mats.data = np.log10(hic_mats.data)
+        hic_mats.data = np.log1p(hic_mats.data)
         original_data = hic_mats
     else:
-        original_data = np.where(hic_mats != 0, np.log10(hic_mats), 0)
+        original_data = np.log1p(hic_mats)
     original_data = original_data[opts.beg:opts.end+1,opts.beg:opts.end+1]
     zeros_models = tuple([zeros[i] for i in range(opts.beg,opts.end+1)])
     models={}
@@ -1315,7 +1315,7 @@ def populate_args(parser):
                         help='''modelling run''')
     opopts.add_argument('--model_ptadbit', dest='model_ptadbit',
                         default=False, action="store_true",
-                        help='''modelling run''')
+                        help='''modelling run using pTADbit''')
     opopts.add_argument('--force', dest='force',
                         default=False, action="store_true",
                         help='''use input parameters, and skip any precalculated
