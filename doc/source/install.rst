@@ -117,13 +117,15 @@ With conda you can install most of the needed dependencies:
     ## required
     conda config --add channels bioconda
     conda config --add channels conda-forge
+    conda create -n tadbit -c conda-forge python=3.7
+    conda activate tadbit
     conda install -y -q -c bioconda mcl
     conda install -y -q future
     conda install -y -q h5py
-    conda install -y -q samtools
+    conda install -y -q samtools==1.12
     conda install -y -q pysam
     conda install -y -q matplotlib-base
-    conda install -y -q scipy
+    conda install -y -q -c conda-forge scipy
     
     ## optional
     conda install -y -q jupyter                                    # this notebook :)
@@ -145,7 +147,8 @@ or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
 
 ::
 
-   conda install -c https://conda.anaconda.org/salilab imp
+   conda install -c https://conda.anaconda.org/salilab imp (python 2 packages)
+   conda install -c conda-forge imp (python 3 packages)
 
 These options may be easier than the source compilation.
 
@@ -436,8 +439,8 @@ downloaded, unpacked and installed as:
 
    wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
    unzip tadbit.zip
-   cd tadbit-master
-   sudo python setup.py install
+   cd TADbit-master
+   python setup.py install
 
 .. note:: IMP not found problem
 	  If you are under **debian/Ubuntu machines**, and you have
@@ -470,8 +473,9 @@ packages come without IMP and with gem v3 as the default mapper
 .. code:: bash
 
     %%bash
-    
-    conda install -c bioconda tadbit
+    conda create -n tadbit -c conda-forge python=3.7
+    conda activate tadbit
+    conda install -c bioconda samtools==1.12 tadbit
 
 If you want to install TADbit with IMP in conda this line will create a
 environment with them:
@@ -480,7 +484,7 @@ environment with them:
 
     %%bash
     
-    conda create -n tadbit python=3.7 r-base=3.6.1 r-essentials=3.6 r-devtools imp samtools=1.12 jupyter_client=6.1 tadbit -c conda-forge -c salilab -c bioconda
+    conda create -n tadbit python=3.7 r-base r-essentials r-devtools imp tadbit -c conda-forge -c bioconda
 
 If you wish then to have the last version of TADbit from github remove
 the TADbit conda package leaving the dependencies:

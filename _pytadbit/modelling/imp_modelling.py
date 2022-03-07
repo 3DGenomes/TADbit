@@ -14,6 +14,7 @@ from os.path         import exists
 import multiprocessing as mu
 from scipy           import polyfit
 
+import pytadbit.modelling.globals as globals
 from pytadbit.modelling.IMP_CONFIG       import CONFIG, NROUNDS, STEPS, LSTEPS
 from pytadbit.modelling.structuralmodels import StructuralModels
 from pytadbit.modelling.impmodel         import IMPmodel
@@ -139,9 +140,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     """
 
-    # Main config parameters
-    global CONFIG
-
+    globals.init()
     # Setup CONFIG
     if isinstance(config, dict):
         CONFIG.update(config)
@@ -150,18 +149,16 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     CONFIG['resolution'] = resolution
 
-    # scale factor
-    global SCALE
-    SCALE = float(resolution * CONFIG['scale'])
+    globals.SCALE = float(resolution * CONFIG['scale'])
 
     # scale maxdist
-    CONFIG['maxdist'] = CONFIG['maxdist'] / SCALE
+    CONFIG['maxdist'] = CONFIG['maxdist'] / globals.SCALE
 
     # Setup and scale CONFIG['container']
     try:
         CONFIG['container'] = {'shape' : container[0],
-                               'radius': container[1] / SCALE,
-                               'height': container[2] / SCALE,
+                               'radius': container[1] / globals.SCALE,
+                               'height': container[2] / globals.SCALE,
                                'cforce': container[3]}
     except:
         CONFIG['container'] = {'shape' : None,
@@ -172,27 +169,17 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     # print "Used",CONFIG,'\n'
     # print "Input",config,'\n'
 
-    # Particles initial radius
-    global RADIUS
-
-    RADIUS = 0.5
-
-    global LOCI
     # if z-scores are generated outside TADbit they may not start at zero
     if first == None:
         first = min([int(j) for i in zscores for j in zscores[i]] +
                     [int(i) for i in zscores])
-    LOCI  = list(range(first, nloci + first))
+    globals.LOCI  = list(range(first, nloci + first))
 
-    # random inital number
-    global START
-    START = start
-    # verbose
-    global VERBOSE
-    VERBOSE = verbose
-    #VERBOSE = 3
+    globals.START = start
+    globals.VERBOSE = verbose
+    #globals.VERBOSE = 3
 
-    HiCRestraints = HiCBasedRestraints(nloci, RADIUS, CONFIG, resolution,
+    HiCRestraints = HiCBasedRestraints(nloci, globals.RADIUS, CONFIG, resolution,
                                        zscores, chromosomes=coords,
                                        close_bins=close_bins, first=first)
 
@@ -238,10 +225,10 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         out.close()
     else:
         hicrestraints = HiCRestraints._get_restraints()
-        hicrestraints = dict((r,(hicrestraints[r][0],hicrestraints[r][1]*SCALE, hicrestraints[r][2]))
+        hicrestraints = dict((r,(hicrestraints[r][0],hicrestraints[r][1]*globals.SCALE, hicrestraints[r][2]))
                              for r in hicrestraints)
         return StructuralModels(
-            len(LOCI), models, bad_models, resolution, original_data=values,
+            len(globals.LOCI), models, bad_models, resolution, original_data=values,
             zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros,
             restraints=hicrestraints, description=description)
 
@@ -258,7 +245,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
 
     pool = mu.Pool(n_cpus, maxtasksperchild=1)
     jobs = {}
-    for rand_init in range(START, n_models + START):
+    for rand_init in range(globals.START, n_models + globals.START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
                                            args=(rand_init,HiCRestraints, use_HiC,
                                                  use_confining_environment, use_excluded_volume,
@@ -268,7 +255,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all,HiCRestrai
     pool.join()
 
     results = []
-    for rand_init in range(START, n_models + START):
+    for rand_init in range(globals.START, n_models + globals.START):
         results.append((rand_init, jobs[rand_init].get()))
 
     models = {}
@@ -295,7 +282,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
        function value optimization, and the coordinates of each particles.
 
     """
-    verbose = VERBOSE
+    verbose = globals.VERBOSE
     # Set the IMP.random_number_generator.seed to get a different reproducible model
     IMP.random_number_generator.seed(rand_init)
     #print IMP.random_number_generator()
@@ -305,8 +292,9 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
              'model'      : Model(),
              'particles'  : None,
              'restraints' : None} # 2.6.1 compat
+
     model['particles'] = ListSingletonContainer(model['model'],
-        IMP.core.create_xyzr_particles(model['model'], len(LOCI), RADIUS, 100000/SCALE))  # last number is box size
+        IMP.core.create_xyzr_particles(model['model'], len(globals.LOCI), globals.RADIUS, 100000/globals.SCALE))  # last number is box size
 
     try:
         model['restraints'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
@@ -314,9 +302,9 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
         pass
 
     # OPTIONAL:Set the name of each particle
-    for i in range(0, len(LOCI)):
+    for i in range(0, len(globals.LOCI)):
         p = model['particles'].get(i)
-        p.set_name(str(LOCI[i]))
+        p.set_name(str(globals.LOCI[i]))
         #print p.get_name()
 
     # Separated function for the confining environment restraint
@@ -334,8 +322,8 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
     # Add restraints on single particles
     if single_particle_restraints:
         for ap in single_particle_restraints:
-            ap[1] = [(c / SCALE) for c in ap[1]]
-            ap[4] /= SCALE
+            ap[1] = [(c / globals.SCALE) for c in ap[1]]
+            ap[4] /= globals.SCALE
         # This function is specific for IMP
         add_single_particle_restraints(model, single_particle_restraints)
 
@@ -389,16 +377,16 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
                        'cluster'    : 'Singleton',
                        'rand_init'  : str(rand_init)})
     for part in model['particles'].get_particles():
-        result['x'].append(part.get_value(x) * SCALE)
-        result['y'].append(part.get_value(y) * SCALE)
-        result['z'].append(part.get_value(z) * SCALE)
+        result['x'].append(part.get_value(x) * globals.SCALE)
+        result['y'].append(part.get_value(y) * globals.SCALE)
+        result['z'].append(part.get_value(z) * globals.SCALE)
         if verbose == 3:
             print((part.get_name(), part.get_value(x), part.get_value(y),
                    part.get_value(z), part.get_value(radius)))
     # gets radius from last particle, assuming that all are the same
     # include in the loop when radius changes... should be a list then
     result['radius'] = part.get_value(radius)
-    result['radius'] = SCALE / 2
+    result['radius'] = globals.SCALE / 2
     #for log_energy in log_energies:
     #    print "%.30f" % log_energy
     #print rand_init, log_energies[-1]
@@ -421,7 +409,7 @@ def add_excluded_volume_restraint(model, particle_list, kforce): #, restraints):
 def add_bending_rigidity_restraint(model, theta0, bending_kforce): #, restraints):
 
     harmonic = IMP.core.Harmonic(theta0, bending_kforce)
-    for particle in range(0,len(LOCI)-2):
+    for particle in range(0,len(globals.LOCI)-2):
         p1  = model['particles'].get(particle)
         p2  = model['particles'].get(particle+1)
         p3  = model['particles'].get(particle+2)
@@ -471,7 +459,7 @@ def add_single_particle_restraints(model, single_particle_restraints):
 
     for restraint in single_particle_restraints:
 
-        if int(restraint[0]) >= len(LOCI):
+        if int(restraint[0]) >= len(globals.LOCI):
             continue
 
         p1 = model['particles'].get(int(restraint[0]))
@@ -630,7 +618,7 @@ def conjugate_gradient_optimization(model, log_energies):
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                            FloatKey("z"), FloatKey("radius"))
 
-    mov = IMP.core.NormalMover(ptmp, fk, 0.25 / SCALE)
+    mov = IMP.core.NormalMover(ptmp, fk, 0.25 / globals.SCALE)
     o.add_mover(mov)
     # o.add_optimizer_state(log)
 
@@ -655,10 +643,10 @@ def conjugate_gradient_optimization(model, log_energies):
     endLoopValue = 0.00001
 
     # alpha is a parameter that takes into account the number of particles in
-    # the model (len(LOCI)).
+    # the model (len(globals.LOCI)).
     # The multiplier (in this case is 1.0) is used to give a different weight
     # to the number of particles
-    alpha = 1.0 * len(LOCI)
+    alpha = 1.0 * len(globals.LOCI)
 
     # During the firsts hightemp iterations, do not stop the optimization
     hightemp = int(0.025 * NROUNDS)
@@ -669,7 +657,7 @@ def conjugate_gradient_optimization(model, log_energies):
         #if i == 1:
         #    for p in ptmp:
         #        print p,p.get_value(x),p.get_value(y),p.get_value(z)
-        if VERBOSE == 3:
+        if globals.VERBOSE == 3:
             print(i, log_energies[-1], o.get_kt())
     # After the firsts hightemp iterations, stop the optimization if the score
     # does not change by more than a value defined by endLoopValue and
@@ -679,7 +667,7 @@ def conjugate_gradient_optimization(model, log_energies):
         temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
         o.set_kt(temperature)
         log_energies.append(o.optimize(STEPS))
-        if VERBOSE == 3:
+        if globals.VERBOSE == 3:
             print(i, log_energies[-1], o.get_kt())
         # Calculate the score variation and check if the optimization
         # can be stopped or not
@@ -699,7 +687,7 @@ def conjugate_gradient_optimization(model, log_energies):
     #"""simulated_annealing_full: preform simulated annealing for nrounds
     # iterations"""
     # # IMP.fivec.simulatedannealing.full_rounds(m, o, nrounds, steps)
-    # alpha = 1.0 * len(LOCI)
+    # alpha = 1.0 * len(globals.LOCI)
     # for i in range(0,nrounds):
     #    temperature = alpha * (1.1 * nrounds - i) / nrounds
     #    o.set_kt(temperature)

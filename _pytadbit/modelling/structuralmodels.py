@@ -31,6 +31,7 @@ from numpy                            import std as np_std, log2
 from numpy                            import array, cross, dot, ma, isnan
 from numpy                            import histogram, linspace, errstate
 from numpy                            import nanmin, nanmax
+from numpy                            import seterr
 from numpy.linalg                     import norm
 
 from scipy.optimize                   import curve_fit
@@ -38,6 +39,7 @@ from scipy.stats                      import spearmanr, pearsonr, chisquare
 from scipy.stats                      import kendalltau
 from scipy.stats                      import linregress
 from scipy.stats                      import normaltest, norm as sc_norm
+from scipy.sparse                     import issparse
 from scipy.cluster.hierarchy          import linkage, fcluster
 from scipy.spatial.distance           import squareform
 
@@ -51,6 +53,9 @@ from pytadbit.utils.tadmaths          import mean_none
 from pytadbit.utils.extraviews        import plot_3d_model, setup_plot
 from pytadbit.utils.extraviews        import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
+from pytadbit.utils.extraviews        import tad_coloring
+from pytadbit.utils.extraviews        import tad_border_coloring
+from pytadbit.utils.extraviews        import color_residues
 from pytadbit.mapping.analyze         import scc
 from pytadbit.modelling.impmodel      import IMPmodel
 from pytadbit.centroid                import centroid_wrapper
@@ -1017,6 +1022,7 @@ class StructuralModels(object):
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
+        plt.draw()
         oldlabels = cbar.ax.get_yticklabels()
         newlabels = [str(int(100 * float(x.get_text())))+'%' for x in oldlabels]
         cbar.ax.set_yticklabels(newlabels)
@@ -1237,6 +1243,7 @@ class StructuralModels(object):
             simplefilter("ignore", category=RuntimeWarning)
             distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                      average=False)
+
         # write consistencies to file
         if savedata:
             out = open(savedata, 'w')
@@ -1647,7 +1654,7 @@ class StructuralModels(object):
         #    plt.show()
         #plt.close('all')
 
-    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
+    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False, cmap='Reds'):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
@@ -1678,7 +1685,11 @@ class StructuralModels(object):
                     try:
                         zsc_mtrx[i][j] = self._zscores[str(j)][str(i)]
                     except KeyError:
-                        zsc_mtrx[i][j] = 0
+                        zsc_mtrx[i][j] = float('Nan')
+
+        # suppress warnings due to nans in following lines
+        prevErrorSet = seterr()
+        seterr(invalid='ignore')
         masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
         masked_array_top = ma.array (
             masked_array, mask=masked_array < self._config['upfreq'])
@@ -1832,15 +1843,22 @@ class StructuralModels(object):
             model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
                                                    cutoff=cutoff, 
                                                    show_bad_columns=show_bad_columns)
+        if issparse(self._original_data):
+            self._original_data = self._original_data.tolil()
         oridata = []
         moddata = []
         for i in (v for v, z in enumerate(self._zeros) if z):
             for j in (v for v, z in list(enumerate(self._zeros))[i + off_diag:] if z):
-                oriv = self._original_data[i][j]
+                if issparse(self._original_data):
+                    oriv = self._original_data[i,j]
+                else:
+                    oriv = self._original_data[i][j]
                 if oriv <= 0 or isnan(oriv):
                     continue
                 oridata.append(oriv)
                 moddata.append(model_matrix[i][j])
+        if issparse(self._original_data):
+            self._original_data = self._original_data.tocsr()
         # print oridata
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
@@ -1854,7 +1872,8 @@ class StructuralModels(object):
             corr = chisquare(array(moddata), array(oridata))
             corr = 1. / corr[0], corr[1]
         elif corr == 'scc':
-            corr = scc(model_matrix, self._original_data, max_dist=int(len(model_matrix)/2))
+            corr = scc(model_matrix, self._original_data,
+                       max_dist=min(int(len(model_matrix)/2),50))
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
@@ -1957,7 +1976,13 @@ class StructuralModels(object):
         cmap = copy(plt.get_cmap('viridis'))
         cmap.set_bad('darkgrey', 1)
         with errstate(divide='ignore'):
-            ims = ax.imshow(log2(self._original_data), origin='lower',
+            if issparse(self._original_data):
+                log2_data = self._original_data.tocsr()
+                log2_data.data = log2(log2_data.data)
+                log2_data = log2_data.todense()
+            else:
+                log2_data = log2(self._original_data)
+            ims = ax.imshow(log2_data, origin='lower',
                             interpolation="nearest", cmap=cmap,
                             extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Genomic bin')

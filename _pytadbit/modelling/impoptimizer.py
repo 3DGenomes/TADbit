@@ -285,9 +285,9 @@ class IMPoptimizer(object):
                     verb = '  %-5s\t%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s\t' % (
                         'xx', scale, kbending, maxdist, lowfreq, upfreq, k[-1])
                     if verbose == 2:
-                        stderr.write(verb + str(round(result, 4)) + '\n')
+                        stderr.write(verb + str(round(result, 6)) + '\n')
                     else:
-                        print(verb + str(round(result, 4)))
+                        print(verb + str(round(result, 6)))
                 continue
 
             config_tmp = {'kforce'   : 5,
@@ -327,9 +327,9 @@ class IMPoptimizer(object):
                         verb = '  %-4s%-5s\t%-8s\t%-7s\t%-7s\t%-6s\t%-7s' % (
                             count, scale, kbending, maxdist, lowfreq, upfreq, cutoff)
                         if verbose == 2:
-                            stderr.write(verb + str(round(result, 4)) + '\n')
+                            stderr.write(verb + str(round(result, 6)) + '\n')
                         else:
-                            print(verb + str(round(result, 4)))
+                            print(verb + str(round(result, 6)))
 
                     # Store the correlation for the TADbit parameters set
                     self.results[(scale, kbending, maxdist, lowfreq, upfreq, float(cutoff))] = result
@@ -628,7 +628,7 @@ class IMPoptimizer(object):
             scale, kbending, maxdist, lowfreq, upfreq, dcutoff = (
                 float(scale), float(kbending), int(maxdist), float(lowfreq), float(upfreq),
                 float(dcutoff))
-            scale    = my_round(scale, val=5)
+            scale    = my_round(scale, val=6)
             kbending = my_round(kbending)
             maxdist  = my_round(maxdist)
             lowfreq  = my_round(lowfreq)
@@ -682,7 +682,7 @@ class IMPoptimizer(object):
             scale, kbending, maxdist, lowfreq, upfreq, dcutoff = (
                 float(scale), float(kbending), float(maxdist), float(lowfreq), float(upfreq),
                 float(dcutoff))
-            scale    = my_round(scale, val=5)
+            scale    = my_round(scale, val=6)
             kbending = my_round(kbending)
             maxdist  = my_round(maxdist)
             lowfreq  = my_round(lowfreq)
@@ -709,7 +709,7 @@ class IMPoptimizer(object):
         self.dcutoff_range.sort( key=float)
 
 
-def my_round(num, val=4):
+def my_round(num, val=6):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 

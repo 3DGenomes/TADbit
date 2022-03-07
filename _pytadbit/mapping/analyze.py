@@ -1039,7 +1039,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
         return spearmans, dists, scc, std, bads
     return spearmans, dists, scc, std
 
-def scc(mat1, mat2, max_dist=50, min_dist=1):
+def scc(mat1, mat2, max_dist=50, min_dist=2):
     
     pearsons=[]
     dists = []
@@ -1065,6 +1065,8 @@ def scc(mat1, mat2, max_dist=50, min_dist=1):
                 weigs.append((np.var(r1, ddof=1) *
                               np.var(r2, ddof=1))**0.5 * len(diag1))
                 dists.append(dist)
+            else:
+                return 0, 0
     if len(pearsons) == 0:
         return 0, 0
     tot_weigth = sum(weigs)
