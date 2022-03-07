@@ -433,7 +433,7 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
     
     globals.LOCI  = list(range(nloci))
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models*2, n_models, False, ProbRestraintsList,
+        n_cpus, n_models*2, n_models, ProbRestraintsList,
         use_HiC=True, use_confining_environment=use_confining_environment,
         use_excluded_volume=False)
 
