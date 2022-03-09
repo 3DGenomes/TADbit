@@ -359,7 +359,7 @@ class ProbabilityBasedRestraintsList(object):
                  invalid_pairs, pair_predictions, resolution_images, chromosomes,
                  region_zeros=[], short_restr_dist=1.5e6, far_restr_dist=1.5e6, perc_restraints=0.3,
                  n_cpus=1, random_seed=1, bins_group=None, distance_mats=None,
-                 save_restraints_folder=None):
+                 save_restraints_folder=None, verbose=0):
 
         self.particle_radius = particle_radius
         self.nloci = nloci
@@ -460,7 +460,8 @@ class ProbabilityBasedRestraintsList(object):
                          for p in far_bin_groups[ibp][jbp]})
         if n_cpus > 1:
             def update_progress(res):
-                print('Generated restraint for model %s'%(res['rand_init']))
+                if verbose > 0:
+                    print('Generated restraint for model %s'%(res['rand_init']))
             
             pool = mu.Pool(n_cpus)
             jobs = {}
@@ -498,7 +499,8 @@ class ProbabilityBasedRestraintsList(object):
                 pair_distr = self.generate_pair_distribution(rand_init, list_pairs, lst_dist[:,rand_init], 
                                                              perc_restraints, region_zeros, random_seed+rand_init,
                                                              far_bin_groups,dist_mat)
-                print('Generated restraint for model %s'%(pair_distr['rand_init']))
+                if verbose > 0:
+                    print('Generated restraint for model %s'%(pair_distr['rand_init']))
                 self.pair_distribution.append(pair_distr['pair_distr'])
                 self.long_dists.append(pair_distr['far_pair_distr'])
                 self.close_dist = max(self.close_dist,pair_distr['close_dist'])

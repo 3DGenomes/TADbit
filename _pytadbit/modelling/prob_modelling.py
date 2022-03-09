@@ -274,7 +274,8 @@ def generate_3d_models(hic_data, beg, end, dist, tf_model,
                                                         chromosomes=coords, n_cpus=n_cpus,
                                                         random_seed=start, bins_group=bins_group,
                                                         distance_mats=distance_mats,
-                                                        save_restraints_folder=save_restraints_folder)
+                                                        save_restraints_folder=save_restraints_folder,
+                                                        verbose=globals.VERBOSE)
     
     if save_restraints_folder:
         paramsfile = path.join(save_restraints_folder,'_tmp_common_params.pickle')
@@ -422,7 +423,8 @@ def generate_parent_locations(hic_data, region_zeros, beg, end, dist, resolution
                                                     far_restr_dist=0,
                                                     chromosomes=coords, n_cpus=n_cpus,
                                                     random_seed=globals.START,
-                                                    perc_restraints=0.6)
+                                                    perc_restraints=0.6,
+                                                    verbose=globals.VERBOSE)
     if not CONFIG['container']['shape'] and len(ProbRestraintsList.bounding_boxes) > 0:
         CONFIG['container'] = {'shape' : 'cylinder',
                                'radius': (max(ProbRestraintsList.bounding_boxes)/2) / globals.SCALE,

@@ -1313,7 +1313,7 @@ def populate_args(parser):
     opopts.add_argument('--model', dest='model',
                         default=False, action="store_true",
                         help='''modelling run''')
-    opopts.add_argument('--model_ptadbit', dest='model_ptadbit',
+    opopts.add_argument('--pmodel', dest='model_ptadbit',
                         default=False, action="store_true",
                         help='''modelling run using pTADbit''')
     opopts.add_argument('--force', dest='force',
