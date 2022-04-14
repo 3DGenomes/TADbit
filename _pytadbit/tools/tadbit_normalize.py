@@ -151,7 +151,7 @@ def run(opts):
         normalize_only=opts.normalize_only, max_njobs=opts.max_njobs,
         extra_bads=opts.badcols, biases_path=opts.biases_path, 
         cis_limit=opts.cis_limit, trans_limit=opts.trans_limit, 
-        min_ratio=opts.ratio_limit, fast_filter=opts.fast_filter)
+        min_ratio=opts.ratio_limit, cistrans_filter=opts.cistrans_filter)
 
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
                                 'interactions_vs_genomic-coords.png_%s_%s.png' % (
@@ -495,9 +495,9 @@ Mappability file can be generated with GEM (example from the genomic FASTA file 
                         help='''[%(default)s] Minimum cis/trans (as defined with 
                         cis_limit and trans_limit parameters) to filter out bins.''')
 
-    bfiltr.add_argument('--fast_filter', dest='fast_filter', action='store_true',
+    bfiltr.add_argument('--cistrans_filter', dest='cistrans_filter', action='store_true',
                         default=False,
-                        help='''only filter according to min_count.''')
+                        help='''filter using cis-trans ratio.''')
 
     # bfiltr.add_argument('--min_perc', dest='min_perc', metavar="INT",
     #                     action='store', default=None, type=float,
@@ -546,6 +546,10 @@ def check_options(opts):
             raise IOError('ERROR: biases file required for "custom" normalization.')
         elif not path.exists(opts.biases_path):
             raise IOError('ERROR: biases not found at path: %s' % opts.biases_path)
+
+    # check filtering options
+    if not opts.min_count and not opts.cistrans_filter:
+        opts.cistrans_filter = True
 
     # check resume
     if not path.exists(opts.workdir):
@@ -725,7 +729,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
              cg_content=None, sigma=2, ncpus=8, factor=1, outdir='.', seed=1,
              extra_out='', only_valid=False, normalize_only=False, p_fit=None,
              max_njobs=100, extra_bads=None, 
-             cis_limit=1, trans_limit=5, min_ratio=1.0, fast_filter=False):
+             cis_limit=1, trans_limit=5, min_ratio=1.0, cistrans_filter=False):
     bamfile = AlignmentFile(inbam, 'rb')
     sections = OrderedDict(list(zip(bamfile.references,
                                [x // resolution + 1 for x in bamfile.lengths])))
@@ -777,7 +781,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     printime('  - Parsing BAM (%d chunks)' % (len(regs)))
     # define limits for cis and trans interactions if not given
     if cis_limit is None:
-        cis_limit = int(1_000_000 / resolution)
+        cis_limit = int(1000000 / resolution)
     print('      -> cis interactions are defined as being bellow {}'.format(
         nicer(cis_limit * resolution)))
     if trans_limit is None:
@@ -827,7 +831,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     printime('  - Removing columns with too few or too much interactions')
     
     # define filter for minimum interactions per bin
-    if not fast_filter:
+    if cistrans_filter:
         if min_count is None:
             min_count = nanpercentile(
                 [cisprc[k][2] for k in range(total) 

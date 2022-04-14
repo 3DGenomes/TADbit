@@ -607,8 +607,8 @@ def plot_filtering(nears, ratio, size, cut_count, cut_ratio, outfile,
     axe = plt.subplot()
     axe.set_position((0.12, 0.1, 0.55, 0.8))
     pl = plt.plot([ratio.get(k, 0) for k in range(size)], [nears.get(k, 0) for k in range(size)], 
-                'k.', ms=1 if size > 50_000 else 2 if size > 20_000 else 3, 
-                alpha=0.01 if size > 500_000 else 0.05 if size > 200_000 else 0.1 if size > 50_000 else 0.2 if size > 20_000 else 0.3)
+                'k.', ms=1 if size > 50000 else 2 if size > 20000 else 3, 
+                alpha=0.01 if size > 500000 else 0.05 if size > 200000 else 0.1 if size > 50000 else 0.2 if size > 20000 else 0.3)
     ylim = np.percentile(list(nears.values()), 95)
     plt.ylim(0, ylim)
     xlim = np.percentile(list(ratio.values()), 95)

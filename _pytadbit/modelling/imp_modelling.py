@@ -388,7 +388,7 @@ def generate_IMPmodel(rand_init, HiCRestraints,use_HiC=True, use_confining_envir
                        'radius'     : None,
                        'cluster'    : 'Singleton',
                        'rand_init'  : str(rand_init)})
-    for part in model['particles'].get_particles():
+    for part in model['particles'].get():
         result['x'].append(part.get_value(x) * SCALE)
         result['y'].append(part.get_value(y) * SCALE)
         result['z'].append(part.get_value(z) * SCALE)
@@ -410,7 +410,7 @@ def add_excluded_volume_restraint(model, particle_list, kforce): #, restraints):
     evr = IMP.core.ExcludedVolumeRestraint(particle_list, kforce)
 
     evr.set_name("ExcludedVolumeRestraint")
-    #print "ExcludedVolume", particle_list.get_particles(), "%.30f" % CONFIG['kforce']
+    #print "ExcludedVolume", particle_list.get_contents(), "%.30f" % CONFIG['kforce']
     try:
         model['model'].add_restraint(evr)
     except:
@@ -625,12 +625,13 @@ def conjugate_gradient_optimization(model, log_energies):
 
     o.set_return_best(True)
     fk = IMP.core.XYZ.get_xyz_keys()
-    ptmp = model['particles'].get_particles()
+    ptmp = model['particles'].get_contents()
 
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                            FloatKey("z"), FloatKey("radius"))
 
-    mov = IMP.core.NormalMover(ptmp, fk, 0.25 / SCALE)
+    mvs = [IMP.core.NormalMover(model['model'],p, fk, 0.25) for p in ptmp]
+    mov = IMP.core.SerialMover(mvs)
     o.add_mover(mov)
     # o.add_optimizer_state(log)
 
