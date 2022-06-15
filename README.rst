@@ -1,7 +1,6 @@
 
 .. image:: https://github.com/3DGenomes/tadbit/raw/master/doc/source/pictures/TADbit_logo.png
-   :height: 50
-   :width: 240
+   :height: 75
 
 
 
