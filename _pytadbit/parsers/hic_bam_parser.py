@@ -30,6 +30,10 @@ try:
 except ImportError:
     pass  # silently pass, very specific need
 
+START_ALIGNMENT = 1
+import pysam
+if int(pysam.__version__.split(".")[1]) < 17:
+    START_ALIGNMENT = 2
 from pysam                        import AlignmentFile
 
 from pytadbit.utils                 import printime
@@ -368,7 +372,7 @@ def _read_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                    sum_columns=False):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
-    bam_start = start - 2
+    bam_start = start - START_ALIGNMENT
     bam_start = max(0, bam_start)
     try:
         dico = {}
@@ -424,7 +428,7 @@ def _read_half_bam_frag(inbam, filter_exclude, all_bins, sections1, sections2,
                         sum_columns=False):
     bamfile = AlignmentFile(inbam, 'rb')
     refs = bamfile.references
-    bam_start = start - 2
+    bam_start = start - START_ALIGNMENT
     bam_start = max(0, bam_start)
     section_pos = []
     for sec in sections1:
