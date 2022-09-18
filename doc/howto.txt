@@ -1,7 +1,9 @@
 install sphinx, lxml, cssselect (conda install -c bioconda tadbit jupyter sphinx lxml cssselect)
 install ansi extension from http://bitbucket.org/birkenfeld/sphinx
-python summarize_doc.py > summary.rst 
+python summarize_doc.py > summary.rst
 python notebook_to_source.py
 copy images from doc/notebooks/ to doc/source/nbpictures/
 clean nasty characters in rst doc/notebooks/
 make html
+htmls will be under ../../TADbit-doc/html
+Use new htmls to push to https://github.com/david-castillo/TADbit/tree/gh-pages

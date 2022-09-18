@@ -2,7 +2,10 @@ Installing TADbit on GNU/Linux
 ==============================
 
 **TADbit requires python2 >= 2.6 or python3 >= 3.6 as well as several
-dependencies that are listed below.**
+dependencies that are listed below. Python 2 compatibility will be gradually abandoned.
+Please use python 3.**
+
+**The easiest way to install TADbit is in a conda environment. Use conda if possible.**
 
 Dependencies
 ------------
@@ -41,52 +44,38 @@ Alternatively you can also use this oneliner:
     
     bash miniconda.sh -b -p $HOME/miniconda2
 
+Conda builds
+~~~~~~~~~~~~
 
-.. ansi-block::
+Alternatively we regularly build a conda package in bioconda. The
+packages come without IMP and with gem v3 as the default mapper
 
-    PREFIX=/home/fransua/miniconda2
-    installing: python-2.7.15-h1571d57_0 ...
-    installing: ca-certificates-2018.03.07-0 ...
-    installing: conda-env-2.6.0-1 ...
-    installing: libgcc-ng-8.2.0-hdf63c60_1 ...
-    installing: libstdcxx-ng-8.2.0-hdf63c60_1 ...
-    installing: libffi-3.2.1-hd88cf55_4 ...
-    installing: ncurses-6.1-hf484d3e_0 ...
-    installing: openssl-1.0.2p-h14c3975_0 ...
-    installing: yaml-0.1.7-had09818_2 ...
-    installing: zlib-1.2.11-ha838bed_2 ...
-    installing: libedit-3.1.20170329-h6b74fdf_2 ...
-    installing: readline-7.0-h7b6447c_5 ...
-    installing: tk-8.6.8-hbc83047_0 ...
-    installing: sqlite-3.24.0-h84994c4_0 ...
-    installing: asn1crypto-0.24.0-py27_0 ...
-    installing: certifi-2018.8.24-py27_1 ...
-    installing: chardet-3.0.4-py27_1 ...
-    installing: enum34-1.1.6-py27_1 ...
-    installing: futures-3.2.0-py27_0 ...
-    installing: idna-2.7-py27_0 ...
-    installing: ipaddress-1.0.22-py27_0 ...
-    installing: pycosat-0.6.3-py27h14c3975_0 ...
-    installing: pycparser-2.18-py27_1 ...
-    installing: pysocks-1.6.8-py27_0 ...
-    installing: ruamel_yaml-0.15.46-py27h14c3975_0 ...
-    installing: six-1.11.0-py27_1 ...
-    installing: cffi-1.11.5-py27he75722e_1 ...
-    installing: setuptools-40.2.0-py27_0 ...
-    installing: cryptography-2.3.1-py27hc365091_0 ...
-    installing: wheel-0.31.1-py27_0 ...
-    installing: pip-10.0.1-py27_0 ...
-    installing: pyopenssl-18.0.0-py27_0 ...
-    installing: urllib3-1.23-py27_0 ...
-    installing: requests-2.19.1-py27_0 ...
-    installing: conda-4.5.11-py27_0 ...
-    installation finished.
+.. code:: bash
 
+    %%bash
+    conda create -n tadbit -c conda-forge python=3.7
+    conda activate tadbit
+    conda install -c bioconda samtools==1.12 tadbit
 
-.. ansi-block::
+If you want to install TADbit with IMP in conda this line will create a
+environment with them:
 
-    Python 2.7.15 :: Anaconda, Inc.
+.. code:: bash
 
+    %%bash
+    
+    conda create -n tadbit python=3.7 r-base r-essentials r-devtools imp tadbit -c conda-forge -c bioconda
+
+If you wish then to have the last version of TADbit from github remove
+the TADbit conda package leaving the dependencies:
+
+.. code:: bash
+
+    %%bash
+    
+    conda remove tadbit --force
+
+And install TADbit from source as explained in the bottom of this page.
 
 Python libraries
 ~~~~~~~~~~~~~~~~
@@ -117,13 +106,15 @@ With conda you can install most of the needed dependencies:
     ## required
     conda config --add channels bioconda
     conda config --add channels conda-forge
+    conda create -n tadbit -c conda-forge python=3.7
+    conda activate tadbit
     conda install -y -q -c bioconda mcl
     conda install -y -q future
     conda install -y -q h5py
-    conda install -y -q samtools
-    conda install -y -q pysam
+    conda install -y -q samtools==1.12
+    conda install -y -q pysam>=0.16
     conda install -y -q matplotlib-base
-    conda install -y -q scipy
+    conda install -y -q -c conda-forge scipy
     
     ## optional
     conda install -y -q jupyter                                    # this notebook :)
@@ -145,7 +136,8 @@ or in `anaconda <http://conda.pydata.org/docs/intro.html>`__
 
 ::
 
-   conda install -c https://conda.anaconda.org/salilab imp
+   conda install -c https://conda.anaconda.org/salilab imp (python 2 packages)
+   conda install -c conda-forge imp (python 3 packages)
 
 These options may be easier than the source compilation.
 
@@ -187,9 +179,9 @@ GEM version 3, bowtie2 and hisat2 are available in bioconda.
 
     %%bash
     
-    conda -y -q -c bioconda gem3-mapper
-    conda -y -q -c bioconda bowtie2
-    conda -y -q -c bioconda hisat2
+    conda install -y -q -c bioconda gem3-mapper
+    conda install -y -q -c bioconda bowtie2
+    conda install -y -q -c bioconda hisat2
 
 If you prefer the old good GEM version 2, go to the download page:
 https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/
@@ -436,8 +428,8 @@ downloaded, unpacked and installed as:
 
    wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
    unzip tadbit.zip
-   cd tadbit-master
-   sudo python setup.py install
+   cd TADbit-master
+   python setup.py install
 
 .. note:: IMP not found problem
 	  If you are under **debian/Ubuntu machines**, and you have
@@ -461,34 +453,3 @@ To do so, move to the test directory and run:
    cd test
    python test_all.py
 
-Conda builds
-~~~~~~~~~~~~
-
-Alternatively we regularly build a conda package in bioconda. The
-packages come without IMP and with gem v3 as the default mapper
-
-.. code:: bash
-
-    %%bash
-    
-    conda install -c bioconda tadbit
-
-If you want to install TADbit with IMP in conda this line will create a
-environment with them:
-
-.. code:: bash
-
-    %%bash
-    
-    conda create -n tadbit python=3.7 r-base=3.6.1 r-essentials=3.6 r-devtools imp samtools=1.12 jupyter_client=6.1 tadbit -c conda-forge -c salilab -c bioconda
-
-If you wish then to have the last version of TADbit from github remove
-the TADbit conda package leaving the dependencies:
-
-.. code:: bash
-
-    %%bash
-    
-    conda remove tadbit --force
-
-And install TADbit from source as explained before.

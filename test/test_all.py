@@ -26,7 +26,7 @@ from pytadbit.mapping.analyze             import correlate_matrices, eig_correla
 from pytadbit.mapping.filter              import filter_reads, apply_filter
 
 from random                               import random, seed
-from os                                   import system, path, chdir
+from os                                   import system, path, chdir, environ
 from re                                   import finditer
 from warnings                             import warn, catch_warnings, simplefilter
 from distutils.spawn                      import find_executable
@@ -846,6 +846,62 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             self.assertEqual(True, True)
             print("20", time() - t0)
+
+    def test_21_pTADbit_modelling(self):
+        """
+        quick test to generate 3D models with pTADbit
+        """
+        if ONLY and not "21" in ONLY:
+            return
+        if CHKTIME:
+            t0 = time()
+
+        try:
+            __import__("IMP")
+        except ImportError:
+            warn("IMP not found, skipping test\n")
+            return
+        try:
+            import scipy.stats as st
+            import tensorflow as tf
+            if not tf.__version__.startswith("2."):
+                raise ImportError()
+            from tensorflow import keras
+            from pytadbit.modelling.prob_modelling import  generate_3d_models
+
+            environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+            physical_devices = tf.config.experimental.list_physical_devices('GPU')
+            assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+            tf.config.experimental.set_memory_growth(physical_devices[0], True)
+            
+            tf_model = keras.models.load_model(path.join(sys.prefix,"share","pytadbit","extras",
+                                                         "tf_model_short_range_30k"),
+                                               compile=False)
+        except ImportError:
+            warn("Tensorflow 2 not found or not working, skipping test\n")
+            return
+        
+        test_chr = Chromosome(name="Test Chromosome")
+        test_chr.add_experiment("exp1", 30000, hic_data=PATH + "/20Kb/chrT/chrT_A.tsv",
+                                silent=True)
+        exp = test_chr.experiments[0]
+        exp.filter_columns(silent=True)
+        exp.normalize_hic(silent=True)
+        hic_mat = exp.norm[0].get_hic_data_as_csr()
+
+        config = {
+            'reference' : 'test',
+            'kforce'    : 5,
+            'scale'     : 0.005
+        }
+        models = generate_3d_models(hic_mat,
+                                    0, hic_mat.shape[0]-1, st.exponnorm, 
+                                    tf_model, 9, resolution=30000,
+                                    config=config,n_models=10,
+                                    n_keep=10)
+        self.assertEqual(len(models),10)
+        if CHKTIME:
+            print("13", time() - t0)
 
 
 def generate_random_ali(ali="map"):
