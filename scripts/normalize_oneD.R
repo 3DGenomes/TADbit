@@ -30,6 +30,7 @@ if (length(args) > 1){
     for (i in seq(2, length(args), 1)) {
         if (grepl("~", args[i])){
             form <- args[i]
+            form = gsub("\"","",form,fixed=T)
         }else if(!suppressWarnings(is.na(as.numeric(args[i])))){
             if(as.numeric(args[i]) <= 1){
                 p_fit <- as.numeric(args[i])
