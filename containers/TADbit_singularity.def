@@ -18,7 +18,8 @@ From:neurodebian:buster
   apt-get update --fix-missing
 
   apt install -y dirmngr apt-transport-https ca-certificates software-properties-common gnupg2 wget
-  apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 'B8F25A8A73EACF41'	
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian buster-cran35/'
 
   apt-get update --fix-missing
