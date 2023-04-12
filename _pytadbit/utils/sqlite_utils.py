@@ -36,6 +36,9 @@ def digest_parameters(opts, get_md5=True, extra=None):
          if k not in ['fastq', 'index', 'renz', 'iterative', 'workdir',
                       'skip', 'func', 'tmp', 'keep_tmp'] + extra and v is not None])
     parameters = parameters.replace("'", "")
+    parameters = parameters.replace("|", "_")
+    parameters = parameters.replace(";", "_")
+    parameters = parameters.replace("#", "_")
     return parameters
 
 
