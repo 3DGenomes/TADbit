@@ -277,7 +277,6 @@ def _sam_filter(fnam, fastq_path, unmap_out, map_out):
     """
     Divides reads in a map file in two categories: uniquely mapped, and not.
     Writes them in two files
-
     """
     try:
         fhandler = Samfile(fnam)
@@ -506,8 +505,7 @@ def _gem_mapping(gem_index_path, fastq_path, out_map_path, fastq_path2 = None,
     print(' '.join(gem_cmd))
     try:
         # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
-        out, err = Popen(gem_cmd, stdout=PIPE, stderr=PIPE,
-                         universal_newlines=True).communicate()
+        out, err = Popen(gem_cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True).communicate()
     except CalledProcessError as e:
         print(out)
         print(err)
@@ -566,8 +564,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
     suffix = ('_' * (suffix != '')) + suffix
     nthreads = kwargs.get('nthreads', 8)
     outfiles = []
-    temp_dir = os.path.abspath(os.path.expanduser(
-        kwargs.get('temp_dir', gettempdir())))
+    temp_dir = os.path.abspath(os.path.expanduser(kwargs.get('temp_dir', gettempdir())))
     if mapper == 'gem':
         gem_version = None
         # check that we have the GEM binary:
@@ -651,8 +648,7 @@ def full_mapping(mapper_index_path, fastq_path, out_map_dir, mapper='gem',
                 if gem_version >= 3:
                     _sam_filter(out_map_path, curr_map,
                                 curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
-                                os.path.join(out_map_dir,
-                                             base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                                os.path.join(out_map_dir, base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
                 else:
                     _gem_filter(out_map_path,
                                 curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),

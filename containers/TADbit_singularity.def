@@ -1,95 +1,63 @@
 BootStrap: docker
-From:neurodebian:buster
+From: debian:latest
 
 %help
   minimal TADbit container
 
+%files
+  . /TADbit
+
 %environment
   LANG=C.UTF-8 
   LC_ALL=C.UTF-8
-  PATH="/usr/local/anaconda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   export PATH LANG LC_ALL
 
 %post
-
-  # for R
-  echo "deb-src http://ftp.de.debian.org/debian/ buster main contrib" >> /etc/apt/sources.list
-
-  apt-get update --fix-missing
-
-  apt install -y dirmngr apt-transport-https ca-certificates software-properties-common gnupg2 wget
-  apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
-  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian buster-cran35/'
-
-  apt-get update --fix-missing
-  apt-get -y install unzip build-essential wget bzip2 libxml2-dev libssl-dev libcurl4-gnutls-dev --no-install-recommends
+  apt-get update
+  apt-get -y install unzip \
+  build-essential \
+  wget \
+  librust-bzip2-dev \
+  libxml2-dev \
+  libssl-dev \
+  libcurl4-gnutls-dev \
+  liblzma-dev \
+  libncurses-dev \
+  git \
+  cmake \
+  libboost-all-dev \
+  r-base \
+  r-cran-devtools \
+  pigz \
+  zlib1g-dev \
+  libbz2-dev \
+  swig \
+  libhdf5-dev \
+  libeigen3-dev \
+  libcereal-dev \
+  mcl \
+  samtools
   
-  apt-get -y install r-base r-cran-devtools
+  apt-get -y install python3 python3-pip
+  python3 -m pip install pip --upgrade
+  python3 -m pip install numpy scipy future h5py xsamtools pysam matplotlib multiprocess mcl
 
-  #############################################################################
-  # DSRC
-  wget --quiet --no-check-certificate https://github.com/refresh-bio/DSRC/releases/download/v2.0.2/dsrc-linux-x64-static.tar.gz &&\
-  tar xzvf dsrc-linux-x64-static.tar.gz &&\
+  git clone https://github.com/salilab/imp.git
+  cd imp && ./setup_git.py
+  mkdir ../imp_release && cd ../imp_release && cmake ../imp -DCMAKE_BUILD_TYPE=Release && make -j 8 && cd ..
+
+  wget --quiet --no-check-certificate https://github.com/refresh-bio/DSRC/releases/download/v2.0.2/dsrc-linux-x64-static.tar.gz && \
+  tar xzvf dsrc-linux-x64-static.tar.gz && \
   mv bin/dsrc /usr/local/bin && rm -f dsrc-linux-x64-static.tar.gz && chmod +x /usr/local/bin/dsrc
 
-  #############################################################################
-  # dryhic / oneD
-  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'
-
-  #############################################################################
-  # conda
-  echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-  wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-      -O $HOME/miniconda.sh
-  /bin/bash $HOME/miniconda.sh -b -p /usr/local/anaconda
-  rm $HOME/miniconda.sh
+  git clone --recursive https://github.com/smarco/gem3-mapper.git gem3-mapper
+  cd gem3-mapper && ./configure && make && cd ..
   
-  export PATH="/usr/local/anaconda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  R --slave -e 'options(repos="http://cran.rstudio.com/"); devtools::install_github("qenvio/dryhic")'	
 
-  conda config --set always_yes yes --set changeps1 no
-  conda update -q conda
-  conda info -a
-
-  #############################################################################
-  # install python packages
-  conda config --add channels salilab && conda config --add channels bioconda && \
-  conda config --add channels hargup/label/pypi && conda config --add channels conda-forge
-  conda install -y -q imp
-  conda install -y -q future
-  conda install -y -q scipy
-  conda install -y -q numpy
-  conda install -y -q mcl
-  conda install -y -q matplotlib
-  conda install -y -q samtools
-  conda install -y -q pysam
-  conda install -y -q ucsc-bigWigToBedGraph
-  conda install -y -q ucsc-wigtobigwig
-  conda install -y -q gem3-mapper
-  conda install -y -q hisat2
-  # to run jupyter the notebok has to be built and installed as writable (with sudo)
-### conda install -y -q jupyter
-  conda clean -y --all  && rm -rf /opt/conda/pkgs/*
-
-  #############################################################################
-  # GEM
-  wget --quiet --no-check-certificate https://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%203/GEM-binaries-Linux-x86_64-core_i3-20130406-045632.tbz2/download -O GEM.tbz2 && \
-  tar -xvjf GEM.tbz2 && \
-  rm -f GEM-binaries-*/bin/LICENCE && \
-  mv GEM-binaries-*/bin/* /usr/local/bin/ && rm -rf GEM*
-
-  #############################################################################
-  # TADbit
-  wget --quiet --no-check-certificate https://github.com/3DGenomes/TADbit/archive/master.zip && unzip master.zip && \
-  cd TADbit-master && yes | python setup.py install && cd .. && rm -rf TADbit-master master.zip
+  cd TADbit && PYTHONPATH=/imp_release/lib/:$PYTHONPATH python3 setup.py install && cd ..
   
-  ############################################################################
-  # Clean
-  rm -rf /var/lib/apt/lists/*
-
 %runscript
-  echo "Wecome to TADbit Singularity container"
+  echo "Welcome to TADbit Singularity container"
   exec /bin/bash --norc
-  # to run jupyter the notebok has to be built and installed as writable (with sudo)
-  # echo "Starting notebook..."
-  # echo "Open browser to localhost:8888"
-  # exec /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --allow-root --port=8888 --no-browser
