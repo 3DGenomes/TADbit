@@ -793,7 +793,12 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     pool = mu.Pool(ncpus)
     procs = []
     read_bam_frag = read_bam_frag_valid if only_valid else read_bam_frag_filter
+
+    num_regs = len(regs)
+    regs = map(lambda r: r.replace("|", "_"), regs)
+
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+        num_regs += 1
         procs.append(pool.apply_async(
             read_bam_frag, args=(inbam, filter_exclude, bins, bins_dict,
                                  resolution, outdir, extra_out,
@@ -803,13 +808,13 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500, biases_path='',
     pool.join()
     ## COLLECT RESULTS
     cisprc = {}
-    printime('  - Collecting cis and total interactions per bin (%d chunks)' % (len(regs)))
+    printime('  - Collecting cis and total interactions per bin (%d chunks)' % num_regs)
     stdout.write('     ')
     for countbin, (region, start, end) in enumerate(zip(regs, begs, ends)):
         if not countbin % 10 and countbin:
             stdout.write(' ')
         if not countbin % 50 and countbin:
-            stdout.write(' %9s\n     ' % ('%s/%s' % (countbin , len(regs))))
+            stdout.write(' %9s\n     ' % ('%s/%s' % (countbin , num_regs)))
         stdout.write('.')
         stdout.flush()
 

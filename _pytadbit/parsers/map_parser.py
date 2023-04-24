@@ -112,13 +112,12 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
             # start parsing
             read_count = 0
             try:
-                while not False:
+                while True:
                     for _ in range(max_size):
                         try:
-                            reads.append(read_read(next(fhandler), frags,
-                                                   frag_chunk))
+                            reads.append(read_read(next(fhandler), frags, frag_chunk))
                         except KeyError:
-                            # Chromosome not in hash
+                            print("Chromosome not in hash")
                             continue
                         read_count += 1
                     nfile += 1
@@ -260,6 +259,8 @@ def read_read_nofrags(r, _, __):
     try:
         crm, strand, pos = ali.split(':')[:3]
     except ValueError:
+        print(r)
+        print(ali)
         raise KeyError()
     positive = strand == '+'
     crm = crm.split()[0]
