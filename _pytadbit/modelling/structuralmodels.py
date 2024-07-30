@@ -17,6 +17,7 @@ if (version_info > (3, 0)):
     from string                           import ascii_uppercase as uc, ascii_lowercase as lc
 else:
     from string                           import uppercase as uc, lowercase as lc
+from datetime                         import datetime
 from random                           import random
 from os.path                          import exists
 from itertools                        import combinations
@@ -24,11 +25,13 @@ from uuid                             import uuid5, UUID
 from hashlib                          import md5
 from copy                             import copy
 
+import h5py
+
 from numpy                            import exp as np_exp
 from numpy                            import median as np_median
 from numpy                            import mean as np_mean
 from numpy                            import std as np_std, log2
-from numpy                            import array, cross, dot, ma, isnan
+from numpy                            import array, cross, dot, ma, isnan, vstack, empty
 from numpy                            import histogram, linspace, errstate
 from numpy                            import nanmin, nanmax
 from numpy                            import seterr
@@ -2484,6 +2487,51 @@ class StructuralModels(object):
                 xcoords[i] = x1 + xstep * pos
                 ycoords[i] = y1 + ystep * pos
                 zcoords[i] = z1 + zstep * pos
+
+    def write_sw(self, sw_filename : str):
+        """
+        Write the models in the sw1 format.
+
+        :param sw_filename: name of the file to be written
+        """
+
+        region_chr = self.description["chromosome"]
+        region_start = self.description["start"]
+        region_reso = self.description["resolution"]
+
+        metadata = {"format" : "sw1",
+                    'version' : '1.0.0', 
+                    'author' : 'tadbit',
+                    'date' : str(datetime.now()),
+                    "name" : f"{self.description['project']}_{self.description['identifier']}",
+                    "genome" : str(self.description['assembly'])}
+
+        with h5py.File(sw_filename, 'w') as swbf:
+
+            header_group = swbf.create_group('Header')
+            header_group.attrs.update(metadata)
+            header_group.attrs['point_type'] = 'single_point'
+
+            root = swbf.create_group(metadata['name'])
+            genomic_position_group = root.create_group('genomic_position')
+            spatial_position_group = root.create_group('spatial_position')
+
+            region_list = [[region_chr, str(region_start + (i - 1) * region_reso), str(region_start + i * region_reso)] for i in range(0, self.nloci + 1)]
+
+            genomic_position_group.create_dataset('regions', data=region_list)
+
+            live_contact_map_vertices = empty((0, 3), dtype=float)
+
+            for model_index, model in enumerate(self, start=0):
+
+                xyz = array([model['x'], model['y'], model['z']], dtype=float).T
+                live_contact_map_vertices = vstack((live_contact_map_vertices, xyz))
+
+                dataset_name = f't_{model_index}'
+                # print(dataset_name)
+                spatial_position_group.create_dataset(dataset_name, data=xyz)
+
+            root.create_dataset('live_contact_map_vertices', data=live_contact_map_vertices)
 
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
                   color='index', rndname=True, infer_unrestrained=False,

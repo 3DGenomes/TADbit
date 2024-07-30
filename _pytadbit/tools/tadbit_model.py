@@ -895,6 +895,9 @@ def run(opts):
             models.write_json(path.join(outdir, batch_job_hash + '.json'),
                               title = opts.project+' '+name if opts.project else name,
                               infer_unrestrained=True)
+            
+        if not opts.not_write_sw:
+            models.write_sw(path.join(outdir, f"{batch_job_hash}_{opts.rand}.sw"))
 
         if not (opts.not_write_xyz and opts.not_write_cmm):
             # Save the clustered models into directories for easy visualization with
@@ -1067,7 +1070,6 @@ def run(opts):
                 error=True)
         if orig_sparse:
             models._original_data = csr_matrix(models._original_data)
-
 
 @retry(lite.OperationalError, tries=20, delay=2)
 def save_to_db(opts, outdir, results, batch_job_hash,
@@ -1445,6 +1447,9 @@ def populate_args(parser):
     analyz.add_argument('--not_write_json', dest='not_write_json',
                         default=False, action='store_true',
                         help='''[%(default)s] do not generate json file.''')
+    analyz.add_argument('--not_write_sw', dest='not_write_sw',
+                        default=False, action='store_true',
+                        help='''[%(default)s] do not generate binary spacewalk file.''')
 
 def check_options(opts):
     # check resume

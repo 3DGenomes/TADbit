@@ -7,8 +7,10 @@ from __future__ import print_function
 
 from math                           import sqrt, pi
 import hashlib
+from datetime                      import datetime
 
 import numpy as np
+import h5py
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.extraviews      import plot_3d_model
@@ -623,6 +625,56 @@ class StructuralModel(dict):
         # return ratio multiplied by total Volume of space considered and
         # converted to cubic micrometers
         return final_ratio * dx * dy * dz / 1000**3
+    
+    def write_sw(self, sw_filename : str):
+        """
+        This function writes a spacewalk file from a model ensemble.
+
+        Parameters
+        ----------
+        model_ensemble : StructuralModels
+            A model ensemble object.
+        sw_filename : str
+            The name of the spacewalk file to be written.
+        """
+        region_chr = self.description["chromosome"]
+        region_start = self.description["start"]
+        region_reso = self.description["resolution"]
+
+        metadata = {"format" : "sw1",
+                    'version' : '1.0.0', 
+                    'author' : 'tadbit',
+                    'date' : str(datetime.now()),
+                    "name" : f"{self.description['project']}_{self.description['identifier']}",
+                    "genome" : str(self.description['assembly'])}
+
+        with h5py.File(sw_filename, 'w') as swbf:
+
+            header_group = swbf.create_group('Header')
+            header_group.attrs.update(metadata)
+            header_group.attrs['point_type'] = 'single_point'
+
+            root = swbf.create_group(metadata['name'])
+            genomic_position_group = root.create_group('genomic_position')
+            spatial_position_group = root.create_group('spatial_position')
+
+            region_list = [[region_chr, str(region_start + (i - 1) * region_reso), str(region_start + i * region_reso)] for i in range(0, self.nloci + 1)]
+
+            genomic_position_group.create_dataset('regions', data=region_list)
+
+            live_contact_map_vertices = np.empty((0, 3), dtype=float)
+
+            for model_index, model in enumerate(self, start=0):
+
+                xyz = np.array([model['x'], model['y'], model['z']], dtype=float).T
+                live_contact_map_vertices = np.vstack((live_contact_map_vertices, xyz))
+
+                dataset_name = f't_{model_index}'
+                # print(dataset_name)
+                spatial_position_group.create_dataset(dataset_name, data=xyz)
+
+            root.create_dataset('live_contact_map_vertices', data=live_contact_map_vertices)
+
 
     def write_cmm(self, directory, color='index', rndname=True,
                   model_num=None, filename=None, **kwargs):
